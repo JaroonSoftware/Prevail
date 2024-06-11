@@ -1,0 +1,19 @@
+
+@import "./assets/styles/main.css";
+@import "./assets/styles/responsive.css";
+@import "./assets/styles/style.css";
+@import "./pages/index.css";
+@import "./components/modal/index.css";
+
+button.ant-btn-primary {
+    background-color: #1677ff;
+}
+
+button.ant-switch:not(.ant-switch-disabled) {
+    background: rgba(0, 0, 0, 0.45);
+}
+
+button.ant-switch.ant-switch-checked {
+    background: #1677ff;
+}
+

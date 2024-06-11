@@ -1,0 +1,96 @@
+.input-40 {
+    height: 40px;
+    align-items: center;
+}
+.input-40 input.ant-input{
+    height: 40px;
+}
+
+.input-40 input.ant-input-number-input{
+    height: 38px;
+}
+
+.input-30 {
+    height: 32px;
+    align-items: center;
+}
+.input-30 input.ant-input{
+    height: 32px;
+}
+
+.input-30 input.ant-input-number-input{
+    height: 30px;
+}
+.input-30+.ant-btn, 
+.input-30+.ant-radio-group .ant-radio-button-wrapper {
+    font-weight: 600;
+    font-size: 12px;
+    height: 32px;
+    padding: 0 15px;
+    line-height: 1.2rem;
+}
+
+.bn-comp {
+    border-radius: 0px 6px 6px 0px;
+    line-height: 1rem;
+}
+#menu {
+    scrollbar-gutter: stable;
+}
+#menu::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+#menu::-webkit-scrollbar-track {
+  background: transparent;  
+}
+ 
+/* Handle */
+#menu::-webkit-scrollbar-thumb {
+  background: #dadbdd;
+  border: 5px solid transparent
+}
+
+/* Handle on hover */
+#menu::-webkit-scrollbar-thumb:hover {
+  background: #c6c7ca; 
+}
+
+.collapse-search .ant-table-tbody > tr > td, 
+.collapse-search .ant-table-thead > tr > th {
+    white-space: break-spaces;
+    vertical-align: top;
+}
+
+.collapse-search .ant-collapse>.ant-collapse-item:last-child, 
+.collapse-search .ant-collapse>.ant-collapse-item:last-child>.ant-collapse-header {
+    border-radius: 12px;
+    background-color: #d9d9d9;
+    border: none;
+}
+
+.collapse-search .ant-collapse .ant-collapse-header,
+.collapse-search .ant-collapse .ant-collapse-item-active .ant-collapse-header { 
+    border-bottom: 0px solid #fff;
+    padding-inline-start: 12px;
+    background-color: #d9d9d9;
+}
+
+
+.collapse-search .ant-collapse .ant-collapse-item-active .ant-collapse-content,
+.collapse-search .ant-collapse .ant-collapse-content {
+    color: rgba(0, 0, 0, 0.88);
+    background-color: #d9d9d9;
+    border-top: 0px solid #d9d9d9;
+    padding-inline: 12px;
+}
+
+@media print { 
+    body {
+        background-color: #fff;
+        margin: 0;
+        padding: 0;
+        -webkit-print-color-adjust: exact;
+    }
+} 

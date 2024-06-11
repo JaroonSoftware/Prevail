@@ -1,0 +1,20 @@
+.modal-sample-preparation .text-select{
+    color: rgb(67, 105, 233);
+}
+
+.modal-sample-preparation .text-select:hover{
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.modal-sample-preparation .ant-table-content{
+    height: calc( 100vh - 30rem) !important;
+    overflow-y: auto !important;
+    position: relative;
+}
+
+
+.modal-sample-preparation  .ant-table-tbody > tr > td, .modal-sample-preparation .ant-table-thead > tr > th {
+    white-space: nowrap;
+    vertical-align: top;
+}

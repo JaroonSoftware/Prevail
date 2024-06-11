@@ -1,0 +1,18 @@
+.unit-manage .text-select{
+    color: rgb(67, 105, 233);
+}
+
+.unit-manage .text-select:hover{
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.unit-manage .ant-table-content{
+    height: calc( 100vh - 30rem) !important;
+    overflow-y: auto !important;
+    position: relative;
+}
+
+/* .unit-manage button.ant-switch:not(.ant-switch-disabled) {
+    background: rgba(0, 0, 0, 0.45);
+} */

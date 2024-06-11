@@ -1,0 +1,8 @@
+@import './tags/modal-sp-tags.css';
+@import './sample-preparation/modal-sample-preparation.css';
+@import './sample-request/modal-sample-request.css';
+@import './items/modal-items.css';
+@import './packages/modal-packages.css';
+@import './customers/modal-customers.css';
+@import './packaging/modal-packaging.css';
+

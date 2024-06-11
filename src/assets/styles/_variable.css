@@ -1,0 +1,15 @@
+:root{
+    --primary: #1677ff;
+    --success: #12ac52;
+    --info: #16bdff;
+    --warning: #f18e32;
+    --danger: #b32222;
+    --secondary: #d9d9d9;
+    
+    --primary-hover: #135ec7;
+    --success-hover: #0f8841;
+    --info-hover: #1384b1;
+    --warning-hover: #b66128;
+    --danger-hover: #861b1b;
+    --secondary-hover: #acabab;
+}

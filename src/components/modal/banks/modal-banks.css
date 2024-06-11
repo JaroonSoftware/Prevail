@@ -1,0 +1,11 @@
+@media screen and (max-width: 768px) {
+    .modal-banks-manage .responsive-drawer {
+        width: 100vw; /* Adjust the width for smaller screens */
+      } 
+  }
+  
+  @media screen and (min-width: 768px) {
+    .modal-banks-manage .responsive-drawer {
+        width: 668px; /* Set a fixed width for larger screens */
+      } 
+  }

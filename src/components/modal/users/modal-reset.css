@@ -1,0 +1,20 @@
+.modal-reset .text-select{
+    color: rgb(67, 105, 233);
+}
+
+.modal-reset .text-select:hover{
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.modal-reset .ant-table-content{
+    height: calc( 100vh - 30rem) !important;
+    overflow-y: auto !important;
+    position: relative;
+}
+
+
+.modal-reset  .ant-table-tbody > tr > td, .modal-reset .ant-table-thead > tr > th {
+    white-space: nowrap;
+    vertical-align: top;
+}

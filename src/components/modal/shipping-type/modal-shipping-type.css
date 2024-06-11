@@ -1,0 +1,12 @@
+@media screen and (max-width: 768px) {
+  .modal-loading-type-view .responsive-drawer {
+      width: 100% !important; /* Adjust the width for smaller screens */
+    } 
+}
+
+@media screen and (min-width: 768px) {
+  .modal-loading-type-view .responsive-drawer {
+      width: 400 !important; /* Set a fixed width for larger screens */
+    } 
+}
+

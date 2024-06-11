@@ -1,0 +1,48 @@
+.packingset-group-manage .text-select{
+    color: rgb(67, 105, 233);
+}
+
+.packingset-group-manage .text-select:hover{
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.packingset-group-manage .ant-table-content{
+    height: calc( 100vh - 30rem) !important;
+    overflow-y: auto !important;
+    position: relative;
+}
+
+/* .packingset-group-manage button.ant-switch:not(.ant-switch-disabled) {
+    background: rgba(0, 0, 0, 0.45);
+} */
+
+.modal-packingset .text-select{
+    color: rgb(67, 105, 233);
+}
+
+.modal-packingset .text-select:hover{
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.modal-packingset .ant-table-content{
+    height: calc( 100vh - 30rem) !important;
+    overflow-y: auto !important;
+    position: relative;
+}
+
+.modal-packingset-group .text-select{
+    color: rgb(67, 105, 233);
+}
+
+.modal-packingset-group .text-select:hover{
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.modal-packingset-group .ant-table-content{
+    height: calc( 100vh - 30rem) !important;
+    overflow-y: auto !important;
+    position: relative;
+}

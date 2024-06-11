@@ -1,0 +1,72 @@
+.item-manage .ant-radio-button-wrapper:first-child {
+    border-radius: 8px 0 0 8px;
+}
+
+.item-manage .ant-radio-button-wrapper:last-child {
+    border-radius: 0 8px 8px 0;
+}
+
+.item-manage .ant-radio-group .ant-radio-button-wrapper {
+    font-weight: 600;
+    font-size: 12px;
+    height: 40px;
+    padding: 0 15px;
+    line-height: 2.4rem;
+}
+
+.item-manage .ant-collapse .ant-collapse-content {
+    color: rgba(0, 0, 0, 0.88);
+    background-color: #ffffff;
+    border-top: 1px solid #d9d9d9;
+    border-radius: 0px 0px 8px 8px;
+}
+
+.item-manage .ant-collapse {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    background: #ffffff00;
+}
+
+.item-manage  .ant-collapse>.ant-collapse-item >.ant-collapse-header { 
+    background-color: #d9d9d9;
+    background-color: #e5e5e5;
+}
+
+.item-manage .ant-collapse .ant-collapse-content>.ant-collapse-content-box {
+    padding: 16px 16px;
+}
+
+.item-manage .ant-collapse>.ant-collapse-item>.ant-collapse-header, 
+.item-manage .ant-collapse>.ant-collapse-item:last-child>.ant-collapse-header {
+    border-radius: 8px 8px 0px 0px;
+}
+
+.item-access .ant-table-tbody > tr > td, 
+.item-access .ant-table-thead > tr > th {
+    white-space: break-spaces;
+    vertical-align: top;
+}
+
+.item-access .ant-collapse>.ant-collapse-item:last-child, 
+.item-access .ant-collapse>.ant-collapse-item:last-child>.ant-collapse-header {
+    border-radius: 12px;
+    background-color: #d9d9d9;
+    border: none;
+}
+
+.item-access .ant-collapse .ant-collapse-header,
+.item-access .ant-collapse .ant-collapse-item-active .ant-collapse-header { 
+    border-bottom: 0px solid #fff;
+    padding-inline-start: 12px;
+    background-color: #d9d9d9;
+}
+
+
+.item-access .ant-collapse .ant-collapse-item-active .ant-collapse-content,
+.item-access .ant-collapse .ant-collapse-content {
+    color: rgba(0, 0, 0, 0.88);
+    background-color: #d9d9d9;
+    border-top: 0px solid #d9d9d9;
+    padding-inline: 12px;
+}

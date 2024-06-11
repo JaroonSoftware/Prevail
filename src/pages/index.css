@@ -1,0 +1,85 @@
+@import './dashboard/dashboard.css';
+@import './users/users.css';
+
+
+
+.layout-content .ant-table-title{
+    background-color: #ababab59;
+    border-radius: 0 !important;
+}
+
+.layout-content h3.ant-typography,
+.layout-content div.ant-typography-h3,
+.layout-content div.ant-typography-h3>textarea,
+.layout-content .ant-typography h3 {
+    color: rgb(70 75 86 / 88%); 
+    font-size: clamp( 11px, 3vw, 24px);
+}
+.layout-content .ant-collapse>.ant-collapse-item >.ant-collapse-header { 
+    align-items: center; 
+}
+
+.layout-content .bk-layout.ant-collapse-borderless { 
+    background-color: rgb(240, 240, 240);
+    border: 0;
+    border-radius: 12px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+}
+
+.layout-content .ant-collapse { 
+    border: 0;
+    border-radius: 12px;
+}
+
+.layout-content .ant-collapse>.ant-collapse-item {
+    border-bottom: 0px solid #d9d9d9;
+}
+
+.layout-content .ant-collapse>.ant-collapse-item:last-child {
+    border-radius: 12px;
+}
+
+.layout-content .ant-descriptions.ant-descriptions-bordered >.ant-descriptions-view {
+    border: 1px solid rgb(240 240 240);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+}
+
+.layout-content .ant-descriptions .ant-descriptions-view { 
+    border-radius: 12px;
+}
+
+.layout-content .ant-descriptions.ant-descriptions-bordered >.ant-descriptions-view .ant-descriptions-row >.ant-descriptions-item-label { 
+    background-color: rgb(240 240 240);
+    
+}
+
+.layout-content .ant-descriptions .ant-descriptions-view table tbody tr:first-child > th:first-child{
+    border-radius: 12px 0px 0px 0px;
+}
+
+.layout-content .ant-descriptions .ant-descriptions-view table tbody tr:last-child > th:first-child{
+    border-radius: 0px 0px 0px 12px;
+}
+
+.layout-content .ant-collapse.bk-layout {
+    background-color: rgb(240, 240, 240); 
+}
+
+.layout-content .ant-collapse.bk-layout .ant-collapse-item { 
+    border-bottom: 4px solid #fafafa;
+}
+
+.layout-content .ant-collapse.bk-layout .ant-collapse-item:last-child { 
+    border-bottom: 0px solid rgb(240, 240, 240);
+}
+.layout-content input[readonly] { 
+    background-color: #bfbfbf;
+}
+
+.ant-modal-wrap {
+    overflow-x: hidden !important;
+}
+
+.layout-content .ant-table-wrapper .ant-table.ant-table-small .ant-table-expanded-row-fixed {
+    padding: 0px !important;
+}
