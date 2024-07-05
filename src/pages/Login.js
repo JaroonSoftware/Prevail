@@ -4,7 +4,7 @@ import { React, useEffect, useState } from "react";
 import { Navigate, useNavigate, useLocation } from "react-router-dom";
 import { Layout, Button, Typography, Card, Form, Input, Space, Flex, Modal } from "antd";
 import { message } from "antd";
-import logo4 from "../assets/images/logo.png";
+import logo4 from "../assets/images/Logo.png";
 import SystemService from "../service/System.service";
 import { Authenticate } from "../service/Authenticate.service";
 
@@ -97,9 +97,6 @@ const Login = () => {
       <div className="layout-default ant-layout layout-sign-up">
 
         <Header>
-          <div className="header-col header-brand">
-            <h5>VEERA DRYCUTTING</h5>
-          </div>
         </Header>
 
         <Content className="p-0">
