@@ -14,7 +14,7 @@ import {
   Modal,
 } from "antd";
 import { message } from "antd";
-import logo4 from "../assets/images/Logo.png";
+import logo4 from "../assets/images/logo.png";
 import SystemService from "../service/System.service";
 import { Authenticate } from "../service/Authenticate.service";
 

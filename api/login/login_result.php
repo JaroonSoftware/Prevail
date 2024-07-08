@@ -47,7 +47,7 @@ if ($stmt->execute()) {
 				$issuedAt = new DateTimeImmutable(); 
 				
 				$expire = $issuedAt->modify('+1 day');      // Add 60 seconds
-				$serverName = "vr";
+				$serverName = "prevail";
 				$username = $_POST['username'];
 				$userid = $code;
 				$data = [
