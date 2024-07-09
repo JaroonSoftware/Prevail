@@ -3,7 +3,7 @@ import React from 'react';
 import { Link, useLocation } from "react-router-dom";
 import { Menu, MenuItem } from "react-pro-sidebar";
 import { Badge, Flex } from "antd";
-import logo from "../../assets/images/logo_nsf.png";
+import logo from "../../assets/images/logo.png";
 import nav from "../../nav";
 
 import { Authenticate } from '../../service/Authenticate.service.js'; 
