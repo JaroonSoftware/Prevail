@@ -27,10 +27,10 @@ const ItemsAccess = () => {
     form.validateFields().then((v) => {
       const data = { ...v };
       itemtypeservice
-        .getAllitem(data)
+        .search(data, { ignoreLoading: Object.keys(data).length !== 0 })
         .then((res) => {
           const { data } = res.data;
-          console.log(data);
+
           setAccessData(data);
         })
         .catch((err) => {
@@ -119,14 +119,7 @@ const ItemsAccess = () => {
       items={[
         {
           key: "1",
-          label: (
-            <>
-              <Typography.Title level={5}>
-                <SearchOutlined />
-                ค้นหา
-              </Typography.Title>
-            </>
-          ),
+          label: <><SearchOutlined /><span> ค้นหา</span></>,  
           children: (
             <>
               <Form form={form} layout="vertical" autoComplete="off">

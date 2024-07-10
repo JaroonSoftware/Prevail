@@ -26,7 +26,17 @@ const UsersAccess = () => {
   const handleSearch = () => {
     form.validateFields().then((v) => {
       const data = { ...v };
-      getData(data);
+      userService
+      .search(data, { ignoreLoading: Object.keys(data).length !== 0 })
+      .then((res) => {
+        const { data } = res.data;
+
+        setAccessData(data);
+      })
+      .catch((err) => {
+        console.log(err);
+        message.error("Request error!");
+      });
     });
   };
 
@@ -59,7 +69,7 @@ const UsersAccess = () => {
           title: "แก้ไขผู้ใช้",
           action: "edit",
           acname: "แก้ใขข้อมูลผู้ใช้",
-          code: data?.code,
+          code: data?.user_code,
         },
       },
       replace: true,
@@ -110,14 +120,7 @@ const UsersAccess = () => {
       items={[
         {
           key: "1",
-          label: (
-            <>
-              <Typography.Title level={5}>
-                <SearchOutlined />
-                ค้นหา
-              </Typography.Title>
-            </>
-          ),
+          label: <><SearchOutlined /><span> ค้นหา</span></>,  
           children: (
             <>
               <Form form={form} layout="vertical" autoComplete="off">
@@ -236,7 +239,7 @@ const UsersAccess = () => {
               <Table
                 title={() => TitleTable}
                 size="small"
-                rowKey="cuscode"
+                rowKey="user_code"
                 columns={column}
                 dataSource={accessData}
                 

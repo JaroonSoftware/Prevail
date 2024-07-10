@@ -19,13 +19,13 @@ try {
         // var_dump($_POST);
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
         
-        $sql = "INSERT user (username, password,firstname, lastname,type, tel,email,created_by,created_date) 
+        $sql = "INSERT user (code, username, password,firstname, lastname,type, tel,email,created_by,created_date) 
         values (:username,:password,:firstname,:lastname,:type,:tel,:email,:action_user,:action_date)";
 
         $stmt = $conn->prepare($sql);
         if(!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}"); 
 
-        
+        $stmt->bindParam(":code", $code, PDO::PARAM_STR);
         $stmt->bindParam(":username", $username, PDO::PARAM_STR);
         $stmt->bindParam(":password", $password_hash, PDO::PARAM_STR);
         $stmt->bindParam(":firstname", $firstname, PDO::PARAM_STR);
@@ -54,6 +54,7 @@ try {
         $sql = "
         update user 
         set
+        code = :code,
         firstname = :firstname,
         lastname = :lastname,
         type = :type,
@@ -67,7 +68,7 @@ try {
         $stmt = $conn->prepare($sql);
         if(!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}"); 
 
-
+        $stmt->bindParam(":code", $code, PDO::PARAM_STR);
         $stmt->bindParam(":firstname", $firstname, PDO::PARAM_STR);
         $stmt->bindParam(":lastname", $lastname, PDO::PARAM_STR);
         $stmt->bindParam(":type", $type, PDO::PARAM_STR);

@@ -27,10 +27,10 @@ const ItemsAccess = () => {
     form.validateFields().then((v) => {
       const data = { ...v };
       unitservice
-        .getAllitem(data)
+        .search(data, { ignoreLoading: Object.keys(data).length !== 0 })
         .then((res) => {
           const { data } = res.data;
-          console.log(data);
+
           setAccessData(data);
         })
         .catch((err) => {
@@ -119,14 +119,7 @@ const ItemsAccess = () => {
       items={[
         {
           key: "1",
-          label: (
-            <>
-              <Typography.Title level={5}>
-                <SearchOutlined />
-                ค้นหา
-              </Typography.Title>
-            </>
-          ),
+          label: <><SearchOutlined /><span> ค้นหา</span></>,  
           children: (
             <>
               <Form form={form} layout="vertical" autoComplete="off">
@@ -134,7 +127,7 @@ const ItemsAccess = () => {
                   <Col xs={24} sm={8} md={8} lg={8} xl={8}>
                     <Form.Item
                       label="ชื่อหน่วยสินค้า"
-                      name="unit"
+                      name="unitname"
                       onChange={handleSearch}
                     >
                       <Input placeholder="กรอกชื่อหน่วยสินค้า" />

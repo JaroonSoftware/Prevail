@@ -25,7 +25,7 @@ const UserService = () => {
   const deleted = (code) => api.delete(`${API_URL.API_MANAGE}?code=${code}`, { headers: getHeader() });
   const get = (code) => api.get(`${API_URL.API_MANAGE}?code=${code}`, { headers: getHeader() });
   const resetPassword = (parm = {}) => api.put(`${API_URL.ResetPassword}`, parm, { headers: getHeader() });  
-  const search = (parm = {}) => api.post(`${API_URL.API_GETMASTER}`, parm, { headers: getHeader() });
+  const search = (parm = {}, config = {}) => api.post(`${API_URL.API_GETMASTER}`, parm, {...config, cancle: true});
 
   return {
     create,

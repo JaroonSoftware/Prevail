@@ -16,7 +16,8 @@ import { SaveFilled } from "@ant-design/icons";
 import { ButtonBack } from "../../components/button";
 import { useLocation, useNavigate } from "react-router";
 import { delay } from "../../utils/util";
-// import OptionService from '../../service/Options.service';
+import { ModalResetPassword } from "../../components/modal/users/modal-reset";
+
 import Customerservice from "../../service/Customer.Service";
 import { CreateInput } from "thai-address-autocomplete-react";
 const InputThaiAddress = CreateInput();
@@ -28,6 +29,7 @@ const ItemsManage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const [openResetModal, setOpenResetModal] = useState(false);
   const { config } = location.state || { config: null };
   const [form] = Form.useForm();
 
@@ -126,93 +128,189 @@ const ItemsManage = () => {
     (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
 
   const Detail = () => (
-    <Row gutter={[8, 8]} className="px-2 sm:px-4 md:px-4 lg:px-4">
-      <Col xs={24} sm={24} md={24} lg={6} xl={6} xxl={4}>
-        <Form.Item
-          label="รหัสลูกค้า"
-          name="cuscode"
-          rules={[{ required: true, message: "Please enter data!" }]}
+    <>
+      <Row gutter={[8, 8]} className="px-2 sm:px-4 md:px-4 lg:px-4">
+        <Col xs={24} sm={24} md={24} lg={6} xl={6} xxl={4}>
+          <Form.Item
+            label="รหัสลูกค้า"
+            name="cuscode"
+            rules={[{ required: true, message: "Please enter data!" }]}
+          >
+            <Input
+              placeholder="กรอกรหัสลูกค้า"
+              className="!bg-zinc-300"
+              readOnly
+            />
+          </Form.Item>
+        </Col>
+        <Col xs={24} sm={24} md={24} lg={4} xl={4} xxl={4}>
+          <Form.Item
+            label="คำน้ำหน้า"
+            name="prename"
+            rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
+          >
+            <Select
+              size="large"
+              placeholder="เลือกคำนำหน้าชื่อ"
+              showSearch
+              filterOption={filterOption}
+              options={[
+                {
+                  value: "บจก.",
+                  label: "บจก.",
+                },
+                {
+                  value: "หจก.",
+                  label: "หจก.",
+                },
+                {
+                  value: "คุณ",
+                  label: "คุณ",
+                },
+                {
+                  value: "นาย",
+                  label: "นาย",
+                },
+                {
+                  value: "นาง",
+                  label: "นาง",
+                },
+                {
+                  value: "นางสาว",
+                  label: "นางสาว",
+                },
+              ]}
+            ></Select>
+          </Form.Item>
+        </Col>
+        <Col xs={24} sm={24} md={24} lg={14} xl={14} xxl={8}>
+          <Form.Item
+            label="ชื่อลูกค้า"
+            name="cusname"
+            rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
+          >
+            <Input placeholder="กรอกชื่อลูกค้า" />
+          </Form.Item>
+        </Col>
+        <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={6}>
+          <Form.Item label="เลขที่ผู้เสียภาษี" name="taxnumber">
+            <Input placeholder="กรอกเลขที่ผู้เสียภาษี" />
+          </Form.Item>
+        </Col>
+        <Col
+          xs={24}
+          sm={24}
+          md={12}
+          lg={6}
+          xl={6}
+          xxl={4}
+          style={
+            config === "edit" ? { display: "inline" } : { display: "none" }
+          }
         >
-          <Input
-            placeholder="กรอกรหัสลูกค้า"
-            className="!bg-zinc-300"
-            readOnly
-          />
-        </Form.Item>
-      </Col>
-      <Col xs={24} sm={24} md={24} lg={4} xl={4} xxl={4}>
-        <Form.Item
-          label="คำน้ำหน้า"
-          name="prename"
-          rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
+          <Form.Item label="สถานะ" name="active_status">
+            <Radio.Group buttonStyle="solid">
+              <Radio.Button value="Y">Enable</Radio.Button>
+              <Radio.Button value="N">Disable</Radio.Button>
+            </Radio.Group>
+          </Form.Item>
+        </Col>
+      </Row>
+      <Row gutter={[8, 8]} className="px-2 sm:px-4 md:px-4 lg:px-4">
+      <Col xs={24} sm={24} md={12} lg={12} xl={6}>
+          <Form.Item
+            name="username"
+            rules={[{ required: true, message: "กรุณาใส่ชื่อผู้ใช้!" }]}
+            label="Username"
+          >
+            <Input
+              size="small"
+              placeholder="กรอก Username"
+            />
+          </Form.Item>
+        </Col>
+        <Col
+          xs={24}
+          sm={24}
+          md={12}
+          lg={12}
+          xl={6}
+          style={
+            config.action === "create"
+              ? { display: "inline" }
+              : { display: "none" }
+          }
         >
-          <Select
-            size="large"
-            placeholder="เลือกคำนำหน้าชื่อ"
-            showSearch
-            filterOption={filterOption}
-            options={[
+          <Form.Item
+            name="password"
+            rules={[
               {
-                value: "คุณ",
-                label: "คุณ",
-              },
-              {
-                value: "นาย",
-                label: "นาย",
-              },
-              {
-                value: "นาง",
-                label: "นาง",
-              },
-              {
-                value: "นางสาว",
-                label: "นางสาว",
-              },
-              {
-                value: "บจก.",
-                label: "บจก.",
-              },
-              {
-                value: "หจก.",
-                label: "หจก.",
+                required: config.action === "create",
+                message: "กรุณาใส่รหัสผ่าน!",
               },
             ]}
-          ></Select>
-        </Form.Item>
-      </Col>
-      <Col xs={24} sm={24} md={24} lg={14} xl={14} xxl={6}>
-        <Form.Item
-          label="ชื่อ-นามสกุล"
-          name="cusname"
-          rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
+            label="Password"
+          >
+            <Input.Password
+              disabled={config.action === "edit"}
+              size="small"
+              placeholder="กรอก Password"
+              style={{ height: 40 }}
+            />
+          </Form.Item>
+        </Col>
+        <Col
+          xs={24}
+          sm={24}
+          md={8}
+          lg={8}
+          xl={6}
+          style={
+            config.action === "edit"
+              ? { display: "inline" }
+              : { display: "none" }
+          }
         >
-          <Input placeholder="กรอกชื่อ-นามสกุล" />
-        </Form.Item>
-      </Col>
-      <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={6}>
-        <Form.Item label="เลขที่ผู้เสียภาษี" name="taxnumber">
-          <Input placeholder="กรอกเลขที่ผู้เสียภาษี" />
-        </Form.Item>
-      </Col>
-      <Col
-        xs={24}
-        sm={24}
-        md={12}
-        lg={6}
-        xl={6}
-        xxl={4}
-        style={
-          config.action === "edit" ? { display: "inline" } : { display: "none" }
-        }
-      >
-        <Form.Item label="สถานะ" name="active_status">
-          <Radio.Group buttonStyle="solid">
-            <Radio.Button value="Y">อยู่ในระบบ</Radio.Button>
-            <Radio.Button value="N">ไม่อยู่ในระบบ</Radio.Button>
-          </Radio.Group>
-        </Form.Item>
-      </Col>
-    </Row>
+          <Form.Item
+            rules={[{ required: true, message: "กรุณาใส่รหัสผ่าน!" }]}
+            label="Password"
+          >
+            <Input.Password
+              disabled={config.action === "edit"}
+              size="small"
+              defaultValue="12345678"
+              style={{ height: 40 }}
+            />
+          </Form.Item>
+        </Col>
+        <Col
+          xs={24}
+          sm={24}
+          md={4}
+          lg={4}
+          xl={4}
+          style={
+            config.action === "edit"
+              ? { display: "inline" }
+              : { display: "none" }
+          }
+        >
+          <Form.Item label="รีเซ็ต Password">
+            <Button
+              style={{ width: 100 }}
+              onClick={() => {
+                setOpenResetModal(true);
+              }}
+            >
+              Reset
+            </Button>
+          </Form.Item>
+        </Col>
+        <Form.Item name="login_code">
+          <Input type="hidden"  disabled />
+        </Form.Item>        
+      </Row>
+    </>
   );
 
   const AddressDetail = () => (
@@ -347,6 +445,33 @@ const ItemsManage = () => {
     </Row>
   );
 
+  const SectionHeader = (
+    <Row
+      gutter={[{ xs: 32, sm: 32, md: 32, lg: 12, xl: 12 }, 8]}
+      className="m-0"
+    >
+      <Col span={12} className="p-0">
+        <Flex gap={4} justify="start">
+          <ButtonBack target={from} />
+        </Flex>
+      </Col>
+      <Col span={12} style={{ paddingInline: 0 }}>
+        <Flex gap={4} justify="end">
+          <Button
+            icon={<SaveFilled style={{ fontSize: "1rem" }} />}
+            type="primary"
+            style={{ width: "9.5rem" }}
+            onClick={() => {
+              handleConfirm();
+            }}
+          >
+            บันทึก
+          </Button>
+        </Flex>
+      </Col>
+    </Row>
+  );
+
   const SectionBottom = (
     <Row
       gutter={[{ xs: 32, sm: 32, md: 32, lg: 12, xl: 12 }, 8]}
@@ -377,6 +502,7 @@ const ItemsManage = () => {
   return (
     <div className="customer-manage xs:px-0 sm:px-0 md:px-8 lg:px-8">
       <Space direction="vertical" className="flex gap-2">
+        {SectionHeader}
         <Form form={form} layout="vertical" autoComplete="off">
           <Card title={config?.title}>
             <Divider
@@ -402,7 +528,7 @@ const ItemsManage = () => {
               plain
               style={{ margin: 10, fontSize: 20, border: 20 }}
             >
-              ที่อยู่จัดส่ง
+              ที่อยู่จัดส่งสินค้า
             </Divider>
             <DeliveryAddressDetail />
 
@@ -418,6 +544,15 @@ const ItemsManage = () => {
         </Form>
         {SectionBottom}
       </Space>
+      {openResetModal && (
+        <ModalResetPassword
+          show={openResetModal}
+          close={() => {
+            setOpenResetModal(false);
+          }}
+          code={form.getFieldValue("login_code")}
+        />
+      )}
     </div>
   );
 };

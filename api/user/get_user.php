@@ -32,7 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         http_response_code(200);
-        echo json_encode(array("data" => $res,"sql" => $sql));
+        echo json_encode(array("data" => $res));
     } catch (mysqli_sql_exception $e) {
         http_response_code(400);
         echo json_encode(array('status' => '0', 'message' => $e->getMessage()));

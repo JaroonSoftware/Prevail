@@ -20,14 +20,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $taxnumber = !empty($taxnumber) ? "and a.taxnumber like '%$taxnumber%'" : "";
     $email = !empty($email) ? "and a.email like '%$email%'" : "";
     $active_status = !empty($active_status) ? "and a.active_status like '%$active_status%'" : "";
-
     $idno = !empty($idno) ? "and a.idno like '%$idno%'" : "";
     $road = !empty($road) ? "and a.road like '%$road%'" : "";
     $subdistrict = !empty($subdistrict) ? "and a.subdistrict like '%$subdistrict%'" : "";
     $district = !empty($district) ? "and a.district like '%$district%'" : "";
     $province = !empty($province) ? "and a.province like '%$province%'" : "";
     $zipcode = !empty($zipcode) ? "and a.zipcode like '%$zipcode%'" : "";
-
     $delidno = !empty($delidno) ? "and a.delidno like '%$delidno%'" : "";
     $delroad = !empty($delroad) ? "and a.delroad like '%$delroad%'" : "";
     $delsubdistrict = !empty($delsubdistrict) ? "and a.delsubdistrict like '%$delsubdistrict%'" : "";
@@ -36,17 +34,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $delzipcode = !empty($delzipcode) ? "and a.delzipcode like '%$delzipcode%'" : "";
     try {
         $sql = "SELECT a.cuscode,a.prename, a.cusname,a.tel,a.contact,a.fax,a.taxnumber,a.email,a.idno,a.road,a.subdistrict,a.district,a.province,a.zipcode,a.delidno,
-        a.road,a.delsubdistrict,a.deldistrict,a.delprovince,a.delzipcode, a.active_status FROM `customer` as a     
+        a.road,a.delsubdistrict,a.deldistrict,a.delprovince,a.delzipcode, a.active_status FROM `customer` as a    
+        where 1 = 1    
         $cuscode
-        $cusename
+        $cusname
+        $tel
+        $province
         order by a.created_date desc";
-
         $stmt = $conn->prepare($sql);
         $stmt->execute();
         $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         http_response_code(200);
-        echo json_encode(array("data" => $res, "sql" => $sql));
+        echo json_encode(array("data" => $res));
     } catch (mysqli_sql_exception $e) {
         http_response_code(400);
         echo json_encode(array('status' => '0', 'message' => $e->getMessage()));
