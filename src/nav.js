@@ -20,11 +20,7 @@ let _nav = [
     title: "SYSTEM",
     type: "group",
   },
-  {
-    title: "ใบเสนอราคา",
-    icon: <FileTextFilled className="nav-ico" />,
-    to: "/quotation",
-  },
+ 
   {
     title: "DATA",
     type: "group",
@@ -70,6 +66,11 @@ let _nav = [
     title: "ใบเสร็จรับเงิน",
     icon: <TbReportMoney className="nav-ico" />,
     to: "/receipt",
+  },
+  {
+    title: "ใบเสนอราคา",
+    icon: <FileTextFilled className="nav-ico" />,
+    to: "/quotation",
   },
 ];
 
