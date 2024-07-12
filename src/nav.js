@@ -16,10 +16,10 @@ let _nav = [
     icon: <MdOutlineDashboard className="nav-ico" />,
     to: "/dashboard",
   },
-  {
-    title: "SYSTEM",
-    type: "group",
-  },
+  // {
+  //   title: "SYSTEM",
+  //   type: "group",
+  // },
  
   {
     title: "DATA",
@@ -56,21 +56,31 @@ let _nav = [
     title: "กำลังปรับปรุง",
     type: "group",
   },
-  {
-    title: "ใบขายสินค้า",
-    icon: <ReconciliationFilled className="nav-ico" />,
-    to: "/so",
-    // to: "/1",
-  },
-  {
-    title: "ใบเสร็จรับเงิน",
-    icon: <TbReportMoney className="nav-ico" />,
-    to: "/receipt",
-  },
+  // {
+  //   title: "ใบขายสินค้า",
+  //   icon: <ReconciliationFilled className="nav-ico" />,
+  //   to: "/so",
+  //   // to: "/1",
+  // },
+  // {
+  //   title: "ใบเสร็จรับเงิน",
+  //   icon: <TbReportMoney className="nav-ico" />,
+  //   to: "/receipt",
+  // },
   {
     title: "ใบเสนอราคา",
     icon: <FileTextFilled className="nav-ico" />,
     to: "/quotation",
+  },
+  {
+    title: "ใบสั่งซื้อสินค้า",
+    icon: <FileTextFilled className="nav-ico" />,
+    to: "/22",
+  },
+  {
+    title: "ใบรับสินค้า",
+    icon: <FileTextFilled className="nav-ico" />,
+    to: "/33",
   },
 ];
 
