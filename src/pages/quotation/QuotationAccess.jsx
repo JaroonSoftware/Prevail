@@ -23,39 +23,32 @@ const QuotationAccess = () => {
 
     const [accessData, setAccessData] = useState([]);
     const [activeSearch, setActiveSearch] = useState([]);
- 
-    let loading = false;
-    
+     
     const CollapseItemSearch = (
         <>  
         <Row gutter={[8,8]}> 
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='Quotation Code' name='qtcode'>
-                    <Input placeholder='Enter Quotation Code.' />
+                <Form.Item label='เลขที่ใบเสนอราคา' name='qtcode'>
+                <Input placeholder='Enter Quotation Code.' />
                 </Form.Item>                            
             </Col>
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='Quotation Date.' name='qtdate'>
-                    <RangePicker placeholder={['From Date', 'To date']} style={{width:'100%', height:40}}  />
+                <Form.Item label='วันที่ใบเสร็จรับเงิน' name='qtdate'>
+                    <RangePicker placeholder={['เริ่มวันที่', 'ถึงวันที่']} style={{width:'100%', height:40}}  />
                 </Form.Item>
             </Col> 
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='Request By.' name='created_by'>
+                <Form.Item label='จัดทำโดย' name='created_by'>
                     <Input placeholder='Enter First Name or Last Name.' />
                 </Form.Item>
             </Col>
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='Product' name='stname'>
-                    <Input placeholder='Enter Product Name.' />
-                </Form.Item>                            
-            </Col>
-            <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='Customer Code' name='cuscode'>
+                <Form.Item label='รหัสลูกค้า' name='cuscode'>
                     <Input placeholder='Enter Customer Code.' />
                 </Form.Item>                            
             </Col>
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='Customer Name' name='cusname'>
+                <Form.Item label='ชื่อลุูกค้า' name='cusname'>
                     <Input placeholder='Enter Customer Name.' />
                 </Form.Item>                            
             </Col>
@@ -65,15 +58,28 @@ const QuotationAccess = () => {
               {/* Ignore */}
           </Col>
           <Col xs={24} sm={8} md={12} lg={12} xl={12}>
-              <Flex justify='flex-end' gap={8}>
-                  <Button type="primary" size='small' className='bn-action' icon={<SearchOutlined />} onClick={() => handleSearch()}>
-                      Search
-                  </Button>
-                  <Button type="primary" size='small' className='bn-action' danger icon={<ClearOutlined />} onClick={() => handleClear()}>
-                      Clear
-                  </Button>
-              </Flex>
-          </Col>
+          <Flex justify="flex-end" gap={8}>
+            <Button
+              type="primary"
+              size="small"
+              className="bn-action"
+              danger
+              icon={<ClearOutlined />}
+              onClick={() => handleClear()}
+            >
+              Clear
+            </Button>
+            <Button
+              type="primary"
+              size="small"
+              className="bn-action"
+              icon={<SearchOutlined />}
+              onClick={() => handleSearch()}
+            >
+              Searchd
+            </Button>
+          </Flex>
+        </Col>
         </Row> 
         </>
     )
@@ -86,7 +92,7 @@ const QuotationAccess = () => {
         items={[
         { 
             key: '1', 
-            label: <><SearchOutlined /><span> Search</span></>,  
+            label: <><SearchOutlined /><span> ค้นหา</span></>,  
             children: <>{CollapseItemSearch}</>,
             showArrow: false, 
         } 
@@ -95,21 +101,28 @@ const QuotationAccess = () => {
         />         
     );
 
-    const handleSearch = (load = false) => {
-        loading = load;
-        form.validateFields().then( v => {
-            const data = {...v}; 
-            if( !!data?.quotdate ) {
-                const arr = data?.quotdate.map( m => dayjs(m).format("YYYY-MM-DD") )
-                const [quotdate_form, quotdate_to] = arr; 
+    const handleSearch = () => {
+        
+        form.validateFields().then((v) => {
+            const data = { ...v };
+            if( !!data?.qtdate ) {
+                const arr = data?.qtdate.map( m => dayjs(m).format("YYYY-MM-DD") )
+                const [qtdate_form, qtdate_to] = arr; 
                 //data.created_date = arr
-                Object.assign(data, {quotdate_form, quotdate_to});
+                Object.assign(data, {qtdate_form, qtdate_to});
             }
-
-            setTimeout( () => getData(data), 80);
-        }).catch( err => {
-            console.warn(err);
-        })
+            setTimeout( () => 
+                quotService.search(data, { ignoreLoading: Object.keys(data).length !== 0}).then( res => {
+                    const {data} = res.data;
+        
+                    setAccessData(data);
+                }).catch( err => {
+                    console.log(err);
+                    message.error("Request error!");
+                })
+                , 80);
+      
+          });
     }
 
     const handleClear = () => {
@@ -149,14 +162,7 @@ const QuotationAccess = () => {
     const column = accessColumn( {handleEdit, handleDelete, handlePrint });
 
     const getData = (data) => {
-        quotService.search(data, { ignoreLoading: loading}).then( res => {
-            const {data} = res.data;
-
-            setAccessData(data);
-        }).catch( err => {
-            console.log(err);
-            message.error("Request error!");
-        });
+        handleSearch()
     }
 
     const init = async () => {

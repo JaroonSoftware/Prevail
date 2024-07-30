@@ -1,0 +1,71 @@
+.purchaseorder-access .ant-table-tbody > tr > td, 
+.purchaseorder-access .ant-table-thead > tr > th {
+    white-space: break-spaces;
+    vertical-align: top;
+}
+
+.purchaseorder-access .ant-collapse>.ant-collapse-item:last-child, 
+.purchaseorder-access .ant-collapse>.ant-collapse-item:last-child>.ant-collapse-header {
+    border-radius: 12px;
+    background-color: #d9d9d9;
+    border: none;
+}
+
+.purchaseorder-access .ant-collapse .ant-collapse-header,
+.purchaseorder-access .ant-collapse .ant-collapse-item-active .ant-collapse-header { 
+    border-bottom: 0px solid #fff;
+    padding-inline-start: 12px;
+    background-color: #d9d9d9;
+}
+
+
+.purchaseorder-access .ant-collapse .ant-collapse-item-active .ant-collapse-content,
+.purchaseorder-access .ant-collapse .ant-collapse-content {
+    color: rgba(0, 0, 0, 0.88);
+    background-color: #d9d9d9;
+    border-top: 0px solid #d9d9d9;
+    padding-inline: 12px;
+}
+
+.ant-form .ant-form-item {
+    margin-bottom: 6px !important;
+}
+td.ant-table-cell>.ant-form-item {
+    margin-bottom: 0px !important;
+}
+span.ant-typography+.ant-form-item.\!m-0,
+h3.ant-typography+.ant-form-item.\!m-0, 
+h4.ant-typography+.ant-form-item.\!m-0 
+{
+    margin-bottom: 0px !important;
+}
+  
+.purchaseorder-manage .ant-table-wrapper .ant-table-thead >tr>th, 
+.purchaseorder-manage .ant-table-wrapper .ant-table-thead >tr>td {
+    vertical-align: middle;
+}
+
+.purchaseorder-manage .text-end .ant-input-number-input {
+    text-align: right;
+}
+
+/* .purchaseorder-manage .ant-drawer-content-wrapper {
+    transform: translateX(0px) !important;
+}  */
+
+@media screen and (max-width: 768px) {
+  .purchaseorder-manage .ant-drawer-content-wrapper {
+     width: 100vw !important; /* Adjust the width for smaller screens */
+   } 
+}
+
+@media screen and (min-width: 768px) {
+  .purchaseorder-manage .ant-drawer-content-wrapper {
+      width: 40vw !important; /* Set a fixed width for larger screens */
+    } 
+}
+
+
+.purchaseorder-manage-form .ant-descriptions-item-label{
+    min-width: 120px;
+}

@@ -1,0 +1,154 @@
+{
+  "currencies": [
+    {
+      "code": "USD",
+      "name": "United States Dollar",
+      "symbol": "$",
+      "countries": ["United States", "Ecuador", "El Salvador", "Zimbabwe"]
+    }, 
+    {
+      "code": "THB",
+      "name": "Thai Baht",
+      "symbol": "฿",
+      "countries": ["Thailand"]
+    },
+    {
+      "code": "EUR",
+      "name": "Euro",
+      "symbol": "€",
+      "countries": ["Eurozone", "Kosovo", "Montenegro"]
+    },
+    {
+      "code": "GBP",
+      "name": "British Pound Sterling",
+      "symbol": "£",
+      "countries": ["United Kingdom", "Guernsey", "Isle of Man", "Jersey"]
+    },
+    {
+      "code": "JPY",
+      "name": "Japanese Yen",
+      "symbol": "¥",
+      "countries": ["Japan"]
+    },
+    {
+      "code": "AUD",
+      "name": "Australian Dollar",
+      "symbol": "A$",
+      "countries": ["Australia", "Christmas Island", "Cocos (Keeling) Islands"]
+    },
+    {
+      "code": "CAD",
+      "name": "Canadian Dollar",
+      "symbol": "CA$",
+      "countries": ["Canada"]
+    },
+    {
+      "code": "CHF",
+      "name": "Swiss Franc",
+      "symbol": "Fr",
+      "countries": ["Switzerland", "Liechtenstein"]
+    },
+    {
+      "code": "CNY",
+      "name": "Chinese Yuan",
+      "symbol": "¥",
+      "countries": ["China", "Macau", "Hong Kong"]
+    },
+    {
+      "code": "INR",
+      "name": "Indian Rupee",
+      "symbol": "₹",
+      "countries": ["India", "Bhutan", "Nepal"]
+    },
+    {
+      "code": "RUB",
+      "name": "Russian Ruble",
+      "symbol": "₽",
+      "countries": ["Russia", "Abkhazia", "South Ossetia"]
+    },
+    {
+      "code": "SGD",
+      "name": "Singapore Dollar",
+      "symbol": "S$",
+      "countries": ["Singapore"]
+    },
+    {
+      "code": "MYR",
+      "name": "Malaysian Ringgit",
+      "symbol": "RM",
+      "countries": ["Malaysia"]
+    },
+    {
+      "code": "IDR",
+      "name": "Indonesian Rupiah",
+      "symbol": "Rp",
+      "countries": ["Indonesia"]
+    },
+    {
+      "code": "PHP",
+      "name": "Philippine Peso",
+      "symbol": "₱",
+      "countries": ["Philippines"]
+    },
+    {
+      "code": "VND",
+      "name": "Vietnamese Dong",
+      "symbol": "₫",
+      "countries": ["Vietnam"]
+    },
+    {
+      "code": "KHR",
+      "name": "Cambodian Riel",
+      "symbol": "៛",
+      "countries": ["Cambodia"]
+    },
+    {
+      "code": "MMK",
+      "name": "Myanmar Kyat",
+      "symbol": "K",
+      "countries": ["Myanmar (Burma)"]
+    },
+    {
+      "code": "LAK",
+      "name": "Laotian Kip",
+      "symbol": "₭",
+      "countries": ["Laos"]
+    },
+    {
+      "code": "BDT",
+      "name": "Bangladeshi Taka",
+      "symbol": "৳",
+      "countries": ["Bangladesh"]
+    },
+    {
+      "code": "NPR",
+      "name": "Nepalese Rupee",
+      "symbol": "₨",
+      "countries": ["Nepal"]
+    },
+    {
+      "code": "MVR",
+      "name": "Maldivian Rufiyaa",
+      "symbol": "ރ.",
+      "countries": ["Maldives"]
+    },
+    {
+      "code": "BTN",
+      "name": "Bhutanese Ngultrum",
+      "symbol": "Nu.",
+      "countries": ["Bhutan"]
+    },
+    {
+      "code": "MNT",
+      "name": "Mongolian Tugrik",
+      "symbol": "₮",
+      "countries": ["Mongolia"]
+    },
+    {
+      "code": "KZT",
+      "name": "Kazakhstani Tenge",
+      "symbol": "₸",
+      "countries": ["Kazakhstan"]
+    }
+  ]
+}
