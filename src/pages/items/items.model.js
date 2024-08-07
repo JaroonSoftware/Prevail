@@ -17,8 +17,15 @@ export const accessColumn = ({ handleEdit, handleDelete, handleView }) => [
     title: "ชื่อสินค้า",
     dataIndex: "stname",
     key: "stname",
-    width: "40%",
+    width: "25%",
     sorter: (a, b) => (a?.stname || "").localeCompare(b?.stname || ""),
+  },
+  {
+    title: "ชื่อสินค้าภาษาอังกฤษ",
+    dataIndex: "stnameEN",
+    key: "stnameEN",
+    width: "25%",
+    sorter: (a, b) => (a?.stnameEN || "").localeCompare(b?.stnameEN || ""),
   },
   {
     title: "ประเภทสินค้า",

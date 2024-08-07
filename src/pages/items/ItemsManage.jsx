@@ -126,6 +126,15 @@ const ItemsManage = () => {
           <Input placeholder="กรอกชื่อสินค้า" />
         </Form.Item>
       </Col>
+      <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={8}>
+        <Form.Item
+          label="ชื่อสินค้าภาษาอังกฤษ"
+          name="stnameEN"
+          rules={[{ required: true, message: "โปรดกรอกข้อมูล" }]}
+        >
+          <Input placeholder="ชื่อสินค้าภาษาอังกฤษ" />
+        </Form.Item>
+      </Col>
       <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={4}>
         <Form.Item label="หน่วยสินค้า" name="unit">
           <Select size="large" showSearch

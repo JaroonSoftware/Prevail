@@ -448,7 +448,8 @@ function GoodsReceiptManage() {
           <ButtonBack target={gotoFrom} />
         </Flex>
       </Col>
-      <Col span={12} style={{ paddingInline: 0 }}>
+      {config?.action === "create" ? (
+        <Col span={12} style={{ paddingInline: 0 }}>
         <Flex gap={4} justify="end">
           <Button
             className="bn-center justify-center"
@@ -463,6 +464,10 @@ function GoodsReceiptManage() {
           </Button>
         </Flex>
       </Col>
+      ) : (
+       <></> 
+      )}      
+      
     </Row>
   );
 

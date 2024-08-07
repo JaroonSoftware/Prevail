@@ -13,9 +13,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $stcode = !empty($stcode) ? "and a.stcode like '%$stcode%'" : "";
     $stname = !empty($stname) ? "and a.stname like '%$stname%'" : "";
+    $stnameEN = !empty($stnameEN) ? "and a.stnameEN like '%$stnameEN%'" : "";    
     $typecode = !empty($typecode) ? "and a.typecode like '%$typecode%'" : "";
     try {
-        $sql = "SELECT a.stcode, a.stname, b.typename, a.price ,a.active_status FROM `items` as a
+        $sql = "SELECT a.stcode, a.stname,a.stnameEN, b.typename, a.price ,a.active_status FROM `items` as a
         left outer join `itemtype` as b on (a.typecode=b.typecode)   
         where 1 = 1   
         $stcode

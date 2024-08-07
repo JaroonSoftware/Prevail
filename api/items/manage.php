@@ -18,8 +18,8 @@ try {
 
         // var_dump($_POST);
 
-        $sql = "INSERT INTO items (stcode, stname,typecode,unit,remark, price,created_by,created_date) 
-        values (:stcode,:stname,:typecode,:unit,:remark,:price,:action_user,:action_date)";
+        $sql = "INSERT INTO items (stcode, stname,stnameEN,typecode,unit,remark, price,created_by,created_date) 
+        values (:stcode,:stname,:stnameEN,:typecode,:unit,:remark,:price,:action_user,:action_date)";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
@@ -27,6 +27,7 @@ try {
 
         $stmt->bindParam(":stcode", $stcode, PDO::PARAM_STR);
         $stmt->bindParam(":stname", $stname, PDO::PARAM_STR);
+        $stmt->bindParam(":stnameEN", $stnameEN, PDO::PARAM_STR);        
         $stmt->bindParam(":typecode", $typecode, PDO::PARAM_STR);
         $stmt->bindParam(":unit", $unit, PDO::PARAM_STR);
         $stmt->bindParam(":remark", $remark, PDO::PARAM_STR);
@@ -53,6 +54,7 @@ try {
         update items 
         set
         stname = :stname,
+        stnameEN = :stnameEN,
         typecode = :typecode,
         unit = :unit,
         remark = :remark,
@@ -65,8 +67,8 @@ try {
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
-
         $stmt->bindParam(":stname", $stname, PDO::PARAM_STR);
+        $stmt->bindParam(":stnameEN", $stnameEN, PDO::PARAM_STR);
         $stmt->bindParam(":typecode", $typecode, PDO::PARAM_STR);
         $stmt->bindParam(":unit", $unit, PDO::PARAM_STR);
         $stmt->bindParam(":price", $price, PDO::PARAM_STR);

@@ -20,22 +20,7 @@ let _nav = [
   {
     title: "SELL",
     type: "group",
-  },
-  {
-    title: "ใบเสนอราคา",
-    icon: <FileTextFilled className="nav-ico" />, 
-    to: "/quotation",
-  },
-  {
-    title: "ใบวางบิล",
-    icon: <ReconciliationFilled className="nav-ico" />,
-    to: "/iv",    
-  },
-  {
-    title: "ใบเสร็จรับเงิน",
-    icon: <TbReportMoney className="nav-ico" />,
-    to: "/receipt",
-  },
+  },  
   {
     title: "ข้อมูลลูกค้า",
     icon: <RiTeamFill className="nav-ico" />,
@@ -88,6 +73,22 @@ let _nav = [
   {
     title: "กำลังปรับปรุง",
     type: "group",
+  },
+  {
+    title: "ใบเสนอราคา",
+    icon: <FileTextFilled className="nav-ico" />, 
+    to: "/quotation",    
+  },
+  {
+    title: "ใบวางบิล",
+    icon: <ReconciliationFilled className="nav-ico" />,
+    to: "/iv",    
+  },
+  {
+    title: "ใบเสร็จรับเงิน",
+    icon: <TbReportMoney className="nav-ico" />,
+    to: "/r",
+    // to: "/receipt",
   },
   {
     title: "ใบขายสินค้า",

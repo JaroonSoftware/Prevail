@@ -7,7 +7,7 @@ import { Tooltip } from "antd";
 import { TagPurchaseOrderStatus } from "../../components/badge-and-tag";
 import { EditableRow, EditableCell } from "../../components/table/TableEditAble";
 import dayjs from 'dayjs';
-import { EditOutlined, PrinterOutlined } from "@ant-design/icons";
+import { EditOutlined } from "@ant-design/icons";
 import { comma } from '../../utils/util';
 
 const calTotalDiscount = (rec) => {
@@ -105,13 +105,13 @@ export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}
             size="small"
           />
         </Popconfirm> */}
-        <Button
+        {/* <Button
           icon={<PrinterOutlined />} 
           className='bn-warning-outline'
           style={{ cursor: "pointer", display: 'flex', alignItems: 'center', justifyContent: 'center'}}
           onClick={(e) => handlePrint(record) }
           size="small"
-        />        
+        />         */}
         {/* <ButtonAttachFiles code={record.srcode} refs='Sample Request' showExpire={true} /> */}
       </Space>
     ),

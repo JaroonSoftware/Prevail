@@ -102,12 +102,12 @@ function QuoPrintPreview() {
             <div className='print-title flex pb-2'>
                 <div className='flex ps-3 grow-0' style={{width:600}}>
                     <Flex className='mb-1.5' vertical >
-                        <Typography.Text className='tx-title min-w-48 weight600' strong>บริษัท วีระ ไดรคัทติ้ง จำกัด</Typography.Text>
+                        {/* <Typography.Text className='tx-title min-w-48 weight600' strong>บริษัท วีระ ไดรคัทติ้ง จำกัด</Typography.Text>
                         <Typography.Text className='tx-info' strong>VEERA DRYCUTTING CO., LTD</Typography.Text> 
                         <Typography.Text className='tx-info' >102  หมู่  1  ถนนโพธิ์พระยาท่าเรือ  ตำบลบางนา</Typography.Text> 
                         <Typography.Text className='tx-info' >อำเภอมหาราช  จังหวัดพระนครศรีอยุธยา 13150</Typography.Text> 
                         <Typography.Text className='tx-info' >โทร. 081-948-3963 E-mail :gtopgta@gmail.com</Typography.Text> 
-                        <Typography.Text className='tx-info' >เลขประจำตัวผู้เสียภาษี     0145546001142 (สำนักงานใหญ่)</Typography.Text> 
+                        <Typography.Text className='tx-info' >เลขประจำตัวผู้เสียภาษี     0145546001142 (สำนักงานใหญ่)</Typography.Text>  */}
                     </Flex> 
                 </div>                 
                 <div className='flex ps-3 grow'>
