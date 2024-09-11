@@ -1,5 +1,5 @@
-import Items from "./Items";
-import ItemsAccess from "./ItemsAccess";
-import ItemsManage from "./ItemsManage";
+import Items from "./MyPage";
+import ItemsAccess from "./MyAccess";
+import ItemsManage from "./MyManage";
 
 export { Items, ItemsAccess, ItemsManage };

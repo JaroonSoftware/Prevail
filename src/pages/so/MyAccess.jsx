@@ -30,32 +30,27 @@ const MyAccess = () => {
         <>  
         <Row gutter={[8,8]}> 
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='Sale Order Code' name='socode'>
+                <Form.Item label='รหัสใบขายสินค้า' name='socode'>
                     <Input placeholder='Enter Sale Order Code.' />
                 </Form.Item>                            
             </Col>
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='Sale Order Date.' name='sodate'>
+                <Form.Item label='วันที่ใบขายสินค้า' name='sodate'>
                     <RangePicker placeholder={['From Date', 'To date']} style={{width:'100%', height:40}}  />
                 </Form.Item>
             </Col> 
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='Request By.' name='created_by'>
+                <Form.Item label='สร้างโดย' name='created_by'>
                     <Input placeholder='Enter First Name or Last Name.' />
                 </Form.Item>
             </Col>
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='Product' name='stname'>
-                    <Input placeholder='Enter Product Name.' />
-                </Form.Item>                            
-            </Col>
-            <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='Customer Code' name='cuscode'>
+                <Form.Item label='รหัสลูกค้า' name='cuscode'>
                     <Input placeholder='Enter Customer Code.' />
                 </Form.Item>                            
             </Col>
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='Customer Name' name='cusname'>
+                <Form.Item label='ชื่อลูกค้า' name='cusname'>
                     <Input placeholder='Enter Customer Name.' />
                 </Form.Item>                            
             </Col>

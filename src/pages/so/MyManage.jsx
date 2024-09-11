@@ -178,7 +178,7 @@ function QuotationManage() {
   };
 
   const handleItemsChoosed = (value) => {
-    console.log(value)
+    console.log(value);
     setListDetail(value);
     handleSummaryPrice();
   };
@@ -271,7 +271,9 @@ function QuotationManage() {
   };
 
   /** setting column table */
-  const prodcolumns = columnsParametersEditable(handleEditCell,unitOption, { handleRemove});
+  const prodcolumns = columnsParametersEditable(handleEditCell, unitOption, {
+    handleRemove,
+  });
 
   const SectionCustomer = (
     <>
@@ -281,7 +283,7 @@ function QuotationManage() {
             <Form.Item
               name="cuscode"
               htmlFor="cuscode-1"
-              label="Customer Code"
+              label="รหัสลูกค้า"
               className="!mb-1"
               rules={[{ required: true, message: "Missing Loading type" }]}
             >
@@ -303,31 +305,27 @@ function QuotationManage() {
             </Form.Item>
           </Col>
           <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
-            <Form.Item name="cusname" label="Customer Name" className="!mb-1">
-              <Input placeholder="Customer Name." readOnly />
+            <Form.Item name="cusname" label="ชื่อลูกค้า" className="!mb-1">
+              <Input placeholder="ชื่อลูกค้า" readOnly />
             </Form.Item>
           </Col>
           <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-            <Form.Item
-              name="address"
-              label="Customer Address"
-              className="!mb-1"
-            >
-              <Input placeholder="Customer Address." readOnly />
+            <Form.Item name="address" label="ที่อยู่ลูกค้า" className="!mb-1">
+              <Input placeholder="ที่อยู่ลูกค้า" readOnly />
             </Form.Item>
           </Col>
           <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
             <Form.Item
               name="contact"
-              label="Customer Contact"
+              label="ช่องทางการติดต่อ"
               className="!mb-1"
             >
-              <Input placeholder="Customer Contact." readOnly />
+              <Input placeholder="ช่องทางการติดต่อ" readOnly />
             </Form.Item>
           </Col>
           <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
-            <Form.Item name="tel" label="Customer Tel" className="!mb-1">
-              <Input placeholder="Customer Tel." readOnly />
+            <Form.Item name="tel" label="เบอร์โทร" className="!mb-1">
+              <Input placeholder="เบอร์โทร" readOnly />
             </Form.Item>
           </Col>
         </Row>
@@ -340,7 +338,7 @@ function QuotationManage() {
       <Col span={12} className="p-0">
         <Flex gap={4} justify="start" align="center">
           <Typography.Title className="m-0 !text-zinc-800" level={3}>
-            List of Quotation
+            รายการสินค้า
           </Typography.Title>
         </Flex>
       </Col>
@@ -569,7 +567,7 @@ function QuotationManage() {
                   <Row className="m-0 py-3 sm:py-0" gutter={[12, 12]}>
                     <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
                       <Typography.Title level={3} className="m-0">
-                      รหัสใบขายสินค้า : {quotCode}
+                        รหัสใบขายสินค้า : {quotCode}
                       </Typography.Title>
                     </Col>
                     <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
@@ -579,7 +577,7 @@ function QuotationManage() {
                         className="justify-start sm:justify-end"
                       >
                         <Typography.Title level={3} className="m-0">
-                        วันที่ใบขายสินค้า :{" "}
+                          วันที่ใบขายสินค้า :{" "}
                         </Typography.Title>
                         <Form.Item name="qtdate" className="!m-0">
                           <DatePicker
@@ -597,25 +595,23 @@ function QuotationManage() {
               <Row className="m-0" gutter={[12, 12]}>
                 <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
                   <Divider orientation="left" className="!mb-3 !mt-1">
-                    {" "}
-                    Customer{" "}
+                    ลูกค้า
                   </Divider>
                   <Card style={cardStyle}>{SectionCustomer}</Card>
                 </Col>
                 <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+                  <Divider orientation="left" className="!mb-3 !mt-1">
+                    เพิ่มเติม
+                  </Divider>
+                  <Card style={cardStyle}>{SectionOther}</Card>
+                </Col>
+                <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
                   <Divider orientation="left" className="!my-0">
-                    Quotations Product
+                    รายการสินค้าใบขายสินค้า
                   </Divider>
                   <Card style={{ backgroundColor: "#f0f0f0" }}>
                     {SectionProduct}
                   </Card>
-                </Col>
-                <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-                  <Divider orientation="left" className="!mb-3 !mt-1">
-                    {" "}
-                    Quotations Other{" "}
-                  </Divider>
-                  <Card style={cardStyle}>{SectionOther}</Card>
                 </Col>
               </Row>
             </Card>

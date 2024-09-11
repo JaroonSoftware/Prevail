@@ -1,7 +1,4 @@
 @import './dashboard/dashboard.css';
-@import './users/users.css';
-
-
 
 .layout-content .ant-table-title{
     background-color: #ababab59;
