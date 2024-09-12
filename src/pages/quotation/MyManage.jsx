@@ -22,7 +22,7 @@ import {
   quotationForm,
   columnsParametersEditable,
   componentsEditable,
-} from "./quotation.model";
+} from "./model";
 import { ModalItems } from "../../components/modal/items/modal-items";
 import dayjs from "dayjs";
 import { delay, comma } from "../../utils/util";

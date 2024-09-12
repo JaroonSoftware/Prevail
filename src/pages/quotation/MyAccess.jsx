@@ -6,7 +6,7 @@ import { Card } from 'antd';
 import { Collapse, Form, Flex, Row, Col, Space } from 'antd';
 import { Input, Button, Table, message, DatePicker, Typography } from 'antd';
 import { SearchOutlined, ClearOutlined, FileAddOutlined } from '@ant-design/icons'; 
-import { accessColumn } from "./quotation.model";
+import { accessColumn } from "./model";
 
 import dayjs from 'dayjs';
 import QuotationService from '../../service/Quotation.service';
