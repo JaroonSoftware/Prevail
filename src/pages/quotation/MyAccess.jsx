@@ -29,7 +29,7 @@ const QuotationAccess = () => {
         <Row gutter={[8,8]}> 
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
                 <Form.Item label='เลขที่ใบเสนอราคา' name='qtcode'>
-                <Input placeholder='Enter Quotation Code.' />
+                <Input placeholder='กรอกเลขที่ใบรับสินค้า' />
                 </Form.Item>                            
             </Col>
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
@@ -39,17 +39,17 @@ const QuotationAccess = () => {
             </Col> 
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
                 <Form.Item label='จัดทำโดย' name='created_by'>
-                    <Input placeholder='Enter First Name or Last Name.' />
+                    <Input placeholder='กรอก ชื่อ-นามสกุล ผู้จัดทำ' />
                 </Form.Item>
             </Col>
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
                 <Form.Item label='รหัสลูกค้า' name='cuscode'>
-                    <Input placeholder='Enter Customer Code.' />
+                    <Input placeholder='กรอกรหัสลูกค้า' />
                 </Form.Item>                            
             </Col>
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
                 <Form.Item label='ชื่อลุูกค้า' name='cusname'>
-                    <Input placeholder='Enter Customer Name.' />
+                    <Input placeholder='กรอกชื่อลูกค้า' />
                 </Form.Item>                            
             </Col>
         </Row>
@@ -67,7 +67,7 @@ const QuotationAccess = () => {
               icon={<ClearOutlined />}
               onClick={() => handleClear()}
             >
-              Clear
+              ล้าง
             </Button>
             <Button
               type="primary"
@@ -76,7 +76,7 @@ const QuotationAccess = () => {
               icon={<SearchOutlined />}
               onClick={() => handleSearch()}
             >
-              Searchd
+              ค้นหา
             </Button>
           </Flex>
         </Col>

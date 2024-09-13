@@ -23,7 +23,8 @@ import {
   columnsParametersEditable,
   componentsEditable,
 } from "./model";
-import { ModalItems } from "../../components/modal/items/modal-items";
+
+import { ModalItems } from "../../components/modal/itemsbyCL/modal-items";
 import dayjs from "dayjs";
 import { delay, comma } from "../../utils/util";
 import { ButtonBack } from "../../components/button";
@@ -36,7 +37,7 @@ const opservice = OptionService();
 const qtservice = QuotationService();
 
 const gotoFrom = "/quotation";
-const dateFormat = 'DD/MM/YYYY';
+const dateFormat = "DD/MM/YYYY";
 
 function QuotationManage() {
   const navigate = useNavigate();
@@ -318,24 +319,24 @@ function QuotationManage() {
           </Col>
           <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
             <Form.Item name="cusname" label="ชื่อลูกค้า" className="!mb-1">
-              <Input placeholder="Customer Name." readOnly />
+              <Input placeholder="ชื่อลูกค้า" readOnly />
             </Form.Item>
           </Col>
           <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
             <Form.Item name="address" label="ที่อยู่" className="!mb-1">
-              <Input placeholder="Customer Address." readOnly />
+              <Input placeholder="ที่อยู่ลูกค้า" readOnly />
             </Form.Item>
           </Col>
           <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
             <Form.Item name="contact" label="ผู้ติดต่อ" className="!mb-1">
-              <Input placeholder="Customer Contact." readOnly />
+              <Input placeholder="ช่องทางการติดต่อลูกค้า" readOnly />
             </Form.Item>
           </Col>
           <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
             <Form.Item name="tel" label="เบอร์โทรลุกค้า" className="!mb-1">
-              <Input placeholder="Customer Tel." readOnly />
+              <Input placeholder="เบอร์โทรลุกค้า" readOnly />
             </Form.Item>
-          </Col>          
+          </Col>
         </Row>
       </Space>
     </>
@@ -359,7 +360,7 @@ function QuotationManage() {
               setOpenProduct(true);
             }}
           >
-            Choose Product
+           เลือกสินค้า
           </Button>
         </Flex>
       </Col>
@@ -492,7 +493,7 @@ function QuotationManage() {
         <Row gutter={[8, 8]} className="m-0">
           <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
             <Form.Item className="" name="remark" label="หมายเหตุ">
-              <Input.TextArea placeholder="Enter Remark" rows={4} />
+              <Input.TextArea placeholder="กรอกข้อมูลเพิ่มเติม" rows={4} />
             </Form.Item>
           </Col>
         </Row>
@@ -537,7 +538,7 @@ function QuotationManage() {
               }}
               className="bn-center !bg-orange-400 !text-white !border-transparent"
             >
-              PRINT QUOTATION{" "}
+              PRINT QUOTATION
             </Button>
           )}
         </Flex>
@@ -619,8 +620,7 @@ function QuotationManage() {
               <Row className="m-0" gutter={[12, 12]}>
                 <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
                   <Divider orientation="left" className="!mb-3 !mt-1">
-                    {" "}
-                    ลูกค้า{" "}
+                    ลูกค้า
                   </Divider>
                   <Card style={cardStyle}>{SectionCustomer}</Card>
                 </Col>
@@ -634,8 +634,7 @@ function QuotationManage() {
                 </Col>
                 <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
                   <Divider orientation="left" className="!mb-3 !mt-1">
-                    {" "}
-                    ข้อมูลเพิ่มเติม{" "}
+                    ข้อมูลเพิ่มเติม
                   </Divider>
                   <Card style={cardStyle}>{SectionOther}</Card>
                 </Col>

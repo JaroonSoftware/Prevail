@@ -7,6 +7,7 @@ import { Itemtype, ItemtypeAccess, ItemtypeManage } from "../pages/itemtype";
 import { Unit, UnitAccess, UnitManage } from "../pages/unit";
 import { Customer, CustomerAccess, CustomerManage } from "../pages/customers";
 import { Supplier, SupplierAccess, SupplierManage } from "../pages/supplier";
+import { Catalog, CatalogAccess ,CatalogManage } from "../pages/catalog";
 
 export const DataRouter = (
   <>
@@ -38,6 +39,11 @@ export const DataRouter = (
     <Route path="/supplier/" exact element={<Supplier />}>
       <Route index element={<SupplierAccess />} />
       <Route path="manage/:action" element={<SupplierManage />} />
+    </Route>
+    
+    <Route path="/catalog/" exact element={<Catalog />}>
+      <Route index element={<CatalogAccess />} />
+      <Route path="manage/:action" element={<CatalogManage />} />
     </Route>
   </>
 );
