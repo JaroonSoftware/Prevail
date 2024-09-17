@@ -5,7 +5,7 @@ import "../../assets/styles/banks.css"
 import { Tooltip } from "antd";
 // import { EditOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons"; 
 import { EditableRow, EditableCell } from "../../components/table/TableEditAble";
-import { TagQuotationStatus } from "../../components/badge-and-tag/";
+import { TagQuotationStatus } from "../../components/badge-and-tag";
 
 import dayjs from 'dayjs';
 import { EditOutlined } from "@ant-design/icons";

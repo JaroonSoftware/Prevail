@@ -4,7 +4,6 @@ import { Modal, Card, Table, message, Form, Spin } from "antd";
 import { Row, Col, Space } from "antd";
 import { Input, Button } from "antd";
 import { SearchOutlined } from "@ant-design/icons"
-
 import { columns } from "./modal-items.model"; 
 // import ItemService from "../../service/ItemService";
 import OptionService from "../../../service/Options.service"
@@ -77,12 +76,13 @@ export default function ModalItems({show, close, values, selected}) {
         selectedRowKeys : itemsRowKeySelect,
         type: "checkbox",
         fixed: true,
-        hideSelectAll:true,
-        onChange: (selectedRowKeys, selectedRows) => { 
-            // setItemsRowKeySelect([...new Set([...selectedRowKeys, ...itemsRowKeySelect])]);
-            // setItemsList(selectedRows);
-            //setItemsRowKeySelect(selectedRowKeys);
-        },
+        onChange: (selectedRowKeys, selectedRows) => {
+            setItemsRowKeySelect([
+              ...new Set([...selectedRowKeys, ...itemsRowKeySelect]),
+            ]);
+            setItemsList(selectedRows);
+            setItemsRowKeySelect(selectedRowKeys);
+          },
         getCheckboxProps: (record) => { 
             return {
                 disabled: handleCheckDuplicate(record.stcode), 

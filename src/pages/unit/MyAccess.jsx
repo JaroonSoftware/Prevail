@@ -6,7 +6,7 @@ import { Collapse, Form, Flex, Row, Col, Space } from "antd";
 import { Input, Button, Table, Typography } from "antd";
 import { SearchOutlined, ClearOutlined } from "@ant-design/icons";
 import { MdOutlineLibraryAdd } from "react-icons/md";
-import { accessColumn } from "./unit.model";
+import { accessColumn } from "./model";
 import Unitservice from "../../service/Unit.service";
 
 const unitservice = Unitservice();

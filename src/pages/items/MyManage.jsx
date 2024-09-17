@@ -4,7 +4,7 @@ import { Form, Input, Button, Flex, message, Badge, Card, Select } from "antd";
 import { Row, Col, Space } from "antd";
 import { SaveFilled } from "@ant-design/icons";
 import { ButtonBack } from "../../components/button";
-import { Items } from "./items.model";
+import { Items } from "./model";
 import { useLocation, useNavigate } from "react-router";
 import { delay } from "../../utils/util";
 // import OptionService from '../../service/Options.service';

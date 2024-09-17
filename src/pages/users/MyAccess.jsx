@@ -2,16 +2,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, message } from "antd";
-import { Collapse, Form, Flex, Row, Col, Space, Select } from "antd";
+import { Collapse, Form, Flex, Row, Col, Space } from "antd";
 import { Input, Button, Table, Typography } from "antd";
 import { SearchOutlined, ClearOutlined } from "@ant-design/icons";
-import { MdOutlineLibraryAdd } from "react-icons/md";
-import { accessColumn } from "./items.model";
-import OptionService from "../../service/Options.service";
-// import dayjs from 'dayjs';
-import Itemservice from "../../service/Items.Service";
-const opService = OptionService();
-const itemservice = Itemservice();
+import { MdGroupAdd } from "react-icons/md";
+import { accessColumn } from "./model";
+import UserService from "../../service/User.service";
+
+const userService = UserService();
 const mngConfig = {
   title: "",
   textOk: null,
@@ -19,26 +17,26 @@ const mngConfig = {
   action: "create",
   code: null,
 };
-const ItemsAccess = () => {
+const UsersAccess = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [accessData, setAccessData] = useState([]);
   const [activeSearch, setActiveSearch] = useState([]);
-  const [optionType, setOptionType] = useState([]);
+
   const handleSearch = () => {
     form.validateFields().then((v) => {
       const data = { ...v };
-      itemservice
-        .search(data, { ignoreLoading: Object.keys(data).length !== 0 })
-        .then((res) => {
-          const { data } = res.data;
+      userService
+      .search(data, { ignoreLoading: Object.keys(data).length !== 0 })
+      .then((res) => {
+        const { data } = res.data;
 
-          setAccessData(data);
-        })
-        .catch((err) => {
-          console.log(err);
-          message.error("Request error!");
-        });
+        setAccessData(data);
+      })
+      .catch((err) => {
+        console.log(err);
+        message.error("Request error!");
+      });
     });
   };
 
@@ -53,8 +51,9 @@ const ItemsAccess = () => {
       state: {
         config: {
           ...mngConfig,
-          title: "เพิ่มสินค้า",
+          title: "เพิ่มผู้ใช้",
           action: "create",
+          acname: "เพิ่มผู้ใช้ใหม่",
         },
       },
       replace: true,
@@ -67,9 +66,10 @@ const ItemsAccess = () => {
       state: {
         config: {
           ...mngConfig,
-          title: "แก้ไขข้อมูลสินค้า",
+          title: "แก้ไขผู้ใช้",
           action: "edit",
-          code: data?.stcode,
+          acname: "แก้ใขข้อมูลผู้ใช้",
+          code: data?.code,
         },
       },
       replace: true,
@@ -80,7 +80,6 @@ const ItemsAccess = () => {
     const newWindow = window.open("", "_blank");
     newWindow.location.href = `/dln-print/${data.dncode}`;
   };
-
   const handleDelete = (data) => {
     // startLoading();
     // ctmService.deleted(data?.dncode).then( _ => {
@@ -94,18 +93,21 @@ const ItemsAccess = () => {
   };
 
   useEffect(() => {
-    GetItemsType();
-    getData();
-   
+    getData({});
   }, []);
-  const GetItemsType = () => {
-    opService.optionsItemstype().then((res) => {
-      let { data } = res.data;
-      setOptionType(data);
-    });
-  };
-  const getData = () => {
-    handleSearch();
+
+  const getData = (data) => {
+    userService
+      .search(data)
+      .then((res) => {
+        const { data } = res.data;
+
+        setAccessData(data);
+      })
+      .catch((err) => {
+        console.log(err);
+        message.error("Request error!");
+      });
   };
   const FormSearch = (
     <Collapse
@@ -123,40 +125,40 @@ const ItemsAccess = () => {
             <>
               <Form form={form} layout="vertical" autoComplete="off">
                 <Row gutter={[8, 8]}>
-                  <Col xs={24} sm={8} md={8} lg={8} xl={8}>
+                  <Col xs={24} sm={8} md={8} lg={8} xl={6}>
                     <Form.Item
-                      label="รหัสสินค้า"
-                      name="stcode"
+                      label="Username"
+                      name="username"
                       onChange={handleSearch}
                     >
-                      <Input placeholder="กรอกรหัสสินค้า" />
+                      <Input placeholder="ใส่ Username" />
                     </Form.Item>
                   </Col>
-                  <Col xs={24} sm={8} md={8} lg={8} xl={8}>
+                  <Col xs={24} sm={8} md={8} lg={8} xl={6}>
                     <Form.Item
-                      label="ชื่อสินค้า"
-                      name="stname"
+                      label="ชื่อ"
+                      name="firstname"
                       onChange={handleSearch}
                     >
-                      <Input placeholder="กรอกชื่อสินค้า" />
+                      <Input placeholder="ใส่ชื่อจริง" />
                     </Form.Item>
                   </Col>
-                  <Col xs={24} sm={8} md={8} lg={8} xl={8}>
+                  <Col xs={24} sm={8} md={8} lg={8} xl={6}>
                     <Form.Item
-                      label="ประเภทสินค้า"
-                      name="typecode"
+                      label="นามสกุล"
+                      name="lastname"
                       onChange={handleSearch}
                     >
-                      <Select
-                        size="large"
-                        showSearch
-                        placeholder="เลือกประเภทสินค้า"
-                        onChange={handleSearch}
-                        options={optionType.map((item) => ({
-                          value: item.typecode,
-                          label: item.typename,
-                        }))}
-                      />
+                      <Input placeholder="ใส่นามสกุล" />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} sm={8} md={8} lg={8} xl={6}>
+                    <Form.Item
+                      label="เบอร์โทร"
+                      name="tel"
+                      onChange={handleSearch}
+                    >
+                      <Input placeholder="ใส่เบอร์โทร" />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -197,13 +199,12 @@ const ItemsAccess = () => {
     />
   );
   const column = accessColumn({ handleEdit, handleDelete, handleView });
-
   const TitleTable = (
     <Flex className="width-100" align="center">
       <Col span={12} className="p-0">
         <Flex gap={4} justify="start" align="center">
           <Typography.Title className="m-0 !text-zinc-800" level={3}>
-            รายการสินค้า
+            รายชื่อผู้ใช้
           </Typography.Title>
         </Flex>
       </Col>
@@ -212,19 +213,19 @@ const ItemsAccess = () => {
           <Button
             size="small"
             className="bn-action bn-center bn-primary-outline justify-center"
-            icon={<MdOutlineLibraryAdd style={{ fontSize: ".9rem" }} />}
+            icon={<MdGroupAdd style={{ fontSize: ".9rem" }} />}
             onClick={() => {
               hangleAdd();
             }}
           >
-            เพิ่มสินค้า
+            เพิ่มผู้ใช้
           </Button>
         </Flex>
       </Col>
     </Flex>
   );
   return (
-    <div className="item-access">
+    <div className="User-access">
       <Space
         direction="vertical"
         size="middle"
@@ -236,11 +237,13 @@ const ItemsAccess = () => {
           <Row gutter={[8, 8]} className="m-0">
             <Col xs={24} sm={24} md={24} lg={24} xl={24}>
               <Table
+             
                 title={() => TitleTable}
                 size="small"
-                rowKey="stcode"
+                rowKey="code"
                 columns={column}
                 dataSource={accessData}
+                
               />
             </Col>
           </Row>
@@ -250,4 +253,4 @@ const ItemsAccess = () => {
   );
 };
 
-export default ItemsAccess;
+export default UsersAccess;

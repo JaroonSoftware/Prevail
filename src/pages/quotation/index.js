@@ -1,6 +1,6 @@
-import Quotation from "./Quotation";
-import QuotationAccess from "./QuotationAccess";
-import QuotationManage from "./QuotationManage";
+import Quotation from "./MyPage";
+import QuotationAccess from "./MyAccess";
+import QuotationManage from "./MyManage";
 
 export { 
     Quotation,

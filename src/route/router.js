@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 // import { BrowserRouter, Routes, Route } from "react-router-dom";
 // import Home from "../pages/Home";
-import Profile from "../pages/Profile";
 import Login from "../pages/Login";
 import PageNotFound from "../pages/404";
 import PrivateRoute from "../components/auth/PrivateRoutes";
@@ -22,7 +21,6 @@ const Router = () => {
           element={<PrivateRoute allowdRole={[ROLES.ADMIN, ROLES.USER]} />}
         >
           <Route path="/dashboard" element={<DashBoard />} />
-          <Route path="/profile" element={<Profile />} />
         </Route>
 
         <Route element={<PrivateRoute allowdRole={[ROLES.ADMIN]} />}>

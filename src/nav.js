@@ -1,4 +1,4 @@
-import { FileTextFilled, ReconciliationFilled,FileDoneOutlined } from "@ant-design/icons";
+import { FileTextFilled, ReconciliationFilled,FileDoneOutlined, AppstoreAddOutlined } from "@ant-design/icons";
 import { TbReportMoney } from "react-icons/tb";
 import { RiTeamFill } from "react-icons/ri";
 import { MdOutlineDashboard } from "react-icons/md";
@@ -53,6 +53,11 @@ let _nav = [
     title: "ข้อมูลสินค้า",
     icon: <GiDatabase className="nav-ico" />,
     to: "/items",
+  },
+  {
+    title: "แคตตาล็อก",
+    icon: <AppstoreAddOutlined className="nav-ico" />,
+    to: "/catalog",
   },
   {
     title: "ประเภทสินค้า",

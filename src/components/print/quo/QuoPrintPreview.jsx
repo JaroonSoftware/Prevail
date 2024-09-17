@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
 
 import "./quo.css";
-import logo from "../../../assets/images/logo_nsf.png";
+import logo from "../../../assets/images/logo.png";
  
 import { Button, Flex,  Table, Typography, message } from 'antd';
 import { column} from './quo.model';

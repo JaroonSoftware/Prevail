@@ -1,5 +1,5 @@
-import Users from "./Users";
-import UsersAccess from "./UsersAccess";
-import UsersManage from "./UsersManage";
+import Users from "./MyPage";
+import UsersAccess from "./MyAccess";
+import UsersManage from "./MyManage";
 
 export { Users, UsersAccess, UsersManage };
