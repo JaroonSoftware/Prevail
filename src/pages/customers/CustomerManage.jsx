@@ -6,7 +6,7 @@ import {
   Button,
   Flex,
   message,
-  Radio,
+  Badge,
   Select,
   Divider,
   Card,
@@ -17,13 +17,13 @@ import { ButtonBack } from "../../components/button";
 import { useLocation, useNavigate } from "react-router";
 import { delay } from "../../utils/util";
 import { ModalResetPassword } from "../../components/modal/users/modal-reset";
-
+import OptionService from "../../service/Options.service";
 import Customerservice from "../../service/Customer.Service";
 import { CreateInput } from "thai-address-autocomplete-react";
 const InputThaiAddress = CreateInput();
 
 const customerservice = Customerservice();
-// const opservice = OptionService();
+const opService = OptionService();
 const from = "/customers";
 const ItemsManage = () => {
   const navigate = useNavigate();
@@ -32,7 +32,7 @@ const ItemsManage = () => {
   const [openResetModal, setOpenResetModal] = useState(false);
   const { config } = location.state || { config: null };
   const [form] = Form.useForm();
-
+  const [optionsCatalog, setoptionsCatalog] = useState([]);
   const [formDetail, setFormDetail] = useState({});
 
   const init = async () => {
@@ -40,7 +40,7 @@ const ItemsManage = () => {
       .getcode()
       .catch(() => message.error("Initail failed"));
 
-    const { data: cuscode } = cuscodeRes.data;
+    const { data: cuscode } = cuscodeRes;
     const initForm = { ...formDetail, cuscode };
     setFormDetail((state) => ({ ...state, ...initForm }));
     form.setFieldsValue(initForm);
@@ -48,7 +48,7 @@ const ItemsManage = () => {
 
   useEffect(() => {
     // setLoading(true);
-
+    GetCatalog();
     if (config?.action !== "create") {
       getsupData(config.code);
     } else {
@@ -59,14 +59,24 @@ const ItemsManage = () => {
     }
   }, []);
 
+  const GetCatalog = () => {
+    opService.optionsCatalog().then((res) => {
+      let { data } = res.data;
+      setoptionsCatalog(data);
+    });
+  };
   const getsupData = (v) => {
     customerservice
       .get(v)
       .then(async (res) => {
-        const { data } = res.data;
+        const { header, detail } = res.data;
 
+        const tmp = detail.map((item) => {
+          return item.catalog_code;
+        });
         const init = {
-          ...data,
+          ...header,
+          catalog_code: tmp,
         };
 
         setFormDetail(init);
@@ -192,30 +202,57 @@ const ItemsManage = () => {
             <Input placeholder="กรอกชื่อลูกค้า" />
           </Form.Item>
         </Col>
-        <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={6}>
+        <Col xs={24} sm={24} md={24} lg={24} xl={12} xxl={8}>
           <Form.Item label="เลขที่ผู้เสียภาษี" name="taxnumber">
             <Input placeholder="กรอกเลขที่ผู้เสียภาษี" />
+          </Form.Item>
+        </Col>     
+        <Col xs={24} sm={24} md={24} lg={24} xl={16}>
+          <Form.Item label="แคตตาล๊อก" name="catalog_code">
+            <Select
+              size="large"
+              showSearch
+              mode="multiple"
+              allowClear
+              filterOption={filterOption}
+              placeholder="เลือกแคตตาล๊อก"
+              options={optionsCatalog.map((item) => ({
+                value: item.catalog_code,
+                label: item.catalog_name,
+              }))}
+            />
           </Form.Item>
         </Col>
         <Col
           xs={24}
           sm={24}
           md={12}
-          lg={6}
-          xl={6}
+          lg={4}
+          xl={4}
           xxl={4}
           style={
-            config === "edit" ? { display: "inline" } : { display: "none" }
+            config.action === "edit"
+              ? { display: "inline" }
+              : { display: "none" }
           }
         >
           <Form.Item label="สถานะ" name="active_status">
-            <Radio.Group buttonStyle="solid">
-              <Radio.Button value="Y">Enable</Radio.Button>
-              <Radio.Button value="N">Disable</Radio.Button>
-            </Radio.Group>
+            <Select
+              size="large"
+              options={[
+                {
+                  value: "Y",
+                  label: <Badge status="success" text="เปิดการใช้งาน" />,
+                },
+                {
+                  value: "N",
+                  label: <Badge status="error" text="ปิดการใช้งาน" />,
+                },
+              ]}
+            />
           </Form.Item>
         </Col>
-      </Row>
+      </Row>      
     </>
   );
 

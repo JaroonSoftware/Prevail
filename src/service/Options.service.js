@@ -6,6 +6,7 @@ const API_URL = {
   OPTION_QUOTATION: `/common/options-quotation.php`,
   OPTION_ITEMSTYPE: `/common/options-itemstype.php`,
   OPTION_UNIT: `/common/options-unit.php`,
+  OPTION_CATALOG: `/common/options-catalog.php`,
 };
  
 
@@ -16,7 +17,7 @@ const OptionService = () => {
   const optionsQuotation = () => api.get(`${API_URL.OPTION_QUOTATION}`, { ignoreLoading : true });
   const optionsItemstype = () => api.get(`${API_URL.OPTION_ITEMSTYPE}`, { ignoreLoading : true });
   const optionsUnit = () => api.get(`${API_URL.OPTION_UNIT}`, { ignoreLoading : true });
-
+  const optionsCatalog = () => api.get(`${API_URL.OPTION_CATALOG}`, { ignoreLoading : true });  
   return {
     optionsItems,
     optionsSupplier,
@@ -24,6 +25,7 @@ const OptionService = () => {
     optionsQuotation,
     optionsItemstype,
     optionsUnit,
+    optionsCatalog,
   };
 };
 

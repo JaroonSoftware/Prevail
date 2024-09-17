@@ -58,6 +58,24 @@ try {
             die;
         }
 
+        $sql = "insert into catalog_link (catalog_code,cuscode, created_by, created_date)
+        values (:catalog_code,:cuscode,:action_user,:action_date)";
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
+
+        // $detail = $detail;  
+        foreach ($catalog_code as $ind => $val) {
+            // $val = (object)$val;
+            $stmt->bindParam(":catalog_code", $val, PDO::PARAM_STR);
+            $stmt->bindParam(":cuscode", $cuscode, PDO::PARAM_STR);
+            $stmt->bindParam(":action_user", $action_user, PDO::PARAM_STR); 
+            $stmt->bindParam(":action_date", $action_date, PDO::PARAM_STR);  
+            if (!$stmt->execute()) {
+                $error = $conn->errorInfo();
+                throw new PDOException("Insert data error => $error");
+            }
+        }
+
         $conn->commit();
         $strSQL = "UPDATE cuscode SET ";
         $strSQL .= " number= number+1 ";
@@ -146,6 +164,31 @@ try {
             die;
         }
 
+        $sql = "delete from catalog_link where cuscode = :cuscode";
+        $stmt = $conn->prepare($sql);
+        if (!$stmt->execute(['cuscode' => $cuscode])) {
+            $error = $conn->errorInfo();
+            throw new PDOException("Remove data error => $error");
+        }
+
+        $sql = "insert into catalog_link (catalog_code,cuscode, created_by, created_date)
+        values (:catalog_code,:cuscode,:action_user,:action_date)";
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
+
+        // $detail = $detail;  
+        foreach ($catalog_code as $ind => $val) {
+            // $val = (object)$val;            
+            $stmt->bindParam(":catalog_code", $val, PDO::PARAM_STR);
+            $stmt->bindParam(":cuscode", $cuscode, PDO::PARAM_STR);
+            $stmt->bindParam(":action_user", $action_user, PDO::PARAM_STR); 
+            $stmt->bindParam(":action_date", $action_date, PDO::PARAM_STR);  
+            if (!$stmt->execute()) {
+                $error = $conn->errorInfo();
+                throw new PDOException("Insert data error => $error");
+            }
+        }
+
         $conn->commit();
         http_response_code(200);
         echo json_encode(array("data" => array("id" => $_PUT)));
@@ -161,11 +204,23 @@ try {
             http_response_code(404);
             throw new PDOException("Geting data error => $error");
         }
-        $res = $stmt->fetch(PDO::FETCH_ASSOC);
+        $header = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        $sql = "SELECT catalog_code ";
+        $sql .= " FROM `catalog_link` ";
+        $sql .= " where cuscode = :code";
+
+        $stmt = $conn->prepare($sql);
+        if (!$stmt->execute(['code' => $code])) {
+            $error = $conn->errorInfo();
+            http_response_code(404);
+            throw new PDOException("Geting data error => $error");
+        }
+        $detail = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $conn->commit();
         http_response_code(200);
-        echo json_encode(array("data" => $res));
+        echo json_encode(array('status' => 1, "header" => $header, "detail" => $detail));
     }
 } catch (PDOException $e) {
     $conn->rollback();
