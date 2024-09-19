@@ -22,6 +22,11 @@ let _nav = [
     type: "group",
   },  
   {
+    title: "ใบเสนอราคา",
+    icon: <FileTextFilled className="nav-ico" />, 
+    to: "/quotation",    
+  },
+  {
     title: "ข้อมูลลูกค้า",
     icon: <RiTeamFill className="nav-ico" />,
     to: "/customers",
@@ -80,11 +85,6 @@ let _nav = [
     type: "group",
   },
   {
-    title: "ใบเสนอราคา",
-    icon: <FileTextFilled className="nav-ico" />, 
-    to: "/quotation",    
-  },
-  {
     title: "ใบวางบิล",
     icon: <ReconciliationFilled className="nav-ico" />,
     to: "/iv",    
@@ -98,7 +98,8 @@ let _nav = [
   {
     title: "ใบขายสินค้า",
     icon: <ReconciliationFilled className="nav-ico" />,
-    to: "/so",
+    to: "/r",
+    // to: "/so",
   },
 ];
 

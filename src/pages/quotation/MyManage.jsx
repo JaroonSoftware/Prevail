@@ -5,7 +5,6 @@ import {
   DatePicker,
   Form,
   Input,
-  InputNumber,
   Modal,
   Table,
   Typography,
@@ -26,7 +25,7 @@ import {
 
 import { ModalItems } from "../../components/modal/itemsbyCL/modal-items";
 import dayjs from "dayjs";
-import { delay, comma } from "../../utils/util";
+import { delay } from "../../utils/util";
 import { ButtonBack } from "../../components/button";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -110,34 +109,6 @@ function QuotationManage() {
     return () => {};
   }, []);
 
-  useEffect(() => {
-    if (listDetail) handleSummaryPrice();
-  }, [listDetail]);
-
-  const handleSummaryPrice = () => {
-    const newData = [...listDetail];
-
-    const total_price = newData.reduce(
-      (a, v) =>
-        (a +=
-          Number(v.qty || 0) *
-          Number(v?.price || 0) *
-          (1 - Number(v?.discount || 0) / 100)),
-      0
-    );
-    const vat = form.getFieldValue("vat");
-    const grand_total_price =
-      total_price + (total_price * form.getFieldValue("vat")) / 100;
-
-    setFormDetail(() => ({
-      ...formDetail,
-      total_price,
-      vat,
-      grand_total_price,
-    }));
-    // console.log(formDetail)
-  };
-
   const handleCalculatePrice = (day, date) => {
     const newDateAfterAdding = dayjs(date || new Date()).add(
       Number(day),
@@ -186,9 +157,7 @@ function QuotationManage() {
   };
 
   const handleItemsChoosed = (value) => {
-    console.log(value);
     setListDetail(value);
-    handleSummaryPrice();
   };
 
   const handleConfirm = () => {
@@ -273,7 +242,6 @@ function QuotationManage() {
         ...row,
       });
 
-      handleSummaryPrice();
       return newData;
     };
     setListDetail([...newData(row)]);
@@ -382,105 +350,6 @@ function QuotationManage() {
           scroll={{ x: "max-content" }}
           locale={{
             emptyText: <span>No data available, please add some data.</span>,
-          }}
-          summary={(record) => {
-            return (
-              <>
-                {listDetail.length > 0 && (
-                  <>
-                    <Table.Summary.Row>
-                      <Table.Summary.Cell
-                        index={0}
-                        colSpan={6}
-                      ></Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        index={4}
-                        align="end"
-                        className="!pe-4"
-                      >
-                        Total
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        className="!pe-4 text-end border-right-0"
-                        style={{ borderRigth: "0px solid" }}
-                      >
-                        <Typography.Text type="danger">
-                          {comma(Number(formDetail?.total_price || 0))}
-                        </Typography.Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>Baht</Table.Summary.Cell>
-                    </Table.Summary.Row>
-                    <Table.Summary.Row>
-                      <Table.Summary.Cell
-                        index={0}
-                        colSpan={5}
-                      ></Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        index={4}
-                        align="end"
-                        className="!pe-4"
-                      >
-                        Vat
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        className="!pe-4 text-end border-right-0"
-                        style={{ borderRigth: "0px solid" }}
-                      >
-                        <Form.Item name="vat" className="!m-0">
-                          <InputNumber
-                            className="width-100 input-30 text-end"
-                            addonAfter="%"
-                            controls={false}
-                            min={0}
-                            onFocus={(e) => {
-                              e.target.select();
-                            }}
-                            onChange={() => {
-                              handleSummaryPrice();
-                            }}
-                          />
-                        </Form.Item>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        className="!pe-4 text-end border-right-0"
-                        style={{ borderRigth: "0px solid" }}
-                      >
-                        <Typography.Text type="danger">
-                          {comma(
-                            Number(
-                              (formDetail.total_price * formDetail?.vat) / 100
-                            )
-                          )}
-                        </Typography.Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>Baht</Table.Summary.Cell>
-                    </Table.Summary.Row>
-                    <Table.Summary.Row>
-                      <Table.Summary.Cell
-                        index={0}
-                        colSpan={6}
-                      ></Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        index={4}
-                        align="end"
-                        className="!pe-4"
-                      >
-                        Grand Total
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        className="!pe-4 text-end border-right-0"
-                        style={{ borderRigth: "0px solid" }}
-                      >
-                        <Typography.Text type="danger">
-                          {comma(Number(formDetail?.grand_total_price || 0))}
-                        </Typography.Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>Baht</Table.Summary.Cell>
-                    </Table.Summary.Row>
-                  </>
-                )}
-              </>
-            );
           }}
         />
       </Flex>
@@ -662,6 +531,7 @@ function QuotationManage() {
           values={(v) => {
             handleItemsChoosed(v);
           }}
+          cuscode={form.getFieldValue("cuscode")}
           selected={listDetail}
         ></ModalItems>
       )}

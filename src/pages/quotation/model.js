@@ -6,25 +6,20 @@ import { Tooltip } from "antd";
 // import { EditOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons"; 
 import { EditableRow, EditableCell } from "../../components/table/TableEditAble";
 import { TagQuotationStatus } from "../../components/badge-and-tag";
+// import TagIs from '../../components/badge-and-tag/tags-is/TagIs';
 
 import dayjs from 'dayjs';
-import { EditOutlined } from "@ant-design/icons";
+import { EditOutlined,PrinterOutlined } from "@ant-design/icons";
 // import { EditOutlined, PrinterOutlined } from "@ant-design/icons";
 import { comma } from '../../utils/util';
 
-const calTotalDiscount = (rec) => {
-  const total =  Number(rec?.qty ||  0) * Number(rec?.price ||  0);
-  const discount = 1 - ( Number(rec?.discount ||  0) / 100 );
-
-  return total * discount;
-}
 /** export component for edit table */
 export const componentsEditable = {
   body: { row: EditableRow, cell: EditableCell },
 };
 
 /** get sample column */
-export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}) => [
+export const accessColumn = ({handleEdit, handleDelete, handlePrint}) => [
   {
     title: "เลขที่ใบเสนอราคา",
     key: "qtcode",
@@ -92,29 +87,13 @@ export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}
           onClick={(e) => handleEdit(record) }
           size="small"
         />
-
-        {/* <Popconfirm 
-          placement="topRight"
-          title="Sure to delete?"  
-          description="Are you sure to delete this packaging?"
-          icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
-          onConfirm={() => handleDelete(record)}
-        >
-          <Button
-            icon={<DeleteOutlined />}
-            danger
-            style={{ cursor: "pointer", display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
-            size="small"
-          />
-        </Popconfirm> */}
-        {/* <Button
+        <Button
           icon={<PrinterOutlined />} 
           className='bn-warning-outline'
           style={{ cursor: "pointer", display: 'flex', alignItems: 'center', justifyContent: 'center'}}
-          onClick={(e) => handlePrint(record) }
+          onClick={(e) => handlePrint(record.qtcode) }
           size="small"
-        />         */}
-        {/* <ButtonAttachFiles code={record.srcode} refs='Sample Request' showExpire={true} /> */}
+        />       
       </Space>
     ),
   }, 
@@ -143,29 +122,17 @@ export const productColumn = ({handleRemove},optionsItems) => [
     render: (_, rec) => rec.stname,
   },
   {
-    title: "จำนวน",
-    dataIndex: "qty",
-    key: "qty", 
-    width: "8%",
-    align: "right",
-    className: "!pe-3",
-    editable: true,
-    required: true,
-    type:'number',
-    render: (_, rec) => <>{ comma( Number(rec?.qty ||  0),  0, 0 )}</>,
-  },
-  {
     title: "ราคาขาย",
     dataIndex: "price",
     key: "price", 
-    width: "8%",
+    width: "10%",
     align: "right",
     className: "!pe-3",
     editable: true,
     required: true,
     type:'number',
     render: (_, rec) => <>{ comma( Number(rec?.price ||  0),  2, 2 )}</>,
-  },
+  },  
   {
     title: "หน่วยสินค้า",
     dataIndex: "unit",
@@ -179,26 +146,26 @@ export const productColumn = ({handleRemove},optionsItems) => [
         return optionsItems?.find( f  => f.value === v )?.label
       },
   },
-  {
-    title: "ส่วนลด(%)",
-    dataIndex: "discount",
-    key: "discount",
-    width: "10%",
-    align: "right",
-    className: "!pe-3",
-    editable: true,
-    type:'number',
-    render: (_, rec) => <>{ comma( Number(rec?.discount ||  0),  2, 2 )}</>,
-  },
-  {
-    title: "ราคารวม",
-    dataIndex: "total",
-    key: "total",
-    width: "10%",
-    align: "right",
-    className: "!pe-3",
-    render: (_, rec) => <>{ comma( calTotalDiscount(rec),  2, 2 )}</>,
-  },
+  // {
+  //   title: "Hightlight ราคา",
+  //   dataIndex: "hightlight",
+  //   key: "hightlight",
+  //   align: "left",
+  //   width: "5%",
+  //   editable: true,
+  //   type:'switch',
+  //   formProp: { valuePropName:"checked" },
+  //   render: (v) => <TagIs result={Number(v)} />
+  // },
+  // {
+  //     title: "รหัส VAT",
+  //     dataIndex: "stcode_vat_show",
+  //     key: "stcode_vat_show",
+  //     width: 120,
+  //     className: 'field-edit',
+  //     align: "left",
+  //     render: onCodeVat
+  //   },
   {
     title: "ตัวเลือก",
     align: "center",
@@ -253,7 +220,6 @@ export const quotationDetailForm = {
   stcode : null,
   stname : null,  
   discount : 0,
-  qty : 0,
   price : 0,
   unit: null,
 }

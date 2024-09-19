@@ -7,11 +7,13 @@ import {
   Button,
   InputNumber,
   Select,
+  Switch,
 } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
+import { CheckOutlined, CloseOutlined, SearchOutlined } from "@ant-design/icons";
 import { MenuOutlined } from "@ant-design/icons";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+
 export const EditableRow = ({ index, ...props }) => {
   const [form] = Form.useForm();
   return (
@@ -91,6 +93,20 @@ export const EditableCell = ({
         ...record,
         ...values,
         key: dataIndex,
+      });
+    } catch (errInfo) {
+      // console.log('Save failed:', errInfo);
+    }
+  };
+
+  const switced = async (e) => {
+    try {
+      const values = await form.validateFields();
+      // toggleEdit(); 
+      handleEditCell({
+        ...record,
+        ...values,
+        key:dataIndex,
       });
     } catch (errInfo) {
       // console.log('Save failed:', errInfo);
@@ -199,6 +215,14 @@ export const EditableCell = ({
             {...childProps}
           />
         )}
+         {(type === 'switch') && (
+              <Switch 
+                // checked={!!Number(record[dataIndex])}
+                checkedChildren={<CheckOutlined />}
+                unCheckedChildren={<CloseOutlined />}  
+                onChange={switced}
+              />
+            )}
 
         {type === "select" && (
           <Select

@@ -40,8 +40,8 @@ try {
 
         
 
-        $sql = "insert into catalog_detail (catalog_code,stcode)  
-        values (:catalog_code,:stcode) ";
+        $sql = "insert into catalog_detail (catalog_code,stcode,price)  
+        values (:catalog_code,:stcode,:price) ";
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
@@ -51,6 +51,7 @@ try {
 
             $stmt->bindParam(":catalog_code", $header->catalog_code, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
+            $stmt->bindParam(":price", $val->price, PDO::PARAM_STR);
             if (!$stmt->execute()) {
                 $error = $conn->errorInfo();
                 throw new PDOException("Insert data error => $error");
@@ -114,8 +115,8 @@ try {
             throw new PDOException("Remove data error => $error");
         }
 
-        $sql = "insert into catalog_detail (catalog_code,stcode)
-        values (:catalog_code,:stcode)";
+        $sql = "insert into catalog_detail (catalog_code,stcode,price)
+        values (:catalog_code,:stcode,:price)";
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
@@ -124,6 +125,7 @@ try {
             $val = (object)$val;
             $stmt->bindParam(":catalog_code", $header->catalog_code, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
+            $stmt->bindParam(":price", $val->price, PDO::PARAM_STR);
             if (!$stmt->execute()) {
                 $error = $conn->errorInfo();
                 throw new PDOException("Insert data error => $error");
@@ -147,7 +149,7 @@ try {
         }
         $header = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT a.catalog_code,a.stcode,i.stname ";
+        $sql = "SELECT a.catalog_code,a.stcode,i.stname,a.price ";
         $sql .= " FROM `catalog_detail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
         $sql .= " where a.catalog_code = :code";
 

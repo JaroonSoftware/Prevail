@@ -239,7 +239,7 @@ try {
         }
         $header = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT a.grcode,a.stcode, a.price, a.unit, a.qty ,i.stname ";
+        $sql = "SELECT a.grcode,a.stcode,a.pocode, a.price, a.unit, a.qty ,i.stname ";
         $sql .= " FROM `grdetail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
         $sql .= " where a.grcode = :code";
 

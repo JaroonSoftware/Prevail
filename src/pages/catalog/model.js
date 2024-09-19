@@ -6,6 +6,7 @@ import {
   EditableCell,
 } from "../../components/table/TableEditAble";
 import { EditOutlined } from "@ant-design/icons";
+import { comma } from '../../utils/util';
 
 /** export component for edit table */
 export const componentsEditable = {
@@ -106,6 +107,18 @@ export const CatalogProductColumn = ({ handleRemove }, optionsItems) => [
     render: (_, rec) => rec.stname,
   },
   {
+    title: "ราคาขาย (บาท)",
+    dataIndex: "price",
+    key: "price", 
+    width: "15%",
+    align: "left",
+    className: "!pe-3",
+    editable: true,
+    required: true,
+    type:'number',
+    render: (_, rec) => <>{ comma( Number(rec?.price ||  0),  2, 2 )}</>,
+  },  
+  {
     title: "ตัวเลือก",
     align: "center",
     key: "operation",
@@ -116,32 +129,29 @@ export const CatalogProductColumn = ({ handleRemove }, optionsItems) => [
   },
 ];
 
-export const columnsParametersEditable = (
-  handleEditCell,
-  optionsItems,
-  { handleRemove }
-) => {
-  const col = CatalogProductColumn({ handleRemove }, optionsItems);
+export const columnsParametersEditable = (handleEditCell,optionsItems,{handleRemove} ) =>{
+  const col = CatalogProductColumn({handleRemove},optionsItems);
   return col.map((col, ind) => {
-    if (!col.editable) return col;
-
-    return {
-      ...col,
-      onCell: (record) => {
-        // console.log(record);
-        return {
-          record,
-          editable: col.editable,
-          title: col.title,
-          // required: !!col?.required,
-          type: col?.type || "input",
-          handleEditCell,
-          optionsItems,
-        };
-      },
-    };
-  });
-};
+      if (!col.editable) return col; 
+      
+      return {
+          ...col,
+          onCell: (record) => {
+            // console.log(record);
+            return {
+              record,
+              editable: col.editable,
+              dataIndex: col.dataIndex,
+              title: col.title,
+              // required: !!col?.required,
+              type: col?.type || "input",
+              handleEditCell,
+              optionsItems,
+            }
+          },
+      };
+  }); 
+}
 export const purchaseorderForm = {
   clcode: null,
   cldate: null,

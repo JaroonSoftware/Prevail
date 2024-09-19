@@ -21,7 +21,17 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
             $stmt = $conn->prepare($sql); 
             $stmt->execute();
             $res = $stmt->fetchAll(PDO::FETCH_ASSOC); 
-        } else  if ($p === 'po' ){
+        } else  if ($p === 'qt' ){
+            $sql = "
+			select i.stcode,i.stname, i.price, i.unit,i.vat
+            from catalog_link l
+            inner join catalog_detail d on d.catalog_code = l.catalog_code
+            left outer join `items` i on i.stcode = d.stcode            
+            where l.cuscode= '$cuscode'  "; 
+            $stmt = $conn->prepare($sql); 
+            $stmt->execute();
+            $res = $stmt->fetchAll(PDO::FETCH_ASSOC);             
+        }else  if ($p === 'po' ){
             $sql = "
 			SELECT a.code,a.pocode, a.stcode,i.stname, a.qty, a.price, a.unit, a.discount, a.recamount
             FROM podetail a 

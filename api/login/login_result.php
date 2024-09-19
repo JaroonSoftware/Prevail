@@ -9,6 +9,7 @@ session_start();
 // include('../../conn.php');
 include('../conn.php');
 include('../src/JWT.php');
+include_once(dirname(__FILE__, 2) . "/common/fnc-code.php");
 
 use Firebase\JWT\JWT; 
 // $db = new DbConnect;
@@ -64,6 +65,23 @@ if ($stmt->execute()) {
 				];
 
 				$jwt = JWT::encode($data, $secretKey, 'HS512');
+
+				$year = date("Y");
+    			$month = date("m");
+
+				$sql = "select * from options where year = :y and month = :m";
+				$stmt = $conn->prepare($sql); 
+				if (!$stmt->execute([ 'y' => $year, 'm' => $month ])){
+					$error = $conn->errorInfo();
+					http_response_code(401);
+					throw new PDOException("Geting code error => $error");
+				}
+
+				$result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+				if (empty($result)) {
+					create_options($conn, $year, $month);					
+				} 
 				// echo 'Welcome ' . $_SESSION['name'] . '!';
 				echo json_encode(array('status' => '1', 'message' => 'สำเร็จ', "token" => $jwt));
 			} else {

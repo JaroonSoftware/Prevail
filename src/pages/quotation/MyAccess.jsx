@@ -153,13 +153,15 @@ const QuotationAccess = () => {
         });
     }; 
 
-    const handlePrint = (recode) => {
-        const newWindow = window.open('', '_blank');
-        newWindow.location.href = `/quo-print/${recode.qtcode}`;
-      };
+    const handlePrint = (code) => { 
+        const url = `/quo-print/${code}`;
+        const newWindow = window.open('', url, url);
+        newWindow.location.href = url;
+      }
     
 
     const column = accessColumn( {handleEdit, handleDelete, handlePrint });
+    // const column = accessColumn( {handleEdit, handlePrint });
 
     const getData = (data) => {
         handleSearch()

@@ -56,8 +56,8 @@ try {
         $code = $conn->lastInsertId();
         // var_dump($master); exit;
         
-        $sql = "insert into qtdetail (qtcode,stcode,qty,price,unit,discount)
-        values (:qtcode,:stcode,:qty,:price,:unit,:discount)";
+        $sql = "insert into qtdetail (qtcode,stcode,price,unit)
+        values (:qtcode,:stcode,:price,:unit)";
         $stmt = $conn->prepare($sql);
         if(!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
@@ -66,10 +66,8 @@ try {
             $val = (object)$val;
             $stmt->bindParam(":qtcode", $header->qtcode, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
-            $stmt->bindParam(":qty", $val->qty, PDO::PARAM_INT);
             $stmt->bindParam(":price", $val->price, PDO::PARAM_INT);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);            
-            $stmt->bindParam(":discount", $val->discount, PDO::PARAM_INT);
             
             if(!$stmt->execute()) {
                 $error = $conn->errorInfo();
@@ -126,8 +124,8 @@ try {
             throw new PDOException("Remove data error => $error");
         }
 
-        $sql = "insert into qtdetail (qtcode,stcode,unit,qty,price,discount)
-        values (:qtcode,:stcode,:unit,:qty,:price,:discount)";
+        $sql = "insert into qtdetail (qtcode,stcode,unit,price)
+        values (:qtcode,:stcode,:unit,:price)";
         $stmt = $conn->prepare($sql);
         if(!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
@@ -137,9 +135,7 @@ try {
             $stmt->bindParam(":qtcode", $header->qtcode, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
-            $stmt->bindParam(":qty", $val->qty, PDO::PARAM_INT);
             $stmt->bindParam(":price", $val->price, PDO::PARAM_INT);
-            $stmt->bindParam(":discount", $val->discount, PDO::PARAM_INT);
             if(!$stmt->execute()) {
                 $error = $conn->errorInfo();
                 throw new PDOException("Insert data error => $error"); 
@@ -186,7 +182,7 @@ try {
         }
         $header = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT a.qtcode,a.stcode, a.price, a.discount, a.unit, a.qty ,i.stname ";
+        $sql = "SELECT a.qtcode,a.stcode, a.price, a.unit, i.stname ";
         $sql .= " FROM `qtdetail` as a inner join `items` as i on (a.stcode=i.stcode)  ";        
         $sql .= " where a.qtcode = :code";
         
