@@ -197,7 +197,7 @@ function QuoListPrint() {
               <img
                 src={vegetable}
                 alt=""
-                style={{ paddingInline: 20, height: "100%" }}
+                style={{ width: 100}}
               />
             </div>
           </div>
