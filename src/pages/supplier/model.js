@@ -73,6 +73,63 @@ export const accessColumn = ({ handleEdit, handleDelete, handleView }) => [
     ),
   },
 ];
+export const columnsParametersEditable = (
+  { handleRemove }
+) => {
+  const col = ProductColumn({ handleRemove });
+  return col.map((col, ind) => {
+    if (!col.editable) return col;
+
+    return {
+      ...col,
+      onCell: (record) => {
+        // console.log(record);
+        return {
+          record,
+          editable: col.editable,
+          title: col.title,
+          // required: !!col?.required,
+          type: col?.type || "input",
+        };
+      },
+    };
+  });
+};
+
+export const ProductColumn = ({ handleRemove }) => [
+  {
+    title: "ลำดับ",
+    dataIndex: "ind",
+    key: "ind",
+    align: "center",
+    width: "5%",
+    render: (im, rc, index) => <>{index + 1}</>,
+  },
+  {
+    title: "รหัสสินค้า",
+    dataIndex: "stcode",
+    key: "stcode",
+    width: "10%",
+    align: "center",
+  },
+  {
+    title: "ชื่อสินค้า",
+    dataIndex: "stname",
+    key: "stname",
+    align: "left",
+    width: "50%",
+    render: (_, rec) => rec.stname,
+  },
+  {
+    title: "ตัวเลือก",
+    align: "center",
+    key: "operation",
+    dataIndex: "operation",
+    render: (_, record, idx) => handleRemove(record),
+    width: "4%",
+    fixed: "right",
+  },
+];
 
 export const Items = {
   id: null,

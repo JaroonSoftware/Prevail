@@ -10,14 +10,20 @@ import {
   Select,
   Divider,
   Card,
+  Typography,
+  Table,
 } from "antd";
 import { Row, Col, Space } from "antd";
 import { SaveFilled } from "@ant-design/icons";
 import { ButtonBack } from "../../components/button";
 import { useLocation, useNavigate } from "react-router";
 import { delay } from "../../utils/util";
+import { columnsParametersEditable } from "./model";
 // import OptionService from '../../service/Options.service';
 import Supplierservice from "../../service/Supplier.Service";
+import { ModalItems } from "../../components/modal/itemsbySup/modal-items";
+import { LuPackageSearch } from "react-icons/lu";
+import { RiDeleteBin5Line } from "react-icons/ri";
 import { CreateInput } from "thai-address-autocomplete-react";
 const InputThaiAddress = CreateInput();
 
@@ -27,12 +33,12 @@ const from = "/supplier";
 const MyManage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-
+  const [openProduct, setOpenProduct] = useState(false);
   const { config } = location.state || { config: null };
   const [form] = Form.useForm();
-
+  const [listDetail, setListDetail] = useState([]);
   const [formDetail, setFormDetail] = useState({});
-
+ 
   const init = async () => {
     const supcodeRes = await supplierservice
       .getcode()
@@ -57,6 +63,10 @@ const MyManage = () => {
     }
   }, []);
 
+  const handleItemsChoosed = (value) => {
+    // console.log(value);
+    setListDetail(value);
+  };
   const getsupData = (v) => {
     supplierservice
       .get(v)
@@ -109,7 +119,30 @@ const MyManage = () => {
         });
     });
   };
+  const handleDelete = (code) => {
+    const itemDetail = [...listDetail];
+    const newData = itemDetail.filter((item) => item?.stcode !== code);
+    setListDetail([...newData]);
+  };
 
+  const handleRemove = (record) => {
+    const itemDetail = [...listDetail];
+    return itemDetail.length >= 1 ? (
+      <Button
+        className="bt-icon"
+        size="small"
+        danger
+        icon={
+          <RiDeleteBin5Line style={{ fontSize: "1rem", marginTop: "3px" }} />
+        }
+        onClick={() => handleDelete(record?.stcode)}
+        disabled={!record?.stcode}
+      />
+    ) : null;
+  };
+  const prodcolumns = columnsParametersEditable({
+    handleRemove,
+  });
   const filterOption = (input, option) =>
     (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
 
@@ -283,6 +316,32 @@ const MyManage = () => {
     </Row>
   );
 
+  const TitleTable = (
+    <Flex className="width-100" align="center">
+      <Col span={12} className="p-0">
+        <Flex gap={4} justify="start" align="center">
+          <Typography.Title className="m-0 !text-zinc-800" level={3}>
+            รายการสินค้าที่ขาย
+          </Typography.Title>
+        </Flex>
+      </Col>
+
+      <Col span={12} style={{ paddingInline: 0 }}>
+        <Flex justify="end">
+          <Button
+            icon={<LuPackageSearch style={{ fontSize: "1.2rem" }} />}
+            className="bn-center justify-center bn-primary-outline"
+            onClick={() => {
+              setOpenProduct(true);
+            }}
+          >
+            เลือกสินค้า
+          </Button>
+        </Flex>
+      </Col>
+    </Flex>
+  );
+
   const SectionBottom = (
     <Row
       gutter={[{ xs: 32, sm: 32, md: 32, lg: 12, xl: 12 }, 8]}
@@ -310,6 +369,25 @@ const MyManage = () => {
     </Row>
   );
 
+  const SectionProduct = (
+    <>
+      <Flex className="width-100" vertical gap={4}>
+        <Table
+          title={() => TitleTable}
+          rowClassName={() => "editable-row"}
+          bordered
+          dataSource={listDetail}
+          columns={prodcolumns}
+          pagination={false}
+          rowKey="stcode"
+          scroll={{ x: "max-content" }}
+          locale={{
+            emptyText: <span>No data available, please add some data.</span>,
+          }}
+        />
+      </Flex>
+    </>
+  );
   return (
     <div className="supplier-manage xs:px-0 sm:px-0 md:px-8 lg:px-8">
       <Space direction="vertical" className="flex gap-2">
@@ -342,10 +420,26 @@ const MyManage = () => {
               การติดต่อ
             </Divider>
             <ContactDetail />
+
+            <Row className="m-0" gutter={[12, 12]}>
+              <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+                {SectionProduct}
+              </Col>
+            </Row>
           </Card>
         </Form>
         {SectionBottom}
       </Space>
+      {openProduct && (
+        <ModalItems
+          show={openProduct}
+          close={() => setOpenProduct(false)}
+          values={(v) => {
+            handleItemsChoosed(v);
+          }}
+          selected={listDetail}
+        ></ModalItems>
+      )}
     </div>
   );
 };
