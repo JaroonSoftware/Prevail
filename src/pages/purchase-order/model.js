@@ -2,13 +2,13 @@ import { Button, Space } from "antd";
 import "../../assets/styles/banks.css"
 // import { Typography } from "antd"; 
 // import { Popconfirm, Button } from "antd";
-import { Tooltip } from "antd";
+import { Tooltip,Image } from "antd";
 // import { EditOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons"; 
 import { TagPurchaseOrderStatus } from "../../components/badge-and-tag";
 import { EditableRow, EditableCell } from "../../components/table/TableEditAble";
 import dayjs from 'dayjs';
 import { EditOutlined } from "@ant-design/icons";
-import { comma } from '../../utils/util';
+import { comma,BACKEND_URL_MAIN } from '../../utils/util';
 
 const calTotalDiscount = (rec) => {
   const total =  Number(rec?.qty ||  0) * Number(rec?.price ||  0);
@@ -124,14 +124,35 @@ export const productColumn = ({handleRemove},optionsItems) => [
     dataIndex: "ind",
     key: "ind",
     align: "center",
-    width: 80, 
+    width: 60, 
     render: (im, rc, index) => <>{index + 1}</>,
+  },
+  {
+    title: "รูปประกอบ",
+    dataIndex: "file",
+    key: "file",
+    width: 120,
+    align: "center",
+    render: (im, rec) => 
+      {
+        const img = (!!rec.file_name ? `/uploads/` + rec.file_name : `/Logo-AI.png`
+        );
+        return <>
+        <Image
+      style={{ borderRadius: 10 }}
+      preview={false}
+      height={75}
+      alt={`Image ${rec.file_name}`}
+      src={`${BACKEND_URL_MAIN}` + img}
+    />
+    </>
+    },
   },
   {
     title: "รหัสสินค้า",
     dataIndex: "stcode",
     key: "stcode",
-    width: 120, 
+    width: 140, 
     align: "center",
   },
   {
@@ -140,6 +161,15 @@ export const productColumn = ({handleRemove},optionsItems) => [
     key: "purdetail", 
     align: "left", 
     render: (_, rec) => rec.stname,
+  },
+  
+  {
+    title: "จำนวนที่รับแล้ว",
+    dataIndex: "recamount",
+    key: "recamount",
+    width: "8%",
+    align: "right",
+    className: "!pe-3",
   },
   {
     title: "จำนวน",
@@ -154,7 +184,7 @@ export const productColumn = ({handleRemove},optionsItems) => [
     render: (_, rec) => <>{ comma( Number(rec?.qty ||  0),  2, 2 )}</>,
   },
   {
-    title: "ราคาขาย",
+    title: "ราคาซื้อ",
     dataIndex: "price",
     key: "price", 
     width: "8%",
@@ -182,20 +212,12 @@ export const productColumn = ({handleRemove},optionsItems) => [
     title: "ส่วนลด(%)",
     dataIndex: "discount",
     key: "discount",
-    width: "10%",
+    width: "7%",
     align: "right",
     className: "!pe-3",
     editable: true,
     type:'number',
     render: (_, rec) => <>{ comma( Number(rec?.discount ||  0),  2, 2 )}</>,
-  },
-  {
-    title: "จำนวนที่รับแล้ว",
-    dataIndex: "recamount",
-    key: "recamount",
-    width: "10%",
-    align: "right",
-    className: "!pe-3",
   },
   {
     title: "ราคารวม",
@@ -212,7 +234,7 @@ export const productColumn = ({handleRemove},optionsItems) => [
     key: "operation",
     dataIndex: "operation",
     render: (_, record, idx) => handleRemove(record),
-    width: '90px',
+    width: '80px',
     fixed: 'right',
   },
 ];

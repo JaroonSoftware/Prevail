@@ -66,11 +66,43 @@ try {
             if (!$stmt->execute()) {
                 $error = $conn->errorInfo();
                 throw new PDOException("Insert data error => $error");
+                die;
             }
+
+            $sql2 = "insert into grbarcode (no,grcode,stcode,unit_weight,barcode_status)
+            values (:no,:grcode,:stcode,0,'ยังไม่ออก barcode')";
+            $stmt2 = $conn->prepare($sql2);
+            if (!$stmt2) throw new PDOException("Insert data error => {$conn->errorInfo()}");
+
+            for($count=1;$count<=$val->qty;$count++)
+            {   
+                $stmt2->bindParam(":no", $count, PDO::PARAM_STR);             
+                $stmt2->bindParam(":grcode", $header->grcode, PDO::PARAM_STR);
+                $stmt2->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
+
+                if (!$stmt2->execute()) {
+                    $error = $conn->errorInfo();
+                    throw new PDOException("Insert data error => $error");
+                    die;
+                }
+            }
+        
+
         }
 
-        foreach ($detail as $ind => $val) {
-            $val = (object)$val;
+        $sql = "update podetail set recamount = recamount+:qty where pocode = :pocode";
+
+            $stmt3 = $conn->prepare($sql);
+            if (!$stmt3) throw new PDOException("Insert data error => {$conn->errorInfo()}");
+
+            $stmt3->bindParam(":qty", $val->qty, PDO::PARAM_STR);
+            $stmt3->bindParam(":pocode", $val->pocode, PDO::PARAM_STR);               
+
+            if (!$stmt3->execute()) {
+                $error = $conn->errorInfo();
+                throw new PDOException("Insert data error => $error");
+                die;
+            }
             
             if ($val->qty_buy == ($val->qty +$val->recamount)) {
                 $sql = "
@@ -81,17 +113,7 @@ try {
             updated_by = :action_user
             where pocode = :pocode";
 
-                $stmt = $conn->prepare($sql);
-                if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
-
-                $stmt->bindParam(":action_user", $action_user, PDO::PARAM_INT);
-                $stmt->bindParam(":pocode", $val->pocode, PDO::PARAM_STR);
-
-                if (!$stmt->execute()) {
-                    $error = $conn->errorInfo();
-                    throw new PDOException("Insert data error => $error");
-                    die;
-                }
+               
             } else {
                 $sql = "
             update pomaster 
@@ -101,34 +123,19 @@ try {
             updated_by = :action_user
             where pocode = :pocode";
 
-                $stmt = $conn->prepare($sql);
-                if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
-
-                $stmt->bindParam(":action_user", $action_user, PDO::PARAM_INT);
-                $stmt->bindParam(":pocode", $val->pocode, PDO::PARAM_STR);
-
-                if (!$stmt->execute()) {
-                    $error = $conn->errorInfo();
-                    throw new PDOException("Insert data error => $error");
-                    die;
-                }
             }
 
-            $sql = "update podetail set
-            recamount = recamount+:qty
-            where pocode = :pocode";
             $stmt = $conn->prepare($sql);
             if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
-            
-            $stmt->bindParam(":qty", $val->qty, PDO::PARAM_STR);
+            $stmt->bindParam(":action_user", $action_user, PDO::PARAM_INT);
             $stmt->bindParam(":pocode", $val->pocode, PDO::PARAM_STR);
 
             if (!$stmt->execute()) {
                 $error = $conn->errorInfo();
                 throw new PDOException("Insert data error => $error");
+                die;
             }
-        }
 
         $conn->commit();
         http_response_code(200);
