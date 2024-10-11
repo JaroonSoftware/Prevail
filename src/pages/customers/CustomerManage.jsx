@@ -147,7 +147,7 @@ const ItemsManage = () => {
             <Input
               placeholder="กรอกรหัสลูกค้า"
               className="!bg-zinc-300"
-              readOnly
+              disabled={config.action === "edit"}
             />
           </Form.Item>
         </Col>

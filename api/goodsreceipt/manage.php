@@ -69,14 +69,14 @@ try {
                 die;
             }
 
-            $sql2 = "insert into grbarcode (no,grcode,stcode,unit_weight,barcode_status)
-            values (:no,:grcode,:stcode,0,'ยังไม่ออก barcode')";
+            $sql2 = "insert into grbarcode (order_no,grcode,stcode,unit_weight,barcode_status)
+            values (:order_no,:grcode,:stcode,0,'ยังไม่ออก barcode')";
             $stmt2 = $conn->prepare($sql2);
             if (!$stmt2) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
             for($count=1;$count<=$val->qty;$count++)
             {   
-                $stmt2->bindParam(":no", $count, PDO::PARAM_STR);             
+                $stmt2->bindParam(":order_no", $count, PDO::PARAM_STR);             
                 $stmt2->bindParam(":grcode", $header->grcode, PDO::PARAM_STR);
                 $stmt2->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
 
