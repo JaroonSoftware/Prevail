@@ -32,7 +32,7 @@ const ModalCustomersManage = ({ submit }) => {
       .getcode()
       .catch(() => message.error("Initail failed"));
 
-    const { data: cuscode } = cuscodeRes.data;
+    const { data: cuscode } = cuscodeRes;
     const initForm = { ...formDetail, cuscode };
     setFormDetail((state) => ({ ...state, ...initForm }));
     form.setFieldsValue(initForm);

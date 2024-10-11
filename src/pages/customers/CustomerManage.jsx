@@ -16,7 +16,6 @@ import { SaveFilled } from "@ant-design/icons";
 import { ButtonBack } from "../../components/button";
 import { useLocation, useNavigate } from "react-router";
 import { delay } from "../../utils/util";
-import { ModalResetPassword } from "../../components/modal/users/modal-reset";
 import OptionService from "../../service/Options.service";
 import Customerservice from "../../service/Customer.Service";
 import { CreateInput } from "thai-address-autocomplete-react";
@@ -29,7 +28,6 @@ const ItemsManage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [openResetModal, setOpenResetModal] = useState(false);
   const { config } = location.state || { config: null };
   const [form] = Form.useForm();
   const [optionsCatalog, setoptionsCatalog] = useState([]);
@@ -487,15 +485,6 @@ const ItemsManage = () => {
         </Form>
         {SectionBottom}
       </Space>
-      {openResetModal && (
-        <ModalResetPassword
-          show={openResetModal}
-          close={() => {
-            setOpenResetModal(false);
-          }}
-          code={form.getFieldValue("login_code")}
-        />
-      )}
     </div>
   );
 };
