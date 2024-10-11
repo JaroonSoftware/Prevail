@@ -13,12 +13,10 @@ import {
   Select,
 } from "antd";
 import { Card, Col, Divider, Flex, Row, Space } from "antd";
-
 import OptionService from "../../service/Options.service";
 import PurchaseOrderService from "../../service/PurchaseOrder.service";
 import { SaveFilled, SearchOutlined } from "@ant-design/icons";
 import ModalSupplier from "../../components/modal/supplier/ModalSupplier";
-
 import {
   purchaseorderForm,
   columnsParametersEditable,
@@ -29,37 +27,27 @@ import dayjs from "dayjs";
 import { delay, comma } from "../../utils/util";
 import { ButtonBack } from "../../components/button";
 import { useLocation, useNavigate } from "react-router-dom";
-
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { LuPackageSearch } from "react-icons/lu";
 import { LuPrinter } from "react-icons/lu";
 const opservice = OptionService();
-const quservice = PurchaseOrderService();
-
+const poservice = PurchaseOrderService();
 const gotoFrom = "/purchase-order";
 const dateFormat = 'DD/MM/YYYY';
-
 function PurchaseOrderManage() {
   const navigate = useNavigate();
   const location = useLocation();
-
   const { config } = location.state || { config: null };
   const [form] = Form.useForm();
-
   /** Modal handle */
   const [openSupplier, setOpenSupplier] = useState(false);
   const [openProduct, setOpenProduct] = useState(false);
-
   /** PurchaseOrder state */
   const [poCode, setPoCode] = useState(null);
-
   /** Detail Data State */
   const [listDetail, setListDetail] = useState([]);
-
   const [formDetail, setFormDetail] = useState(purchaseorderForm);
-
   const [unitOption, setUnitOption] = React.useState([]);
-
   const cardStyle = {
     backgroundColor: "#f0f0f0",
     height: "calc(100% - (25.4px + 1rem))",
@@ -68,13 +56,13 @@ function PurchaseOrderManage() {
   useEffect(() => {
     const initial = async () => {
       if (config?.action !== "create") {
-        const res = await quservice
+        const res = await poservice
           .get(config?.code)
           .catch((error) => message.error("get PurchaseOrder data fail."));
-        const {
-          data: { header, detail },
-        } = res.data;
+          // console.log(res.data)
+        const { header, detail } = res.data;
         const { pocode, podate } = header;
+        
         setFormDetail(header);
         setListDetail(detail);
         setPoCode(pocode);
@@ -84,7 +72,7 @@ function PurchaseOrderManage() {
         // handleChoosedSupplier(head);
       } else {
         const { data: code } = (
-          await quservice.code().catch((e) => {
+          await poservice.code().catch((e) => {
             message.error("get PurchaseOrder code fail.");
           })
         ).data;
@@ -206,7 +194,7 @@ function PurchaseOrderManage() {
         const parm = { header, detail };
         // console.log(parm)
         const actions =
-          config?.action !== "create" ? quservice.update : quservice.create;
+          config?.action !== "create" ? poservice.update : poservice.create;
         actions(parm)
           .then((r) => {
             handleClose().then((r) => {
@@ -418,7 +406,7 @@ function PurchaseOrderManage() {
                     <Table.Summary.Row>
                       <Table.Summary.Cell
                         index={0}
-                        colSpan={7}
+                        colSpan={8}
                       ></Table.Summary.Cell>
                       <Table.Summary.Cell
                         index={4}
@@ -440,7 +428,7 @@ function PurchaseOrderManage() {
                     <Table.Summary.Row>
                       <Table.Summary.Cell
                         index={0}
-                        colSpan={6}
+                        colSpan={7}
                       ></Table.Summary.Cell>
                       <Table.Summary.Cell
                         index={4}
@@ -485,7 +473,7 @@ function PurchaseOrderManage() {
                     <Table.Summary.Row>
                       <Table.Summary.Cell
                         index={0}
-                        colSpan={7}
+                        colSpan={8}
                       ></Table.Summary.Cell>
                       <Table.Summary.Cell
                         index={4}

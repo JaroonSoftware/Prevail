@@ -2,6 +2,8 @@ export const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 export const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
+export const BACKEND_URL_MAIN = process.env.REACT_APP_BACKEND_URL_Main;
+
 export const formatMoney = (amount, decimalCount) => {
   try {
     let decimal = ".",

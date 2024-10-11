@@ -32,7 +32,7 @@ import { RiDeleteBin5Line } from "react-icons/ri";
 import { LuPackageSearch } from "react-icons/lu";
 import { LuPrinter } from "react-icons/lu";
 const opservice = OptionService();
-const quservice = GoodsReceiptService();
+const grservice = GoodsReceiptService();
 
 const gotoFrom = "/goods-receipt";
 const dateFormat = 'DD/MM/YYYY';
@@ -65,12 +65,10 @@ function GoodsReceiptManage() {
   useEffect(() => {
     const initial = async () => {
       if (config?.action !== "create") {
-        const res = await quservice
+        const res = await grservice
           .get(config?.code)
           .catch((error) => message.error("get GoodsReceipt data fail."));
-        const {
-          data: { header, detail },
-        } = res.data;
+        const { header, detail } = res.data;
         const { grcode, grdate } = header;
         setFormDetail(header);
         setListDetail(detail);
@@ -81,7 +79,7 @@ function GoodsReceiptManage() {
         // handleChoosedSupplier(head);
       } else {
         const { data: code } = (
-          await quservice.code().catch((e) => {
+          await grservice.code().catch((e) => {
             message.error("get GoodsReceipt code fail.");
           })
         ).data;
@@ -201,7 +199,7 @@ function GoodsReceiptManage() {
         // console.log(parm)
         
         const actions =
-          config?.action !== "create" ? quservice.update : quservice.create;
+          config?.action !== "create" ? grservice.update : grservice.create;
         actions(parm)
           .then((r) => {
             handleClose().then((r) => {

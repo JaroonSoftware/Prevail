@@ -2,14 +2,14 @@ import { Button, Space } from "antd";
 import "../../assets/styles/banks.css"
 // import { Typography } from "antd"; 
 // import { Popconfirm, Button } from "antd";
-import { Tooltip } from "antd";
+import { Tooltip,Image } from "antd";
 // import { EditOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons"; 
 
-import { TagGoodsReceiptStatus } from "../../components/badge-and-tag";
+// import { TagGoodsReceiptStatus } from "../../components/badge-and-tag";
 import { EditableRow, EditableCell } from "../../components/table/TableEditAble";
 import dayjs from 'dayjs';
 import { EditOutlined } from "@ant-design/icons";
-import { comma } from '../../utils/util';
+import { comma,BACKEND_URL_MAIN } from '../../utils/util';
 
 /** export component for edit table */
 export const componentsEditable = {
@@ -51,15 +51,15 @@ export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}
     },
     render: (v) => <Tooltip placement="topLeft" title={v}>{v}</Tooltip>, 
   },  
-  {
-    title: "สถานะ",
-    dataIndex: "doc_status",
-    key: "doc_status", 
-    width: '13%',
-    sorter: (a, b) => a.doc_status.localeCompare(b.doc_status),
-    sortDirections: ["descend", "ascend"],
-    render: (data) => <TagGoodsReceiptStatus result={data} />,
-  },
+  // {
+  //   title: "สถานะ",
+  //   dataIndex: "doc_status",
+  //   key: "doc_status", 
+  //   width: '13%',
+  //   sorter: (a, b) => a.doc_status.localeCompare(b.doc_status),
+  //   sortDirections: ["descend", "ascend"],
+  //   render: (data) => <TagGoodsReceiptStatus result={data} />,
+  // },
   { 
     title: "จัดทำโดย",
     dataIndex: "created_name",
@@ -107,6 +107,27 @@ export const productColumn = ({handleRemove},optionsItems) => [
     align: "center",
     width: 80, 
     render: (im, rc, index) => <>{index + 1}</>,
+  },
+  {
+    title: "รูปประกอบ",
+    dataIndex: "file",
+    key: "file",
+    width: 120,
+    align: "center",
+    render: (im, rec) => 
+      {
+        const img = (!!rec.file_name ? `/uploads/` + rec.file_name : `/Logo-AI.png`
+        );
+        return <>
+        <Image
+      style={{ borderRadius: 10 }}
+      preview={false}
+      height={75}
+      alt={`Image ${rec.file_name}`}
+      src={`${BACKEND_URL_MAIN}` + img}
+    />
+    </>
+    },
   },
   {
     title: "ใบสั่งซื้อ",
