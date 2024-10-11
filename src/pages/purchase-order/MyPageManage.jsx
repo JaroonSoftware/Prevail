@@ -5,7 +5,6 @@ import {
   DatePicker,
   Form,
   Input,
-  InputNumber,
   Modal,
   Table,
   Typography,
@@ -13,41 +12,53 @@ import {
   Select,
 } from "antd";
 import { Card, Col, Divider, Flex, Row, Space } from "antd";
+
 import OptionService from "../../service/Options.service";
 import PurchaseOrderService from "../../service/PurchaseOrder.service";
 import { SaveFilled, SearchOutlined } from "@ant-design/icons";
 import ModalSupplier from "../../components/modal/supplier/ModalSupplier";
+
 import {
   purchaseorderForm,
   columnsParametersEditable,
   componentsEditable,
 } from "./model";
-import { ModalItems } from "../../components/modal/items/modal-items";
+import { ModalItems } from "../../components/modal/itemsbyPO/modal-items";
 import dayjs from "dayjs";
-import { delay, comma } from "../../utils/util";
+import { delay, formatMoney } from "../../utils/util";
 import { ButtonBack } from "../../components/button";
 import { useLocation, useNavigate } from "react-router-dom";
+
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { LuPackageSearch } from "react-icons/lu";
 import { LuPrinter } from "react-icons/lu";
 const opservice = OptionService();
-const poservice = PurchaseOrderService();
+const quservice = PurchaseOrderService();
+
 const gotoFrom = "/purchase-order";
 const dateFormat = 'DD/MM/YYYY';
+
 function PurchaseOrderManage() {
   const navigate = useNavigate();
   const location = useLocation();
+
   const { config } = location.state || { config: null };
   const [form] = Form.useForm();
+
   /** Modal handle */
   const [openSupplier, setOpenSupplier] = useState(false);
   const [openProduct, setOpenProduct] = useState(false);
+
   /** PurchaseOrder state */
   const [poCode, setPoCode] = useState(null);
+
   /** Detail Data State */
   const [listDetail, setListDetail] = useState([]);
+
   const [formDetail, setFormDetail] = useState(purchaseorderForm);
+
   const [unitOption, setUnitOption] = React.useState([]);
+
   const cardStyle = {
     backgroundColor: "#f0f0f0",
     height: "calc(100% - (25.4px + 1rem))",
@@ -56,13 +67,13 @@ function PurchaseOrderManage() {
   useEffect(() => {
     const initial = async () => {
       if (config?.action !== "create") {
-        const res = await poservice
+        const res = await quservice
           .get(config?.code)
           .catch((error) => message.error("get PurchaseOrder data fail."));
-          // console.log(res.data)
-        const { header, detail } = res.data;
+        const {
+          data: { header, detail },
+        } = res.data;
         const { pocode, podate } = header;
-        
         setFormDetail(header);
         setListDetail(detail);
         setPoCode(pocode);
@@ -72,12 +83,11 @@ function PurchaseOrderManage() {
         // handleChoosedSupplier(head);
       } else {
         const { data: code } = (
-          await poservice.code().catch((e) => {
+          await quservice.code().catch((e) => {
             message.error("get PurchaseOrder code fail.");
           })
         ).data;
         setPoCode(code);
-        form.setFieldValue("vat", 7);
         form.setFieldValue("payment", 'เงินสด');
         const ininteial_value = {
           ...formDetail,
@@ -108,21 +118,18 @@ function PurchaseOrderManage() {
 
     const total_price = newData.reduce(
       (a, v) =>
-        (a +=
+        a +=
           Number(v.qty || 0) *
           Number(v?.price || 0) *
-          (1 - Number(v?.discount || 0) / 100)),
+          (1 - Number(v?.discount || 0) / 100)+(Number(v.qty || 0) *
+          Number(v?.price || 0) *
+          (1 - Number(v?.discount || 0) / 100)*(v.vat/100)),
       0
     );
-    const vat = form.getFieldValue("vat");
-    const grand_total_price =
-      total_price + (total_price * form.getFieldValue("vat")) / 100;
 
     setFormDetail(() => ({
       ...formDetail,
       total_price,
-      vat,
-      grand_total_price,
     }));
     // console.log(formDetail)
   };
@@ -170,7 +177,7 @@ function PurchaseOrderManage() {
   };
 
   const handleItemsChoosed = (value) => {
-    console.log(value);
+    // console.log(value);
     setListDetail(value);
     handleSummaryPrice();
   };
@@ -194,7 +201,7 @@ function PurchaseOrderManage() {
         const parm = { header, detail };
         // console.log(parm)
         const actions =
-          config?.action !== "create" ? poservice.update : poservice.create;
+          config?.action !== "create" ? quservice.update : quservice.create;
         actions(parm)
           .then((r) => {
             handleClose().then((r) => {
@@ -406,74 +413,7 @@ function PurchaseOrderManage() {
                     <Table.Summary.Row>
                       <Table.Summary.Cell
                         index={0}
-                        colSpan={8}
-                      ></Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        index={4}
-                        align="end"
-                        className="!pe-4"
-                      >
-                        Total
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        className="!pe-4 text-end border-right-0"
-                        style={{ borderRigth: "0px solid" }}
-                      >
-                        <Typography.Text type="danger">
-                          {comma(Number(formDetail?.total_price || 0))}
-                        </Typography.Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>Baht</Table.Summary.Cell>
-                    </Table.Summary.Row>
-                    <Table.Summary.Row>
-                      <Table.Summary.Cell
-                        index={0}
-                        colSpan={7}
-                      ></Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        index={4}
-                        align="end"
-                        className="!pe-4"
-                      >
-                        Vat
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        className="!pe-4 text-end border-right-0"
-                        style={{ borderRigth: "0px solid" }}
-                      >
-                        <Form.Item name="vat" className="!m-0">
-                          <InputNumber
-                            className="width-100 input-30 text-end"
-                            addonAfter="%"
-                            controls={false}
-                            min={0}
-                            onFocus={(e) => {
-                              e.target.select();
-                            }}
-                            onChange={() => {
-                              handleSummaryPrice();
-                            }}
-                          />
-                        </Form.Item>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        className="!pe-4 text-end border-right-0"
-                        style={{ borderRigth: "0px solid" }}
-                      >
-                        <Typography.Text type="danger">
-                          {comma(
-                            Number(
-                              (formDetail.total_price * formDetail?.vat) / 100
-                            )
-                          )}
-                        </Typography.Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>Baht</Table.Summary.Cell>
-                    </Table.Summary.Row>
-                    <Table.Summary.Row>
-                      <Table.Summary.Cell
-                        index={0}
-                        colSpan={8}
+                        colSpan={9}
                       ></Table.Summary.Cell>
                       <Table.Summary.Cell
                         index={4}
@@ -483,14 +423,14 @@ function PurchaseOrderManage() {
                         Grand Total
                       </Table.Summary.Cell>
                       <Table.Summary.Cell
-                        className="!pe-4 text-end border-right-0"
+                        className="!pe-4 text-end"
                         style={{ borderRigth: "0px solid" }}
                       >
                         <Typography.Text type="danger">
-                          {comma(Number(formDetail?.grand_total_price || 0))}
+                          {formatMoney(Number(formDetail?.total_price || 0),2)}
                         </Typography.Text>
                       </Table.Summary.Cell>
-                      <Table.Summary.Cell>Baht</Table.Summary.Cell>
+                      <Table.Summary.Cell className="!pe-4 text-end">Baht</Table.Summary.Cell>
                     </Table.Summary.Row>
                   </>
                 )}
@@ -676,6 +616,7 @@ function PurchaseOrderManage() {
         <ModalItems
           show={openProduct}
           close={() => setOpenProduct(false)}
+          supcode={form.getFieldValue("supcode")}
           values={(v) => {
             handleItemsChoosed(v);
           }}
