@@ -58,8 +58,8 @@ try {
         $code = $conn->lastInsertId();
         // var_dump($master); exit;
         
-        $sql = "insert into podetail (pocode,stcode,qty,price,unit,discount,recamount)
-        values (:pocode,:stcode,:qty,:price,:unit,:discount,0)";
+        $sql = "insert into podetail (pocode,stcode,qty,price,unit,discount,vat,recamount)
+        values (:pocode,:stcode,:qty,:price,:unit,:discount,:vat,0)";
         $stmt = $conn->prepare($sql);
         if(!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
@@ -72,6 +72,7 @@ try {
             $stmt->bindParam(":price", $val->price, PDO::PARAM_INT);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);            
             $stmt->bindParam(":discount", $val->discount, PDO::PARAM_INT);
+            $stmt->bindParam(":vat", $val->vat, PDO::PARAM_INT);
             
             if(!$stmt->execute()) {
                 $error = $conn->errorInfo();
@@ -134,8 +135,8 @@ try {
             throw new PDOException("Remove data error => $error");
         }
 
-        $sql = "insert into podetail (pocode,stcode,unit,qty,price,discount,recamount)
-        values (:pocode,:stcode,:unit,:qty,:price,:discount,:recamount)";
+        $sql = "insert into podetail (pocode,stcode,unit,qty,price,discount,vat,recamount)
+        values (:pocode,:stcode,:unit,:qty,:price,:discount,:vat,:recamount)";
         $stmt = $conn->prepare($sql);
         if(!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
@@ -148,6 +149,7 @@ try {
             $stmt->bindParam(":qty", $val->qty, PDO::PARAM_INT);
             $stmt->bindParam(":price", $val->price, PDO::PARAM_INT);
             $stmt->bindParam(":discount", $val->discount, PDO::PARAM_INT);
+            $stmt->bindParam(":vat", $val->vat, PDO::PARAM_INT);
             $stmt->bindParam(":recamount", $val->recamount, PDO::PARAM_INT);
             
             if(!$stmt->execute()) {
@@ -196,7 +198,7 @@ try {
         }
         $header = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT a.pocode,a.stcode, a.price, a.discount, a.unit, a.qty ,i.stname,a.recamount ";
+        $sql = "SELECT a.pocode,a.stcode, a.price, a.discount,a.vat, a.unit, a.qty ,i.stname,a.recamount ";
         $sql .= " FROM `podetail` as a inner join `items` as i on (a.stcode=i.stcode)  ";        
         $sql .= " where a.pocode = :code";
         
