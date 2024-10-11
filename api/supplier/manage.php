@@ -26,21 +26,22 @@ try {
         $stmt = $conn->prepare($sql);
         if(!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}"); 
         
-        $stmt->bindParam(":supcode", $supcode, PDO::PARAM_STR);
-        $stmt->bindParam(":prename", $prename, PDO::PARAM_STR);
-        $stmt->bindParam(":supname", $supname, PDO::PARAM_STR);     
-        $stmt->bindParam(":taxnumber", $taxnumber, PDO::PARAM_STR);
-        $stmt->bindParam(":idno", $idno, PDO::PARAM_STR); 
-        $stmt->bindParam(":road", $road, PDO::PARAM_STR);         
-        $stmt->bindParam(":province", $province, PDO::PARAM_STR);   
-        $stmt->bindParam(":subdistrict", $subdistrict, PDO::PARAM_STR);   
-        $stmt->bindParam(":district", $district, PDO::PARAM_STR);                
-        $stmt->bindParam(":zipcode", $zipcode, PDO::PARAM_STR);        
-        $stmt->bindParam(":tel", $tel, PDO::PARAM_STR);
-        $stmt->bindParam(":fax", $fax, PDO::PARAM_STR);
-        $stmt->bindParam(":contact", $contact, PDO::PARAM_STR);        
-        $stmt->bindParam(":email", $email, PDO::PARAM_STR);        
-        $stmt->bindParam(":remark", $remark, PDO::PARAM_STR);        
+        $header = (object)$header;
+        $stmt->bindParam(":supcode", $header->supcode, PDO::PARAM_STR);
+        $stmt->bindParam(":prename", $header->prename, PDO::PARAM_STR);
+        $stmt->bindParam(":supname", $header->supname, PDO::PARAM_STR);     
+        $stmt->bindParam(":taxnumber", $header->taxnumber, PDO::PARAM_STR);
+        $stmt->bindParam(":idno", $header->idno, PDO::PARAM_STR); 
+        $stmt->bindParam(":road", $header->road, PDO::PARAM_STR);         
+        $stmt->bindParam(":province", $header->province, PDO::PARAM_STR);   
+        $stmt->bindParam(":subdistrict", $header->subdistrict, PDO::PARAM_STR);   
+        $stmt->bindParam(":district", $header->district, PDO::PARAM_STR);                
+        $stmt->bindParam(":zipcode", $header->zipcode, PDO::PARAM_STR);        
+        $stmt->bindParam(":tel", $header->tel, PDO::PARAM_STR);
+        $stmt->bindParam(":fax", $header->fax, PDO::PARAM_STR);
+        $stmt->bindParam(":contact", $header->contact, PDO::PARAM_STR);        
+        $stmt->bindParam(":email", $header->email, PDO::PARAM_STR);        
+        $stmt->bindParam(":remark", $header->remark, PDO::PARAM_STR);        
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_INT); 
         $stmt->bindParam(":action_date", $action_date, PDO::PARAM_STR);  
 
@@ -50,13 +51,30 @@ try {
             die;
         }
 
-        $conn->commit();
+        $sql = "insert into supplier_items (supcode,stcode)  
+        values (:supcode,:stcode) ";
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
+
+        // $detail = $detail;  
+        foreach ($detail as $ind => $val) {
+            $val = (object)$val;
+
+            $stmt->bindParam(":supcode", $header->supcode, PDO::PARAM_STR);
+            $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
+            if (!$stmt->execute()) {
+                $error = $conn->errorInfo();
+                throw new PDOException("Insert data error => $error");
+            }
+        }
+        
         $strSQL = "UPDATE supcode SET ";
         $strSQL .= " number= number+1 ";
         $strSQL .= " order by id desc LIMIT 1 ";
 
         $stmt3 = $conn->prepare($strSQL);
         if ($stmt3->execute()) {
+            $conn->commit();
             http_response_code(200);
             echo json_encode(array("data"=> array("id" => "ok", 'message' => 'เพิ่มผู้ขายสำเร็จ')));
         }
@@ -100,30 +118,55 @@ try {
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
-        $stmt->bindParam(":supcode", $supcode, PDO::PARAM_STR);
-        $stmt->bindParam(":prename", $prename, PDO::PARAM_STR);
-        $stmt->bindParam(":supname", $supname, PDO::PARAM_STR);     
-        $stmt->bindParam(":taxnumber", $taxnumber, PDO::PARAM_STR);
-        $stmt->bindParam(":idno", $idno, PDO::PARAM_STR); 
-        $stmt->bindParam(":road", $road, PDO::PARAM_STR);         
-        $stmt->bindParam(":province", $province, PDO::PARAM_STR);   
-        $stmt->bindParam(":subdistrict", $subdistrict, PDO::PARAM_STR);   
-        $stmt->bindParam(":district", $district, PDO::PARAM_STR);                
-        $stmt->bindParam(":zipcode", $zipcode, PDO::PARAM_STR);       
-        $stmt->bindParam(":tel", $tel, PDO::PARAM_STR);
-        $stmt->bindParam(":fax", $fax, PDO::PARAM_STR);
-        $stmt->bindParam(":contact", $contact, PDO::PARAM_STR);        
-        $stmt->bindParam(":email", $email, PDO::PARAM_STR);        
-        $stmt->bindParam(":remark", $remark, PDO::PARAM_STR);        
-        $stmt->bindParam(":active_status", $active_status, PDO::PARAM_STR);
-        $stmt->bindParam(":action_user", $action_user, PDO::PARAM_INT); 
-        $stmt->bindParam(":action_date", $action_date, PDO::PARAM_STR);  
+        $header = (object)$header;
+
+        $stmt->bindParam(":supcode", $header->supcode, PDO::PARAM_STR);
+        $stmt->bindParam(":prename", $header->prename, PDO::PARAM_STR);
+        $stmt->bindParam(":supname", $header->supname, PDO::PARAM_STR);     
+        $stmt->bindParam(":taxnumber", $header->taxnumber, PDO::PARAM_STR);
+        $stmt->bindParam(":idno", $header->idno, PDO::PARAM_STR); 
+        $stmt->bindParam(":road", $header->road, PDO::PARAM_STR);         
+        $stmt->bindParam(":province", $header->province, PDO::PARAM_STR);   
+        $stmt->bindParam(":subdistrict", $header->subdistrict, PDO::PARAM_STR);   
+        $stmt->bindParam(":district", $header->district, PDO::PARAM_STR);                
+        $stmt->bindParam(":zipcode", $header->zipcode, PDO::PARAM_STR);       
+        $stmt->bindParam(":tel", $header->tel, PDO::PARAM_STR);
+        $stmt->bindParam(":fax", $header->fax, PDO::PARAM_STR);
+        $stmt->bindParam(":contact", $header->contact, PDO::PARAM_STR);        
+        $stmt->bindParam(":email", $header->email, PDO::PARAM_STR);        
+        $stmt->bindParam(":remark", $header->remark, PDO::PARAM_STR);        
+        $stmt->bindParam(":active_status", $header->active_status, PDO::PARAM_STR);
+        $stmt->bindParam(":action_user", $header->action_user, PDO::PARAM_INT); 
+        $stmt->bindParam(":action_date", $header->action_date, PDO::PARAM_STR);  
 
 
         if (!$stmt->execute()) {
             $error = $conn->errorInfo();
             throw new PDOException("Insert data error => $error");
             die;
+        }
+        
+        $sql = "delete from supplier_items where supcode = :supcode";
+        $stmt = $conn->prepare($sql);
+        if (!$stmt->execute(['supcode' => $header->supcode])) {
+            $error = $conn->errorInfo();
+            throw new PDOException("Remove data error => $error");
+        }
+
+        $sql = "insert into supplier_items (supcode,stcode)
+        values (:supcode,:stcode)";
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
+
+        // $detail = $detail;  
+        foreach ($detail as $ind => $val) {
+            $val = (object)$val;
+            $stmt->bindParam(":supcode", $header->supcode, PDO::PARAM_STR);
+            $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
+            if (!$stmt->execute()) {
+                $error = $conn->errorInfo();
+                throw new PDOException("Insert data error => $error");
+            }
         }
 
         $conn->commit();
@@ -141,11 +184,23 @@ try {
             http_response_code(404);
             throw new PDOException("Geting data error => $error");
         }
-        $res = $stmt->fetch(PDO::FETCH_ASSOC);
+        $header = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        $sql = "SELECT a.supcode,a.stcode,i.stname ";
+        $sql .= " FROM `supplier_items` as a inner join `items` as i on (a.stcode=i.stcode)  ";
+        $sql .= " where a.supcode = :code";
+
+        $stmt = $conn->prepare($sql);
+        if (!$stmt->execute(['code' => $code])) {
+            $error = $conn->errorInfo();
+            http_response_code(404);
+            throw new PDOException("Geting data error => $error");
+        }
+        $detail = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $conn->commit();
         http_response_code(200);
-        echo json_encode(array("data" => $res));
+        echo json_encode(array('status' => 1, 'data' => array("header" => $header, "detail" => $detail)));
     }
 } catch (PDOException $e) {
     $conn->rollback();

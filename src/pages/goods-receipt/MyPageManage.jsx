@@ -22,7 +22,7 @@ import {
   columnsParametersEditable,
   componentsEditable,
 } from "./model";
-import { ModalItems } from "../../components/modal/itemsbyPO/modal-items";
+import { ModalItems } from "../../components/modal/itemsbyGR/modal-items";
 import dayjs from "dayjs";
 import { delay } from "../../utils/util";
 import { ButtonBack } from "../../components/button";

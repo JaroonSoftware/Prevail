@@ -21,17 +21,19 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
             $stmt = $conn->prepare($sql); 
             $stmt->execute();
             $res = $stmt->fetchAll(PDO::FETCH_ASSOC); 
-        } else  if ($p === 'qt' ){
+        } else if($p == 'po'){
             $sql = "
-			select i.stcode,i.stname, i.price, i.unit,i.vat
-            from catalog_link l
-            inner join catalog_detail d on d.catalog_code = l.catalog_code
-            left outer join `items` i on i.stcode = d.stcode            
-            where l.cuscode= '$cuscode'  "; 
+			select i.stcode,i.stname, i.buyprice as price, i.unit,i.vat, UUID() `key`, t.typename
+            from supplier_items as s
+            inner join items i on (s.stcode=i.stcode)
+            left outer join `itemtype` t on i.typecode = t.typecode
+            where s.supcode= '$supcode' 
+            $type_code";
+
             $stmt = $conn->prepare($sql); 
             $stmt->execute();
-            $res = $stmt->fetchAll(PDO::FETCH_ASSOC);             
-        }else  if ($p === 'po' ){
+            $res = $stmt->fetchAll(PDO::FETCH_ASSOC); 
+        } else if ($p === 'gr' ){
             $sql = "
 			SELECT a.code,a.pocode, a.stcode,i.stname, a.qty, a.price, a.unit, a.discount, a.recamount
             FROM podetail a 
@@ -41,6 +43,28 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
             $stmt = $conn->prepare($sql); 
             $stmt->execute();
             $res = $stmt->fetchAll(PDO::FETCH_ASSOC);             
+        }else if ($p === 'sup' ){
+            $sql = "
+			select i.stcode,i.stname, i.buyprice as price, i.unit,i.vat, UUID() `key`, t.typename
+            from items i
+            left outer join `itemtype` t on i.typecode = t.typecode
+            where 1 = 1 and i.active_status = 'Y'
+            $type_code";
+
+            $stmt = $conn->prepare($sql); 
+            $stmt->execute();
+            $res = $stmt->fetchAll(PDO::FETCH_ASSOC);         
+        }else if ($p === 'cl' ){
+            $sql = "
+			select i.stcode,i.stname, i.price, i.unit,i.vat, UUID() `key`, t.typename
+            from items i
+            left outer join `itemtype` t on i.typecode = t.typecode
+            where 1 = 1 and i.active_status = 'Y'
+            $type_code";
+
+            $stmt = $conn->prepare($sql); 
+            $stmt->execute();
+            $res = $stmt->fetchAll(PDO::FETCH_ASSOC);         
         } else  if ($p === 'items-type' ){
             $sql = "
 			select t.*
@@ -62,8 +86,9 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
         }
 
         http_response_code(200);
-        echo json_encode(array("data"=>$res,"sql"=>$sql));
-        // echo json_encode(array("data"=>$res));
+        echo json_encode(array("data"=>$res));
+        // echo json_encode(array("data"=>$res,"sql"=>$sql));
+        
         
     } catch (mysqli_sql_exception $e) { 
         http_response_code(400);
