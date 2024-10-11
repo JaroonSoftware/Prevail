@@ -6,39 +6,42 @@ import {
   Button,
   Flex,
   message,
-  Radio,
+  Badge,
   Select,
   Divider,
   Card,
-  Typography,
   Table,
+  Typography,
 } from "antd";
 import { Row, Col, Space } from "antd";
 import { SaveFilled } from "@ant-design/icons";
 import { ButtonBack } from "../../components/button";
 import { useLocation, useNavigate } from "react-router";
 import { delay } from "../../utils/util";
-import { columnsParametersEditable } from "./model";
 // import OptionService from '../../service/Options.service';
-import Supplierservice from "../../service/Supplier.Service";
+import { columnsParametersEditable } from "./model";
 import { ModalItems } from "../../components/modal/itemsbySup/modal-items";
-import { LuPackageSearch } from "react-icons/lu";
-import { RiDeleteBin5Line } from "react-icons/ri";
+import Supplierservice from "../../service/Supplier.Service";
 import { CreateInput } from "thai-address-autocomplete-react";
+import { RiDeleteBin5Line } from "react-icons/ri";
+import { LuPackageSearch } from "react-icons/lu";
 const InputThaiAddress = CreateInput();
 
 const supplierservice = Supplierservice();
 // const opservice = OptionService();
 const from = "/supplier";
+
 const MyManage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [openProduct, setOpenProduct] = useState(false);
+
   const { config } = location.state || { config: null };
   const [form] = Form.useForm();
+  /** Modal handle */
+  const [openProduct, setOpenProduct] = useState(false);
   const [listDetail, setListDetail] = useState([]);
   const [formDetail, setFormDetail] = useState({});
- 
+
   const init = async () => {
     const supcodeRes = await supplierservice
       .getcode()
@@ -67,18 +70,19 @@ const MyManage = () => {
     // console.log(value);
     setListDetail(value);
   };
+
   const getsupData = (v) => {
     supplierservice
       .get(v)
       .then(async (res) => {
-        const { data } = res.data;
+        const {
+          data: { header, detail },
+        } = res.data;
 
-        const init = {
-          ...data,
-        };
 
-        setFormDetail(init);
-        form.setFieldsValue({ ...init });
+        setFormDetail(header);
+        setListDetail(detail);
+        form.setFieldsValue({ ...header });
       })
       .catch((err) => {
         console.log(err);
@@ -97,13 +101,18 @@ const MyManage = () => {
     setFormDetail(addr);
     form.setFieldsValue(addr);
   };
+
   const handleConfirm = () => {
     form.validateFields().then((v) => {
-      const source = { ...formDetail, ...v };
+      const header = { ...formDetail, ...v };
+
+      const detail = listDetail;
+      const parm = { header, detail };
+      
       const actions =
         config?.action !== "create"
-          ? supplierservice.update(source)
-          : supplierservice.create(source);
+          ? supplierservice.update(parm)
+          : supplierservice.create(parm);
 
       actions
         .then(async (r) => {
@@ -119,6 +128,7 @@ const MyManage = () => {
         });
     });
   };
+
   const handleDelete = (code) => {
     const itemDetail = [...listDetail];
     const newData = itemDetail.filter((item) => item?.stcode !== code);
@@ -140,15 +150,13 @@ const MyManage = () => {
       />
     ) : null;
   };
-  const prodcolumns = columnsParametersEditable({
-    handleRemove,
-  });
+
   const filterOption = (input, option) =>
     (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
 
   const Detail = () => (
     <Row gutter={[8, 8]} className="px-2 sm:px-4 md:px-4 lg:px-4">
-      <Col xs={24} sm={24} md={24} lg={6} xl={6} xxl={4}>
+      <Col xs={24} sm={24} md={24} lg={4} xl={4} xxl={4}>
         <Form.Item
           label="รหัสผู้ขาย"
           name="supcode"
@@ -201,7 +209,7 @@ const MyManage = () => {
           ></Select>
         </Form.Item>
       </Col>
-      <Col xs={24} sm={24} md={24} lg={14} xl={14} xxl={6}>
+      <Col xs={24} sm={24} md={24} lg={16} xl={16} xxl={8}>
         <Form.Item
           label="ชื่อผู้ขาย"
           name="supname"
@@ -210,27 +218,36 @@ const MyManage = () => {
           <Input placeholder="กรอกชื่อผู้ขาย" />
         </Form.Item>
       </Col>
-      <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={6}>
+      <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={8}>
         <Form.Item label="เลขที่ผู้เสียภาษี" name="taxnumber">
           <Input placeholder="กรอกเลขที่ผู้เสียภาษี" />
         </Form.Item>
-      </Col>
+      </Col>      
       <Col
         xs={24}
         sm={24}
         md={12}
-        lg={6}
-        xl={6}
+        lg={4}
+        xl={4}
         xxl={4}
-        style={config === "edit" ? { display: "inline" } : { display: "none" }}
+        style={config.action === "edit" ? { display: "inline" } : { display: "none" }}
       >
         <Form.Item label="สถานะ" name="active_status">
-          <Radio.Group buttonStyle="solid">
-            <Radio.Button value="Y">Enable</Radio.Button>
-            <Radio.Button value="N">Disable</Radio.Button>
-          </Radio.Group>
+        <Select
+              size="large"
+              options={[
+                {
+                  value: "Y",
+                  label: <Badge status="success" text="เปิดการใช้งาน" />,
+                },
+                {
+                  value: "N",
+                  label: <Badge status="error" text="ปิดการใช้งาน" />,
+                },
+              ]}
+            />
         </Form.Item>
-      </Col>
+      </Col>      
     </Row>
   );
 
@@ -285,6 +302,56 @@ const MyManage = () => {
     </Row>
   );
 
+  /** setting column table */
+  const prodcolumns = columnsParametersEditable({
+    handleRemove,
+  });
+
+  const TitleTable = (
+    <Flex className="width-100" align="center">
+      <Col span={12} className="p-0">
+        <Flex gap={4} justify="start" align="center">
+          <Typography.Title className="m-0 !text-zinc-800" level={3}>
+            รายการสินค้าที่ขาย
+          </Typography.Title>
+        </Flex>
+      </Col>
+
+      <Col span={12} style={{ paddingInline: 0 }}>
+        <Flex justify="end">
+          <Button
+            icon={<LuPackageSearch style={{ fontSize: "1.2rem" }} />}
+            className="bn-center justify-center bn-primary-outline"
+            onClick={() => {
+              setOpenProduct(true);
+            }}
+          >
+            เลือกสินค้า
+          </Button>
+        </Flex>
+      </Col>
+    </Flex>
+  );
+
+  const SectionProduct = (
+    <>
+      <Flex className="width-100" vertical gap={4}>
+        <Table
+          title={() => TitleTable}
+          rowClassName={() => "editable-row"}
+          bordered
+          dataSource={listDetail}
+          columns={prodcolumns}
+          pagination={false}
+          rowKey="stcode"
+          scroll={{ x: "max-content" }}
+          locale={{
+            emptyText: <span>No data available, please add some data.</span>,
+          }}
+        />
+      </Flex>
+    </>
+  );
 
   const ContactDetail = () => (
     <Row gutter={[8, 8]} className="px-2 sm:px-4 md:px-4 lg:px-4">
@@ -316,32 +383,6 @@ const MyManage = () => {
     </Row>
   );
 
-  const TitleTable = (
-    <Flex className="width-100" align="center">
-      <Col span={12} className="p-0">
-        <Flex gap={4} justify="start" align="center">
-          <Typography.Title className="m-0 !text-zinc-800" level={3}>
-            รายการสินค้าที่ขาย
-          </Typography.Title>
-        </Flex>
-      </Col>
-
-      <Col span={12} style={{ paddingInline: 0 }}>
-        <Flex justify="end">
-          <Button
-            icon={<LuPackageSearch style={{ fontSize: "1.2rem" }} />}
-            className="bn-center justify-center bn-primary-outline"
-            onClick={() => {
-              setOpenProduct(true);
-            }}
-          >
-            เลือกสินค้า
-          </Button>
-        </Flex>
-      </Col>
-    </Flex>
-  );
-
   const SectionBottom = (
     <Row
       gutter={[{ xs: 32, sm: 32, md: 32, lg: 12, xl: 12 }, 8]}
@@ -369,25 +410,6 @@ const MyManage = () => {
     </Row>
   );
 
-  const SectionProduct = (
-    <>
-      <Flex className="width-100" vertical gap={4}>
-        <Table
-          title={() => TitleTable}
-          rowClassName={() => "editable-row"}
-          bordered
-          dataSource={listDetail}
-          columns={prodcolumns}
-          pagination={false}
-          rowKey="stcode"
-          scroll={{ x: "max-content" }}
-          locale={{
-            emptyText: <span>No data available, please add some data.</span>,
-          }}
-        />
-      </Flex>
-    </>
-  );
   return (
     <div className="supplier-manage xs:px-0 sm:px-0 md:px-8 lg:px-8">
       <Space direction="vertical" className="flex gap-2">
@@ -410,8 +432,6 @@ const MyManage = () => {
               ที่อยู่
             </Divider>
             <AddressDetail />
-
-
             <Divider
               orientation="left"
               plain
@@ -420,7 +440,6 @@ const MyManage = () => {
               การติดต่อ
             </Divider>
             <ContactDetail />
-
             <Row className="m-0" gutter={[12, 12]}>
               <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
                 {SectionProduct}
@@ -430,6 +449,7 @@ const MyManage = () => {
         </Form>
         {SectionBottom}
       </Space>
+
       {openProduct && (
         <ModalItems
           show={openProduct}
