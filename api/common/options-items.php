@@ -56,10 +56,12 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
             $res = $stmt->fetchAll(PDO::FETCH_ASSOC);         
         }else if ($p === 'cl' ){
             $sql = "
-			select i.stcode,i.stname, i.price, i.unit,i.vat, UUID() `key`, t.typename
-            from items i
+			select i.stcode,i.stname, d.price, i.unit,i.vat, UUID() `key`, t.typename
+            from catalog_link as a
+            inner join catalog_detail d on (a.catalog_code=d.catalog_code)
+            inner join items i on (d.stcode=i.stcode)
             left outer join `itemtype` t on i.typecode = t.typecode
-            where 1 = 1 and i.active_status = 'Y'
+            where a.cuscode= '$cuscode'
             $type_code";
 
             $stmt = $conn->prepare($sql); 

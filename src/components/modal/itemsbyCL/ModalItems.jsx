@@ -10,7 +10,7 @@ import { columns } from "./modal-items.model";
 import OptionService from "../../../service/Options.service";
 
 const opService = OptionService();
-export default function ModalItems({ show, close, values, selected }) {
+export default function ModalItems({ show, close, values, selected,cuscode }) {
   const [form] = Form.useForm();
   /** handle state */
   const [itemsData, setItemsData] = useState([]);
@@ -124,7 +124,7 @@ export default function ModalItems({ show, close, values, selected }) {
     const onload = () => {
       setLoading(true);
       opService
-        .optionsItems({ p: "cl" })
+        .optionsItems({ p: "cl" ,cuscode:cuscode})
         .then((res) => {
           let { status, data } = res;
           if (status === 200) {

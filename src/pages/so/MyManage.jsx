@@ -605,6 +605,7 @@ function MyManage() {
           values={(v) => {
             handleItemsChoosed(v);
           }}
+          cuscode={form.getFieldValue("cuscode")}
           selected={listDetail}
         ></ModalItems>
       )}
