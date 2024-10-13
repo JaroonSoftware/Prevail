@@ -5,7 +5,6 @@ import {
   DatePicker,
   Form,
   Input,
-  InputNumber,
   Modal,
   Table,
   Typography,
@@ -14,30 +13,27 @@ import {
 import { Card, Col, Divider, Flex, Row, Space } from "antd";
 
 import OptionService from "../../service/Options.service";
-import QuotationService from "../../service/Quotation.service";
+import SOService from "../../service/SO.service";
 import { SaveFilled, SearchOutlined } from "@ant-design/icons";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
 
-import {
-  quotationForm,
-  columnsParametersEditable,
-  componentsEditable,
-} from "./model";
-import { ModalItems } from "../../components/modal/items/modal-items";
+import { soForm, columnsParametersEditable, componentsEditable } from "./model";
+import { ModalItems } from "../../components/modal/itemsbyCL/modal-items";
 import dayjs from "dayjs";
-import { delay, comma } from "../../utils/util";
+import { delay, formatMoney } from "../../utils/util";
 import { ButtonBack } from "../../components/button";
 import { useLocation, useNavigate } from "react-router-dom";
-
+import { TbSquareRoundedX, TbExclamationCircle } from "react-icons/tb";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { LuPackageSearch } from "react-icons/lu";
-import { LuPrinter } from "react-icons/lu";
+
 const opservice = OptionService();
-const quservice = QuotationService();
+const soservice = SOService();
 
-const gotoFrom = "/so";
+const gotoFrom = "/sales-order";
+const dateFormat = "DD/MM/YYYY";
 
-function QuotationManage() {
+function MyManage() {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -48,13 +44,13 @@ function QuotationManage() {
   const [openCustomer, setOpenCustomer] = useState(false);
   const [openProduct, setOpenProduct] = useState(false);
 
-  /** Quotation state */
-  const [quotCode, setQuotCode] = useState(null);
+  /** SaleOrder state */
+  const [soCode, setSOCode] = useState(null);
 
   /** Detail Data State */
   const [listDetail, setListDetail] = useState([]);
 
-  const [formDetail, setFormDetail] = useState(quotationForm);
+  const [formDetail, setFormDetail] = useState(soForm);
 
   const [unitOption, setUnitOption] = React.useState([]);
 
@@ -66,32 +62,32 @@ function QuotationManage() {
   useEffect(() => {
     const initial = async () => {
       if (config?.action !== "create") {
-        const res = await quservice
+        const res = await soservice
           .get(config?.code)
-          .catch((error) => message.error("get Quotation data fail."));
+          .catch((error) => message.error("get SaleOrder data fail."));
         const {
           data: { header, detail },
         } = res.data;
-        const { qtcode, qtdate } = header;
+        const { socode, sodate } = header;
         setFormDetail(header);
         setListDetail(detail);
-        setQuotCode(qtcode);
-        form.setFieldsValue({ ...header, qtdate: dayjs(qtdate) });
+        setSOCode(socode);
+        form.setFieldsValue({ ...header, sodate: dayjs(sodate) });
 
         // setTimeout( () => {  handleCalculatePrice(head?.valid_price_until, head?.dated_price_until) }, 200);
         // handleChoosedCustomer(head);
       } else {
         const { data: code } = (
-          await quservice.code().catch((e) => {
-            message.error("get Quotation code fail.");
+          await soservice.code().catch((e) => {
+            message.error("get SaleOrder code fail.");
           })
         ).data;
-        setQuotCode(code);
+        setSOCode(code);
         form.setFieldValue("vat", 7);
         const ininteial_value = {
           ...formDetail,
-          qtcode: code,
-          qtdate: dayjs(new Date()),
+          socode: code,
+          sodate: dayjs(new Date()),
         };
         setFormDetail(ininteial_value);
         form.setFieldsValue(ininteial_value);
@@ -118,19 +114,18 @@ function QuotationManage() {
       (a, v) =>
         (a +=
           Number(v.qty || 0) *
-          Number(v?.price || 0) *
-          (1 - Number(v?.discount || 0) / 100)),
+            Number(v?.price || 0) *
+            (1 - Number(v?.discount || 0) / 100) +
+          Number(v.qty || 0) *
+            Number(v?.price || 0) *
+            (1 - Number(v?.discount || 0) / 100) *
+            (v.vat / 100)),
       0
     );
-    const vat = form.getFieldValue("vat");
-    const grand_total_price =
-      total_price + (total_price * form.getFieldValue("vat")) / 100;
 
     setFormDetail(() => ({
       ...formDetail,
       total_price,
-      vat,
-      grand_total_price,
     }));
     // console.log(formDetail)
   };
@@ -146,7 +141,7 @@ function QuotationManage() {
     form.setFieldValue("dated_price_until", nDateFormet);
   };
 
-  const handleQuotDate = (e) => {
+  const handleSO = (e) => {
     const { valid_price_until } = form.getFieldsValue();
     if (!!valid_price_until && !!e) {
       handleCalculatePrice(valid_price_until || 0, e || new Date());
@@ -178,7 +173,7 @@ function QuotationManage() {
   };
 
   const handleItemsChoosed = (value) => {
-    console.log(value);
+    // console.log(value)
     setListDetail(value);
     handleSummaryPrice();
   };
@@ -191,22 +186,23 @@ function QuotationManage() {
 
         const header = {
           ...formDetail,
+          sodate: dayjs(form.getFieldValue("sodate")).format("YYYY-MM-DD"),
           remark: form.getFieldValue("remark"),
         };
         const detail = listDetail;
 
         const parm = { header, detail };
-        // console.log(parm)
+        console.log(parm)
         const actions =
-          config?.action !== "create" ? quservice.update : quservice.create;
+          config?.action !== "create" ? soservice.update : soservice.create;
         actions(parm)
           .then((r) => {
             handleClose().then((r) => {
-              message.success("Request Quotation success.");
+              message.success("Request SaleOrder success.");
             });
           })
           .catch((err) => {
-            message.error("Request Quotation fail.");
+            message.error("Request SaleOrder fail.");
             console.warn(err);
           });
       })
@@ -222,11 +218,6 @@ function QuotationManage() {
     navigate(gotoFrom, { replace: true });
     await delay(300);
     console.clear();
-  };
-
-  const handlePrint = () => {
-    const newWindow = window.open("", "_blank");
-    newWindow.location.href = `/quo-print/${formDetail.quotcode}`;
   };
 
   const handleDelete = (code) => {
@@ -249,6 +240,35 @@ function QuotationManage() {
         disabled={!record?.stcode}
       />
     ) : null;
+  };
+
+  const handleCancleSO = () => {
+    Modal.confirm({
+      title: (
+        <Flex align="center" gap={2} className="text-red-700">
+          <TbExclamationCircle style={{ fontSize: "1.5rem" }} />
+          {"ยืนยันที่จะยกเลิกใบขายสินค้า"}
+        </Flex>
+      ),
+      icon: <></>,
+      content: "ต้องการยกเลิกใบขายสินค้า ใช่หรือไม่",
+      okText: "ยืนยัน",
+      okType: "danger",
+      cancelText: "ยกเลิก",
+      onOk() {
+        soservice.deleted(formDetail.socode).then((r) => {
+          handleClose().then((r) => {
+            message.success("ยกเลิกใบขายสินค้าสำเร็จ");
+          });
+        })
+        .catch((err) => {
+          message.error("Request SaleOrder fail.");
+          console.warn(err);
+        });
+        // setListSouce((state) => state.filter( soc => soc.stcode !== key));
+      },
+      // onCancel() { },
+    });
   };
 
   const handleEditCell = (row) => {
@@ -306,26 +326,22 @@ function QuotationManage() {
           </Col>
           <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
             <Form.Item name="cusname" label="ชื่อลูกค้า" className="!mb-1">
-              <Input placeholder="ชื่อลูกค้า" readOnly />
+              <Input placeholder="Customer Name." readOnly />
             </Form.Item>
           </Col>
           <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-            <Form.Item name="address" label="ที่อยู่ลูกค้า" className="!mb-1">
-              <Input placeholder="ที่อยู่ลูกค้า" readOnly />
+            <Form.Item name="address" label="ที่อยู่" className="!mb-1">
+              <Input placeholder="Customer Address." readOnly />
             </Form.Item>
           </Col>
           <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
-            <Form.Item
-              name="contact"
-              label="ช่องทางการติดต่อ"
-              className="!mb-1"
-            >
-              <Input placeholder="ช่องทางการติดต่อ" readOnly />
+            <Form.Item name="contact" label="ผู้ติดต่อ" className="!mb-1">
+              <Input placeholder="Customer Contact." readOnly />
             </Form.Item>
           </Col>
           <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
-            <Form.Item name="tel" label="เบอร์โทร" className="!mb-1">
-              <Input placeholder="เบอร์โทร" readOnly />
+            <Form.Item name="tel" label="เบอร์โทรลูกค้า" className="!mb-1">
+              <Input placeholder="Customer Tel." readOnly />
             </Form.Item>
           </Col>
         </Row>
@@ -338,7 +354,7 @@ function QuotationManage() {
       <Col span={12} className="p-0">
         <Flex gap={4} justify="start" align="center">
           <Typography.Title className="m-0 !text-zinc-800" level={3}>
-            รายการสินค้า
+            รายการใบขายสินค้า
           </Typography.Title>
         </Flex>
       </Col>
@@ -382,74 +398,7 @@ function QuotationManage() {
                     <Table.Summary.Row>
                       <Table.Summary.Cell
                         index={0}
-                        colSpan={5}
-                      ></Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        index={4}
-                        align="end"
-                        className="!pe-4"
-                      >
-                        Total
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        className="!pe-4 text-end border-right-0"
-                        style={{ borderRigth: "0px solid" }}
-                      >
-                        <Typography.Text type="danger">
-                          {comma(Number(formDetail?.total_price || 0))}
-                        </Typography.Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>Baht</Table.Summary.Cell>
-                    </Table.Summary.Row>
-                    <Table.Summary.Row>
-                      <Table.Summary.Cell
-                        index={0}
-                        colSpan={4}
-                      ></Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        index={4}
-                        align="end"
-                        className="!pe-4"
-                      >
-                        Vat
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        className="!pe-4 text-end border-right-0"
-                        style={{ borderRigth: "0px solid" }}
-                      >
-                        <Form.Item name="vat" className="!m-0">
-                          <InputNumber
-                            className="width-100 input-30 text-end"
-                            addonAfter="%"
-                            controls={false}
-                            min={0}
-                            onFocus={(e) => {
-                              e.target.select();
-                            }}
-                            onChange={() => {
-                              handleSummaryPrice();
-                            }}
-                          />
-                        </Form.Item>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        className="!pe-4 text-end border-right-0"
-                        style={{ borderRigth: "0px solid" }}
-                      >
-                        <Typography.Text type="danger">
-                          {comma(
-                            Number(
-                              (formDetail.total_price * formDetail?.vat) / 100
-                            )
-                          )}
-                        </Typography.Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>Baht</Table.Summary.Cell>
-                    </Table.Summary.Row>
-                    <Table.Summary.Row>
-                      <Table.Summary.Cell
-                        index={0}
-                        colSpan={5}
+                        colSpan={8}
                       ></Table.Summary.Cell>
                       <Table.Summary.Cell
                         index={4}
@@ -459,14 +408,16 @@ function QuotationManage() {
                         Grand Total
                       </Table.Summary.Cell>
                       <Table.Summary.Cell
-                        className="!pe-4 text-end border-right-0"
+                        className="!pe-4 text-end"
                         style={{ borderRigth: "0px solid" }}
                       >
                         <Typography.Text type="danger">
-                          {comma(Number(formDetail?.grand_total_price || 0))}
+                          {formatMoney(Number(formDetail?.total_price || 0), 2)}
                         </Typography.Text>
                       </Table.Summary.Cell>
-                      <Table.Summary.Cell>Baht</Table.Summary.Cell>
+                      <Table.Summary.Cell className="!pe-4 text-end">
+                        Baht
+                      </Table.Summary.Cell>
                     </Table.Summary.Row>
                   </>
                 )}
@@ -501,22 +452,34 @@ function QuotationManage() {
     >
       <Col span={12} className="p-0">
         <Flex gap={4} justify="start">
-          <ButtonBack target={gotoFrom} />
+          <ButtonBack target={gotoFrom} />          
         </Flex>
-      </Col>
-      <Col span={12} style={{ paddingInline: 0 }}>
+      </Col>      
+      <Col span={12} className="p-0">
         <Flex gap={4} justify="end">
-          {!!formDetail.quotcode && (
-            <Button
-              icon={<LuPrinter />}
-              onClick={() => {
-                handlePrint();
-              }}
-              className="bn-center !bg-orange-400 !text-white !border-transparent"
-            >
-              PRINT QUOTATION{" "}
-            </Button>
-          )}
+        {(formDetail.active_status==='Y')?(<Button
+            icon={<TbSquareRoundedX style={{ fontSize: "1.4rem" }} />}
+            type="primary"
+            onClick={() => handleCancleSO()}
+            className="bn-center justify-center"
+            style={{ width: "9.5rem" }}
+            danger
+          >
+            ยกเลิกใบขายสินค้า
+          </Button>
+        ):<></>}
+        {(formDetail.active_status==='Y'||config.action === "create")?(<Button
+            className="bn-center justify-center"
+            icon={<SaveFilled style={{ fontSize: "1rem" }} />}
+            type="primary"
+            style={{ width: "9.5rem" ,marginLeft: "10px"}}
+            onClick={() => {
+              handleConfirm();
+            }}
+          >
+            Save
+          </Button>
+        ):<></>}  
         </Flex>
       </Col>
     </Row>
@@ -534,7 +497,7 @@ function QuotationManage() {
       </Col>
       <Col span={12} style={{ paddingInline: 0 }}>
         <Flex gap={4} justify="end">
-          <Button
+        {(formDetail.active_status==='Y'||config.action === "create")?(<Button
             className="bn-center justify-center"
             icon={<SaveFilled style={{ fontSize: "1rem" }} />}
             type="primary"
@@ -545,6 +508,7 @@ function QuotationManage() {
           >
             Save
           </Button>
+        ):<></>}          
         </Flex>
       </Col>
     </Row>
@@ -561,13 +525,14 @@ function QuotationManage() {
             className="width-100"
             autoComplete="off"
           >
-            <Card
+            {/* style={{ backgroundColor: "red" }} */}
+            <Card 
               title={
                 <>
                   <Row className="m-0 py-3 sm:py-0" gutter={[12, 12]}>
                     <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
                       <Typography.Title level={3} className="m-0">
-                        รหัสใบขายสินค้า : {quotCode}
+                        รหัสใบขายสินค้า : {soCode}
                       </Typography.Title>
                     </Col>
                     <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
@@ -579,11 +544,12 @@ function QuotationManage() {
                         <Typography.Title level={3} className="m-0">
                           วันที่ใบขายสินค้า :{" "}
                         </Typography.Title>
-                        <Form.Item name="qtdate" className="!m-0">
+                        <Form.Item name="sodate" className="!m-0">
                           <DatePicker
                             className="input-40"
                             allowClear={false}
-                            onChange={handleQuotDate}
+                            onChange={handleSO}
+                            format={dateFormat}
                           />
                         </Form.Item>
                       </Flex>
@@ -595,19 +561,21 @@ function QuotationManage() {
               <Row className="m-0" gutter={[12, 12]}>
                 <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
                   <Divider orientation="left" className="!mb-3 !mt-1">
-                    ลูกค้า
+                    {" "}
+                    Customer{" "}
                   </Divider>
                   <Card style={cardStyle}>{SectionCustomer}</Card>
                 </Col>
                 <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
                   <Divider orientation="left" className="!mb-3 !mt-1">
-                    เพิ่มเติม
+                    {" "}
+                    รายละเอียดอื่นๆ{" "}
                   </Divider>
                   <Card style={cardStyle}>{SectionOther}</Card>
                 </Col>
                 <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
                   <Divider orientation="left" className="!my-0">
-                    รายการสินค้าใบขายสินค้า
+                    Product
                   </Divider>
                   <Card style={{ backgroundColor: "#f0f0f0" }}>
                     {SectionProduct}
@@ -644,4 +612,4 @@ function QuotationManage() {
   );
 }
 
-export default QuotationManage;
+export default MyManage;

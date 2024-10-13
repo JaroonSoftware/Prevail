@@ -57,9 +57,11 @@ const ModalSupplierManage = ({ submit }) => {
   };
 
   const handleConfirm = () => {
+    
     form.validateFields().then((v) => {
-      const source = { ...formDetail, ...v };
-      submit(source);
+      const header = { ...formDetail, ...v };
+      const parm = { header }
+      submit(parm);
     });
   };
 

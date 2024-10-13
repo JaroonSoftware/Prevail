@@ -25,6 +25,11 @@ let _nav = [
     title: "ใบเสนอราคา",
     icon: <FileTextFilled className="nav-ico" />, 
     to: "/quotation",    
+  },  
+  {
+    title: "ใบขายสินค้า",
+    icon: <ReconciliationFilled className="nav-ico" />,    
+    to: "/sales-order",
   },
   {
     title: "ข้อมูลลูกค้า",
@@ -94,12 +99,6 @@ let _nav = [
     icon: <TbReportMoney className="nav-ico" />,
     to: "/r",
     // to: "/receipt",
-  },
-  {
-    title: "ใบขายสินค้า",
-    icon: <ReconciliationFilled className="nav-ico" />,
-    to: "/r",
-    // to: "/so",
   },
 ];
 

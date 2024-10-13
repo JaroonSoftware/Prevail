@@ -39,6 +39,19 @@ function update_qtcode($pdo){
     }
 } 
 
+function update_socode($pdo){
+    $year = date("Y");
+    $month = date("m");
+    $sql = "update options set socode = socode + 1 where year = :y and month = :m";
+    $stmt = $pdo->prepare($sql);
+
+    if (!$stmt->execute([ 'y' => $year, 'm' => $month ])){
+        $error = $pdo->errorInfo(); 
+        http_response_code(401);
+        throw new PDOException("Update code error => $error");
+    }
+} 
+
 function update_ivcode($pdo){
     $year = date("Y");
     $month = date("m");
@@ -179,6 +192,45 @@ function request_qtcode($pdo){
         if ($stmt->rowCount() > 0){
             $number += 1;
             update_qtcode($pdo);
+            continue;
+        } else break;
+    } 
+    return $prefix.sprintf("%03s", ( $number) );   
+}
+
+function request_socode($pdo){
+    $year = date("Y");
+    $month = date("m");
+
+    $sql = "select socode code from options where year = :y and month = :m";
+    $stmt = $pdo->prepare($sql); 
+    if (!$stmt->execute([ 'y' => $year, 'm' => $month ])){
+        $error = $pdo->errorInfo();
+        http_response_code(401);
+        throw new PDOException("Geting code error => $error");
+    }
+
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (empty($result)) {
+        create_options($pdo, $year, $month);
+        return 0;
+    } 
+    //QU240100001
+    $res = $result["code"];
+    $y = substr( date("Y")+543, -2);
+    $m = date("m");
+    $number = intval($res);
+    $prefix = "SO$y$m";
+    while(true){
+        $code = sprintf("%03s", ( $number) );
+        $format = $prefix.$code;
+        $sql = "SELECT 1 r FROM somaster where socode = '$format'"; 
+        $stmt = $pdo->prepare($sql); 
+        $stmt->execute(); 
+        if ($stmt->rowCount() > 0){
+            $number += 1;
+            update_socode($pdo);
             continue;
         } else break;
     } 

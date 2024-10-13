@@ -4,12 +4,13 @@ import { Modal, Card, Table, message, Form, Spin } from "antd";
 import { Row, Col, Space } from "antd";
 import { Input, Button } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
+
 import { columns } from "./modal-items.model";
 // import ItemService from "../../service/ItemService";
 import OptionService from "../../../service/Options.service";
 
 const opService = OptionService();
-export default function ModalItems({ show, close,cuscode, values, selected }) {
+export default function ModalItems({ show, close, values, selected }) {
   const [form] = Form.useForm();
   /** handle state */
   const [itemsData, setItemsData] = useState([]);
@@ -60,9 +61,11 @@ export default function ModalItems({ show, close,cuscode, values, selected }) {
       .map((m, i) => ({
         stcode: m.stcode,
         stname: m.stname,
-        price: Number(m?.price || 0),        
+        price: Number(m?.price || 0),
+        qty: 1,
         unit: m.unit,
-        isvat: !!Number(m?.isvat || 0)
+        discount: 0,
+        vat: m.vat,
       }));
 
     // const trans = selected.filter( (item) =>  item?.stcode === "" );
@@ -121,7 +124,7 @@ export default function ModalItems({ show, close,cuscode, values, selected }) {
     const onload = () => {
       setLoading(true);
       opService
-        .optionsItems({ p: "qt" ,cuscode:cuscode})
+        .optionsItems({ p: "cl" })
         .then((res) => {
           let { status, data } = res;
           if (status === 200) {

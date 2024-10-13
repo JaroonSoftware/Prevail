@@ -1,4 +1,4 @@
-import { Button, Popconfirm, Space } from "antd"; 
+import { Button,Space } from "antd"; 
 import "../../assets/styles/banks.css"
 // import { Typography } from "antd"; 
 // import { Popconfirm, Button } from "antd";
@@ -6,8 +6,10 @@ import { Tooltip } from "antd";
 // import { EditOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons"; 
 import { EditableRow, EditableCell } from "../../components/table/TableEditAble";
 import dayjs from 'dayjs';
-import { DeleteOutlined, EditOutlined, PrinterOutlined, QuestionCircleOutlined } from "@ant-design/icons";
+import { EditOutlined,PrinterOutlined } from "@ant-design/icons";
 import { comma } from '../../utils/util';
+import { TagsCreateBy } from "../../components/badge-and-tag/";
+import { TagSalesOrderStatus } from "../../components/badge-and-tag";
 
 const calTotalDiscount = (rec) => {
   const total =  Number(rec?.qty ||  0) * Number(rec?.price ||  0);
@@ -21,21 +23,21 @@ export const componentsEditable = {
 };
 
 /** get sample column */
-export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}) => [
+export const accessColumn = ({handleEdit, handleView, handlePrintsData}) => [
   {
-    title: "รหัสใบเสนอราคา",
-    key: "qtcode",
-    dataIndex: "qtcode",
+    title: "รหัสใบขายสินค้า",
+    key: "socode",
+    dataIndex: "socode",
     align: "left",
-    sorter: (a, b) => (a.qtcode).localeCompare(b.qtcode),
+    sorter: (a, b) => (a.socode).localeCompare(b.socode),
     width:140,
   },
   {
-    title: "วันที่ใบเสนอราคา",
-    dataIndex: "qtdate",
-    key: "qtdate",
+    title: "วันที่ใบขายสินค้า",
+    dataIndex: "sodate",
+    key: "sodate",
     width: 140,
-    sorter: (a, b) => (a.qtdate).localeCompare(b.qtdate),
+    sorter: (a, b) => (a.sodate).localeCompare(b.sodate),
     render: (v) => dayjs(v).format("DD/MM/YYYY"),
   },
   {
@@ -55,16 +57,25 @@ export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}
     },
     render: (v) => <Tooltip placement="topLeft" title={v}>{v}</Tooltip>, 
   },
+  {
+    title: "สถานะ",
+    dataIndex: "doc_status",
+    key: "doc_status", 
+    width: '13%',
+    sorter: (a, b) => a.doc_status.localeCompare(b.doc_status),
+    sortDirections: ["descend", "ascend"],
+    render: (data) => <TagSalesOrderStatus result={data} />,
+  },
   { 
     title: "จัดทำโดย",
     dataIndex: "created_name",
     key: "created_name", 
-    width: '15%',
     sorter: (a, b) => (a.created_name).localeCompare(b.created_name),
+    width: '15%',
     ellipsis: {
       showTitle: false,
     },
-    render: (v) => <Tooltip placement="topLeft" title={v}>{v}</Tooltip>, 
+    render: (data,role) => <TagsCreateBy result={data} role={role} />, 
   },
   {
     title: "Action",
@@ -81,28 +92,13 @@ export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}
           size="small"
         />
 
-        <Popconfirm 
-          placement="topRight"
-          title="Sure to delete?"  
-          description="Are you sure to delete this packaging?"
-          icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
-          onConfirm={() => handleDelete(record)}
-        >
-          <Button
-            icon={<DeleteOutlined />}
-            danger
-            style={{ cursor: "pointer", display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
-            size="small"
-          />
-        </Popconfirm>
         <Button
           icon={<PrinterOutlined />} 
           className='bn-warning-outline'
           style={{ cursor: "pointer", display: 'flex', alignItems: 'center', justifyContent: 'center'}}
-          onClick={(e) => handlePrint(record) }
+          onClick={(e) => handlePrintsData(record.socode) }
           size="small"
         />        
-        {/* <ButtonAttachFiles code={record.srcode} refs='Sample Request' showExpire={true} /> */}
       </Space>
     ),
   }, 
@@ -184,6 +180,27 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
     render: (_, rec) => <>{ comma( calTotalDiscount(rec),  2, 2 )}</>,
   },
   {
+    title: "VAT (%)",
+    dataIndex: "vat",
+    key: "vat", 
+    width: "8%",
+    align: "right",
+    className: "!pe-3",
+    editable: true,
+    required: true,
+    type:'number',
+    render: (_, rec) => <>{ comma( Number(rec?.vat ||  0),  2, 2 )}</>,
+  },  
+  {
+    title: "ราคารวมสุทธิ",
+    dataIndex: "totalnet",
+    key: "totalnet",
+    width: "8%",
+    align: "right",
+    className: "!pe-3",
+    render: (_, rec) => <>{ comma( calTotalDiscount(rec)+calTotalDiscount(rec)*(rec.vat/100),  2, 2 )}</>,
+  }, 
+  {
     title: "ตัวเลือก",
     align: "center",
     key: "operation",
@@ -217,9 +234,9 @@ export const columnsParametersEditable = (handleEditCell,optionsItems,{handleRem
       };
   }); 
 }
-export const quotationForm = {
-  qtcode: null,
-  qtdate: null,
+export const soForm = {
+  socode: null,
+  sodate: null,
   cuscode: null,
   cusname: null,
   contact: null,
@@ -227,6 +244,7 @@ export const quotationForm = {
   cusaddress: null,
   tel: null,
   remark: null,
+  active_status:null,
   total_price: 0,
   vat: 7,
   grand_total_price: 0,

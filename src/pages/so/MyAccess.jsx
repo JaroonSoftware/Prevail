@@ -9,10 +9,10 @@ import { SearchOutlined, ClearOutlined, FileAddOutlined } from '@ant-design/icon
 import { accessColumn } from "./model";
 
 import dayjs from 'dayjs';
-import QuotationService from '../../service/Quotation.service';
+import SOService from '../../service/SO.service';
 
 
-const quotService = QuotationService(); 
+const soservice = SOService(); 
 const mngConfig = {title:"", textOk:null, textCancel:null, action:"create", code:null};
 
 const RangePicker = DatePicker.RangePicker;
@@ -30,27 +30,32 @@ const MyAccess = () => {
         <>  
         <Row gutter={[8,8]}> 
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='รหัสใบขายสินค้า' name='socode'>
+                <Form.Item label='Sale Order Code' name='socode'>
                     <Input placeholder='Enter Sale Order Code.' />
                 </Form.Item>                            
             </Col>
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='วันที่ใบขายสินค้า' name='sodate'>
+                <Form.Item label='Sale Order Date.' name='sodate'>
                     <RangePicker placeholder={['From Date', 'To date']} style={{width:'100%', height:40}}  />
                 </Form.Item>
             </Col> 
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='สร้างโดย' name='created_by'>
+                <Form.Item label='Request By.' name='created_by'>
                     <Input placeholder='Enter First Name or Last Name.' />
                 </Form.Item>
             </Col>
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='รหัสลูกค้า' name='cuscode'>
+                <Form.Item label='Product' name='stname'>
+                    <Input placeholder='Enter Product Name.' />
+                </Form.Item>                            
+            </Col>
+            <Col xs={24} sm={8} md={8} lg={8} xl={8}>
+                <Form.Item label='Customer Code' name='cuscode'>
                     <Input placeholder='Enter Customer Code.' />
                 </Form.Item>                            
             </Col>
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='ชื่อลูกค้า' name='cusname'>
+                <Form.Item label='Customer Name' name='cusname'>
                     <Input placeholder='Enter Customer Name.' />
                 </Form.Item>                            
             </Col>
@@ -62,7 +67,7 @@ const MyAccess = () => {
           <Col xs={24} sm={8} md={12} lg={12} xl={12}>
               <Flex justify='flex-end' gap={8}>
                   <Button type="primary" size='small' className='bn-action' icon={<SearchOutlined />} onClick={() => handleSearch()}>
-                      Searchd
+                      Search
                   </Button>
                   <Button type="primary" size='small' className='bn-action' danger icon={<ClearOutlined />} onClick={() => handleClear()}>
                       Clear
@@ -122,29 +127,17 @@ const MyAccess = () => {
         navigate("manage/edit", { state: { config: {...mngConfig, title:"แก้ไขใบขายสินค้า", action:"edit", code:data?.socode} }, replace:true } );
     }; 
 
-    const handleDelete = (data) => { 
-        // startLoading();
-        quotService.deleted(data?.quotcode).then( _ => {
-            const tmp = accessData.filter( d => d.quotcode !== data?.quotcode );
-
-            setAccessData([...tmp]); 
-        })
-        .catch(err => {
-            console.log(err);
-            message.error("Request error!");
-        });
-    }; 
-
-    const handlePrint = (recode) => {
-        const newWindow = window.open('', '_blank');
-        newWindow.location.href = `/quo-print/${recode.qtcode}`;
-      };
+    const handlePrintsData = (code) => { 
+        const url = `/pickup-list-print/${code}`;
+        const newWindow = window.open('', url, url);
+        newWindow.location.href = url;
+      }
     
 
-    const column = accessColumn( {handleEdit, handleDelete, handlePrint });
+    const column = accessColumn( {handleEdit, handlePrintsData });
 
     const getData = (data) => {
-        quotService.search(data, { ignoreLoading: loading}).then( res => {
+        soservice.search(data, { ignoreLoading: loading}).then( res => {
             const {data} = res.data;
 
             setAccessData(data);

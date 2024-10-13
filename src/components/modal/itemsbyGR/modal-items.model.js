@@ -24,9 +24,9 @@ export const columns = ()=>{
       key: "stname",
     },
     {
-      title: "ราคาซื้อ",
-      dataIndex: "buyprice",
-      key: "buyprice",
+      title: "ราคา",
+      dataIndex: "price",
+      key: "price",
     },    
     {
       title: "หน่วย",

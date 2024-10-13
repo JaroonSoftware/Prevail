@@ -69,7 +69,7 @@ try {
             $stmt->bindParam(":pocode", $header->pocode, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
             $stmt->bindParam(":qty", $val->qty, PDO::PARAM_INT);
-            $stmt->bindParam(":price", $val->price, PDO::PARAM_INT);
+            $stmt->bindParam(":price", $val->buyprice, PDO::PARAM_INT);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);            
             $stmt->bindParam(":discount", $val->discount, PDO::PARAM_INT);
             $stmt->bindParam(":vat", $val->vat, PDO::PARAM_INT);
@@ -147,7 +147,7 @@ try {
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
             $stmt->bindParam(":qty", $val->qty, PDO::PARAM_INT);
-            $stmt->bindParam(":price", $val->price, PDO::PARAM_INT);
+            $stmt->bindParam(":price", $val->buyprice, PDO::PARAM_INT);
             $stmt->bindParam(":discount", $val->discount, PDO::PARAM_INT);
             $stmt->bindParam(":vat", $val->vat, PDO::PARAM_INT);
             $stmt->bindParam(":recamount", $val->recamount, PDO::PARAM_INT);
