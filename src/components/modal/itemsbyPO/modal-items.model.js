@@ -3,11 +3,6 @@ import { TagItemTypes } from "../../badge-and-tag";
 export const columns = ()=>{
   return [
     {
-      title: "รหัสใบสั่งซื้อ",
-      key: "pocode",
-      dataIndex: "pocode", 
-    },
-    {
       title: "รหัสสินค้า",
       key: "stcode",
       dataIndex: "stcode", 
@@ -18,25 +13,15 @@ export const columns = ()=>{
       key: "stname",
     },
     {
-      title: "ราคาต่อหน่วย",
-      dataIndex: "price",
-      key: "price",
-    },    
+      title: "ราคาซื้อ",
+      dataIndex: "buyprice",
+      key: "buyprice",
+    },
     {
       title: "หน่วย",
       dataIndex: "unit",
       key: "unit",
       render: (h)=><TagItemTypes data={h} />,
-    },
-    {
-      title: "จำนวนสั่งซื้อ",
-      dataIndex: "qty",
-      key: "qty",
-    },
-    {
-      title: "จำนวนที่รับแล้ว",
-      dataIndex: "recamount",
-      key: "recamount",
     },
   ]
 };

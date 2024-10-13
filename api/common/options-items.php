@@ -23,7 +23,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
             $res = $stmt->fetchAll(PDO::FETCH_ASSOC); 
         } else if($p == 'po'){
             $sql = "
-			select i.stcode,i.stname, i.buyprice as price, i.unit,i.vat, UUID() `key`, t.typename
+			select i.stcode,i.stname, i.buyprice, i.unit,i.vat, UUID() `key`, t.typename
             from supplier_items as s
             inner join items i on (s.stcode=i.stcode)
             left outer join `itemtype` t on i.typecode = t.typecode

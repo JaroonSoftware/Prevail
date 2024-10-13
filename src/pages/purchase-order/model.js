@@ -155,15 +155,15 @@ export const productColumn = ({handleRemove},optionsItems) => [
   },
   {
     title: "ราคาซื้อ",
-    dataIndex: "price",
-    key: "price", 
+    dataIndex: "buyprice",
+    key: "buyprice", 
     width: "8%",
     align: "right",
     className: "!pe-3",
     editable: true,
     required: true,
     type:'number',
-    render: (_, rec) => <>{ comma( Number(rec?.price ||  0),  2, 2 )}</>,
+    render: (_, rec) => <>{ comma( Number(rec?.buyprice ||  0),  2, 2 )}</>,
   },
   {
     title: "หน่วยสินค้า",

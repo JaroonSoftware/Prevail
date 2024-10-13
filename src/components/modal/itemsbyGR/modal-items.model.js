@@ -3,6 +3,12 @@ import { TagItemTypes } from "../../badge-and-tag";
 export const columns = ()=>{
   return [
     {
+      title: "code",
+      dataIndex: "code",
+      key: "code",
+      hidden: "true",
+    },
+    {
       title: "รหัสใบสั่งซื้อ",
       key: "pocode",
       dataIndex: "pocode", 
