@@ -2,14 +2,14 @@ import { Button, Space } from "antd";
 import "../../assets/styles/banks.css"
 // import { Typography } from "antd"; 
 // import { Popconfirm, Button } from "antd";
-import { Tooltip,Image } from "antd";
+import { Tooltip } from "antd";
 // import { EditOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons"; 
 
-// import { TagGoodsReceiptStatus } from "../../components/badge-and-tag";
+import { TagGoodsReceiptStatus } from "../../components/badge-and-tag";
 import { EditableRow, EditableCell } from "../../components/table/TableEditAble";
 import dayjs from 'dayjs';
-import { EditOutlined } from "@ant-design/icons";
-import { comma,BACKEND_URL_MAIN } from '../../utils/util';
+import { EditOutlined, PrinterOutlined } from "@ant-design/icons";
+import { comma } from '../../utils/util';
 
 /** export component for edit table */
 export const componentsEditable = {
@@ -51,15 +51,15 @@ export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}
     },
     render: (v) => <Tooltip placement="topLeft" title={v}>{v}</Tooltip>, 
   },  
-  // {
-  //   title: "สถานะ",
-  //   dataIndex: "doc_status",
-  //   key: "doc_status", 
-  //   width: '13%',
-  //   sorter: (a, b) => a.doc_status.localeCompare(b.doc_status),
-  //   sortDirections: ["descend", "ascend"],
-  //   render: (data) => <TagGoodsReceiptStatus result={data} />,
-  // },
+  {
+    title: "สถานะ",
+    dataIndex: "doc_status",
+    key: "doc_status", 
+    width: '13%',
+    sorter: (a, b) => a.doc_status.localeCompare(b.doc_status),
+    sortDirections: ["descend", "ascend"],
+    render: (data) => <TagGoodsReceiptStatus result={data} />,
+  },
   { 
     title: "จัดทำโดย",
     dataIndex: "created_name",
@@ -101,33 +101,18 @@ export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}
 
 export const productColumn = ({handleRemove},optionsItems) => [
   {
+    title: "Code",
+    dataIndex: "code",
+    key: "code",
+    hidden: "true",
+  },
+  {
     title: "ลำดับ",
     dataIndex: "ind",
     key: "ind",
     align: "center",
     width: 80, 
     render: (im, rc, index) => <>{index + 1}</>,
-  },
-  {
-    title: "รูปประกอบ",
-    dataIndex: "file",
-    key: "file",
-    width: 120,
-    align: "center",
-    render: (im, rec) => 
-      {
-        const img = (!!rec.file_name ? `/uploads/` + rec.file_name : `/Logo-AI.png`
-        );
-        return <>
-        <Image
-      style={{ borderRadius: 10 }}
-      preview={false}
-      height={75}
-      alt={`Image ${rec.file_name}`}
-      src={`${BACKEND_URL_MAIN}` + img}
-    />
-    </>
-    },
   },
   {
     title: "ใบสั่งซื้อ",
@@ -151,14 +136,14 @@ export const productColumn = ({handleRemove},optionsItems) => [
     render: (_, rec) => rec.stname,
   },
   {
-    title: "ราคาต่อหน่วย",
-    dataIndex: "price",
-    key: "price", 
+    title: "ราคาซื้อ",
+    dataIndex: "buyprice",
+    key: "buyprice", 
     width: "10%",
     align: "right",
     className: "!pe-3",
     type:'number',
-    render: (_, rec) => <>{ comma( Number(rec?.price ||  0),  2, 2 )}</>,
+    render: (_, rec) => <>{ comma( Number(rec?.buyprice ||  0),  2, 2 )}</>,
   },  
   {
     title: "หน่วยสินค้า",
@@ -203,7 +188,7 @@ export const productColumn = ({handleRemove},optionsItems) => [
     required: true,
     type:'number',
     onCell: (rec) => {
-      const isamount = (Number(rec?.qty || 0) > 0 && Number(rec?.qty || 0) >= Number(rec?.qty_buy || 0) ) ? 'text-green-700' : 'text-red-600'
+      const isamount = (Number(rec?.qty || 0) > 0 && Number(rec?.qty || 0) >= Number(rec?.qty || 0) ) ? 'text-green-700' : 'text-red-600'
       return {
         className: `!pe-3 field-edit !bg-gray-300 ${isamount}`
       }

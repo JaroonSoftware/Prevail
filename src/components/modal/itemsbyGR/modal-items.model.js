@@ -3,7 +3,7 @@ import { TagItemTypes } from "../../badge-and-tag";
 export const columns = ()=>{
   return [
     {
-      title: "code",
+      title: "Code",
       dataIndex: "code",
       key: "code",
       hidden: "true",
@@ -24,9 +24,9 @@ export const columns = ()=>{
       key: "stname",
     },
     {
-      title: "ราคาต่อหน่วย",
-      dataIndex: "price",
-      key: "price",
+      title: "ราคาซื้อ",
+      dataIndex: "buyprice",
+      key: "buyprice",
     },    
     {
       title: "หน่วย",

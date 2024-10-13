@@ -105,13 +105,13 @@ export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}
             size="small"
           />
         </Popconfirm> */}
-        <Button
+        {/* <Button
           icon={<PrinterOutlined />} 
           className='bn-warning-outline'
           style={{ cursor: "pointer", display: 'flex', alignItems: 'center', justifyContent: 'center'}}
           onClick={(e) => handlePrint(record) }
           size="small"
-        />        
+        />         */}
         {/* <ButtonAttachFiles code={record.srcode} refs='Sample Request' showExpire={true} /> */}
       </Space>
     ),

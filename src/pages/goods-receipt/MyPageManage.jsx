@@ -32,7 +32,7 @@ import { RiDeleteBin5Line } from "react-icons/ri";
 import { LuPackageSearch } from "react-icons/lu";
 import { LuPrinter } from "react-icons/lu";
 const opservice = OptionService();
-const grservice = GoodsReceiptService();
+const quservice = GoodsReceiptService();
 
 const gotoFrom = "/goods-receipt";
 const dateFormat = 'DD/MM/YYYY';
@@ -65,10 +65,12 @@ function GoodsReceiptManage() {
   useEffect(() => {
     const initial = async () => {
       if (config?.action !== "create") {
-        const res = await grservice
+        const res = await quservice
           .get(config?.code)
           .catch((error) => message.error("get GoodsReceipt data fail."));
-        const { header, detail } = res.data;
+        const {
+          data: { header, detail },
+        } = res.data;
         const { grcode, grdate } = header;
         setFormDetail(header);
         setListDetail(detail);
@@ -79,7 +81,7 @@ function GoodsReceiptManage() {
         // handleChoosedSupplier(head);
       } else {
         const { data: code } = (
-          await grservice.code().catch((e) => {
+          await quservice.code().catch((e) => {
             message.error("get GoodsReceipt code fail.");
           })
         ).data;
@@ -199,7 +201,7 @@ function GoodsReceiptManage() {
         // console.log(parm)
         
         const actions =
-          config?.action !== "create" ? grservice.update : grservice.create;
+          config?.action !== "create" ? quservice.update : quservice.create;
         actions(parm)
           .then((r) => {
             handleClose().then((r) => {
@@ -296,12 +298,12 @@ function GoodsReceiptManage() {
                   value={formDetail.supcode}
                   className="!bg-white"
                 />
-                <Button
+                {(config?.action === "create") ?<Button
                   type="primary"
                   icon={<SearchOutlined />}
                   onClick={() => setOpenSupplier(true)}
                   style={{ minWidth: 40 }}
-                ></Button>
+                ></Button>:<></>}
               </Space.Compact>
             </Form.Item>
           </Col>
@@ -382,7 +384,7 @@ function GoodsReceiptManage() {
           dataSource={listDetail}
           columns={prodcolumns}
           pagination={false}
-          rowKey="stcode"
+          rowKey="code"
           scroll={{ x: "max-content" }}
           locale={{
             emptyText: <span>No data available, please add some data.</span>,

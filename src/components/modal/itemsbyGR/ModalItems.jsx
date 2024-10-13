@@ -76,7 +76,7 @@ export default function ModalItems({show, close,supcode, values, selected}) {
         selectedRowKeys : itemsRowKeySelect,
         type: "checkbox",
         fixed: true,
-        // hideSelectAll:true,
+        hideSelectAll:true,
         onChange: (selectedRowKeys, selectedRows) => { 
             // setItemsRowKeySelect([...new Set([...selectedRowKeys, ...itemsRowKeySelect])]);
             // setItemsList(selectedRows);
