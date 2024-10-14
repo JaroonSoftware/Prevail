@@ -75,6 +75,20 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
             $stmt = $conn->prepare($sql); 
             $stmt->execute();
             $res = $stmt->fetchAll(PDO::FETCH_ASSOC);             
+        } else if ($p === 'dn') {
+            $sql = "
+			SELECT b.code,d.dncode,d.socode,d.dndate,i.stcode,i.stname,s.price,s.unit,count(b.code) qty,i.vat,s.discount,c.cuscode, c.cusname,c.prename, c.idno, c.road, c.subdistrict, c.district, c.province, c.zipcode,d.doc_status
+            FROM dnmaster as d 
+            inner join `dndetail` as b on (d.dncode=b.dncode)
+            inner join `sodetail` as s on (d.socode=s.socode and s.stcode=b.stcode)
+            inner join `items` as i on (b.stcode=i.stcode)
+            inner join `customer` as c on (d.cuscode=c.cuscode) 
+            where d.cuscode= '$cuscode' and d.doc_status = 'รอออกใบแจ้งหนี้' and b.doc_status = 'รอออกใบแจ้งหนี้'
+            group by b.dncode,b.stcode
+            order by b.dncode,b.stcode";
+            $stmt = $conn->prepare($sql);
+            $stmt->execute();
+            $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
         } else {
             $sql = "
             select  i.stcode value, i.stname label 

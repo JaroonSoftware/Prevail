@@ -13,6 +13,10 @@ import { GoodsReceipt, GoodsReceiptAccess, GoodsReceiptManage } from "../pages/g
 
 import { SO, SOAccess, SOManage } from "../pages/so";
 
+import { DN, DNAccess, DNManage } from "../pages/delivery-note";
+
+import { IV, IVAccess, IVManage } from "../pages/invoice";
+
 import { Receipt, ReceiptAccess, ReceiptManage } from "../pages/receipt";
 
 export const WarehouseRouter = (
@@ -35,6 +39,16 @@ export const WarehouseRouter = (
     <Route path="/sales-order/" exact element={<SO />}>
       <Route index element={<SOAccess />} />
       <Route path="manage/:action" element={<SOManage />} />
+    </Route>
+
+    <Route path="/delivery-note/" exact element={<DN />}>
+      <Route index element={<DNAccess />} />
+      <Route path="manage/:action" element={<DNManage />} />
+    </Route>
+
+    <Route path="/invoice/" exact element={<IV />}>
+      <Route index element={<IVAccess />} />
+      <Route path="manage/:action" element={<IVManage />} />
     </Route>
 
     <Route path="/receipt/" exact element={<Receipt />}>

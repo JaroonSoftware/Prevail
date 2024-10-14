@@ -5,44 +5,43 @@ import {
   DatePicker,
   Form,
   Input,
-  Modal,
   Table,
   Typography,
   message,
 } from "antd";
-import { Card, Col, Divider, Flex, Row, Space, Select,InputNumber } from "antd";
+import { Card, Col, Divider, Flex, Row, Space } from "antd";
 
 import OptionService from "../../service/Options.service";
-import InvoiceService from "../../service/Invoice.service";
-import QuotationService from "../../service/Quotation.service";
-import { SaveFilled, SearchOutlined } from "@ant-design/icons";
+import DeliveryNoteService from '../../service/DeliveryNote.service';
+// import QuotationService from "../../service/Quotation.service";
+import { SearchOutlined } from "@ant-design/icons";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
-import ModalQuotation from "../../components/modal/quotation/MyModal";
-import { ModalItems } from "../../components/modal/items/modal-items";
+// import ModalQuotation from "../../components/modal/quotation/MyModal";
+// import { ModalItems } from "../../components/modal/items/modal-items";
 
 import {
-  DEFALUT_CHECK_INVOICE,
+  DEFALUT_CHECK_DELIVERY,
   columnsParametersEditable,
   componentsEditable,
 } from "./model";
 
 import dayjs from "dayjs";
-import { delay, comma } from "../../utils/util";
+import { comma } from "../../utils/util";
 import { ButtonBack } from "../../components/button";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 import { RiDeleteBin5Line } from "react-icons/ri";
-import { LuPackageSearch } from "react-icons/lu";
+// import { LuPackageSearch } from "react-icons/lu";
 import { LuPrinter } from "react-icons/lu";
 const opservice = OptionService();
-const ivservice = InvoiceService();
-const qtservice = QuotationService();
+const dnservice = DeliveryNoteService();
+// const qtservice = QuotationService();
 
-const gotoFrom = "/iv";
+const gotoFrom = "/delivery-note";
 const dateFormat = 'DD/MM/YYYY';
 
 function InvoiceManage() {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const location = useLocation();
 
   const { config } = location.state || { config: null };
@@ -50,16 +49,16 @@ function InvoiceManage() {
 
   /** Modal handle */
   const [openCustomers, setOpenCustomers] = useState(false);
-  const [openProduct, setOpenProduct] = useState(false);
-  const [openQuotation, setOpenQuotation] = useState(false);
+  // const [openProduct, setOpenProduct] = useState(false);
+  // const [openQuotation, setOpenQuotation] = useState(false);
 
   /** Invoice state */
-  const [ivCode, setIVCode] = useState(null);
+  const [dnCode, setDNCode] = useState(null);
 
   /** Detail Data State */
   const [listDetail, setListDetail] = useState([]);
 
-  const [formDetail, setFormDetail] = useState(DEFALUT_CHECK_INVOICE);
+  const [formDetail, setFormDetail] = useState(DEFALUT_CHECK_DELIVERY);
 
   const [unitOption, setUnitOption] = React.useState([]);
 
@@ -71,41 +70,22 @@ function InvoiceManage() {
   useEffect(() => {
     const initial = async () => {
       if (config?.action !== "create") {
-        const res = await ivservice
+        const res = await dnservice
           .get(config?.code)
           .catch((error) => message.error("get Invoice data fail."));
         const {
           data: { header, detail },
         } = res.data;
-        const { ivcode, ivdate,deldate } = header;
+        const { dncode, dndate,deldate } = header;
         setFormDetail(header);
         setListDetail(detail);
-        setIVCode(ivcode);
-        form.setFieldsValue({ ...header, ivdate: dayjs(ivdate), deldate: dayjs(deldate) });
+        setDNCode(dncode);
+        form.setFieldsValue({ ...header, dndate: dayjs(dndate), deldate: dayjs(deldate) });
 
         // setTimeout( () => {  handleCalculatePrice(head?.valid_price_until, head?.dated_price_until) }, 200);
         // handleChoosedCustomers(head);
-      } else {
-        const { data: code } = (
-          await ivservice.code().catch((e) => {
-            message.error("get Invoice code fail.");
-          })
-        ).data;
-        setIVCode(code);
-        
-        const ininteial_value = {
-          ...formDetail,
-          ivcode: code,
-          ivdate: dayjs(new Date()),
-        };
-        
-        setFormDetail(ininteial_value);
-        form.setFieldsValue(ininteial_value);
-        form.setFieldValue("vat", 7);
-        form.setFieldValue("payment", "เงินสด");
-        form.setFieldValue("deldate", dayjs(new Date()));
-        
-      }
+      } 
+      
       const [unitOprionRes] = await Promise.all([
         opservice.optionsUnit({ p: "unit-option" }),
       ]);
@@ -124,23 +104,17 @@ function InvoiceManage() {
   const handleSummaryPrice = () => {
     const newData = [...listDetail];
 
-    const total_price = newData.reduce(
+    const total_weight = newData.reduce(
       (a, v) =>
         (a +=
-          Number(v.qty || 0) *
-          Number(v?.price || 0) *
-          (1 - Number(v?.discount || 0) / 100)),
+          Number(v.unit_weight || 0) ),
       0
     );
-    const vat = form.getFieldValue("vat");
-    const grand_total_price =
-      total_price + (total_price * form.getFieldValue("vat")) / 100;
-
+    // console.log(total_weight)
+    // const total_weight += newData.qty;
     setFormDetail(() => ({
       ...formDetail,
-      total_price,
-      vat,
-      grand_total_price,
+      total_weight,
     }));
     // console.log(formDetail)
   };
@@ -192,92 +166,6 @@ function InvoiceManage() {
     setFormDetail((state) => ({ ...state, ...customers }));
     form.setFieldsValue({ ...fvalue, ...customers });
     // setListDetail([]);
-  };
-
-  const handleChoosedQuotation = async (val) => {
-    // console.log(val)
-    const fvalue = form.getFieldsValue();
-    const addr = [
-      !!val?.idno ? `${val.idno} ` : "",
-      !!val?.road ? `${val?.road} ` : "",
-      !!val?.subdistrict ? `${val.subdistrict} ` : "",
-      !!val?.district ? `${val.district} ` : "",
-      !!val?.province ? `${val.province} ` : "",
-      !!val?.zipcode ? `${val.zipcode} ` : "",
-      !!val?.country ? `(${val.country})` : "",
-    ];
-    const cusname = [
-      !!val?.prename ? `${val.prename} ` : "",
-      !!val?.cusname ? `${val.cusname} ` : "",
-    ];
-    const quotation = {
-      ...val,
-      cusname: cusname.join(""),
-      address: addr.join(""),
-      contact: val.contact,
-      tel: val?.tel?.replace(/[^(0-9, \-, \s, \\,)]/g, "")?.trim(),
-    };
-    const res = await qtservice.get(val.qtcode);    
-    const {
-      data: { detail },
-    } = res.data;
-    setListDetail(detail);
-    handleSummaryPrice();
-    // console.log(quotation)
-    setFormDetail((state) => ({ ...state, ...quotation }));
-    form.setFieldsValue({ ...fvalue, ...quotation });
-
-    
-  };
-
-  const handleItemsChoosed = (value) => {
-    // console.log(value);
-    setListDetail(value);
-    handleSummaryPrice();
-  };
-
-  const handleConfirm = () => {
-    form
-      .validateFields()
-      .then((v) => {
-        if (listDetail.length < 1) throw new Error("กรุณาเพิ่ม รายการขาย");
-
-        const header = {
-          ...formDetail,
-          ivdate: dayjs(form.getFieldValue("ivdate")).format("YYYY-MM-DD"),
-          remark: form.getFieldValue("remark"),
-          deldate: dayjs(form.getFieldValue("deldate")).format("YYYY-MM-DD"),
-          payment: form.getFieldValue("payment"),
-        };
-        const detail = listDetail;
-
-        const parm = { header, detail };
-        // console.log(parm)
-        const actions =
-          config?.action !== "create" ? ivservice.update : ivservice.create;
-        actions(parm)
-          .then((r) => {
-            handleClose().then((r) => {
-              message.success("Request Invoice success.");
-            });
-          })
-          .catch((err) => {
-            message.error("Request Invoice fail.");
-            console.warn(err);
-          });
-      })
-      .catch((err) => {
-        Modal.error({
-          title: "This is an error message",
-          content: "คุณกรอกข้อมูล ไม่ครบถ้วน",
-        });
-      });
-  };
-
-  const handleClose = async () => {
-    navigate(gotoFrom, { replace: true });
-    await delay(300);
-    console.clear();
   };
 
   const handlePrint = () => {
@@ -334,32 +222,7 @@ function InvoiceManage() {
   const SectionCustomers = (
     <>
       <Space size="small" direction="vertical" className="flex gap-2">
-        <Row gutter={[8, 8]} className="m-0">
-          <Col xs={24} sm={24} md={6} lg={6}>
-            <Form.Item
-              name="qtcode"
-              htmlFor="qtcode-1"
-              label="เลขที่ใบเสนอราคา"
-              className="!mb-1"
-            >
-              <Space.Compact style={{ width: "100%" }}>
-                <Input
-                  readOnly
-                  placeholder="เลือกใบเสนอราคา"
-                  id="qtcode-1"
-                  value={formDetail.qtcode}
-                  className="!bg-white"
-                />
-                {config?.action !== "create" ? '' : <Button
-                  type="primary"
-                  icon={<SearchOutlined />}
-                  onClick={() => setOpenQuotation(true)}
-                  style={{ minWidth: 40 }}
-                ></Button>}
-                
-              </Space.Compact>
-            </Form.Item>
-          </Col>
+        <Row gutter={[8, 8]} className="m-0">          
           <Col xs={24} sm={24} md={6} lg={6}>
             <Form.Item
               name="cuscode"
@@ -385,7 +248,7 @@ function InvoiceManage() {
               </Space.Compact>
             </Form.Item>
           </Col>
-          <Col xs={24} sm={24} md={12} lg={12}>
+          <Col xs={24} sm={24} md={18} lg={18}>
             <Form.Item name="cusname" label="ชื่อลูกค้า" className="!mb-1">
               <Input placeholder="ชื่อลูกค้า" readOnly />
             </Form.Item>
@@ -397,33 +260,9 @@ function InvoiceManage() {
           </Col>
         </Row>
         <Row gutter={[8, 8]} className="m-0">
-          <Col xs={24} sm={24} md={6} lg={6}>
-            <Form.Item
-              label="เงื่อนไขการชำระเงิน"
-              name="payment"
-              rules={[{ required: true, message: "Please input your data!" }]}
-            >
-              <Select
-                style={{ height: 40 }}
-                options={[
-                  { value: "เงินสด", label: "เงินสด" },
-                  { value: "30 วัน", label: "30 วัน" },
-                  { value: "45 วัน", label: "45 วัน" },
-                  { value: "60 วัน", label: "60 วัน" },
-                  { value: "90 วัน", label: "90 วัน" },
-                  { value: "120 วัน", label: "120 วัน" },
-                ]}
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={24} md={6} lg={6}>
-            <Form.Item label="วันครบกำหนด" name="deldate">
-              <DatePicker
-                size="large"
-                placeholder="วันครบกำหนด."
-                className="input-40"
-                style={{ width: "100%" }}
-              />
+          <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+            <Form.Item className="" name="remark" label="หมายเหตุ">
+              <Input.TextArea placeholder="Enter Remark" rows={4} />
             </Form.Item>
           </Col>
         </Row>
@@ -440,7 +279,7 @@ function InvoiceManage() {
           </Typography.Title>
         </Flex>
       </Col>
-      <Col span={12} style={{ paddingInline: 0 }}>
+      {/* <Col span={12} style={{ paddingInline: 0 }}>
         <Flex justify="end">
           <Button
             icon={<LuPackageSearch style={{ fontSize: "1.2rem" }} />}
@@ -452,7 +291,7 @@ function InvoiceManage() {
             Choose Product
           </Button>
         </Flex>
-      </Col>
+      </Col> */}
     </Flex>
   );
 
@@ -478,93 +317,30 @@ function InvoiceManage() {
                 {listDetail.length > 0 && (
                   <>
                     <Table.Summary.Row>
-                      <Table.Summary.Cell
+                      {/* <Table.Summary.Cell
                         index={0}
-                        colSpan={6}
-                      ></Table.Summary.Cell>
+                        colSpan={2}
+                      ></Table.Summary.Cell> */}
                       <Table.Summary.Cell
                         index={4}
                         align="end"
+                        colSpan={3}
                         className="!pe-4"
                       >
-                        Total
+                        น้ำหนักรวม
                       </Table.Summary.Cell>
                       <Table.Summary.Cell
                         className="!pe-4 text-end border-right-0"
                         style={{ borderRigth: "0px solid" }}
                       >
                         <Typography.Text type="danger">
-                          {comma(Number(formDetail?.total_price || 0),2,2)}
+                          {comma(Number(formDetail?.total_weight || 0),2,2)}
                         </Typography.Text>
                       </Table.Summary.Cell>
-                      <Table.Summary.Cell>Baht</Table.Summary.Cell>
-                    </Table.Summary.Row>
-                    <Table.Summary.Row>
                       <Table.Summary.Cell
                         index={0}
-                        colSpan={5}
+                        colSpan={2}
                       ></Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        index={4}
-                        align="end"
-                        className="!pe-4"
-                      >
-                        Vat
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        className="!pe-4 text-end border-right-0"
-                        style={{ borderRigth: "0px solid" }}
-                      >
-                        <Form.Item name="vat" className="!m-0">
-                          <InputNumber
-                            className="width-100 input-30 text-end"
-                            addonAfter="%"
-                            controls={false}
-                            min={0}
-                            onFocus={(e) => {
-                              e.target.select();
-                            }}
-                            onChange={() => {
-                              handleSummaryPrice();
-                            }}
-                          />
-                        </Form.Item>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        className="!pe-4 text-end border-right-0"
-                        style={{ borderRigth: "0px solid" }}
-                      >
-                        <Typography.Text type="danger">
-                          {comma(
-                            Number(
-                              (formDetail.total_price * formDetail?.vat) / 100
-                            ),2,2
-                          )}
-                        </Typography.Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>Baht</Table.Summary.Cell>
-                    </Table.Summary.Row>
-                    <Table.Summary.Row>
-                      <Table.Summary.Cell
-                        index={0}
-                        colSpan={6}
-                      ></Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        index={4}
-                        align="end"
-                        className="!pe-4"
-                      >
-                        Grand Total
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        className="!pe-4 text-end border-right-0"
-                        style={{ borderRigth: "0px solid" }}
-                      >
-                        <Typography.Text type="danger">
-                          {comma(Number(formDetail?.grand_total_price || 0),2,2)}
-                        </Typography.Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>Baht</Table.Summary.Cell>
                     </Table.Summary.Row>
                   </>
                 )}
@@ -573,20 +349,6 @@ function InvoiceManage() {
           }}
         />
       </Flex>
-    </>
-  );
-
-  const SectionOther = (
-    <>
-      <Space size="small" direction="vertical" className="flex gap-2">
-        <Row gutter={[8, 8]} className="m-0">
-          <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-            <Form.Item className="" name="remark" label="หมายเหตุ">
-              <Input.TextArea placeholder="Enter Remark" rows={4} />
-            </Form.Item>
-          </Col>
-        </Row>
-      </Space>
     </>
   );
 
@@ -600,21 +362,6 @@ function InvoiceManage() {
       <Col span={12} className="p-0">
         <Flex gap={4} justify="start">
           <ButtonBack target={gotoFrom} />
-        </Flex>
-      </Col>
-      <Col span={12} style={{ paddingInline: 0 }}>
-        <Flex gap={4} justify="end">
-          <Button
-            className="bn-center justify-center"
-            icon={<SaveFilled style={{ fontSize: "1rem" }} />}
-            type="primary"
-            style={{ width: "9.5rem" }}
-            onClick={() => {
-              handleConfirm();
-            }}
-          >
-            Save
-          </Button>
         </Flex>
       </Col>
       <Col span={12} style={{ paddingInline: 0 }}>
@@ -635,33 +382,6 @@ function InvoiceManage() {
     </Row>
   );
 
-  const SectionBottom = (
-    <Row
-      gutter={[{ xs: 32, sm: 32, md: 32, lg: 12, xl: 12 }, 8]}
-      className="m-0"
-    >
-      <Col span={12} className="p-0">
-        <Flex gap={4} justify="start">
-          <ButtonBack target={gotoFrom} />
-        </Flex>
-      </Col>
-      <Col span={12} style={{ paddingInline: 0 }}>
-        <Flex gap={4} justify="end">
-          <Button
-            className="bn-center justify-center"
-            icon={<SaveFilled style={{ fontSize: "1rem" }} />}
-            type="primary"
-            style={{ width: "9.5rem" }}
-            onClick={() => {
-              handleConfirm();
-            }}
-          >
-            Save
-          </Button>
-        </Flex>
-      </Col>
-    </Row>
-  );
 
   return (
     <div className="goodsreceipt-manage">
@@ -680,7 +400,7 @@ function InvoiceManage() {
                   <Row className="m-0 py-3 sm:py-0" gutter={[12, 12]}>
                     <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
                       <Typography.Title level={3} className="m-0">
-                        เลขที่ใบแจ้งหนี้ : {ivCode}
+                        เลขที่ใบส่งของ : {dnCode}
                       </Typography.Title>
                     </Col>
                     <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
@@ -690,9 +410,9 @@ function InvoiceManage() {
                         className="justify-start sm:justify-end"
                       >
                         <Typography.Title level={3} className="m-0">
-                          วันที่ใบแจ้งหนี้ :{" "}
+                          วันที่ใบส่งของ :{" "}
                         </Typography.Title>
-                        <Form.Item name="ivdate" className="!m-0">
+                        <Form.Item name="dndate" className="!m-0">
                           <DatePicker
                             className="input-40"
                             allowClear={false}
@@ -710,29 +430,22 @@ function InvoiceManage() {
                 <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
                   <Divider orientation="left" className="!mb-3 !mt-1">
                     {" "}
-                    ข้อมูลใบแจ้งหนี้{" "}
+                    ข้อมูลใบส่งของ{" "}
                   </Divider>
                   <Card style={cardStyle}>{SectionCustomers}</Card>
                 </Col>
                 <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
                   <Divider orientation="left" className="!my-0">
-                    รายการใบสั่งซื้อสินค้า
+                    รายการใบส่งสินค้า
                   </Divider>
                   <Card style={{ backgroundColor: "#f0f0f0" }}>
                     {SectionProduct}
                   </Card>
                 </Col>
-                <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-                  <Divider orientation="left" className="!mb-3 !mt-1">
-                    {" "}
-                    ข้อมูลเพิ่มเติม{" "}
-                  </Divider>
-                  <Card style={cardStyle}>{SectionOther}</Card>
-                </Col>
               </Row>
             </Card>
           </Form>
-          {SectionBottom}
+          {/* {SectionBottom} */}
         </Space>
       </div>
 
@@ -746,7 +459,7 @@ function InvoiceManage() {
         ></ModalCustomers>
       )}
 
-      {openQuotation && (
+      {/* {openQuotation && (
         <ModalQuotation
           show={openQuotation}
           close={() => setOpenQuotation(false)}
@@ -754,9 +467,9 @@ function InvoiceManage() {
             handleChoosedQuotation(v);
           }}
         ></ModalQuotation>
-      )}
+      )} */}
 
-      {openProduct && (
+      {/* {openProduct && (
         <ModalItems
           show={openProduct}
           close={() => setOpenProduct(false)}
@@ -765,7 +478,7 @@ function InvoiceManage() {
           }}
           selected={listDetail}
         ></ModalItems>
-      )}
+      )} */}
     </div>
   );
 }

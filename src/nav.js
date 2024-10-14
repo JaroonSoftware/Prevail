@@ -6,6 +6,7 @@ import { TiThLarge } from "react-icons/ti";
 import { GiDatabase } from "react-icons/gi";
 import { FaUserCircle } from "react-icons/fa";
 import { RiBox3Fill } from "react-icons/ri";
+import { TfiTruck } from "react-icons/tfi";
 import { BsShop } from "react-icons/bs";
 let _nav = [
   {
@@ -30,6 +31,11 @@ let _nav = [
     title: "ใบขายสินค้า",
     icon: <ReconciliationFilled className="nav-ico" />,    
     to: "/sales-order",
+  },
+  {
+    title: "ใบส่งของ",
+    icon: <TfiTruck className="nav-ico" />,
+    to: "/delivery-note",
   },
   {
     title: "ข้อมูลลูกค้า",
@@ -88,11 +94,11 @@ let _nav = [
   {
     title: "กำลังปรับปรุง",
     type: "group",
-  },
+  },  
   {
     title: "ใบวางบิล",
     icon: <ReconciliationFilled className="nav-ico" />,
-    to: "/iv",    
+    to: "/invoice",    
   },
   {
     title: "ใบเสร็จรับเงิน",

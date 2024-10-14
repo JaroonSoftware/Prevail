@@ -5,7 +5,7 @@ import "../../assets/styles/banks.css"
 import { Tooltip } from "antd";
 // import { EditOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons"; 
 import { EditableRow, EditableCell } from "../../components/table/TableEditAble";
-import { TagInvoiceStatus } from "../../components/badge-and-tag/";
+import { TagInvoiceStatus } from "../../components/badge-and-tag";
 import dayjs from 'dayjs';
 import {  EditOutlined } from "@ant-design/icons";
 import { comma } from '../../utils/util';
@@ -128,6 +128,13 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
     render: (im, rc, index) => <>{index + 1}</>,
   },
   {
+    title: "เลขที่ใบสั่งของ",
+    dataIndex: "dncode",
+    key: "dncode",
+    width: 120, 
+    align: "center",
+  },
+  {
     title: "รหัสสินค้า",
     dataIndex: "stcode",
     key: "stcode",
@@ -148,7 +155,6 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
     width: "8%",
     align: "right",
     className: "!pe-3",
-    editable: true,
     required: true,
     type:'number',
     render: (_, rec) => <>{ comma( Number(rec?.qty ||  0),  0, 0 )}</>,
@@ -171,14 +177,23 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
     key: "unit", 
       align: "right", 
       width: "8%",
-      editable: true,
       type:'select',    
   },
+  {
+    title: "VAT (%)",
+    dataIndex: "vat",
+    key: "vat", 
+    width: "8%",
+    align: "right",
+    className: "!pe-3",
+    type:'number',
+    render: (_, rec) => <>{ comma( Number(rec?.vat ||  0),  2, 2 )}</>,
+  },  
   {
     title: "ส่วนลด(%)",
     dataIndex: "discount",
     key: "discount",
-    width: "10%",
+    width: "8%",
     align: "right",
     className: "!pe-3",
     editable: true,
@@ -189,10 +204,10 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
     title: "ราคารวม",
     dataIndex: "total",
     key: "total",
-    width: "10%",
+    width: "8%",
     align: "right",
     className: "!pe-3",
-    render: (_, rec) => <>{ comma( calTotalDiscount(rec),  2, 2 )}</>,
+    render: (_, rec) => <>{ comma( calTotalDiscount(rec)+calTotalDiscount(rec)*(rec.vat/100),  2, 2 )}</>,
   },
   {
     title: "ตัวเลือก",
@@ -236,8 +251,6 @@ export const DEFALUT_CHECK_INVOICE = {
   cuscode: null,
   remark: null,
   total_price: 0,
-  vat: 7,
-  grand_total_price: 0,
 }
 
 
