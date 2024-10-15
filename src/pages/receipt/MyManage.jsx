@@ -21,6 +21,8 @@ import {
 } from "@ant-design/icons";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
 import ModalInvoice from "../../components/modal/invoice/MyModal";
+import ModalPayment from "../../components/modal/payment/MyModal";
+
 import {
   DEFALUT_CHECK_RECEIPT,
   componentsEditable,
@@ -52,8 +54,9 @@ function ReceiptManage() {
   /** Modal handle */
   const [openCustomers, setOpenCustomers] = useState(false);
   const [openInvoice, setOpenInvoice] = useState(false);
+  const [openPayment, setOpenPayment] = useState(false);
   const [openBalance, setOpenBalance] = useState(0);
-
+  
   /** Receipt state */
   const [reCode, setRECode] = useState(null);
 
@@ -196,7 +199,7 @@ function ReceiptManage() {
     form.setFieldsValue({ ...fvalue, ...customers });
     setListDetail([]);
   };
-
+  
   const handleChoosedInvoice = async (val) => {
 
     const res = await ivservice.getlist(val);
@@ -233,6 +236,10 @@ function ReceiptManage() {
     };
     setFormDetail((state) => ({ ...state, ...quotation }));
     form.setFieldsValue({ ...fvalue, ...quotation });
+  };
+
+  const handleChoosedPayment = async (val) => {
+    console.log(val)
   };
 
   const handleConfirm = () => {
@@ -460,7 +467,7 @@ function ReceiptManage() {
             icon={<CreditCardOutlined style={{ fontSize: "1.2rem" }} />}
             className="bn-center justify-center bn-primary-outline"
             onClick={() => {
-              setOpenInvoice(true);
+              setOpenPayment(true);
             }}
           >
             Add Payment
@@ -721,6 +728,17 @@ function ReceiptManage() {
           }}
           selected={listDetail}
         ></ModalInvoice>
+      )}
+
+    {openPayment && (
+        <ModalPayment
+          show={openPayment}
+          close={() => setOpenPayment(false)}
+          values={(v) => {
+            handleChoosedPayment(v);
+          }}
+          selected={listDetail}
+        ></ModalPayment>
       )}
     </div>
   );
