@@ -214,7 +214,7 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
     align: "center",
     key: "operation",
     dataIndex: "operation",
-    render: (_, record, idx) => handleRemove(record),
+    render: (_, record, idx) => handleRemove(record.ivcode),
     width: '90px',
     fixed: 'right',
   },
