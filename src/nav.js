@@ -105,6 +105,11 @@ let _nav = [
     icon: <TbReportMoney className="nav-ico" />,
     to: "/receipt",
   },
+  {
+    title: "แสกนส่งออกสินค้า",
+    icon: <TfiTruck className="nav-ico" />,
+    to: "/shipping",
+  },
 ];
 
 export default _nav;

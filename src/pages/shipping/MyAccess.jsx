@@ -2,16 +2,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, message } from "antd";
-import { Collapse, Form, Flex, Row, Col, Space, Select } from "antd";
+import { Collapse, Form, Flex, Row, Col, Space } from "antd";
 import { Input, Button, Table, Typography } from "antd";
 import { SearchOutlined, ClearOutlined } from "@ant-design/icons";
 import { MdOutlineLibraryAdd } from "react-icons/md";
 import { accessColumn } from "./model";
-import OptionService from "../../service/Options.service";
-// import dayjs from 'dayjs';
-import Itemservice from "../../service/Items.Service";
-const opService = OptionService();
-const itemservice = Itemservice();
+import Unitservice from "../../service/Unit.service";
+
+const unitservice = Unitservice();
 const mngConfig = {
   title: "",
   textOk: null,
@@ -19,16 +17,16 @@ const mngConfig = {
   action: "create",
   code: null,
 };
-const ItemsAccess = () => {
+const ShippingAccess = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [accessData, setAccessData] = useState([]);
   const [activeSearch, setActiveSearch] = useState([]);
-  const [optionType, setOptionType] = useState([]);
+
   const handleSearch = () => {
     form.validateFields().then((v) => {
       const data = { ...v };
-      itemservice
+      unitservice
         .search(data, { ignoreLoading: Object.keys(data).length !== 0 })
         .then((res) => {
           const { data } = res.data;
@@ -53,7 +51,7 @@ const ItemsAccess = () => {
       state: {
         config: {
           ...mngConfig,
-          title: "เพิ่มสินค้า",
+          title: "เพิ่มหน่วยสินค้า",
           action: "create",
         },
       },
@@ -67,9 +65,9 @@ const ItemsAccess = () => {
       state: {
         config: {
           ...mngConfig,
-          title: "แก้ไขข้อมูลสินค้า",
+          title: "แก้ไขหน่วยสินค้า",
           action: "edit",
-          code: data?.stcode,
+          code: data?.unitcode,
         },
       },
       replace: true,
@@ -94,18 +92,21 @@ const ItemsAccess = () => {
   };
 
   useEffect(() => {
-    form.setFieldValue('active_status','Y');
-    GetItemsType();
-    getData();
+    getData({});
   }, []);
-  const GetItemsType = () => {
-    opService.optionsItemstype().then((res) => {
-      let { data } = res.data;
-      setOptionType(data);
-    });
-  };
-  const getData = () => {
-    handleSearch();
+
+  const getData = (data) => {
+    unitservice
+      .search(data)
+      .then((res) => {
+        const { data } = res.data;
+
+        setAccessData(data);
+      })
+      .catch((err) => {
+        console.log(err);
+        message.error("Request error!");
+      });
   };
   const FormSearch = (
     <Collapse
@@ -118,69 +119,18 @@ const ItemsAccess = () => {
       items={[
         {
           key: "1",
-          label: (
-            <>
-              <SearchOutlined />
-              <span> ค้นหา</span>
-            </>
-          ),
+          label: <><SearchOutlined /><span> ค้นหา</span></>,  
           children: (
             <>
               <Form form={form} layout="vertical" autoComplete="off">
                 <Row gutter={[8, 8]}>
                   <Col xs={24} sm={8} md={8} lg={8} xl={8}>
                     <Form.Item
-                      label="รหัสสินค้า"
-                      name="stcode"
+                      label="ชื่อหน่วยสินค้า"
+                      name="unitname"
                       onChange={handleSearch}
                     >
-                      <Input placeholder="กรอกรหัสสินค้า" />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                    <Form.Item
-                      label="ชื่อสินค้า"
-                      name="stname"
-                      onChange={handleSearch}
-                    >
-                      <Input placeholder="กรอกชื่อสินค้า" />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                    <Form.Item
-                      label="ประเภทสินค้า"
-                      name="typecode"
-                      onChange={handleSearch}
-                    >
-                      <Select
-                        size="large"
-                        showSearch
-                        placeholder="เลือกประเภทสินค้า"
-                        onChange={handleSearch}
-                        options={optionType.map((item) => ({
-                          value: item.typecode,
-                          label: item.typename,
-                        }))}
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                    <Form.Item
-                      label="สถานะการใช้งาน"
-                      name="active_status"
-                      onChange={handleSearch}
-                    >
-                      <Select
-                        size="large"
-                        showSearch
-                        placeholder="เลือกประเภทสินค้า"
-                        onChange={handleSearch}
-                        // defaultValue="Y"
-                        options={[
-                          { value: "Y", label: "เปิดการใช้งาน" },
-                          { value: "N", label: "ปิดการใช้งาน" },
-                        ]}
-                      />
+                      <Input placeholder="กรอกชื่อหน่วยสินค้า" />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -227,7 +177,7 @@ const ItemsAccess = () => {
       <Col span={12} className="p-0">
         <Flex gap={4} justify="start" align="center">
           <Typography.Title className="m-0 !text-zinc-800" level={3}>
-            รายการสินค้า
+            รายการหน่วยสินค้า
           </Typography.Title>
         </Flex>
       </Col>
@@ -241,7 +191,7 @@ const ItemsAccess = () => {
               hangleAdd();
             }}
           >
-            เพิ่มสินค้า
+            เพิ่มหน่วยสินค้า
           </Button>
         </Flex>
       </Col>
@@ -262,7 +212,7 @@ const ItemsAccess = () => {
               <Table
                 title={() => TitleTable}
                 size="small"
-                rowKey="stcode"
+                rowKey="unitcode"
                 columns={column}
                 dataSource={accessData}
               />
@@ -274,4 +224,4 @@ const ItemsAccess = () => {
   );
 };
 
-export default ItemsAccess;
+export default ShippingAccess;

@@ -18,8 +18,8 @@ try {
 
         // var_dump($_POST);
 
-        $sql = "INSERT INTO items (stcode, stname,stnameEN,typecode,unit,remark, price,created_by,created_date) 
-        values (:stcode,:stname,:stnameEN,:typecode,:unit,:remark,:price,:action_user,:action_date)";
+        $sql = "INSERT INTO items (stcode, stname, stnameEN, typecode,unit,remark, price,buyprice,weight_stable, weight, vat,created_by,created_date) 
+        values (:stcode,:stname,:stnameEN,:typecode,:unit,:remark,:price,:buyprice,:weight_stable, :weight, :vat,:action_user,:action_date)";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
@@ -27,11 +27,15 @@ try {
 
         $stmt->bindParam(":stcode", $stcode, PDO::PARAM_STR);
         $stmt->bindParam(":stname", $stname, PDO::PARAM_STR);
-        $stmt->bindParam(":stnameEN", $stnameEN, PDO::PARAM_STR);        
+        $stmt->bindParam(":stnameEN", $stnameEN, PDO::PARAM_STR);
         $stmt->bindParam(":typecode", $typecode, PDO::PARAM_STR);
         $stmt->bindParam(":unit", $unit, PDO::PARAM_STR);
         $stmt->bindParam(":remark", $remark, PDO::PARAM_STR);
         $stmt->bindParam(":price", $price, PDO::PARAM_STR);
+        $stmt->bindParam(":buyprice", $buyprice, PDO::PARAM_STR);
+        $stmt->bindParam(":weight_stable", $weight_stable, PDO::PARAM_STR);
+        $stmt->bindParam(":weight", $weight, PDO::PARAM_STR);
+        $stmt->bindParam(":vat", $vat, PDO::PARAM_STR);
         $stmt->bindParam(":action_date", $action_date, PDO::PARAM_STR);
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_INT);
 
@@ -59,6 +63,10 @@ try {
         unit = :unit,
         remark = :remark,
         price = :price,
+        buyprice=:buyprice,        
+        weight_stable=:weight_stable,
+        weight=:weight,
+        vat=:vat,
         active_status = :active_status,
         updated_date = CURRENT_TIMESTAMP(),
         updated_by = :action_user
@@ -67,12 +75,17 @@ try {
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
+
         $stmt->bindParam(":stname", $stname, PDO::PARAM_STR);
         $stmt->bindParam(":stnameEN", $stnameEN, PDO::PARAM_STR);
         $stmt->bindParam(":typecode", $typecode, PDO::PARAM_STR);
         $stmt->bindParam(":unit", $unit, PDO::PARAM_STR);
-        $stmt->bindParam(":price", $price, PDO::PARAM_STR);
         $stmt->bindParam(":remark", $remark, PDO::PARAM_STR);
+        $stmt->bindParam(":price", $price, PDO::PARAM_STR);        
+        $stmt->bindParam(":buyprice", $buyprice, PDO::PARAM_STR);
+        $stmt->bindParam(":weight_stable", $weight_stable, PDO::PARAM_STR);
+        $stmt->bindParam(":weight", $weight, PDO::PARAM_STR);
+        $stmt->bindParam(":vat", $vat, PDO::PARAM_STR);
         $stmt->bindParam(":active_status", $active_status, PDO::PARAM_STR);
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_INT);
         $stmt->bindParam(":stcode", $stcode, PDO::PARAM_STR);
@@ -100,9 +113,23 @@ try {
         }
         $res = $stmt->fetch(PDO::FETCH_ASSOC);
 
+        $sql2 = "SELECT * FROM `items_img` ";
+        $sql2 .= " where stcode = :code ";
+        $stmt2 = $conn->prepare($sql2);
+        if (!$stmt2->execute(['code' => $code])) {
+            $error = $conn->errorInfo();
+            http_response_code(404);
+            throw new PDOException("Geting data error => $error");
+        }
+
+        $dataFile = array();
+        while ($row2 = $stmt2->fetch(PDO::FETCH_ASSOC)) {
+            $dataFile[] = $row2;
+        }
+
         $conn->commit();
         http_response_code(200);
-        echo json_encode(array("data" => $res));
+        echo json_encode(array("data" => $res,"file" => $dataFile));
     }
 } catch (PDOException $e) {
     $conn->rollback();

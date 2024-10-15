@@ -19,6 +19,8 @@ import { IV, IVAccess, IVManage } from "../pages/invoice";
 
 import { Receipt, ReceiptAccess, ReceiptManage } from "../pages/receipt";
 
+import { Shipping, ShippingAccess, ShippingManage } from "../pages/shipping";
+
 export const WarehouseRouter = (
   <>
     <Route path="/quotation/" exact element={<Quotation />}>
@@ -54,6 +56,11 @@ export const WarehouseRouter = (
     <Route path="/receipt/" exact element={<Receipt />}>
       <Route index element={<ReceiptAccess />} />
       <Route path="manage/:action" element={<ReceiptManage />} />
+    </Route>
+
+    <Route path="/shipping/" exact element={<Shipping />}>
+      <Route index element={<ShippingAccess />} />
+      <Route path="manage/:action" element={<ShippingManage />} />
     </Route>
   </>
 );
