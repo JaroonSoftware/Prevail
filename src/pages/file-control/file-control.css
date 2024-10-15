@@ -1,0 +1,65 @@
+ 
+.files-control.ant-upload-wrapper .ant-upload-list .ant-upload-list-item .ant-upload-list-item-actions .ant-upload-list-item-action.ant-btn-sm{
+    background: #ed233d;
+}
+.files-control.ant-upload-wrapper .ant-upload-list .ant-upload-list-item .ant-upload-list-item-actions .ant-upload-list-item-action.ant-btn-sm[title="Download file"]{
+    background: #03911b;
+}
+.files-control.ant-upload-wrapper .ant-upload-list .ant-upload-list-item{
+    border: 1px solid #d9d9d9;
+    height: 3rem;
+    padding-inline: 0.7rem;
+    border-radius: 0.4rem;
+}
+.files-control.ant-upload-wrapper .ant-upload-list .ant-upload-list-item.ant-upload-list-item-error{
+    border: 1px solid #ed233d;
+}
+
+.files-control .ant-btn svg[data-icon="delete"], .files-control .ant-btn svg[data-icon="download"] {
+    /* margin-right: 5px; */
+    fill: #fff;
+} 
+.files-control .ant-upload-list-item-actions {
+    display: flex;
+    gap: .432rem;
+} 
+
+.files-control .ant-card .ant-card-head, .ant-card .ant-card-body {
+    padding: 16px; 
+}
+
+.files-control .ant-upload-wrapper .ant-upload-list .ant-upload-list-item .ant-upload-list-item-progress{
+    left: 0;
+    bottom: -8px !important;
+    padding-inline: 0.5rem  !important;
+}
+
+.files-control .ant-table-wrapper .ant-table-tbody >tr >td{
+    white-space: inherit;
+    max-width: 200px;
+    vertical-align: top;
+}
+.files-control .ant-table-wrapper .ant-table-tbody >tr >td .ant-btn-link{
+    white-space: inherit;
+    line-height: 1rem;
+    text-align: start;
+    display: flex;
+    height: auto; 
+} 
+
+.files-control .ant-table-wrapper .ant-table-tbody >tr >td .ant-tag {  
+    font-size: 12px;
+    line-height: 1.134rem;  
+    margin-inline-end: 0px;    
+    border-radius: 2px; 
+}
+
+@media (max-width: 992px) {
+    .files-control .ant-row{
+        margin: 0px !important;
+    }
+}
+
+.ant-table-thead > tr > th { 
+    font-size: clamp(9px, 1vw, 12px);
+}

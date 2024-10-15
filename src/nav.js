@@ -106,6 +106,11 @@ let _nav = [
     to: "/r",
     // to: "/receipt",
   },
+  {
+    title: "แสกนส่งออกสินค้า",
+    icon: <TfiTruck className="nav-ico" />,
+    to: "/shipping",
+  },
 ];
 
 export default _nav;

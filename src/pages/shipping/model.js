@@ -6,47 +6,26 @@ import { EditOutlined } from "@ant-design/icons";
 
 export const accessColumn = ({ handleEdit, handleDelete, handleView }) => [
   {
-    title: "รหัสสินค้า",
-    key: "stcode",
-    dataIndex: "stcode",
+    title: "รหัสหน่วยสินค้า",
+    key: "unitcode",
+    dataIndex: "unitcode",
     align: "left",
-    width: 110,
-    sorter: (a, b) => (a?.stcode || "").localeCompare(b?.stcode || ""),
+    hidden: true,
+    sorter: (a, b) => (a?.unitcode || "").localeCompare(b?.unitcode || ""),
   },
   {
-    title: "ชื่อสินค้า",
-    dataIndex: "stname",
-    key: "stname",
-    width: "30%",
-    sorter: (a, b) => (a?.stname || "").localeCompare(b?.stname || ""),
-  },
-  {
-    title: "ชื่อสินค้า",
-    dataIndex: "stnameEN",
-    key: "stnameEN",
-    width: "30%",
-    sorter: (a, b) => (a?.stnameEN || "").localeCompare(b?.stnameEN || ""),
-  },
-  {
-    title: "ประเภทสินค้า",
-    dataIndex: "typename",
-    key: "typename",
-    sorter: (a, b) => (a?.typename || "").localeCompare(b?.typename || ""),
-    width: 140,
-  },
-  {
-    title: "จำนวนสต๊อก",
-    dataIndex: "stock",
-    key: "stock",
-    sorter: (a, b) => (a?.stock || "").localeCompare(b?.stock || ""),
-    width: 140,
+    title: "ชื่อหน่วยสินค้า",
+    dataIndex: "unitname",
+    key: "unitname",
+    width: "60%",
+    sorter: (a, b) => (a?.unitname || "").localeCompare(b?.unitname || ""),
   },
   {
     title: "สถานะ",
     dataIndex: "active_status",
-    key: "status",
-    width: 120,
-    sorter: (a, b) => (a?.status || "").localeCompare(b?.status || ""),
+    key: "active_status",
+    width: "20%",
+    sorter: (a, b) => (a?.active_status || "").localeCompare(b?.active_status || ""),
     render: (data) => (
       <div>
         {data === "Y" ? (
@@ -60,7 +39,7 @@ export const accessColumn = ({ handleEdit, handleDelete, handleView }) => [
   {
     title: "Action",
     key: "operation",
-    width: "60px",
+    width: "10%",
     fixed: "right",
     render: (text, record) => (
       <Space>
@@ -83,7 +62,7 @@ export const accessColumn = ({ handleEdit, handleDelete, handleView }) => [
 
 export const Items = {
   id: null,
-  stcode: null,
+  unitcode: null,
   stname: null,
   prename: null,
   idno: null,
