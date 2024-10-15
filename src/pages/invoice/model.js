@@ -160,6 +160,14 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
     render: (_, rec) => <>{ comma( Number(rec?.qty ||  0),  0, 0 )}</>,
   },
   {
+    title: "หน่วยสินค้า",
+    dataIndex: "unit",
+    key: "unit", 
+      align: "right", 
+      width: "8%",
+      type:'select',    
+  },
+  {
     title: "ราคาขาย",
     dataIndex: "price",
     key: "price", 
@@ -170,14 +178,6 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
     required: true,
     type:'number',
     render: (_, rec) => <>{ comma( Number(rec?.price ||  0),  2, 2 )}</>,
-  },
-  {
-    title: "หน่วยสินค้า",
-    dataIndex: "unit",
-    key: "unit", 
-      align: "right", 
-      width: "8%",
-      type:'select',    
   },
   {
     title: "VAT (%)",

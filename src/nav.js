@@ -103,8 +103,7 @@ let _nav = [
   {
     title: "ใบเสร็จรับเงิน",
     icon: <TbReportMoney className="nav-ico" />,
-    to: "/r",
-    // to: "/receipt",
+    to: "/receipt",
   },
 ];
 

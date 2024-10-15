@@ -77,7 +77,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
             $res = $stmt->fetchAll(PDO::FETCH_ASSOC);             
         } else if ($p === 'dn') {
             $sql = "
-			SELECT b.code,d.dncode,d.socode,d.dndate,i.stcode,i.stname,s.price,s.unit,count(b.code) qty,i.vat,s.discount,c.cuscode, c.cusname,c.prename, c.idno, c.road, c.subdistrict, c.district, c.province, c.zipcode,d.doc_status
+			SELECT b.code,d.dncode,d.socode,d.dndate,i.stcode,i.stname,s.price,s.unit,IF(i.weight_stable='N', sum(b.unit_weight), count(b.code) ) qty,i.vat,s.discount,c.cuscode, c.cusname,c.prename, c.idno, c.road, c.subdistrict, c.district, c.province, c.zipcode,d.doc_status
             FROM dnmaster as d 
             inner join `dndetail` as b on (d.dncode=b.dncode)
             inner join `sodetail` as s on (d.socode=s.socode and s.stcode=b.stcode)
