@@ -38,6 +38,11 @@ let _nav = [
     to: "/delivery-note",
   },
   {
+    title: "ใบวางบิล",
+    icon: <ReconciliationFilled className="nav-ico" />,
+    to: "/invoice",    
+  },
+  {
     title: "ข้อมูลลูกค้า",
     icon: <RiTeamFill className="nav-ico" />,
     to: "/customers",
@@ -95,11 +100,6 @@ let _nav = [
     title: "กำลังปรับปรุง",
     type: "group",
   },  
-  {
-    title: "ใบวางบิล",
-    icon: <ReconciliationFilled className="nav-ico" />,
-    to: "/invoice",    
-  },
   {
     title: "ใบเสร็จรับเงิน",
     icon: <TbReportMoney className="nav-ico" />,
