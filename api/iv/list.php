@@ -11,33 +11,39 @@ try {
     $action_date = date("Y-m-d H:i:s");
     $action_user = $token->userid;
     // echo $action_user;
-    
+
+        
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $rest_json = file_get_contents("php://input");
         $_POST = json_decode($rest_json, true);
         extract($_POST, EXTR_OVERWRITE, "_");
         // echo $ivcode;
-        $code = $_POST["code"];
+        $code = [];
+        foreach ($_POST as $ind => $val) {
+            $val = (object)$val;
+            array_push($code,$val->ivcode);
+        }
+        
         $sql = "SELECT a.ivcode,a.ivdate,a.qtcode,a.deldate,a.cuscode,CONCAT(c.prename,' ',c.cusname) as cusname,CONCAT(COALESCE(c.idno, '') ,' ', COALESCE(c.road, ''),' ', COALESCE(c.subdistrict, ''),' ', COALESCE(c.district, ''),' ',COALESCE(c.zipcode, '') ) as address
         ,c.zipcode,c.contact,c.tel,c.fax,a.payment,a.total_price,a.balance,a.remark ";
         $sql .= " FROM `ivmaster` as a ";
         $sql .= " inner join `customer` as c on (a.cuscode)=(c.cuscode)";
-        $sql .= " where a.ivcode = :code";
+        $sql .= " where a.ivcode in ('". implode("' , '", $code) . "')";
 
         $stmt = $conn->prepare($sql);
-        if (!$stmt->execute(['code' => $code])) {
+        if (!$stmt->execute()) {
             $error = $conn->errorInfo();
             http_response_code(404);
             throw new PDOException("Geting data error => $error");
         }
-        $header = $stmt->fetch(PDO::FETCH_ASSOC);
+        $header = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $sql = "SELECT a.ivcode,a.dncode,a.stcode, a.price, a.discount, a.unit, a.qty ,a.vat ,i.stname ";
         $sql .= " FROM `ivdetail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
-        $sql .= " where a.ivcode = :code";
+        $sql .= " where a.ivcode in ('". implode("' , '", $code) . "')";
 
         $stmt = $conn->prepare($sql);
-        if (!$stmt->execute(['code' => $code])) {
+        if (!$stmt->execute()) {
             $error = $conn->errorInfo();
             http_response_code(404);
             throw new PDOException("Geting data error => $error");
@@ -46,7 +52,7 @@ try {
 
         $conn->commit();
         http_response_code(200);
-        echo json_encode(array('status' => 1, 'data' => array("header" => $header, "detail" => $detail,"ivcode"=> $ivcode)));
+        echo json_encode(array('status' => 1, 'data' => array("header" => $header, "detail" => $detail)));
     }
 } catch (PDOException $e) {
     $conn->rollback();

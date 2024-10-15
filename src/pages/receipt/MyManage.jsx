@@ -52,7 +52,6 @@ function ReceiptManage() {
   /** Modal handle */
   const [openCustomers, setOpenCustomers] = useState(false);
   const [openInvoice, setOpenInvoice] = useState(false);
-  const [openPayAmount, setOpenPayAmount] = useState(false);
   const [openBalance, setOpenBalance] = useState(0);
 
   /** Receipt state */
@@ -60,7 +59,8 @@ function ReceiptManage() {
 
   /** Detail Data State */
   const [listDetail, setListDetail] = useState([]);
-
+  const [listPayment, setListPayment] = useState([]);
+  
   const [unitOption, setUnitOption] = useState([]);
 
   const [formDetail, setFormDetail] = useState(DEFALUT_CHECK_RECEIPT);
@@ -77,15 +77,15 @@ function ReceiptManage() {
           .get(config?.code)
           .catch((error) => message.error("get Receipt data fail."));
         const {
-          data: { header },
+          data: { header, detail },
         } = res.data;
-        const { recode, redate, check_date } = header;
+        const { recode, redate } = header;
         setFormDetail(header);
+        setListDetail(detail);
         setRECode(recode);
         form.setFieldsValue({
           ...header,
           redate: dayjs(redate),
-          check_date: dayjs(check_date),
         });
 
         // setTimeout( () => {  handleCalculatePrice(head?.valid_price_until, head?.dated_price_until) }, 200);
@@ -132,21 +132,18 @@ function ReceiptManage() {
 
     const total_price = newData.reduce(
       (a, v) =>
-        (a +=
+        a +=
           Number(v.qty || 0) *
           Number(v?.price || 0) *
-          (1 - Number(v?.discount || 0) / 100)),
+          (1 - Number(v?.discount || 0) / 100)+(Number(v.qty || 0) *
+          Number(v?.price || 0) *
+          (1 - Number(v?.discount || 0) / 100)*(v.vat/100)),
       0
     );
-    const vat = form.getFieldValue("vat");
-    const grand_total_price =
-      total_price + (total_price * form.getFieldValue("vat")) / 100;
 
     setFormDetail(() => ({
       ...formDetail,
       total_price,
-      vat,
-      grand_total_price,
     }));
     // console.log(formDetail)
   };
@@ -201,11 +198,8 @@ function ReceiptManage() {
   };
 
   const handleChoosedInvoice = async (val) => {
-    console.log(val)
-    const ivcode = {
-      ivcode:  val ,
-    }
-    const res = await ivservice.getlist(ivcode);
+
+    const res = await ivservice.getlist(val);
     const {
       data: { header, detail },
     } = res.data;
@@ -237,7 +231,6 @@ function ReceiptManage() {
       price: header.balance,
       tel: val?.tel?.replace(/[^(0-9, \-, \s, \\,)]/g, "")?.trim(),
     };
-    setListDetail(val);
     setFormDetail((state) => ({ ...state, ...quotation }));
     form.setFieldsValue({ ...fvalue, ...quotation });
   };
@@ -250,22 +243,14 @@ function ReceiptManage() {
           ...formDetail,
           recode: reCode,
           redate: dayjs(form.getFieldValue("redate")).format("YYYY-MM-DD"),
-          payment_type: form.getFieldValue("payment_type"),
           remark: form.getFieldValue("remark"),
-          check_date: dayjs(form.getFieldValue("check_date")).format(
-            "YYYY-MM-DD"
-          ),
-          payment: form.getFieldValue("payment"),
-          price: form.getFieldValue("price"),
-          branch: form.getFieldValue("branch"),
-          check_no: form.getFieldValue("check_no"),
-          check_amount: form.getFieldValue("check_amount"),
-          balance: openBalance,
+          total_price:formDetail.total_price,
         };
 
         // console.log(formDetail)
+        const detail = listDetail;
 
-        const parm = { header };
+        const parm = { header,detail };
         // console.log(parm)
         const actions =
           config?.action !== "create" ? reservice.update : reservice.create;
@@ -299,9 +284,9 @@ function ReceiptManage() {
     newWindow.location.href = `/receipt/${formDetail.recode}`;
   };
 
-  const handleDelete = (stcode) => {
+  const handleDelete = (ivcode) => {
     const itemDetail = [...listDetail];
-    const newData = itemDetail.filter((item) => item?.stcode !== stcode);
+    const newData = itemDetail.filter((item) => item?.ivcode !== ivcode);
     setListDetail([...newData]);
   };
 
@@ -315,8 +300,8 @@ function ReceiptManage() {
         icon={
           <RiDeleteBin5Line style={{ fontSize: "1rem", marginTop: "3px" }} />
         }
-        onClick={() => handleDelete(record?.stcode)}
-        disabled={!record?.stcode}
+        onClick={() => handleDelete(record?.ivcode)}
+        disabled={!record?.ivcode}
       />
     ) : null;
   };
@@ -422,7 +407,7 @@ function ReceiptManage() {
           components={componentsEditable}
           rowClassName={() => "editable-row"}
           bordered
-          dataSource={listDetail}
+          dataSource={listPayment}
           columns={prodcolumns}
           pagination={false}
           rowKey="ivcode"
