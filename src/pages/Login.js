@@ -52,9 +52,12 @@ const Login = () => {
     Connectapp(values);
   };
   const direcetSystem = () => {
-    const curr = authService.getCurrent();
+    const type = authService.getType();
+    
+    if(type==='พนักงานส่งสินค้า')
     navigate("/dashboard", { replace: true });
-    // navigate(!!curr ? curr : "/items", { replace: true });
+    else
+    navigate("/shipping", { replace: true });
   };
 
   const Connectapp = (values) => {
