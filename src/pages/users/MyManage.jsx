@@ -15,11 +15,11 @@ import { SaveFilled } from "@ant-design/icons";
 import { ButtonBack } from "../../components/button";
 import { ModalResetPassword } from "../../components/modal/users/modal-reset";
 import { useLocation, useNavigate } from "react-router";
-// import OptionService from '../../service/Options.service';
+import OptionService from '../../service/Options.service';
 import UserService from "../../service/User.service";
 
 const userService = UserService();
-// const opservice = OptionService();
+const opservice = OptionService();
 const from = "/users";
 const UsersManage = () => {
   const navigate = useNavigate();
@@ -29,15 +29,25 @@ const UsersManage = () => {
   const [formDetail, setFormDetail] = useState({});
   const { config } = location.state || { config: null };
 
+  const [userOption, setUserOption] = useState([]);
+
   const [form] = Form.useForm();
   // const [packageTypeOption, setPackageTypeOption] = useState([]);
 
   useEffect(() => {
     // setLoading(true);
+    
+      opservice.optionsUser().then((res) => {
+        let { data } = res.data;
+        setUserOption(data);
+      });
+    // console.log(userOprionRes.data.data)
+    // setUserOption(userOprionRes.data.data);
+
     if (config?.action !== "create") {
       getsupData(config.code);
     }
-    console.log(config);
+    // console.log(config);
 
     return () => {
       form.resetFields();
@@ -205,15 +215,19 @@ const UsersManage = () => {
             <Select
               style={{ height: 40 }}
               placeholder="เลือกตำแหน่ง"
-              options={[
-                { value: "Admin", label: "Admin" },
-                { value: "พนักงานขาย", label: "พนักงานขาย" },
-                { value: "ธุรการ", label: "ธุรการ" },
-                { value: "จัดซื้อ", label: "จัดซื้อ" },
-                { value: "ช่าง", label: "ช่าง" },
-                { value: "กรรมการ", label: "กรรมการ" },
-                { value: "ผู้จัดการสาขา", label: "ผู้จัดการสาขา" },
-              ]}
+              options={userOption.map((item) => ({
+                value: item,
+                label: item,
+              }))}
+              // options={[
+              //   { value: "Admin", label: "Admin" },
+              //   { value: "พนักงานขาย", label: "พนักงานขาย" },
+              //   { value: "ธุรการ", label: "ธุรการ" },
+              //   { value: "จัดซื้อ", label: "จัดซื้อ" },
+              //   { value: "ช่าง", label: "ช่าง" },
+              //   { value: "กรรมการ", label: "กรรมการ" },
+              //   { value: "ผู้จัดการสาขา", label: "ผู้จัดการสาขา" },
+              // ]}
             />
           </Form.Item>
         </Col>
