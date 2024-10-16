@@ -55,7 +55,6 @@ function ReceiptManage() {
   const [openCustomers, setOpenCustomers] = useState(false);
   const [openInvoice, setOpenInvoice] = useState(false);
   const [openPayment, setOpenPayment] = useState(false);
-  const [openBalance, setOpenBalance] = useState(0);
   
   /** Receipt state */
   const [reCode, setRECode] = useState(null);
@@ -105,14 +104,9 @@ function ReceiptManage() {
           ...formDetail,
           recode: code,
           redate: dayjs(new Date()),
-          check_date: dayjs(new Date()),
         };
 
         setFormDetail(ininteial_value);
-        form.setFieldsValue(ininteial_value);
-        form.setFieldValue("vat", 7);
-        form.setFieldValue("payment_method", "ชำระทั้งหมด");
-        form.setFieldValue("payment_type", "เช็คธนาคาร");
 
         const [unitOprionRes] = await Promise.all([
           opservice.optionsUnit({ p: "unit-option" }),
@@ -132,8 +126,19 @@ function ReceiptManage() {
 
   const handleSummaryPrice = () => {
     const newData = [...listDetail];
-
+    
     const total_price = newData.reduce(
+      (a, v) =>
+        a +=
+          Number(v.qty || 0) *
+          Number(v?.price || 0) *
+          (1 - Number(v?.discount || 0) / 100)+(Number(v.qty || 0) *
+          Number(v?.price || 0) *
+          (1 - Number(v?.discount || 0) / 100)*(v.vat/100)),
+      0
+    );
+
+    const balance = newData.reduce(
       (a, v) =>
         a +=
           Number(v.qty || 0) *
@@ -147,6 +152,7 @@ function ReceiptManage() {
     setFormDetail(() => ({
       ...formDetail,
       total_price,
+      balance,
     }));
     // console.log(formDetail)
   };
@@ -209,10 +215,11 @@ function ReceiptManage() {
     setListDetail(detail);
     handleSummaryPrice();
     // console.log(header.balance)
-    setOpenBalance(header.balance);
+    
   };
 
   const handleChoosedPayment = async (val) => {
+    handleSummaryPrice();
     console.log(val)
   };
 
@@ -364,7 +371,7 @@ function ReceiptManage() {
           >
             <Form.Item
               name="price"
-              label={"( ยอดคงเหลือ " + formatMoney(openBalance, 2, 2) + " บาท)"}
+              label={"( ยอดคงเหลือ " + formatMoney(formDetail.balance, 2, 2) + " บาท)"}
               // className="!mb-1"
             >
               <InputNumber
