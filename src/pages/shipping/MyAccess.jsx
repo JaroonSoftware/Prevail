@@ -1,201 +1,136 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Card, message } from "antd";
-import { Collapse, Form, Flex, Row, Col, Space } from "antd";
-import { Input, Button, Table, Typography } from "antd";
-import { SearchOutlined, ClearOutlined } from "@ant-design/icons";
-import { MdOutlineLibraryAdd } from "react-icons/md";
-import { accessColumn } from "./model";
-import Unitservice from "../../service/Unit.service";
-
-const unitservice = Unitservice();
-const mngConfig = {
-  title: "",
-  textOk: null,
-  textCancel: null,
-  action: "create",
-  code: null,
-};
+import React, { useState } from "react";
+import { Card } from "antd";
+import { Form, Flex, Row, Col, Space, DatePicker, Divider, Input } from "antd";
+import { SearchOutlined } from "@ant-design/icons";
+import { Button, Typography } from "antd";
+import { DEFALUT_CHECK_DELIVERY } from "./model";
+import dayjs from "dayjs";
+const dateFormat = "DD/MM/YYYY";
 const ShippingAccess = () => {
-  const navigate = useNavigate();
   const [form] = Form.useForm();
-  const [accessData, setAccessData] = useState([]);
-  const [activeSearch, setActiveSearch] = useState([]);
-
-  const handleSearch = () => {
-    form.validateFields().then((v) => {
-      const data = { ...v };
-      unitservice
-        .search(data, { ignoreLoading: Object.keys(data).length !== 0 })
-        .then((res) => {
-          const { data } = res.data;
-
-          setAccessData(data);
-        })
-        .catch((err) => {
-          console.log(err);
-          message.error("Request error!");
-        });
-    });
+  const [formDetail, setFormDetail] = useState(DEFALUT_CHECK_DELIVERY);
+  const [
+    // openCustomers,
+    setOpenCustomers,
+  ] = useState(false);
+  const [dnCode] = useState(null);
+  const cardStyle = {
+    backgroundColor: "#f0f0f0",
+    height: "calc(100% - (25.4px + 1rem))",
   };
+  const handleCalculatePrice = (day, date) => {
+    const newDateAfterAdding = dayjs(date || new Date()).add(
+      Number(day),
+      "day"
+    );
+    const nDateFormet = newDateAfterAdding.format("YYYY-MM-DD");
 
-  const handleClear = () => {
-    form.resetFields();
-
-    handleSearch();
+    setFormDetail((state) => ({ ...state, dated_price_until: nDateFormet }));
+    form.setFieldValue("dated_price_until", nDateFormet);
   };
-
-  const hangleAdd = () => {
-    navigate("manage/create", {
-      state: {
-        config: {
-          ...mngConfig,
-          title: "เพิ่มหน่วยสินค้า",
-          action: "create",
-        },
-      },
-      replace: true,
-    });
+  const handleQuotDate = (e) => {
+    const { valid_price_until } = form.getFieldsValue();
+    if (!!valid_price_until && !!e) {
+      handleCalculatePrice(valid_price_until || 0, e || new Date());
+    }
   };
-
-  const handleEdit = (data) => {
-    // setManageConfig({...manageConfig, title:"แก้ไข Sample Request", action:"edit", code:data?.srcode});
-    navigate("manage/edit", {
-      state: {
-        config: {
-          ...mngConfig,
-          title: "แก้ไขหน่วยสินค้า",
-          action: "edit",
-          code: data?.unitcode,
-        },
-      },
-      replace: true,
-    });
-  };
-
-  const handleView = (data) => {
-    const newWindow = window.open("", "_blank");
-    newWindow.location.href = `/dln-print/${data.dncode}`;
-  };
-
-  const handleDelete = (data) => {
-    // startLoading();
-    // ctmService.deleted(data?.dncode).then( _ => {
-    //     const tmp = accessData.filter( d => d.dncode !== data?.dncode );
-    //     setAccessData([...tmp]);
-    // })
-    // .catch(err => {
-    //     console.log(err);
-    //     message.error("Request error!");
-    // });
-  };
-
-  useEffect(() => {
-    getData({});
-  }, []);
-
-  const getData = (data) => {
-    unitservice
-      .search(data)
-      .then((res) => {
-        const { data } = res.data;
-
-        setAccessData(data);
-      })
-      .catch((err) => {
-        console.log(err);
-        message.error("Request error!");
-      });
-  };
-  const FormSearch = (
-    <Collapse
-      size="small"
-      onChange={(e) => {
-        setActiveSearch(e);
-      }}
-      bordered={false}
-      activeKey={activeSearch}
-      items={[
-        {
-          key: "1",
-          label: <><SearchOutlined /><span> ค้นหา</span></>,  
-          children: (
-            <>
-              <Form form={form} layout="vertical" autoComplete="off">
-                <Row gutter={[8, 8]}>
-                  <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                    <Form.Item
-                      label="ชื่อหน่วยสินค้า"
-                      name="unitname"
-                      onChange={handleSearch}
-                    >
-                      <Input placeholder="กรอกชื่อหน่วยสินค้า" />
-                    </Form.Item>
-                  </Col>
-                </Row>
-                <Row gutter={[8, 8]}>
-                  <Col xs={24} sm={8} md={12} lg={12} xl={12}>
-                    {/* Ignore */}
-                  </Col>
-                  <Col xs={24} sm={8} md={12} lg={12} xl={12}>
-                    <Flex justify="flex-end" gap={8}>
-                      <Button
-                        type="primary"
-                        size="small"
-                        className="bn-action"
-                        icon={<SearchOutlined />}
-                        onClick={() => handleSearch()}
-                      >
-                        ค้นหา
-                      </Button>
-                      <Button
-                        type="primary"
-                        size="small"
-                        className="bn-action"
-                        danger
-                        icon={<ClearOutlined />}
-                        onClick={() => handleClear()}
-                      >
-                        ล้าง
-                      </Button>
-                    </Flex>
-                  </Col>
-                </Row>
-              </Form>
-            </>
-          ),
-          showArrow: false,
-        },
-      ]}
-    />
+  const SectionCustomers = (
+    <>
+      <Space size="small" direction="vertical" className="flex gap-2">
+        <Row gutter={[8, 8]} className="m-0">
+          <Col xs={24} sm={24} md={6} lg={6}>
+            <Form.Item
+              name="cuscode"
+              htmlFor="cuscode-1"
+              label="รหัสลูกค้า"
+              className="!mb-1"
+            >
+              <Input
+                readOnly
+                placeholder="เลือกลูกค้า"
+                id="cuscode-1"
+                value={formDetail.cuscode}
+                className="!bg-white"
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={24} md={18} lg={18}>
+            <Form.Item name="cusname" label="ชื่อลูกค้า" className="!mb-1">
+              <Input placeholder="ชื่อลูกค้า" readOnly />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={24} md={24} lg={24}>
+            <Form.Item name="address" label="ที่อยู่" className="!mb-1">
+              <Input placeholder="ที่อยู่" readOnly />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Row gutter={[8, 8]} className="m-0">
+          <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+            <Form.Item className="" name="remark" label="หมายเหตุ">
+              <Input.TextArea placeholder="Enter Remark" rows={4} />
+            </Form.Item>
+          </Col>
+        </Row>
+      </Space>
+    </>
   );
-  const column = accessColumn({ handleEdit, handleDelete, handleView });
-
-  const TitleTable = (
-    <Flex className="width-100" align="center">
-      <Col span={12} className="p-0">
-        <Flex gap={4} justify="start" align="center">
-          <Typography.Title className="m-0 !text-zinc-800" level={3}>
-            รายการหน่วยสินค้า
-          </Typography.Title>
-        </Flex>
-      </Col>
-      <Col span={12} style={{ paddingInline: 0 }}>
-        <Flex gap={4} justify="end">
-          <Button
-            size="small"
-            className="bn-action bn-center bn-primary-outline justify-center"
-            icon={<MdOutlineLibraryAdd style={{ fontSize: ".9rem" }} />}
-            onClick={() => {
-              hangleAdd();
-            }}
-          >
-            เพิ่มหน่วยสินค้า
-          </Button>
-        </Flex>
-      </Col>
-    </Flex>
+  const SectionProduct = (
+    <>
+      {/* <Flex className="width-100" vertical gap={4}>
+        <Table
+          title={() => TitleTable}
+          components={componentsEditable}
+          rowClassName={() => "editable-row"}
+          bordered
+          dataSource={listDetail}
+          columns={prodcolumns}
+          pagination={false}
+          rowKey="stcode"
+          scroll={{ x: "max-content" }}
+          locale={{
+            emptyText: <span>No data available, please add some data.</span>,
+          }}
+          summary={(record) => {
+            return (
+              <>
+                {listDetail.length > 0 && (
+                  <>
+                    <Table.Summary.Row>
+                      {/* <Table.Summary.Cell
+                        index={0}
+                        colSpan={2}
+                      ></Table.Summary.Cell> */}
+      {/* <Table.Summary.Cell
+                        index={4}
+                        align="end"
+                        colSpan={3}
+                        className="!pe-4"
+                      >
+                        น้ำหนักรวม
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell
+                        className="!pe-4 text-end border-right-0"
+                        style={{ borderRigth: "0px solid" }}
+                      >
+                        <Typography.Text type="danger">
+                          {comma(Number(formDetail?.total_weight || 0),2,2)}
+                        </Typography.Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell
+                        index={0}
+                        colSpan={2}
+                      ></Table.Summary.Cell>
+                    </Table.Summary.Row>
+                  </>
+                )}
+              </>
+            );
+          }}
+        />
+      </Flex> */}
+    </>
   );
   return (
     <div className="item-access">
@@ -205,17 +140,58 @@ const ShippingAccess = () => {
         style={{ display: "flex", position: "relative" }}
       >
         <Card>
-          {FormSearch}
-          <br></br>
-          <Row gutter={[8, 8]} className="m-0">
-            <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-              <Table
-                title={() => TitleTable}
-                size="small"
-                rowKey="unitcode"
-                columns={column}
-                dataSource={accessData}
-              />
+          <Flex gap="small" wrap>
+            <Button type="primary">เลือกใบส่งสินค้า</Button>
+            <Button type="primary">แสกนสินค้า</Button>
+          </Flex>
+        </Card>
+        <Card
+          title={
+            <>
+              <Row className="m-0 py-3 sm:py-0" gutter={[12, 12]}>
+                <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
+                  <Typography.Title level={3} className="m-0">
+                    เลขที่ใบส่งของ : {dnCode}
+                  </Typography.Title>
+                </Col>
+                <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
+                  <Flex
+                    gap={10}
+                    align="center"
+                    className="justify-start sm:justify-end"
+                  >
+                    <Typography.Title level={3} className="m-0">
+                      วันที่ใบส่งของ :{" "}
+                    </Typography.Title>
+                    <Form.Item name="dndate" className="!m-0">
+                      <DatePicker
+                        className="input-40"
+                        allowClear={false}
+                        onChange={handleQuotDate}
+                        format={dateFormat}
+                      />
+                    </Form.Item>
+                  </Flex>
+                </Col>
+              </Row>
+            </>
+          }
+        >
+          <Row className="m-0" gutter={[12, 12]}>
+            <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+              <Divider orientation="left" className="!mb-3 !mt-1">
+                {" "}
+                ข้อมูลใบส่งของ{" "}
+              </Divider>
+              <Card style={cardStyle}>{SectionCustomers}</Card>
+            </Col>
+            <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+              <Divider orientation="left" className="!my-0">
+                รายการใบส่งสินค้า
+              </Divider>
+              <Card style={{ backgroundColor: "#f0f0f0" }}>
+                {SectionProduct}
+              </Card>
             </Col>
           </Row>
         </Card>

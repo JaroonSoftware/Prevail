@@ -40,7 +40,7 @@ const dnservice = DeliveryNoteService();
 const gotoFrom = "/delivery-note";
 const dateFormat = 'DD/MM/YYYY';
 
-function InvoiceManage() {
+function DNManage() {
   // const navigate = useNavigate();
   const location = useLocation();
 
@@ -483,4 +483,4 @@ function InvoiceManage() {
   );
 }
 
-export default InvoiceManage;
+export default DNManage;
