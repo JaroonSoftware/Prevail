@@ -249,7 +249,7 @@ function PurchaseOrderManage() {
           <RiDeleteBin5Line style={{ fontSize: "1rem", marginTop: "3px" }} />
         }
         onClick={() => handleDelete(record?.stcode)}
-        disabled={!record?.stcode}
+        disabled={!record?.stcode||(config.action!=='create')}
       />
     ) : null;
   };

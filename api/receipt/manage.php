@@ -101,15 +101,6 @@ try {
         set
         redate = :redate,
         cuscode = :cuscode,
-        ivcode = :ivcode,
-        payment_type = :payment_type,
-        price = :price,
-        bank = :bank,
-        thai_name = :thai_name,
-        branch = :branch,
-        check_no = :check_no,
-        check_date = :check_date,
-        check_amount = :check_amount,
         remark = :remark,
         updated_date = CURRENT_TIMESTAMP(),
         updated_by = :action_user
@@ -123,15 +114,6 @@ try {
 
         $stmt->bindParam(":redate", $header->redate, PDO::PARAM_STR);
         $stmt->bindParam(":cuscode", $header->cuscode, PDO::PARAM_STR);
-        $stmt->bindParam(":ivcode", $header->ivcode, PDO::PARAM_STR);
-        $stmt->bindParam(":payment_type", $header->payment_type, PDO::PARAM_STR);
-        $stmt->bindParam(":price", $header->price, PDO::PARAM_STR);
-        $stmt->bindParam(":bank", $header->bank, PDO::PARAM_STR);
-        $stmt->bindParam(":thai_name", $header->thai_name, PDO::PARAM_STR);
-        $stmt->bindParam(":branch", $header->branch, PDO::PARAM_STR);
-        $stmt->bindParam(":check_no", $header->check_no, PDO::PARAM_STR);
-        $stmt->bindParam(":check_date", $header->check_date, PDO::PARAM_STR);
-        $stmt->bindParam(":check_amount", $header->check_amount, PDO::PARAM_STR);
         $stmt->bindParam(":remark", $header->remark, PDO::PARAM_STR);
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_INT);
         $stmt->bindParam(":recode", $header->recode, PDO::PARAM_STR);

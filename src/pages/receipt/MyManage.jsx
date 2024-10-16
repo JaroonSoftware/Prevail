@@ -210,32 +210,6 @@ function ReceiptManage() {
     handleSummaryPrice();
     // console.log(header.balance)
     setOpenBalance(header.balance);
-
-    // console.log(val)
-    const fvalue = form.getFieldsValue();
-    const addr = [
-      !!val?.idno ? `${val.idno} ` : "",
-      !!val?.road ? `${val?.road} ` : "",
-      !!val?.subdistrict ? `${val.subdistrict} ` : "",
-      !!val?.district ? `${val.district} ` : "",
-      !!val?.province ? `${val.province} ` : "",
-      !!val?.zipcode ? `${val.zipcode} ` : "",
-      !!val?.country ? `(${val.country})` : "",
-    ];
-    const cusname = [
-      !!val?.prename ? `${val.prename} ` : "",
-      !!val?.cusname ? `${val.cusname} ` : "",
-    ];
-    const quotation = {
-      ...val,
-      cusname: cusname.join(""),
-      address: addr.join(""),
-      contact: val.contact,
-      price: header.balance,
-      tel: val?.tel?.replace(/[^(0-9, \-, \s, \\,)]/g, "")?.trim(),
-    };
-    setFormDetail((state) => ({ ...state, ...quotation }));
-    form.setFieldsValue({ ...fvalue, ...quotation });
   };
 
   const handleChoosedPayment = async (val) => {
@@ -308,7 +282,7 @@ function ReceiptManage() {
           <RiDeleteBin5Line style={{ fontSize: "1rem", marginTop: "3px" }} />
         }
         onClick={() => handleDelete(record?.ivcode)}
-        disabled={!record?.ivcode}
+        disabled={!record?.ivcode||(config.action!=='create')}
       />
     ) : null;
   };

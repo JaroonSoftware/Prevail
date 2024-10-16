@@ -118,7 +118,7 @@ export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}
   }, 
 ];
 
-export const productColumn = ({handleRemove,handleSelectChange}) => [
+export const productColumn = ({handleRemove}) => [
   {
     title: "ลำดับ",
     dataIndex: "code",
