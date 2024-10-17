@@ -15,6 +15,7 @@ import {
   Modal,
 } from "antd";
 import { productColumn } from "./model";
+import { productColumnModal } from "./model";
 import OptionService from "../../service/Options.service";
 import DeliveryNoteService from "../../service/DeliveryNote.service";
 import { Button, Typography } from "antd";
@@ -24,7 +25,7 @@ const dateFormat = "DD/MM/YYYY";
 const ShippingAccess = () => {
   const [form] = Form.useForm();
   const dnservice = DeliveryNoteService();
-  const [open15, setOpen15] = useState(false);
+  const [OpenModalitem, setOpenModalitem] = useState(false);
   const [formDetail, setFormDetail] = useState(DEFALUT_CHECK_DELIVERY);
   const [accessData, setAccessData] = useState([]);
   const [listDetail] = useState([]);
@@ -32,7 +33,7 @@ const ShippingAccess = () => {
     dnCode,
     //  setDNCode
   ] = useState(null);
-  const [ setUnitOption] = React.useState([]);
+  const [setUnitOption] = React.useState([]);
   const cardStyle = {
     backgroundColor: "#f0f0f0",
     height: "calc(100% - (25.4px + 1rem))",
@@ -41,7 +42,7 @@ const ShippingAccess = () => {
     const initial = async () => {
       const data = {};
       dnservice
-      
+
         .search({ ignoreLoading: Object.keys(data).length !== 0 })
         .then((res) => {
           const { data } = res.data;
@@ -66,7 +67,6 @@ const ShippingAccess = () => {
     initial();
     return () => {};
   }, []);
-
   useEffect(() => {
     if (listDetail) handleSummaryPrice();
   }, [listDetail]);
@@ -96,10 +96,11 @@ const ShippingAccess = () => {
       </Col>
     </Flex>
   );
-  const handleEdit =  {
-   
+  const handleEdit = async (data) => {
+    setOpenModalitem(true);
   };
-  const prodcolumns = productColumn({ handleEdit});
+  const prodcolumns = productColumn({ handleEdit });
+  const prodcolumnsItem = productColumnModal({});
   const SectionCustomers = (
     <>
       <Space size="small" direction="vertical" className="flex gap-2">
@@ -117,8 +118,8 @@ const ShippingAccess = () => {
         </Row>
         <Row gutter={[8, 8]} className="m-0">
           <Col xs={12} sm={12} md={12} lg={12} xl={12} xxl={12}>
-            <Form.Item name="address" label="ที่อยู่" className="!mb-1">
-              <Input.TextArea placeholder="ที่อยู่" readOnly rows={2} />
+            <Form.Item name="address" label="ที่อยู่จัดส่งสินค้า" className="!mb-1">
+              <Input.TextArea placeholder="เลือกที่อยู่จัดส่งสินค้า" readOnly rows={2} />
             </Form.Item>
           </Col>
           <Col xs={12} sm={12} md={12} lg={12} xl={12} xxl={12}>
@@ -219,16 +220,28 @@ const ShippingAccess = () => {
         </Form>
       </Space>
       <Modal
-        title="Modal 1000px width"
-        centered
-        open={open15}
-        onOk={() => setOpen15(false)}
-        onCancel={() => setOpen15(false)}
+        open={OpenModalitem}
+        onOk={() => setOpenModalitem(false)}
+        onCancel={() => setOpenModalitem(false)}
         width={1000}
       >
-        <p>some contents...</p>
-        <p>some contents...</p>
-        <p>some contents...</p>
+         
+            <Table
+              title={() => TitleTable}
+              rowClassName={() => "editable-row"}
+              bordered
+              columns={prodcolumnsItem}
+              dataSource={accessData}
+              pagination={false}
+              rowKey="dncode"
+              scroll={{ x: "max-content" }}
+              locale={{
+                emptyText: (
+                  <span>No data available, please add some data.</span>
+                ),
+              }}
+            />
+         
       </Modal>
     </div>
   );
