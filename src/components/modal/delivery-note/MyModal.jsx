@@ -5,12 +5,12 @@ import { Row, Col, Space } from "antd";
 import { Input, Button } from "antd";
 import { SearchOutlined } from "@ant-design/icons"
 
-import { columns } from "./modal-items.model"; 
+import { columns } from "./model"; 
 // import ItemService from "../../service/ItemService";
 import OptionService from "../../../service/Options.service"
 
 const opnService = OptionService();
-export default function ModalItems({show, close,cuscode, values, selected}) {
+export default function ModalDeliverynote({show, close,cuscode, values, selected}) {
     const [form] = Form.useForm();
     /** handle state */
     const [itemsData, setItemsData] = useState([]);
@@ -26,7 +26,7 @@ export default function ModalItems({show, close,cuscode, values, selected}) {
  
     const handleSearch = (value) => {
         if(!!value){    
-            const f = itemsData.filter( d => ( (d.stcode?.includes(value)) || (d.stname?.includes(value)) ) );
+            const f = itemsData.filter( d => ( (d.dncode?.includes(value)) || (d.dncode?.includes(value)) ) );
              
             setItemsDataWrap(f);            
         } else { 
@@ -47,11 +47,11 @@ export default function ModalItems({show, close,cuscode, values, selected}) {
         setItemsList([...itemsList, newData]);
     };
 
-    const handleCheckDuplicate = (itemCode) => !!selected.find( (item) =>  item?.code === itemCode ) ; 
+    const handleCheckDuplicate = (itemCode) => !!selected.find( (item) =>  item?.dncode === itemCode ) ; 
 
     const handleConfirm = () => { 
-        const choosed = selected.map( m => m.code );
-        const itemsChoose = (itemsData.filter( f => itemsRowKeySelect.includes(f.code) && !choosed.includes(f.code) )).map( (m, i) => (
+        const choosed = selected.map( m => m.dncode );
+        const itemsChoose = (itemsData.filter( f => itemsRowKeySelect.includes(f.dncode) && !choosed.includes(f.dncode) )).map( (m, i) => (
         {
             dncode:m.dncode,
             stcode:m.stcode,
@@ -83,16 +83,16 @@ export default function ModalItems({show, close,cuscode, values, selected}) {
         },
         getCheckboxProps: (record) => { 
             return {
-                disabled: handleCheckDuplicate(record.code), 
-                name: record.code,
+                disabled: handleCheckDuplicate(record.dncode), 
+                name: record.dncode,
             }
         },
         onSelect: (record, selected, selectedRows, nativeEvent) => {
             //console.log(record, selected, selectedRows, nativeEvent);
             if( selected ){
-                setItemsRowKeySelect([...new Set([...itemsRowKeySelect, record.code])]);
+                setItemsRowKeySelect([...new Set([...itemsRowKeySelect, record.dncode])]);
             } else {
-                const ind = itemsRowKeySelect.findIndex( d => d === record.code);
+                const ind = itemsRowKeySelect.findIndex( d => d === record.dncode);
                 const tval = [...itemsRowKeySelect];
                 tval.splice(ind, 1);
                 setItemsRowKeySelect([...tval]);
@@ -109,13 +109,13 @@ export default function ModalItems({show, close,cuscode, values, selected}) {
     useEffect( () => {
         const onload = () =>{            
             setLoading(true);
-            opnService.optionsItems({p:'dn',cuscode:cuscode}).then((res) => {
+            opnService.optionsDeliverynote({cuscode:cuscode}).then((res) => {
                 let { status, data } = res;
                 if (status === 200) {
                     setItemsData(data.data);
                     setItemsDataWrap(data.data);
 
-                    const keySeleted = selected.map( m => m.code );
+                    const keySeleted = selected.map( m => m.dncode );
 
                     setItemsRowKeySelect([...keySeleted]);
                     // console.log(selected);
@@ -174,7 +174,7 @@ export default function ModalItems({show, close,cuscode, values, selected}) {
                             dataSource={itemsDataWrap}
                             columns={column} 
                             rowSelection={itemSelection}
-                            rowKey="code"
+                            rowKey="dncode"
                             pagination={{ 
                                 total:itemsDataWrap.length, 
                                 showTotal:(_, range) => `${range[0]}-${range[1]} of ${itemsData.length} items`,

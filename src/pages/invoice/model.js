@@ -157,7 +157,7 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
     className: "!pe-3",
     required: true,
     type:'number',
-    render: (_, rec) => <>{ comma( Number(rec?.qty ||  0),  0, 0 )}</>,
+    render: (_, rec) => <>{ comma( Number(rec?.qty ||  0),  2, 0 )}</>,
   },
   {
     title: "หน่วยสินค้า",

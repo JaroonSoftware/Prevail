@@ -210,7 +210,7 @@ function ReceiptManage() {
 
     const res = await ivservice.getlist(val);
     const {
-      data: { header, detail },
+      data: { detail },
     } = res.data;
     setListDetail(detail);
     handleSummaryPrice();
