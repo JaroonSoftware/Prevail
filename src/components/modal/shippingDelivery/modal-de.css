@@ -1,0 +1,14 @@
+.modal-delivery .text-select{
+    color: rgb(67, 105, 233);
+}
+
+.modal-delivery .text-select:hover{
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.modal-delivery .ant-table-content{
+    height: calc( 100vh - 30rem) !important;
+    overflow-y: auto !important;
+    position: relative;
+}

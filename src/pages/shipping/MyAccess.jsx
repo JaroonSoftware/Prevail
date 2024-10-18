@@ -4,6 +4,7 @@ import { Card } from "antd";
 import {
   Form,
   Flex,
+  Select,
   Row,
   Col,
   Space,
@@ -18,17 +19,20 @@ import { productColumn } from "./model";
 import { productColumnModal } from "./model";
 import OptionService from "../../service/Options.service";
 import DeliveryNoteService from "../../service/DeliveryNote.service";
+import ModalDN from "../../components/modal/shippingDelivery/ModalDelivery";
 import { Button, Typography } from "antd";
 import { DEFALUT_CHECK_DELIVERY } from "./model";
 const opservice = OptionService();
 const dateFormat = "DD/MM/YYYY";
 const ShippingAccess = () => {
   const [form] = Form.useForm();
-  const dnservice = DeliveryNoteService();
+  const [isModalOpenDN, setIsModalDNOpen] = useState(false);
+  const [openDN, setOpenDN] = useState(false);
   const [OpenModalitem, setOpenModalitem] = useState(false);
   const [formDetail, setFormDetail] = useState(DEFALUT_CHECK_DELIVERY);
   const [accessData, setAccessData] = useState([]);
   const [listDetail] = useState([]);
+  const dnservice = DeliveryNoteService();
   const [
     dnCode,
     //  setDNCode
@@ -70,6 +74,9 @@ const ShippingAccess = () => {
   useEffect(() => {
     if (listDetail) handleSummaryPrice();
   }, [listDetail]);
+  const filterOption = (input, option) =>
+    (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
+
   const handleSummaryPrice = () => {
     const newData = [...listDetail];
 
@@ -85,6 +92,28 @@ const ShippingAccess = () => {
     }));
     // console.log(formDetail)
   };
+  const handleChoosedDN = (val) => {
+    // console.log(val)
+    const fvalue = form.getFieldsValue();
+    const addr = [
+      !!val?.idno ? `${val.idno} ` : "",
+      !!val?.road ? `${val?.road} ` : "",
+      !!val?.subdistrict ? `${val.subdistrict} ` : "",
+      !!val?.district ? `${val.district} ` : "",
+      !!val?.province ? `${val.province} ` : "",
+      !!val?.zipcode ? `${val.zipcode} ` : "",
+      !!val?.country ? `(${val.country})` : "",
+    ];
+    const customer = {
+      ...val,
+      cusaddress: addr.join(""),
+      cuscontact: val.contact,
+      custel: val?.tel?.replace(/[^(0-9, \-, \s, \\,)]/g, "")?.trim(),
+    };
+    // console.log(val.contact)
+    setFormDetail((state) => ({ ...state, ...customer }));
+    form.setFieldsValue({ ...fvalue, ...customer });
+  };
   const TitleTable = (
     <Flex className="width-100" align="center">
       <Col span={12} className="p-0">
@@ -99,8 +128,18 @@ const ShippingAccess = () => {
   const handleEdit = async (data) => {
     setOpenModalitem(true);
   };
+  const handleScan = async (data) => {
+    setIsModalDNOpen(true);
+  };
+
+  const handleOkDN = () => {
+    setIsModalDNOpen(false);
+  };
+  const handleCancelDN = () => {
+    setIsModalDNOpen(false);
+  };
   const prodcolumns = productColumn({ handleEdit });
-  const prodcolumnsItem = productColumnModal({});
+  const prodcolumnsItem = productColumnModal({ handleScan });
   const SectionCustomers = (
     <>
       <Space size="small" direction="vertical" className="flex gap-2">
@@ -118,13 +157,53 @@ const ShippingAccess = () => {
         </Row>
         <Row gutter={[8, 8]} className="m-0">
           <Col xs={12} sm={12} md={12} lg={12} xl={12} xxl={12}>
-            <Form.Item name="address" label="ที่อยู่จัดส่งสินค้า" className="!mb-1">
-              <Input.TextArea placeholder="เลือกที่อยู่จัดส่งสินค้า" readOnly rows={2} />
+            <Form.Item
+              name="address"
+              label="ที่อยู่จัดส่งสินค้า"
+              className="!mb-1"
+            >
+              <Select
+                size="large"
+                placeholder="เลือกที่อยู่จัดส่งสินค้า"
+                showSearch
+                filterOption={filterOption}
+                options={[
+                  {
+                    value: "กะตะ",
+                    label: "กะตะ",
+                  },
+                  {
+                    value: "กะรน",
+                    label: "กะรน",
+                  },
+                  {
+                    value: "ป่าตอง",
+                    label: "ป่าตอง",
+                  },
+                  {
+                    value: "เมือง",
+                    label: "เมือง",
+                  },
+                  {
+                    value: "เขาหลัก พังงาน",
+                    label: "เขาหลัก พังงาน",
+                  },
+                  {
+                    value: "เชิงทะเล",
+                    label: "เชิงทะเล",
+                  },
+                ]}
+              ></Select>
             </Form.Item>
           </Col>
           <Col xs={12} sm={12} md={12} lg={12} xl={12} xxl={12}>
             <Form.Item name="remark" label="หมายเหตุ" className="!mb-1">
-              <Input.TextArea placeholder="หมายเหตุ" readOnly rows={2} />
+              <Input.TextArea
+                placeholder="หมายเหตุ"
+                size="large"
+                readOnly
+                rows={1}
+              />
             </Form.Item>
           </Col>
         </Row>
@@ -159,7 +238,14 @@ const ShippingAccess = () => {
       >
         <Card>
           <Flex gap="small" wrap>
-            <Button type="primary">เลือกใบส่งสินค้า</Button>
+            <Button
+              onClick={() => {
+                setOpenDN(true);
+              }}
+              type="primary"
+            >
+              เลือกใบส่งสินค้า
+            </Button>
           </Flex>
         </Card>
         <Form
@@ -219,30 +305,42 @@ const ShippingAccess = () => {
           </Card>
         </Form>
       </Space>
+      {openDN && (
+        <ModalDN
+          show={openDN}
+          close={() => setOpenDN(false)}
+          values={(v) => {
+            handleChoosedDN(v);
+          }}
+        ></ModalDN>
+      )}
       <Modal
         open={OpenModalitem}
         onOk={() => setOpenModalitem(false)}
         onCancel={() => setOpenModalitem(false)}
-        width={1000}
+        width={800}
       >
-         
-            <Table
-              title={() => TitleTable}
-              rowClassName={() => "editable-row"}
-              bordered
-              columns={prodcolumnsItem}
-              dataSource={accessData}
-              pagination={false}
-              rowKey="dncode"
-              scroll={{ x: "max-content" }}
-              locale={{
-                emptyText: (
-                  <span>No data available, please add some data.</span>
-                ),
-              }}
-            />
-         
+        <Table
+          title={() => TitleTable}
+          rowClassName={() => "editable-row"}
+          bordered
+          columns={prodcolumnsItem}
+          dataSource={accessData}
+          pagination={false}
+          rowKey="dncode"
+          scroll={{ x: "max-content" }}
+          locale={{
+            emptyText: <span>No data available, please add some data.</span>,
+          }}
+        />
       </Modal>
+      <Modal
+        title={"แสกนสินค้า"}
+        open={isModalOpenDN}
+        onOk={handleOkDN}
+        onCancel={handleCancelDN}
+        width={"100%"}
+      ></Modal>
     </div>
   );
 };
