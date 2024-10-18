@@ -8,7 +8,7 @@ import { EditableRow, EditableCell } from "../../components/table/TableEditAble"
 import { TagDeliveryNoteStatus } from "../../components/badge-and-tag";
 import dayjs from 'dayjs';
 import {  EditOutlined, PrinterOutlined } from "@ant-design/icons";
-import { BarcodeOutlined} from "@ant-design/icons";
+import { BarcodeOutlined, FullscreenOutlined} from "@ant-design/icons";
 
 /** export component for edit table */
 export const componentsEditable = {
@@ -136,8 +136,17 @@ export const productColumn = ({handleEdit}) => [
   //   type:'number',
   //   render: (_, rec) => <>{ comma( Number(rec?.unit_weight ||  0),  2, 0 )}</>,
   // },
+  // {
+  //   title: "หน่วยสินค้า",
+  //   dataIndex: "unit",
+  //   key: "unit", 
+  //     align: "right", 
+  //     width: "10%",
+  //     editable: true,
+  //     type:'select',    
+  // },
   {
-    title: "หน่วยสินค้า",
+    title: "จำนวนที่แสกน",
     dataIndex: "unit",
     key: "unit", 
       align: "right", 
@@ -146,7 +155,67 @@ export const productColumn = ({handleEdit}) => [
       type:'select',    
   },
   {
-    title: "จำนวนที่แสกน",
+    title: "แสดงสินค้า",
+    key: "operation",
+    width: "5%",
+    fixed: "right",
+    render: (text, record) => (
+      <Space style={{paddingLeft: 25}}>
+        <Button
+          icon={<FullscreenOutlined />}
+          className="bn-primary-outline"
+          style={{
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          onClick={(e) => handleEdit(record)}
+           size="small"
+        />
+      </Space>
+    ),
+  },
+];
+
+export const productColumnModal = ({handleScan}) => [
+  {
+    title: "ลำดับ",
+    dataIndex: "code",
+    key: "code",
+    align: "center",
+    width: 5, 
+    render: (im, rc, index) => <>{index + 1}</>,
+  },
+  {
+    title: "รหัสสินค้า",
+    dataIndex: "dncode",
+    key: "dncode",
+    width: 120, 
+    align: "center",
+  },
+  {
+    title: "ชื่อสินค้า",
+    dataIndex: "purdetail",
+    key: "purdetail", 
+    align: "left", 
+    width: 150, 
+    render: (_, rec) => rec.stname,
+  },
+  {
+    title: "น้ำหนัก",
+    dataIndex: "unit_weight",
+    key: "unit_weight", 
+    width: "10%",
+    align: "right",
+    className: "!pe-3",
+    editable: true,
+    required: true,
+    type:'number',
+    // render: (_, rec) => <>{ comma( Number(rec?.unit_weight ||  0),  2, 0 )}</>,
+  },
+  {
+    title: "หน่วยสินค้า",
     dataIndex: "unit",
     key: "unit", 
       align: "right", 
@@ -170,13 +239,14 @@ export const productColumn = ({handleEdit}) => [
             alignItems: "center",
             justifyContent: "center",
           }}
-          onClick={(e) => handleEdit(record)}
+          onClick={(e) => handleScan(record)}
            size="small"
         />
       </Space>
     ),
   },
 ];
+
 
 export const columnsParametersEditable = (handleEditCell,optionsItems,{handleRemove} ) =>{
   const col = productColumn({handleRemove});
