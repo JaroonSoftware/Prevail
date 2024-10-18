@@ -60,8 +60,8 @@ try {
             $stmt->bindParam(":ivcode", $header->ivcode, PDO::PARAM_STR);
             $stmt->bindParam(":dncode", $val->dncode, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
-            $stmt->bindParam(":qty", $val->qty, PDO::PARAM_INT);
-            $stmt->bindParam(":price", $val->price, PDO::PARAM_INT);
+            $stmt->bindParam(":qty", $val->qty, PDO::PARAM_STR);
+            $stmt->bindParam(":price", $val->price, PDO::PARAM_STR);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
             $stmt->bindParam(":discount", $val->discount, PDO::PARAM_INT);
             $stmt->bindParam(":vat", $val->vat, PDO::PARAM_INT);
@@ -181,7 +181,7 @@ try {
             $stmt->bindParam(":dncode", $val->dncode, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
-            $stmt->bindParam(":qty", $val->qty, PDO::PARAM_INT);
+            $stmt->bindParam(":qty", $val->qty, PDO::PARAM_STR);
             $stmt->bindParam(":price", $val->price, PDO::PARAM_INT);
             $stmt->bindParam(":discount", $val->discount, PDO::PARAM_INT);
             $stmt->bindParam(":vat", $val->vat, PDO::PARAM_INT);

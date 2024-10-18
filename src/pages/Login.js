@@ -54,7 +54,7 @@ const Login = () => {
   const direcetSystem = () => {
     const type = authService.getType();
     
-    if(type==='พนักงานส่งสินค้า')
+    if(type!=='พนักงานส่งสินค้า')
     navigate("/dashboard", { replace: true });
     else
     navigate("/shipping", { replace: true });

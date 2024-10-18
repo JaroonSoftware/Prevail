@@ -14,9 +14,10 @@ import { Card, Col, Divider, Flex, Row, Space, Select } from "antd";
 
 import OptionService from "../../service/Options.service";
 import InvoiceService from "../../service/Invoice.service";
+import DeliveryNoteService from "../../service/DeliveryNote.service";
 import { SaveFilled, SearchOutlined } from "@ant-design/icons";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
-import { ModalItems } from "../../components/modal/itemsbyDN/modal-items";
+import { ModalDeliverynote } from "../../components/modal/delivery-note";
 
 import {
   DEFALUT_CHECK_INVOICE,
@@ -34,9 +35,10 @@ import { LuPackageSearch } from "react-icons/lu";
 import { LuPrinter } from "react-icons/lu";
 const opservice = OptionService();
 const ivservice = InvoiceService();
+const dnservice = DeliveryNoteService();
 
 const gotoFrom = "/invoice";
-const dateFormat = 'DD/MM/YYYY';
+const dateFormat = "DD/MM/YYYY";
 
 function InvoiceManage() {
   const navigate = useNavigate();
@@ -73,11 +75,15 @@ function InvoiceManage() {
         const {
           data: { header, detail },
         } = res.data;
-        const { ivcode, ivdate,deldate } = header;
+        const { ivcode, ivdate, deldate } = header;
         setFormDetail(header);
         setListDetail(detail);
         setIVCode(ivcode);
-        form.setFieldsValue({ ...header, ivdate: dayjs(ivdate), deldate: dayjs(deldate) });
+        form.setFieldsValue({
+          ...header,
+          ivdate: dayjs(ivdate),
+          deldate: dayjs(deldate),
+        });
 
         // setTimeout( () => {  handleCalculatePrice(head?.valid_price_until, head?.dated_price_until) }, 200);
         // handleChoosedCustomers(head);
@@ -88,19 +94,18 @@ function InvoiceManage() {
           })
         ).data;
         setIVCode(code);
-        
+
         const ininteial_value = {
           ...formDetail,
           ivcode: code,
           ivdate: dayjs(new Date()),
         };
-        
+
         setFormDetail(ininteial_value);
         form.setFieldsValue(ininteial_value);
         form.setFieldValue("vat", 7);
         form.setFieldValue("payment", "เงินสด");
         form.setFieldValue("deldate", dayjs(new Date()));
-        
       }
       const [unitOprionRes] = await Promise.all([
         opservice.optionsUnit({ p: "unit-option" }),
@@ -122,12 +127,14 @@ function InvoiceManage() {
 
     const total_price = newData.reduce(
       (a, v) =>
-        a +=
-          Number(v.qty || 0) *
-          Number(v?.price || 0) *
-          (1 - Number(v?.discount || 0) / 100)+(Number(v.qty || 0) *
-          Number(v?.price || 0) *
-          (1 - Number(v?.discount || 0) / 100)*(v.vat/100)),
+        (a +=
+          formatMoney(Number(v.qty || 0), 2, 0) *
+            Number(v?.price || 0) *
+            (1 - Number(v?.discount || 0) / 100) +
+          formatMoney(Number(v.qty || 0), 2, 0) *
+            Number(v?.price || 0) *
+            (1 - Number(v?.discount || 0) / 100) *
+            (v.vat / 100)),
       0
     );
 
@@ -187,10 +194,23 @@ function InvoiceManage() {
     // setListDetail([]);
   };
 
-  const handleItemsChoosed = (value) => {
-    // console.log(value);
-    setListDetail(value);
+  // const handleItemsChoosed = (value) => {
+  //   console.log(value);
+  //   setListDetail(value);
+
+  //   handleSummaryPrice();
+  //   const detail = listDetail;
+  //   console.log(detail);
+  // };
+
+  const handleItemsChoosed = async (val) => {
+    const res = await dnservice.getlist(val);
+    const {
+      data: { detail },
+    } = res.data;
+    setListDetail(detail);
     handleSummaryPrice();
+    // console.log(header.balance)
   };
 
   const handleConfirm = () => {
@@ -209,25 +229,25 @@ function InvoiceManage() {
         const detail = listDetail;
 
         const parm = { header, detail };
-        console.log(parm)
+        // console.log(detail);
         const actions =
-          config?.action !== "create" ? ivservice.update : ivservice.create;
-        actions(parm)
-          .then((r) => {
-            handleClose().then((r) => {
-              message.success("Request Invoice success.");
-            });
+              config?.action !== "create" ? ivservice.update : ivservice.create;
+            actions(parm)
+              .then((r) => {
+                handleClose().then((r) => {
+                  message.success("Request Invoice success.");
+                });
+              })
+              .catch((err) => {
+                message.error("Request Invoice fail.");
+                console.warn(err);
+              });
           })
           .catch((err) => {
-            message.error("Request Invoice fail.");
-            console.warn(err);
-          });
-      })
-      .catch((err) => {
-        Modal.error({
-          title: "This is an error message",
-          content: "คุณกรอกข้อมูล ไม่ครบถ้วน",
-        });
+            Modal.error({
+              title: "This is an error message",
+              content: "คุณกรอกข้อมูล ไม่ครบถ้วน",
+            });
       });
   };
 
@@ -242,9 +262,9 @@ function InvoiceManage() {
     newWindow.location.href = `/quo-print/${formDetail.quotcode}`;
   };
 
-  const handleDelete = (stcode) => {
+  const handleDelete = (dncode) => {
     const itemDetail = [...listDetail];
-    const newData = itemDetail.filter((item) => item?.stcode !== stcode);
+    const newData = itemDetail.filter((item) => item?.dncode !== dncode);
     setListDetail([...newData]);
   };
 
@@ -258,8 +278,8 @@ function InvoiceManage() {
         icon={
           <RiDeleteBin5Line style={{ fontSize: "1rem", marginTop: "3px" }} />
         }
-        onClick={() => handleDelete(record?.stcode)}
-        disabled={!record?.stcode}
+        onClick={() => handleDelete(record?.dncode)}
+        disabled={!record?.dncode || config.action !== "create"}
       />
     ) : null;
   };
@@ -269,7 +289,7 @@ function InvoiceManage() {
       const itemDetail = [...listDetail];
       const newData = [...itemDetail];
 
-      const ind = newData.findIndex((item) => r?.stcode === item?.stcode);
+      const ind = newData.findIndex((item) => r?.dncode === item?.dncode);
       if (ind < 0) return itemDetail;
       const item = newData[ind];
       newData.splice(ind, 1, {
@@ -280,9 +300,8 @@ function InvoiceManage() {
       handleSummaryPrice();
       return newData;
     };
-    // console.log([...newData(row)])    
+    // console.log([...newData(row)])
     setListDetail([...newData(row)]);
-    
   };
 
   /** setting column table */
@@ -310,12 +329,16 @@ function InvoiceManage() {
                   value={formDetail.cuscode}
                   className="!bg-white"
                 />
-                {config?.action !== "create" ? '' : <Button
-                  type="primary"
-                  icon={<SearchOutlined />}
-                  onClick={() => setOpenCustomers(true)}
-                  style={{ minWidth: 40 }}
-                ></Button>}                
+                {config?.action !== "create" ? (
+                  ""
+                ) : (
+                  <Button
+                    type="primary"
+                    icon={<SearchOutlined />}
+                    onClick={() => setOpenCustomers(true)}
+                    style={{ minWidth: 40 }}
+                  ></Button>
+                )}
               </Space.Compact>
             </Form.Item>
           </Col>
@@ -401,7 +424,7 @@ function InvoiceManage() {
           dataSource={listDetail}
           columns={prodcolumns}
           pagination={false}
-          rowKey="stcode"
+          rowKey="code"
           scroll={{ x: "max-content" }}
           locale={{
             emptyText: <span>No data available, please add some data.</span>,
@@ -428,10 +451,12 @@ function InvoiceManage() {
                         style={{ borderRigth: "0px solid" }}
                       >
                         <Typography.Text type="danger">
-                          {formatMoney(Number(formDetail?.total_price || 0),2)}
+                          {formatMoney(Number(formDetail?.total_price || 0), 2)}
                         </Typography.Text>
                       </Table.Summary.Cell>
-                      <Table.Summary.Cell className="!pe-4 text-end">Baht</Table.Summary.Cell>
+                      <Table.Summary.Cell className="!pe-4 text-end">
+                        Baht
+                      </Table.Summary.Cell>
                     </Table.Summary.Row>
                   </>
                 )}
@@ -614,7 +639,7 @@ function InvoiceManage() {
       )}
 
       {openProduct && (
-        <ModalItems
+        <ModalDeliverynote
           show={openProduct}
           close={() => setOpenProduct(false)}
           values={(v) => {
@@ -622,7 +647,7 @@ function InvoiceManage() {
           }}
           cuscode={form.getFieldValue("cuscode")}
           selected={listDetail}
-        ></ModalItems>
+        ></ModalDeliverynote>
       )}
     </div>
   );

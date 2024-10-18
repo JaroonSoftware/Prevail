@@ -7,6 +7,7 @@
 old
 README.md
 .env
+.env.development
 .env.production
 # testing
 /coverage
@@ -14,12 +15,14 @@ README.md
 # production
 /build
 .env
+.env.development
 .env.production
 README.md
 # misc
 .DS_Store
 .env.local
 .env
+.env.development
 .env.production
 
 npm-debug.log*
@@ -27,6 +30,7 @@ yarn-debug.log*
 yarn-error.log*
 README.md
 .env
+.env.development
 .env.production
 
 /uploads/*
