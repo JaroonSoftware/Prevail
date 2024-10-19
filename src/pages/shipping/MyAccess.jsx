@@ -20,6 +20,7 @@ import { productColumnModal } from "./model";
 import OptionService from "../../service/Options.service";
 import DeliveryNoteService from "../../service/DeliveryNote.service";
 import ModalDN from "../../components/modal/shippingDelivery/ModalDelivery";
+import ModalScan from "../../components/modal/scan-shipping/MyModal";
 import { Button, Typography } from "antd";
 import { DEFALUT_CHECK_DELIVERY } from "./model";
 const opservice = OptionService();
@@ -94,25 +95,25 @@ const ShippingAccess = () => {
   };
   const handleChoosedDN = (val) => {
     // console.log(val)
-    const fvalue = form.getFieldsValue();
-    const addr = [
-      !!val?.idno ? `${val.idno} ` : "",
-      !!val?.road ? `${val?.road} ` : "",
-      !!val?.subdistrict ? `${val.subdistrict} ` : "",
-      !!val?.district ? `${val.district} ` : "",
-      !!val?.province ? `${val.province} ` : "",
-      !!val?.zipcode ? `${val.zipcode} ` : "",
-      !!val?.country ? `(${val.country})` : "",
-    ];
-    const customer = {
-      ...val,
-      cusaddress: addr.join(""),
-      cuscontact: val.contact,
-      custel: val?.tel?.replace(/[^(0-9, \-, \s, \\,)]/g, "")?.trim(),
-    };
-    // console.log(val.contact)
-    setFormDetail((state) => ({ ...state, ...customer }));
-    form.setFieldsValue({ ...fvalue, ...customer });
+    // const fvalue = form.getFieldsValue();
+    // const addr = [
+    //   !!val?.idno ? `${val.idno} ` : "",
+    //   !!val?.road ? `${val?.road} ` : "",
+    //   !!val?.subdistrict ? `${val.subdistrict} ` : "",
+    //   !!val?.district ? `${val.district} ` : "",
+    //   !!val?.province ? `${val.province} ` : "",
+    //   !!val?.zipcode ? `${val.zipcode} ` : "",
+    //   !!val?.country ? `(${val.country})` : "",
+    // ];
+    // const customer = {
+    //   ...val,
+    //   cusaddress: addr.join(""),
+    //   cuscontact: val.contact,
+    //   custel: val?.tel?.replace(/[^(0-9, \-, \s, \\,)]/g, "")?.trim(),
+    // };
+    // // console.log(val.contact)
+    // setFormDetail((state) => ({ ...state, ...customer }));
+    // form.setFieldsValue({ ...fvalue, ...customer });
   };
   const TitleTable = (
     <Flex className="width-100" align="center">
@@ -334,13 +335,12 @@ const ShippingAccess = () => {
           }}
         />
       </Modal>
-      <Modal
-        title={"แสกนสินค้า"}
-        open={isModalOpenDN}
-        onOk={handleOkDN}
-        onCancel={handleCancelDN}
-        width={"100%"}
-      ></Modal>
+      {isModalOpenDN && (
+        <ModalScan
+          show={isModalOpenDN}
+          close={() => setIsModalDNOpen(false)}
+        ></ModalScan>
+      )}
     </div>
   );
 };
