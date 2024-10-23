@@ -39,7 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
             FROM podetail a 
             inner join pomaster b on (a.pocode=b.pocode)
             inner join items i on (a.stcode=i.stcode)
-            where b.supcode= '$supcode' and b.active_status = 'Y' and b.doc_status != 'รับของครบแล้ว' "; 
+            where b.supcode= '$supcode' and b.active_status = 'Y' and b.doc_status != 'รับของครบแล้ว' and a.qty>a.recamount "; 
             $stmt = $conn->prepare($sql); 
             $stmt->execute();
             $res = $stmt->fetchAll(PDO::FETCH_ASSOC);             

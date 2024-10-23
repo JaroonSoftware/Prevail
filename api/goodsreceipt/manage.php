@@ -58,7 +58,7 @@ try {
             $val = (object)$val;
             $stmt->bindParam(":grcode", $header->grcode, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
-            $stmt->bindParam(":pocode", $val->pocode, PDO::PARAM_STR);            
+            $stmt->bindParam(":pocode", $val->pocode, PDO::PARAM_STR);
             $stmt->bindParam(":qty", $val->qty, PDO::PARAM_INT);
             $stmt->bindParam(":price", $val->price, PDO::PARAM_INT);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
@@ -74,9 +74,8 @@ try {
             $stmt2 = $conn->prepare($sql2);
             if (!$stmt2) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
-            for($count=1;$count<=$val->qty;$count++)
-            {   
-                $stmt2->bindParam(":order_no", $count, PDO::PARAM_STR);             
+            for ($count = 1; $count <= $val->qty; $count++) {
+                $stmt2->bindParam(":order_no", $count, PDO::PARAM_STR);
                 $stmt2->bindParam(":grcode", $header->grcode, PDO::PARAM_STR);
                 $stmt2->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
 
@@ -86,56 +85,69 @@ try {
                     die;
                 }
             }
-        
 
-        }
-
-        $sql = "update podetail set recamount = recamount+:qty where pocode = :pocode";
+            $sql = "update podetail set recamount = recamount+:qty where pocode = :pocode and stcode = :stcode";
 
             $stmt3 = $conn->prepare($sql);
             if (!$stmt3) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
             $stmt3->bindParam(":qty", $val->qty, PDO::PARAM_STR);
-            $stmt3->bindParam(":pocode", $val->pocode, PDO::PARAM_STR);               
+            $stmt3->bindParam(":pocode", $val->pocode, PDO::PARAM_STR);
+            $stmt3->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
 
             if (!$stmt3->execute()) {
                 $error = $conn->errorInfo();
                 throw new PDOException("Insert data error => $error");
                 die;
             }
-            
-            if ($val->qty_buy == ($val->qty +$val->recamount)) {
-                $sql = "
-            update pomaster 
-            set
-            doc_status = 'รับของครบแล้ว',
-            updated_date = CURRENT_TIMESTAMP(),
-            updated_by = :action_user
-            where pocode = :pocode";
 
-               
-            } else {
-                $sql = "
-            update pomaster 
-            set
-            doc_status = 'ยังรับของไม่ครบ',
-            updated_date = CURRENT_TIMESTAMP(),
-            updated_by = :action_user
-            where pocode = :pocode";
+            $strSQL = "SELECT count(code) as count FROM `podetail` where pocode = :pocode and qty>recamount ";
+            $stmt5 = $conn->prepare($strSQL);
+            if (!$stmt5) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
-            }
+            $stmt5->bindParam(":pocode", $val->pocode, PDO::PARAM_STR);
 
-            $stmt = $conn->prepare($sql);
-            if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
-
-            $stmt->bindParam(":action_user", $action_user, PDO::PARAM_INT);
-            $stmt->bindParam(":pocode", $val->pocode, PDO::PARAM_STR);
-
-            if (!$stmt->execute()) {
+            if (!$stmt5->execute()) {
                 $error = $conn->errorInfo();
                 throw new PDOException("Insert data error => $error");
                 die;
             }
+
+            $res = $stmt5->fetch(PDO::FETCH_ASSOC);
+            extract($res, EXTR_OVERWRITE, "_");
+            if ($count == 0) {
+
+                $sql = "
+                update pomaster 
+                set
+                doc_status = 'รับของครบแล้ว',
+                updated_date = CURRENT_TIMESTAMP(),
+                updated_by = :action_user
+                where pocode = :pocode";
+            } else {
+                $sql = "
+                update pomaster 
+                set
+                doc_status = 'ยังรับของไม่ครบ',
+                updated_date = CURRENT_TIMESTAMP(),
+                updated_by = :action_user
+                where pocode = :pocode";
+            }
+
+            $stmt4 = $conn->prepare($sql);
+            if (!$stmt4) throw new PDOException("Insert data error => {$conn->errorInfo()}");
+
+            $stmt4->bindParam(":action_user", $action_user, PDO::PARAM_INT);
+            $stmt4->bindParam(":pocode", $val->pocode, PDO::PARAM_STR);
+
+            if (!$stmt4->execute()) {
+                $error = $conn->errorInfo();
+                throw new PDOException("Insert data error => $error");
+                die;
+            }
+        }
+
+
 
         $conn->commit();
         http_response_code(200);
