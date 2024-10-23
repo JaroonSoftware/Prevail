@@ -56,6 +56,10 @@ const ItemsManage = () => {
 
     if (config?.action !== "create") {
       getsupData(config.code);
+    } else {
+      form.setFieldValue("vat", 0);
+      form.setFieldValue("weight_stable", "N");
+      form.setFieldValue("packing_weight", 1);
     }
     // console.log(config);
 
@@ -161,7 +165,7 @@ const ItemsManage = () => {
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!"
+      confirmButtonText: "Yes, delete it!",
     }).then((result) => {
       if (result.isConfirmed) {
         try {
@@ -169,12 +173,12 @@ const ItemsManage = () => {
           formData_Del.append("img_id", file.img_id);
           formData_Del.append("file", file);
           formData_Del.append("uid", file.uid);
-          
+
           const actions =
             config?.action !== "create"
               ? itemservice.deletePicUpdate(formData_Del)
               : itemservice.deletePic(formData_Del);
-    
+
           actions.then(async (res) => {
             //debugger
             let { status, data } = res;
@@ -189,7 +193,7 @@ const ItemsManage = () => {
         }
       }
     });
-    
+
     // console.log(fileList);
   };
 
@@ -313,8 +317,8 @@ const ItemsManage = () => {
           </Form.Item>
         </Col>
       </Row>
-      <Row gutter={[8, 8]} className="px-2 sm:px-4 md:px-4 lg:px-4">        
-      <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={4}>
+      <Row gutter={[8, 8]} className="px-2 sm:px-4 md:px-4 lg:px-4">
+        <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={4}>
           <Form.Item label="ประเภทสินค้า" name="typecode">
             <Select
               size="large"
@@ -328,29 +332,39 @@ const ItemsManage = () => {
             />
           </Form.Item>
         </Col>
-        <Col xs={24} sm={24} md={4} lg={4}>
-          <Form.Item label="ภาษี" name="vat">            
-          
-          <InputNumber
-              className="width-100 input-30 text-end"
-              style={{ height: 40 }}
-              min={0}
-            />
-            </Form.Item>
-        </Col> 
         <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={4}>
           <Form.Item label="ราคาซื้อ" name="buyprice">
             <Input placeholder="กรอกราคาซื้อ" />
           </Form.Item>
-        </Col>   
+        </Col>
         <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={4}>
           <Form.Item label="ราคาขาย" name="price">
             <Input placeholder="กรอกราคาขาย" />
           </Form.Item>
-        </Col>  
+        </Col>
+        <Col xs={24} sm={24} md={4} lg={4}>
+          <Form.Item label="น้ำหนักต่อถุง" name="packing_weight">
+            <InputNumber
+              className="width-100 input-30 text-end"
+              style={{ height: 40 }}
+              min={0}
+            />
+          </Form.Item>
+        </Col>
+        <Col xs={24} sm={24} md={4} lg={4}>
+          <Form.Item label="ภาษี" name="vat">
+            <InputNumber
+              className="width-100 input-30 text-end"
+              style={{ height: 40 }}
+              min={0}
+            />
+          </Form.Item>
+        </Col>        
+      </Row>
+      <Row gutter={[8, 8]} className="px-2 sm:px-4 md:px-4 lg:px-4">
         <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={4}>
           <Form.Item label="โหมดน้ำหนักคงที่" name="weight_stable">
-          <Select
+            <Select
               size="large"
               options={[
                 {
@@ -366,36 +380,8 @@ const ItemsManage = () => {
           </Form.Item>
         </Col>
         <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={4}>
-          <Form.Item label="น้ำหนักคงที่" name="weight">
+          <Form.Item label="น้ำหนักที่ตั้งไว้ให้คงที่" name="weight">
             <Input placeholder="น้ำหนัก" />
-          </Form.Item>
-        </Col>
-        
-      </Row>
-      <Row gutter={[8, 8]} className="px-2 sm:px-4 md:px-4 lg:px-4">        
-      <Col xs={24} sm={24} md={4} lg={4} xl={4}>
-          รูปสินค้า
-          <Form.Item
-            name="prod_img"
-            getValueFromEvent={(event) => {
-              return event?.fileList;
-            }}
-            // rules={[
-            //   {
-            //     required: true,
-            //     message: "กรุณาอัพโหลดรูปสินค้า!",
-            //   },
-            // ]}
-          >
-            <Upload
-              {...propsAdd}
-              fileList={fileList}
-              listType="picture-card"
-              onPreview={handlePreview}
-              onRemove={onRemove}
-            >
-              {fileList.length >= 1 ? null : uploadButton}
-            </Upload>
           </Form.Item>
         </Col>
         <Col
@@ -427,7 +413,32 @@ const ItemsManage = () => {
             />
           </Form.Item>
         </Col>
-        </Row>
+        <Col xs={24} sm={24} md={4} lg={4} xl={4}>
+          รูปสินค้า
+          <Form.Item
+            name="prod_img"
+            getValueFromEvent={(event) => {
+              return event?.fileList;
+            }}
+            // rules={[
+            //   {
+            //     required: true,
+            //     message: "กรุณาอัพโหลดรูปสินค้า!",
+            //   },
+            // ]}
+          >
+            <Upload
+              {...propsAdd}
+              fileList={fileList}
+              listType="picture-card"
+              onPreview={handlePreview}
+              onRemove={onRemove}
+            >
+              {fileList.length >= 1 ? null : uploadButton}
+            </Upload>
+          </Form.Item>
+        </Col>
+      </Row>
     </>
   );
 

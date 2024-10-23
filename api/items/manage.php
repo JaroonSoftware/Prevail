@@ -18,8 +18,8 @@ try {
 
         // var_dump($_POST);
 
-        $sql = "INSERT INTO items (stcode, stname, stnameEN, typecode,unit,remark, price,buyprice,weight_stable, weight, vat,created_by,created_date) 
-        values (:stcode,:stname,:stnameEN,:typecode,:unit,:remark,:price,:buyprice,:weight_stable, :weight, :vat,:action_user,:action_date)";
+        $sql = "INSERT INTO items (stcode, stname, stnameEN, typecode,unit,remark, price,buyprice,weight_stable, weight, vat,packing_weight,created_by,created_date) 
+        values (:stcode,:stname,:stnameEN,:typecode,:unit,:remark,:price,:buyprice,:weight_stable, :weight, :vat,:packing_weight,:action_user,:action_date)";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
@@ -36,6 +36,7 @@ try {
         $stmt->bindParam(":weight_stable", $weight_stable, PDO::PARAM_STR);
         $stmt->bindParam(":weight", $weight, PDO::PARAM_STR);
         $stmt->bindParam(":vat", $vat, PDO::PARAM_STR);
+        $stmt->bindParam(":packing_weight", $packing_weight, PDO::PARAM_STR);
         $stmt->bindParam(":action_date", $action_date, PDO::PARAM_STR);
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_INT);
 
@@ -67,6 +68,7 @@ try {
         weight_stable=:weight_stable,
         weight=:weight,
         vat=:vat,
+        packing_weight=:packing_weight,
         active_status = :active_status,
         updated_date = CURRENT_TIMESTAMP(),
         updated_by = :action_user
@@ -86,6 +88,7 @@ try {
         $stmt->bindParam(":weight_stable", $weight_stable, PDO::PARAM_STR);
         $stmt->bindParam(":weight", $weight, PDO::PARAM_STR);
         $stmt->bindParam(":vat", $vat, PDO::PARAM_STR);
+        $stmt->bindParam(":packing_weight", $packing_weight, PDO::PARAM_STR);
         $stmt->bindParam(":active_status", $active_status, PDO::PARAM_STR);
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_INT);
         $stmt->bindParam(":stcode", $stcode, PDO::PARAM_STR);

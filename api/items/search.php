@@ -14,7 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stcode = !empty($stcode) ? "and a.stcode like '%$stcode%'" : "";
     $stname = !empty($stname) ? "and a.stname like '%$stname%'" : "";
     $typecode = !empty($typecode) ? "and a.typecode like '%$typecode%'" : "";
-    $active_status = !empty($active_status) ? "and a.active_status like '%$active_status%'" : "";
+    $active_status = !empty($active_status) ? "and a.active_status = '$active_status'" : "";
     try {
         $sql = "SELECT a.stcode, a.stname,a.stnameEN, b.typename, a.price,a.min, a.buyprice, a.weight_stable, a.weight, a.vat ,a.active_status,a.unit,
         (
@@ -26,10 +26,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         FROM `items` as a
         left outer join `itemtype` as b on (a.typecode=b.typecode)   
         left outer join `items_barcode` as s on (a.stcode=s.stcode)        
-        -- where s.barcode_status = 'อยู่ในสต๊อก'
+        where 1=1
         $stcode
         $stname
         $typecode
+        $active_status
         GROUP by a.stcode 
         order by a.stcode asc";
 
@@ -38,8 +39,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         http_response_code(200);
-        echo json_encode(array("data" => $res));
-        // echo json_encode(array("data" => $res,"sql" => $sql));
+        // echo json_encode(array("data" => $res));
+        echo json_encode(array("data" => $res,"sql" => $sql));
     } catch (mysqli_sql_exception $e) {
         http_response_code(400);
         echo json_encode(array('status' => '0', 'message' => $e->getMessage()));
