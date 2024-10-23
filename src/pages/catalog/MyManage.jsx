@@ -11,6 +11,7 @@ import {
   Divider,
   Select,
   Badge,
+  DatePicker,
 } from "antd";
 import OptionService from "../../service/Options.service";
 import CatalogService from "../../service/Catalog.Service";
@@ -22,6 +23,8 @@ import { ButtonBack } from "../../components/button";
 import { useLocation, useNavigate } from "react-router-dom";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { LuPackageSearch } from "react-icons/lu";
+import dayjs from 'dayjs';
+
 const opservice = OptionService();
 const clservice = CatalogService();
 const gotoFrom = "/catalog";
@@ -30,6 +33,7 @@ const cardStyle = {
   backgroundColor: "#f0f0f0",
   height: "calc(100% - (25.4px + 1rem))",
 };
+const RangePicker = DatePicker.RangePicker;
 
 function CatalogManage() {
   const navigate = useNavigate();
@@ -53,13 +57,18 @@ function CatalogManage() {
         const {
           data: { header, detail },
         } = res.data;
-        const { catalog_code, catalog_name, remark } = header;
+        const { catalog_code, catalog_name,start_date,stop_date, remark } = header;
         setFormDetail(header);
         setListDetail(detail);
         setCLCode(catalog_code);
+        
+        let tmpdate = []
+        if(!!start_date)
+          tmpdate = [dayjs(start_date), dayjs(stop_date)]
         form.setFieldsValue({
           ...header,
           catalog_name: catalog_name,
+          catalog_date: tmpdate,
           remark: remark,
         });
       } else {
@@ -107,11 +116,24 @@ function CatalogManage() {
         if (listDetail.length < 1)
           throw new Error("กรุณาเพิ่มข้อมูลให้ถูกต้อง");
 
+        const data = { ...v };
+
+        if (!!data?.catalog_date) {
+          const arr = data?.catalog_date.map((m) =>
+            dayjs(m).format("YYYY-MM-DD")
+          );
+          const [start_date, stop_date] = arr;
+          //data.created_date = arr
+          Object.assign(data, { start_date, stop_date });
+        }
+
         const header = {
           catalog_code: clCode,
           catalog_name: form.getFieldValue("catalog_name"),
           remark: form.getFieldValue("remark"),
           active_status: form.getFieldValue("active_status"),
+          start_date: data.start_date,
+          stop_date: data.stop_date,
         };
 
         const detail = listDetail;
@@ -218,7 +240,7 @@ function CatalogManage() {
     <>
       <Space size="small" direction="vertical" className="flex gap-2">
         <Row gutter={[8, 8]} className="m-0">
-          <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
+          <Col xs={24} sm={10} md={10} lg={10} xl={10}>
             <Form.Item
               name="catalog_name"
               label="ชื่อแคตตาล๊อก"
@@ -227,20 +249,27 @@ function CatalogManage() {
               <Input placeholder="ชื่อแคตตาล๊อก" />
             </Form.Item>
           </Col>
+          <Col xs={24} sm={8} md={8} lg={8} xl={8}>
+            <Form.Item label="วันที่ใช้งาน" name="catalog_date">
+              <RangePicker
+                placeholder={["From Date", "To date"]}
+                style={{ width: "100%", height: 40 }}
+              />
+            </Form.Item>
+          </Col>
           <Col
             xs={24}
-            sm={24}
-            md={12}
-            lg={12}
-            xl={12}
-            xxl={6}
+            sm={6}
+            md={6}
+            lg={6}
+            xl={6}
             style={
               config.action === "edit"
                 ? { display: "inline" }
                 : { display: "none" }
             }
           >
-            <Form.Item label="สถานการใช้งาน" name="active_status">
+            <Form.Item label="สถานะการใช้งาน" name="active_status">
               <Select
                 size="large"
                 options={[
@@ -389,7 +418,6 @@ function CatalogManage() {
         </Space>
       </div>
 
-    
       {openProduct && (
         <ModalItems
           show={openProduct}

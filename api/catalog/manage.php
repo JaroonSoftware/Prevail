@@ -19,8 +19,8 @@ try {
 
         // var_dump($_POST);
 
-        $sql = " insert catalog_master ( catalog_code , catalog_name, remark, active_status, created_date, created_by) 
-        values (:catalog_code,:catalog_name,:remark,'Y',:action_datetime,:action_user)";
+        $sql = " insert catalog_master ( catalog_code , catalog_name,start_date,stop_date, remark, active_status, created_date, created_by) 
+        values (:catalog_code,:catalog_name,:start_date,:stop_date,:remark,'Y',:action_datetime,:action_user)";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
@@ -28,6 +28,8 @@ try {
         $header = (object)$header;
         $stmt->bindParam(":catalog_code", $header->catalog_code, PDO::PARAM_STR);
         $stmt->bindParam(":catalog_name", $header->catalog_name, PDO::PARAM_STR);
+        $stmt->bindParam(":start_date", $header->start_date, PDO::PARAM_STR);
+        $stmt->bindParam(":stop_date", $header->stop_date, PDO::PARAM_STR);
         $stmt->bindParam(":remark", $header->remark, PDO::PARAM_STR);
         $stmt->bindParam(":action_datetime", $action_datetime, PDO::PARAM_STR);
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_STR);
@@ -83,6 +85,8 @@ try {
         update catalog_master 
         set
         catalog_name = :catalog_name,
+        start_date = :start_date,
+        stop_date = :stop_date,
         active_status = :active_status,
         remark = :remark,
         updated_date = CURRENT_TIMESTAMP(),
@@ -95,6 +99,8 @@ try {
         $header = (object)$header;
 
         $stmt->bindParam(":catalog_name", $header->catalog_name, PDO::PARAM_STR);
+        $stmt->bindParam(":start_date", $header->start_date, PDO::PARAM_STR);
+        $stmt->bindParam(":stop_date", $header->stop_date, PDO::PARAM_STR);
         $stmt->bindParam(":active_status", $header->active_status, PDO::PARAM_STR);
         $stmt->bindParam(":remark", $header->remark, PDO::PARAM_STR);
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_INT);
@@ -137,7 +143,7 @@ try {
         echo json_encode(array("data" => array("code" => $code)));
     } else  if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $code = $_GET["code"];
-        $sql = "SELECT a.catalog_code,a.catalog_name,a.remark,a.active_status ";
+        $sql = "SELECT a.catalog_code,a.catalog_name,a.start_date,a.stop_date,a.remark,a.active_status ";
         $sql .= " FROM `catalog_master` as a ";
         $sql .= " where a.catalog_code = :code";
 
