@@ -138,9 +138,9 @@ export const productColumn = ({ handleRemove, handleSelectChange }) => [
     width: "8%",
     align: "right",
     className: "!pe-3",
-    editable: true,
+    // editable: true,
     required: true,
-    type: "number",
+    // type: "number",
     render: (_, rec) => <>{comma(Number(rec?.qty || 0), 2, 2)}</>,
   },
   {
@@ -150,9 +150,9 @@ export const productColumn = ({ handleRemove, handleSelectChange }) => [
     width: "8%",
     align: "right",
     className: "!pe-3",
-    editable: true,
-    required: true,
-    type: "number",
+    // editable: true,  
+    // required: true,
+    // type: "number",
     render: (_, rec) => <>{comma(Number(rec?.price || 0), 2, 2)}</>,
   },
   {
@@ -161,8 +161,8 @@ export const productColumn = ({ handleRemove, handleSelectChange }) => [
     key: "unit",
     align: "right",
     width: "8%",
-    editable: true,
-    type: "select",
+    // editable: true,
+    // type: "select",
   },
   {
     title: "ส่วนลด(%)",
@@ -171,8 +171,8 @@ export const productColumn = ({ handleRemove, handleSelectChange }) => [
     width: "10%",
     align: "right",
     className: "!pe-3",
-    editable: true,
-    type: "number",
+    // editable: true,
+    // type: "number",
     render: (_, rec) => <>{comma(Number(rec?.discount || 0), 2, 2)}</>,
   },
   {
@@ -191,9 +191,9 @@ export const productColumn = ({ handleRemove, handleSelectChange }) => [
     width: "8%",
     align: "right",
     className: "!pe-3",
-    editable: true,
-    required: true,
-    type: "number",
+    // editable: true,
+    // required: true,
+    // type: "number",
     render: (_, rec) => <>{comma(Number(rec?.vat || 0), 2, 2)}</>,
   },
   {
@@ -220,7 +220,7 @@ export const columnsParametersEditable = (
   optionsItems,
   { handleRemove }
 ) => {
-  const col = productColumn({ handleRemove });
+  const col = productColumnInCollape({ handleRemove });
   return col.map((col, ind) => {
     if (!col.editable) return col;
 
@@ -273,9 +273,9 @@ export const productColumnInCollape = ({ handleRemove, handleSelectChange }) => 
     width: "8%",
     align: "right",
     className: "!pe-3",
-    editable: true,
-    required: true,
-    type: "number",
+    // editable: true,
+    // required: true,
+    // type: "number",
     render: (_, rec) => <>{comma(Number(rec?.qty || 0), 2, 2)}</>,
   },
   {
@@ -285,9 +285,9 @@ export const productColumnInCollape = ({ handleRemove, handleSelectChange }) => 
     width: "8%",
     align: "right",
     className: "!pe-3",
-    editable: true,
-    required: true,
-    type: "number",
+    // editable: true,
+    // required: true,
+    // type: "number",
     render: (_, rec) => <>{comma(Number(rec?.price || 0), 2, 2)}</>,
   },
   {
@@ -296,8 +296,8 @@ export const productColumnInCollape = ({ handleRemove, handleSelectChange }) => 
     key: "unit",
     align: "right",
     width: "8%",
-    editable: true,
-    type: "select",
+    // editable: true,
+    // type: "select",
   },
   {
     title: "ส่วนลด(%)",
@@ -306,8 +306,8 @@ export const productColumnInCollape = ({ handleRemove, handleSelectChange }) => 
     width: "10%",
     align: "right",
     className: "!pe-3",
-    editable: true,
-    type: "number",
+    // editable: true,
+    // type: "number",
     render: (_, rec) => <>{comma(Number(rec?.discount || 0), 2, 2)}</>,
   },
   {
@@ -326,9 +326,9 @@ export const productColumnInCollape = ({ handleRemove, handleSelectChange }) => 
     width: "8%",
     align: "right",
     className: "!pe-3",
-    editable: true,
-    required: true,
-    type: "number",
+    // editable: true,
+    // required: true,
+    // type: "number",
     render: (_, rec) => <>{comma(Number(rec?.vat || 0), 2, 2)}</>,
   },
   {

@@ -331,6 +331,7 @@ function MyManage() {
           components={componentsEditable}
           rowClassName={() => "editable-row"}
           bordered
+          readOnly
           dataSource={listDetail}
           columns={prodcolumns}
           pagination={false}
@@ -488,7 +489,7 @@ function MyManage() {
                         className="justify-start sm:justify-end"
                       >
                         <Typography.Title level={3} className="m-0">
-                          วันที่ใบขายสินค้า :{" "}
+                          วันที่ใบขายสินค้า :
                         </Typography.Title>
                         <Form.Item name="sodate" className="!m-0">
                           <DatePicker
