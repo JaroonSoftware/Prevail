@@ -1,4 +1,4 @@
-import { FileTextFilled, ReconciliationFilled,FileDoneOutlined, AppstoreAddOutlined } from "@ant-design/icons";
+import { FileTextFilled, ReconciliationFilled,FileDoneOutlined, AppstoreAddOutlined, BarcodeOutlined } from "@ant-design/icons";
 import { TbReportMoney } from "react-icons/tb";
 import { RiTeamFill } from "react-icons/ri";
 import { MdOutlineDashboard } from "react-icons/md";
@@ -32,6 +32,11 @@ let _nav = [
     icon: <ReconciliationFilled className="nav-ico" />,    
     to: "/sales-order",
   },
+  {
+    title: "ปริ้นหน้าถุง",
+    icon: <BarcodeOutlined  className="nav-ico" />, 
+    to: "/print-weight",    
+  },  
   {
     title: "ใบส่งของ",
     icon: <TfiTruck className="nav-ico" />,

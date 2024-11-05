@@ -11,6 +11,8 @@ import { PurchaseOrder, PurchaseOrderAccess, PurchaseOrderManage } from "../page
 
 import { GoodsReceipt, GoodsReceiptAccess, GoodsReceiptManage } from "../pages/goods-receipt";
 
+import { PrintWeight, PrintWeightAccess, PrintWeightManage } from "../pages/print_weight";
+
 import { SO, SOAccess, SOManage } from "../pages/so";
 
 import { DN, DNAccess, DNManage } from "../pages/delivery-note";
@@ -36,6 +38,11 @@ export const WarehouseRouter = (
     <Route path="/goods-receipt/" exact element={<GoodsReceipt />}>
       <Route index element={<GoodsReceiptAccess />} />
       <Route path="manage/:action" element={<GoodsReceiptManage />} />
+    </Route>
+
+    <Route path="/print-weight/" exact element={<PrintWeight />}>
+      <Route index element={<PrintWeightAccess />} />
+      <Route path="manage/:action" element={<PrintWeightManage />} />
     </Route>
 
     <Route path="/sales-order/" exact element={<SO />}>
