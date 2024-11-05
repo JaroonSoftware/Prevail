@@ -12,18 +12,19 @@ import {
   Select,
   Badge,
   DatePicker,
+  Collapse,
 } from "antd";
 import OptionService from "../../service/Options.service";
 import CatalogService from "../../service/Catalog.Service";
-import { SaveFilled } from "@ant-design/icons";
-import { columnsParametersEditable, componentsEditable } from "./model";
+import { SaveFilled, CaretRightOutlined } from "@ant-design/icons";
+import { columnsParametersEditable, componentsEditable, columnsParametersEditableCustomer } from "./model";
 import { ModalItems } from "../../components/modal/items/modal-items";
 import { delay } from "../../utils/util";
 import { ButtonBack } from "../../components/button";
 import { useLocation, useNavigate } from "react-router-dom";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { LuPackageSearch } from "react-icons/lu";
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
 
 const opservice = OptionService();
 const clservice = CatalogService();
@@ -57,14 +58,14 @@ function CatalogManage() {
         const {
           data: { header, detail },
         } = res.data;
-        const { catalog_code, catalog_name,start_date,stop_date, remark } = header;
+        const { catalog_code, catalog_name, start_date, stop_date, remark } =
+          header;
         setFormDetail(header);
         setListDetail(detail);
         setCLCode(catalog_code);
-        
-        let tmpdate = []
-        if(!!start_date)
-          tmpdate = [dayjs(start_date), dayjs(stop_date)]
+
+        let tmpdate = [];
+        if (!!start_date) tmpdate = [dayjs(start_date), dayjs(stop_date)];
         form.setFieldsValue({
           ...header,
           catalog_name: catalog_name,
@@ -206,10 +207,37 @@ function CatalogManage() {
   };
 
   /** setting column table */
+  const cuscolumns = columnsParametersEditableCustomer(handleEditCell, unitOption, {
+    handleRemove,
+  });
   const prodcolumns = columnsParametersEditable(handleEditCell, unitOption, {
     handleRemove,
   });
+  const TitleTableCustomer = (
+    <Flex className="width-100" align="center">
+      <Col span={12} className="p-0">
+        <Flex gap={4} justify="start" align="center">
+          <Typography.Title className="m-0 !text-zinc-800" level={3}>
+            รายชื่อลูกค้า
+          </Typography.Title>
+        </Flex>
+      </Col>
 
+      <Col span={12} style={{ paddingInline: 0 }}>
+        <Flex justify="end">
+          <Button
+            icon={<LuPackageSearch style={{ fontSize: "1.2rem" }} />}
+            className="bn-center justify-center bn-primary-outline"
+            onClick={() => {
+              setOpenProduct(true);
+            }}
+          >
+            เลือกสินค้า
+          </Button>
+        </Flex>
+      </Col>
+    </Flex>
+  );
   const TitleTable = (
     <Flex className="width-100" align="center">
       <Col span={12} className="p-0">
@@ -296,7 +324,26 @@ function CatalogManage() {
       </Space>
     </>
   );
-
+  const SectionCustomer = (
+    <>
+      <Flex className="width-100" vertical gap={4}>
+        <Table
+          title={() => TitleTableCustomer}
+          components={componentsEditable}
+          rowClassName={() => "editable-row"}
+          bordered
+          dataSource={listDetail}
+          columns={cuscolumns}
+          pagination={false}
+          rowKey="cuscode"
+          scroll={{ x: "max-content" }}
+          locale={{
+            emptyText: <span>No data available, please add some data.</span>,
+          }}
+        />
+      </Flex>
+    </>
+  );
   const SectionProduct = (
     <>
       <Flex className="width-100" vertical gap={4}>
@@ -317,6 +364,7 @@ function CatalogManage() {
       </Flex>
     </>
   );
+
 
   const SectionTop = (
     <Row
@@ -373,7 +421,32 @@ function CatalogManage() {
       </Col>
     </Row>
   );
-
+  const collapetablecustomer = [
+    {
+      key: "1",
+      label: "รายชื่อลูกค้าที่ใช้แคตตาล๊อก",
+      children: (
+        <Row className="m-0" gutter={[12, 12]}>
+          <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+            {SectionCustomer}
+          </Col>
+        </Row>
+      ),
+    },
+  ];
+  const collapetableitems = [
+    {
+      key: "1",
+      label: "รายการสินค้าในแคตตาล๊อก",
+      children: (
+        <Row className="m-0" gutter={[12, 12]}>
+          <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+            {SectionProduct}
+          </Col>
+        </Row>
+      ),
+    },
+  ];
   return (
     <div className="catalog-manage">
       <div id="catalog-manage" className="px-0 sm:px-0 md:px-8 lg:px-8">
@@ -402,16 +475,26 @@ function CatalogManage() {
                 <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
                   <Card style={cardStyle}>{SectionDetail}</Card>
                   <Divider orientation="left" className="!mb-3 !mt-1">
-                    {" "}
-                    รายการแคตตาล็อก{" "}
+                    รายการแคตตาล็อก
                   </Divider>
                 </Col>
               </Row>
-              <Row className="m-0" gutter={[12, 12]}>
-                <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-                  {SectionProduct}
-                </Col>
-              </Row>
+
+              <Collapse
+                items={collapetablecustomer}
+                bordered={false}
+                expandIcon={({ isActive }) => (
+                  <CaretRightOutlined rotate={isActive ? 90 : 0} />
+                )}
+              />
+              <br></br>
+              <Collapse
+                items={collapetableitems}
+                bordered={false}
+                expandIcon={({ isActive }) => (
+                  <CaretRightOutlined rotate={isActive ? 90 : 0} />
+                )}
+              />
             </Card>
           </Form>
           {SectionBottom}

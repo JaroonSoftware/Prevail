@@ -152,6 +152,75 @@ export const columnsParametersEditable = (handleEditCell,optionsItems,{handleRem
       };
   }); 
 }
+export const CatalogCustomerColumn = ({ handleRemove }) => [
+  {
+    title: "ลำดับ",
+    dataIndex: "ind",
+    key: "ind",
+    align: "center",
+    width: "5%",
+    render: (im, rc, index) => <>{index + 1}</>,
+  },
+  {
+    title: "รหัสลูกค้า",
+    dataIndex: "cuscode",
+    key: "cuscode",
+    width: "10%",
+    align: "center",
+  },
+  {
+    title: "ชื่อลูกค้า",
+    dataIndex: "cusname",
+    key: "cusname",
+    align: "left",
+    width: "50%",
+    render: (_, rec) => rec.stname,
+  },
+  {
+    title: "ราคาขาย (บาท)",
+    dataIndex: "price",
+    key: "price", 
+    width: "15%",
+    align: "left",
+    className: "!pe-3",
+    editable: true,
+    required: true,
+    type:'number',
+    render: (_, rec) => <>{ comma( Number(rec?.price ||  0),  2, 2 )}</>,
+  },  
+  {
+    title: "ตัวเลือก",
+    align: "center",
+    key: "operation",
+    dataIndex: "operation",
+    render: (_, record, idx) => handleRemove(record),
+    width: "4%",
+    fixed: "right",
+  },
+];
+export const columnsParametersEditableCustomer = (handleEditCell,optionsItems,{handleRemove} ) =>{
+  const col = CatalogCustomerColumn({handleRemove},optionsItems);
+  return col.map((col, ind) => {
+      if (!col.editable) return col; 
+      
+      return {
+          ...col,
+          onCell: (record) => {
+            // console.log(record);
+            return {
+              record,
+              editable: col.editable,
+              dataIndex: col.dataIndex,
+              title: col.title,
+              // required: !!col?.required,
+              type: col?.type || "input",
+              handleEditCell,
+              optionsItems,
+            }
+          },
+      };
+  }); 
+}
 export const purchaseorderForm = {
   clcode: null,
   cldate: null,
