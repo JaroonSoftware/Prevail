@@ -205,7 +205,7 @@ const ItemsManage = () => {
             <Input placeholder="กรอกเลขที่ผู้เสียภาษี" />
           </Form.Item>
         </Col>     
-        <Col xs={24} sm={24} md={24} lg={24} xl={16}>
+        {/* <Col xs={24} sm={24} md={24} lg={24} xl={16}>
           <Form.Item label="แคตตาล๊อก" name="catalog_code">
             <Select
               size="large"
@@ -220,7 +220,7 @@ const ItemsManage = () => {
               }))}
             />
           </Form.Item>
-        </Col>
+        </Col> */}
         <Col
           xs={24}
           sm={24}

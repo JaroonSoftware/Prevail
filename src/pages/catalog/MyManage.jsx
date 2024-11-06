@@ -50,55 +50,46 @@ function CatalogManage() {
   const [formDetail, setFormDetail] = useState([]);
   const [unitOption, setUnitOption] = React.useState([]);
   useEffect(() => {
-    const initial = async () => {
-      if (config?.action !== "create") {
-        const res = await clservice
-          .get(config?.code)
-          .catch((error) => message.error("get Catalog data fail."));
-        const {
-          data: { header, detail },
-        } = res.data;
-        const { catalog_code, catalog_name, start_date, stop_date, remark } =
-          header;
-        setFormDetail(header);
-        setListDetail(detail);
-        setCLCode(catalog_code);
-
-        let tmpdate = [];
-        if (!!start_date) tmpdate = [dayjs(start_date), dayjs(stop_date)];
-        form.setFieldsValue({
-          ...header,
-          catalog_name: catalog_name,
-          catalog_date: tmpdate,
-          remark: remark,
-        });
-      } else {
-        const { data: code } = (
-          await clservice.getcode().catch((e) => {
-            message.error("get Catalog code fail.");
-          })
-        ).data;
-        // alert()
-        setCLCode(code);
-        const ininteial_value = {
-          ...formDetail,
-          catalog_code: code,
-        };
-
-        setFormDetail(ininteial_value);
-        form.setFieldsValue(ininteial_value);
-      }
-      const [unitOprionRes] = await Promise.all([
-        opservice.optionsUnit({ p: "unit-option" }),
-      ]);
-      // console.log(unitOprionRes.data.data)
-      setUnitOption(unitOprionRes.data.data);
-    };
-
-    initial();
-    return () => {};
+    // setLoading(true);
+    GetCatalog();
+    if (config?.action !== "create") {
+      getsupData(config.code);
+    } else {
+      init();
+      return () => {
+        form.resetFields();
+      };
+    }
   }, []);
 
+  const GetCatalog = () => {
+    opService.optionsCatalog().then((res) => {
+      let { data } = res.data;
+      setoptionsCatalog(data);
+    });
+  };
+  const getsupData = (v) => {
+    customerservice
+      .get(v)
+      .then(async (res) => {
+        const { header, detail } = res.data;
+
+        const tmp = detail.map((item) => {
+          return item.catalog_code;
+        });
+        const init = {
+          ...header,
+          catalog_code: tmp,
+        };
+
+        setFormDetail(init);
+        form.setFieldsValue({ ...init });
+      })
+      .catch((err) => {
+        console.log(err);
+        message.error("Error getting infomation Product.");
+      });
+  };
   useEffect(() => {
     if (listDetail);
   }, [listDetail]);
