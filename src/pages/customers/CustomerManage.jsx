@@ -30,7 +30,7 @@ const ItemsManage = () => {
 
   const { config } = location.state || { config: null };
   const [form] = Form.useForm();
-  const [optionsCatalog, setoptionsCatalog] = useState([]);
+  const [setoptionsCatalog] = useState([]);
   const [formDetail, setFormDetail] = useState({});
 
   const init = async () => {

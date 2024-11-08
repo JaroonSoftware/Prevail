@@ -4,7 +4,7 @@ import { Modal, Card, Table, message, Form, Spin } from "antd";
 import { Row, Col, Space } from "antd";
 import { Input, Button } from "antd";
 import { SearchOutlined } from "@ant-design/icons"
-import { columns } from "./modal-items.model"; 
+import { columns } from "./modal-cusCL.model"; 
 // import ItemService from "../../service/ItemService";
 import OptionService from "../../../service/Options.service"
 
@@ -14,7 +14,6 @@ export default function ModalCusCL({show, close, values, selected}) {
     /** handle state */
     const [itemsData, setItemsData] = useState([]);
     const [itemsDataWrap, setItemsDataWrap] = useState([]);
-    
     const [itemsList, setItemsList] = useState(selected || []);
     const [itemsRowKeySelect, setItemsRowKeySelect] = useState([]);
     const [loading,  setLoading] = useState(true);
@@ -25,7 +24,7 @@ export default function ModalCusCL({show, close, values, selected}) {
  
     const handleSearch = (value) => {
         if(!!value){    
-            const f = itemsData.filter( d => ( (d.stcode?.includes(value)) || (d.stname?.includes(value)) ) );
+            const f = itemsData.filter( d => ( (d?.includes(value)) || (d.cusname?.includes(value)) ) );
              
             setItemsDataWrap(f);            
         } else { 
@@ -35,33 +34,23 @@ export default function ModalCusCL({show, close, values, selected}) {
     }
 
     const handleSelectItems = (record) => {
-        const newData = {
-            ...record, 
-            qty: 1, 
-            percent: 0,
-            totalpercent: 0,
-        };
-        // console.log(newData);
-
-        setItemsList([...itemsList, newData]);
+        setItemsList([...itemsList]);
     };
 
-    const handleCheckDuplicate = (itemCode) => !!selected.find( (item) =>  item?.stcode === itemCode ) ; 
+    const handleCheckDuplicate = (CustomerCode) => !!selected.find( (customer) =>  customer?.cuscode === CustomerCode ) ; 
 
     const handleConfirm = () => { 
-        const choosed = selected.map( m => m.stcode );
-        const itemsChoose = (itemsData.filter( f => itemsRowKeySelect.includes(f.stcode) && !choosed.includes(f.stcode) )).map( (m, i) => (
+        const choosed = selected.map( m => m.cuscode );
+        const itemsChoose = (itemsData.filter( f => itemsRowKeySelect.includes(f.cuscode) && !choosed.includes(f.cuscode) )).map( (m, i) => (
         {
-            stcode:m.stcode,
-            stname:m.stname,
-            price: Number(m?.price || 0),
-            qty: 1,
-            unit:m.unit,
-            discount:0,
+            cuscode:m.cuscode,
+            prename:m.prename,
+            cusname:m.cusname,
+       
         }));
         
-        // const trans = selected.filter( (item) =>  item?.stcode === "" );
-        // const rawdt = selected.filter( (item) =>  item?.stcode !== "" );
+        // const trans = selected.filter( (item) =>  item?.cuscode === "" );
+        // const rawdt = selected.filter( (item) =>  item?.cuscode !== "" );
         // console.log(itemsChoose, rawdt, trans); 
 
         values([...selected, ...itemsChoose]);
@@ -85,16 +74,16 @@ export default function ModalCusCL({show, close, values, selected}) {
           },
         getCheckboxProps: (record) => { 
             return {
-                disabled: handleCheckDuplicate(record.stcode), 
-                name: record.stcode,
+                disabled: handleCheckDuplicate(record.cuscode), 
+                name: record.cuscode,
             }
         },
         onSelect: (record, selected, selectedRows, nativeEvent) => {
             //console.log(record, selected, selectedRows, nativeEvent);
             if( selected ){
-                setItemsRowKeySelect([...new Set([...itemsRowKeySelect, record.stcode])]);
+                setItemsRowKeySelect([...new Set([...itemsRowKeySelect, record.cuscode])]);
             } else {
-                const ind = itemsRowKeySelect.findIndex( d => d === record.stcode);
+                const ind = itemsRowKeySelect.findIndex( d => d === record.cuscode);
                 const tval = [...itemsRowKeySelect];
                 tval.splice(ind, 1);
                 setItemsRowKeySelect([...tval]);
@@ -111,13 +100,13 @@ export default function ModalCusCL({show, close, values, selected}) {
     useEffect( () => {
         const onload = () =>{
             setLoading(true);
-            opnService.optionsItems({p:'items'}).then((res) => {
+            opnService.optionsCustomer({p:'customer'}).then((res) => {
                 let { status, data } = res;
                 if (status === 200) {
                     setItemsData(data.data);
                     setItemsDataWrap(data.data);
 
-                    const keySeleted = selected.map( m => m.stcode );
+                    const keySeleted = selected.map( m => m.cuscode );
 
                     setItemsRowKeySelect([...keySeleted]);
                     // console.log(selected);
@@ -141,7 +130,7 @@ export default function ModalCusCL({show, close, values, selected}) {
         <Space direction="horizontal" size="middle" >
             
             <Button onClick={() => handleClose() }>ปิด</Button>
-            <Button type='primary' onClick={() => handleConfirm() }>ยืนยันการเลือกสินค้า</Button>
+            <Button type='primary' onClick={() => handleConfirm() }>ยืนยันการเลือกลูกค้า</Button>
         </Space>
     )
     /** */
@@ -149,13 +138,13 @@ export default function ModalCusCL({show, close, values, selected}) {
         <>
         <Modal
             open={show}
-            title="เลือกสินค้า"
+            title="เลือกลูกค้า"
             onCancel={() => handleClose() } 
             footer={ButtonModal}
             maskClosable={false}
             style={{ top: 20 }}
             width={800}
-            className='sample-request-modal-items'
+            className='sample-request-modal-cusCL'
         >
             <Spin spinning={loading} >
                 <Space direction="vertical" size="middle" style={{ display: 'flex', position: 'relative'}}  >
@@ -164,7 +153,7 @@ export default function ModalCusCL({show, close, values, selected}) {
                             <Row gutter={[{xs:32, sm:32, md:32, lg:12, xl:12}, 8]} className='m-0'>
                                 <Col span={24}>
                                     <Form.Item label="ค้นหา"  >
-                                        <Input suffix={<SearchOutlined />} onChange={ (e) => { handleSearch(e.target.value) } } placeholder='ค้นหาชื่อ หรือ รหัสสินค้า'/>
+                                        <Input suffix={<SearchOutlined />} onChange={ (e) => { handleSearch(e.target.value) } } placeholder='ค้นหาชื่อ หรือ รหัสลูกค้า'/>
                                     </Form.Item>                        
                                 </Col> 
                             </Row> 
@@ -176,10 +165,10 @@ export default function ModalCusCL({show, close, values, selected}) {
                             dataSource={itemsDataWrap}
                             columns={column} 
                             rowSelection={itemSelection}
-                            rowKey="stcode"
+                            rowKey="cuscode"
                             pagination={{ 
                                 total:itemsDataWrap.length, 
-                                showTotal:(_, range) => `${range[0]}-${range[1]} of ${itemsData.length} items`,
+                                showTotal:(_, range) => `${range[0]}-${range[1]} of ${itemsData.length} customer`,
                                 defaultPageSize:10,
                                 pageSizeOptions:[10,25,35,50,100]
                             }}

@@ -82,7 +82,7 @@ export const accessColumn = ({
   },
 ];
 
-export const CatalogProductColumn = ({ handleRemove }, optionsItems) => [
+export const CatalogProductColumn = ({ handleRemove }) => [
   {
     title: "ลำดับ",
     dataIndex: "ind",
@@ -129,8 +129,8 @@ export const CatalogProductColumn = ({ handleRemove }, optionsItems) => [
   },
 ];
 
-export const columnsParametersEditable = (handleEditCell,optionsItems,{handleRemove} ) =>{
-  const col = CatalogProductColumn({handleRemove},optionsItems);
+export const columnsParametersEditable = (handleEditCell,{handleRemove} ) =>{
+  const col = CatalogProductColumn({handleRemove},);
   return col.map((col, ind) => {
       if (!col.editable) return col; 
       
@@ -146,13 +146,12 @@ export const columnsParametersEditable = (handleEditCell,optionsItems,{handleRem
               // required: !!col?.required,
               type: col?.type || "input",
               handleEditCell,
-              optionsItems,
             }
           },
       };
   }); 
 }
-export const CatalogCustomerColumn = ({ handleRemove }) => [
+export const CatalogCustomerColumn = ({ handleRemoveCustomer }) => [
   {
     title: "ลำดับ",
     dataIndex: "ind",
@@ -174,32 +173,20 @@ export const CatalogCustomerColumn = ({ handleRemove }) => [
     key: "cusname",
     align: "left",
     width: "50%",
-    render: (_, rec) => rec.stname,
+    render: (_, rec) => rec.prename + rec.cusname,
   },
-  {
-    title: "ราคาขาย (บาท)",
-    dataIndex: "price",
-    key: "price", 
-    width: "15%",
-    align: "left",
-    className: "!pe-3",
-    editable: true,
-    required: true,
-    type:'number',
-    render: (_, rec) => <>{ comma( Number(rec?.price ||  0),  2, 2 )}</>,
-  },  
   {
     title: "ตัวเลือก",
     align: "center",
     key: "operation",
     dataIndex: "operation",
-    render: (_, record, idx) => handleRemove(record),
+    render: (_, record, idx) => handleRemoveCustomer(record),
     width: "4%",
     fixed: "right",
   },
 ];
-export const columnsParametersEditableCustomer = (handleEditCell,optionsItems,{handleRemove} ) =>{
-  const col = CatalogCustomerColumn({handleRemove},optionsItems);
+export const columnsParametersEditableCustomer = (handleEditCellCustomer,{handleRemoveCustomer} ) =>{
+  const col = CatalogCustomerColumn({handleRemoveCustomer});
   return col.map((col, ind) => {
       if (!col.editable) return col; 
       
@@ -214,8 +201,7 @@ export const columnsParametersEditableCustomer = (handleEditCell,optionsItems,{h
               title: col.title,
               // required: !!col?.required,
               type: col?.type || "input",
-              handleEditCell,
-              optionsItems,
+              handleEditCellCustomer,
             }
           },
       };

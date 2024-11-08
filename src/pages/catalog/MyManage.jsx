@@ -14,19 +14,21 @@ import {
   DatePicker,
   Collapse,
 } from "antd";
-import OptionService from "../../service/Options.service";
 import CatalogService from "../../service/Catalog.Service";
 import { SaveFilled, CaretRightOutlined } from "@ant-design/icons";
-import { columnsParametersEditable, componentsEditable, columnsParametersEditableCustomer } from "./model";
+import {
+  columnsParametersEditable,
+  componentsEditable,
+  columnsParametersEditableCustomer,
+} from "./model";
 import { ModalItems } from "../../components/modal/items/modal-items";
+import { ModalCusCL } from "../../components/modal/customerbyCL/modal-cusCL";
 import { delay } from "../../utils/util";
 import { ButtonBack } from "../../components/button";
 import { useLocation, useNavigate } from "react-router-dom";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { LuPackageSearch } from "react-icons/lu";
 import dayjs from "dayjs";
-
-const opservice = OptionService();
 const clservice = CatalogService();
 const gotoFrom = "/catalog";
 
@@ -42,59 +44,70 @@ function CatalogManage() {
   const { config } = location.state || { config: null };
   const [form] = Form.useForm();
   /** Modal handle */
+  const [openCustomerCL, setOpenCustomerCL] = useState(false);
   const [openProduct, setOpenProduct] = useState(false);
   /** Catalog state */
   const [clCode, setCLCode] = useState(null);
   /** Detail Data State */
   const [listDetail, setListDetail] = useState([]);
+  const [listCustomer, setCusDetail] = useState([]);
   const [formDetail, setFormDetail] = useState([]);
-  const [unitOption, setUnitOption] = React.useState([]);
   useEffect(() => {
-    // setLoading(true);
-    GetCatalog();
-    if (config?.action !== "create") {
-      getsupData(config.code);
-    } else {
-      init();
-      return () => {
-        form.resetFields();
-      };
-    }
-  }, []);
+    const initial = async () => {
+      if (config?.action !== "create") {
+        const res = await clservice
+          .get(config?.code)
+          .catch((error) => message.error("get Catalog data fail."));
+        const {
+          data: { header, detail, customer },
+        } = res.data;
+        const { catalog_code, catalog_name, start_date, stop_date, remark } =
+          header;
+        setFormDetail(header);
+        setListDetail(detail);
+        setCusDetail(customer);
+        setCLCode(catalog_code);
 
-  const GetCatalog = () => {
-    opService.optionsCatalog().then((res) => {
-      let { data } = res.data;
-      setoptionsCatalog(data);
-    });
-  };
-  const getsupData = (v) => {
-    customerservice
-      .get(v)
-      .then(async (res) => {
-        const { header, detail } = res.data;
-
-        const tmp = detail.map((item) => {
-          return item.catalog_code;
-        });
-        const init = {
+        let tmpdate = [];
+        if (!!start_date) tmpdate = [dayjs(start_date), dayjs(stop_date)];
+        form.setFieldsValue({
           ...header,
-          catalog_code: tmp,
+          catalog_name: catalog_name,
+          catalog_date: tmpdate,
+          remark: remark,
+        });
+      } else {
+        const { data: code } = (
+          await clservice.getcode().catch((e) => {
+            message.error("get Catalog code fail.");
+          })
+        ).data;
+        // alert()
+        setCLCode(code);
+        const ininteial_value = {
+          ...formDetail,
+          catalog_code: code,
         };
 
-        setFormDetail(init);
-        form.setFieldsValue({ ...init });
-      })
-      .catch((err) => {
-        console.log(err);
-        message.error("Error getting infomation Product.");
-      });
-  };
+        setFormDetail(ininteial_value);
+        form.setFieldsValue(ininteial_value);
+      }
+      // console.log(unitOprionRes.data.data)
+    };
+
+    initial();
+    return () => {};
+  }, []);
+
   useEffect(() => {
     if (listDetail);
   }, [listDetail]);
 
   /** Function modal handle */
+  const handleChoosedCustomer = (value) => {
+    // console.log(value);
+    setCusDetail(value);
+  };
 
   const handleItemsChoosed = (value) => {
     // console.log(value);
@@ -107,7 +120,8 @@ function CatalogManage() {
       .then((v) => {
         if (listDetail.length < 1)
           throw new Error("กรุณาเพิ่มข้อมูลให้ถูกต้อง");
-
+        if (listCustomer.length < 1)
+          throw new Error("กรุณาเพิ่มข้อมูลให้ถูกต้อง");
         const data = { ...v };
 
         if (!!data?.catalog_date) {
@@ -129,7 +143,8 @@ function CatalogManage() {
         };
 
         const detail = listDetail;
-        const parm = { header, detail };
+        const customer = listCustomer;
+        const parm = { header, detail, customer, };
         // console.log(parm);
         const actions =
           config?.action !== "create" ? clservice.update : clservice.create;
@@ -163,7 +178,11 @@ function CatalogManage() {
     const newData = itemDetail.filter((item) => item?.stcode !== code);
     setListDetail([...newData]);
   };
-
+  const handleDeleteCustomer = (code) => {
+    const CustomerDetail = [...listCustomer];
+    const newData = CustomerDetail.filter((customer) => customer?.cuscode !== code);
+    setCusDetail([...newData]);
+  };
   const handleRemove = (record) => {
     const itemDetail = [...listDetail];
     return itemDetail.length >= 1 ? (
@@ -179,7 +198,21 @@ function CatalogManage() {
       />
     ) : null;
   };
-
+  const handleRemoveCustomer = (record) => {
+    const CustomerDetail = [...listCustomer];
+    return CustomerDetail.length >= 1 ? (
+      <Button
+        className="bt-icon"
+        size="small"
+        danger
+        icon={
+          <RiDeleteBin5Line style={{ fontSize: "1rem", marginTop: "3px" }} />
+        }
+        onClick={() => handleDeleteCustomer(record?.cuscode)}
+        disabled={!record?.cuscode}
+      />
+    ) : null;
+  };
   const handleEditCell = (row) => {
     const newData = (r) => {
       const itemDetail = [...listDetail];
@@ -196,12 +229,31 @@ function CatalogManage() {
     };
     setListDetail([...newData(row)]);
   };
+  const handleEditCellCustomer = (row) => {
+    const newData = (r) => {
+      const CustomerDetail = [...listCustomer];
+      const newData = [...CustomerDetail];
+
+      const ind = newData.findIndex(
+        (customer) => r?.cuscode === customer?.cuscode
+      );
+      if (ind < 0) return CustomerDetail;
+      const customer = newData[ind];
+      newData.splice(ind, 1, {
+        ...customer,
+        ...row,
+      });
+      return newData;
+    };
+    setCusDetail([...newData(row)]);
+  };
 
   /** setting column table */
-  const cuscolumns = columnsParametersEditableCustomer(handleEditCell, unitOption, {
-    handleRemove,
-  });
-  const prodcolumns = columnsParametersEditable(handleEditCell, unitOption, {
+  const cuscolumns = columnsParametersEditableCustomer(
+    handleEditCellCustomer,
+    { handleRemoveCustomer }
+  );
+  const prodcolumns = columnsParametersEditable(handleEditCell,{
     handleRemove,
   });
   const TitleTableCustomer = (
@@ -220,10 +272,10 @@ function CatalogManage() {
             icon={<LuPackageSearch style={{ fontSize: "1.2rem" }} />}
             className="bn-center justify-center bn-primary-outline"
             onClick={() => {
-              setOpenProduct(true);
+              setOpenCustomerCL(true);
             }}
           >
-            เลือกสินค้า
+            เลือกลูกค้า
           </Button>
         </Flex>
       </Col>
@@ -323,7 +375,7 @@ function CatalogManage() {
           components={componentsEditable}
           rowClassName={() => "editable-row"}
           bordered
-          dataSource={listDetail}
+          dataSource={listCustomer}
           columns={cuscolumns}
           pagination={false}
           rowKey="cuscode"
@@ -355,7 +407,6 @@ function CatalogManage() {
       </Flex>
     </>
   );
-
 
   const SectionTop = (
     <Row
@@ -491,7 +542,16 @@ function CatalogManage() {
           {SectionBottom}
         </Space>
       </div>
-
+      {openCustomerCL && (
+        <ModalCusCL
+          show={openCustomerCL}
+          close={() => setOpenCustomerCL(false)}
+          values={(v) => {
+            handleChoosedCustomer(v);
+          }}
+          selected={listCustomer}
+        ></ModalCusCL>
+      )}
       {openProduct && (
         <ModalItems
           show={openProduct}

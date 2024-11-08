@@ -1,13 +1,13 @@
-.modal-items .text-select{
+.modal-customers .text-select{
     color: rgb(67, 105, 233);
 }
 
-.modal-items .text-select:hover{
+.modal-customers .text-select:hover{
     text-decoration: underline;
     cursor: pointer;
 }
 
-.modal-items .ant-table-content{
+.modal-customers .ant-table-content{
     height: calc( 100vh - 30rem) !important;
     overflow-y: auto !important;
     position: relative;
