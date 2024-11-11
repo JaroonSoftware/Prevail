@@ -41,8 +41,8 @@ try {
         }
 
 
-        $sql = "insert into catalog_link (catalog_code,cuscode,prename,cusname,created_by,created_date)
-        values (:catalog_code,:cuscode,:prename,:cusname,:action_user,:action_date)";
+        $sql = "insert into catalog_link (catalog_code,cuscode,updated_date,created_by,updated_by)
+        values (:catalog_code,:cuscode,:updated_date,:created_by,:updated_by)";
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
@@ -51,8 +51,10 @@ try {
 
             $stmt->bindParam(":catalog_code", $header->catalog_code, PDO::PARAM_STR);
             $stmt->bindParam(":cuscode", $val->cuscode, PDO::PARAM_STR);
-            $stmt->bindParam(":cusname", $val->cusname, PDO::PARAM_STR);
-            $stmt->bindParam(":prename", $val->prename, PDO::PARAM_STR);
+            $stmt->bindParam(":updated_date", $val->updated_date, PDO::PARAM_STR);
+            $stmt->bindParam(":created_by", $val->created_by, PDO::PARAM_STR);
+            $stmt->bindParam(":updated_by", $val->updated_by, PDO::PARAM_STR);
+          
             if (!$stmt->execute()) {
                 $error = $conn->errorInfo();
                 throw new PDOException("Insert data error => $error");
@@ -131,29 +133,39 @@ try {
 
         // var_dump($master); exit;
 
-        $sql = "delete from catalog_detail where catalog_code = :catalog_code";
+        $sql = "delete from catalog_link where catalog_code = :catalog_code";
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute(['catalog_code' => $header->catalog_code])) {
             $error = $conn->errorInfo();
             throw new PDOException("Remove data error => $error");
         }
-        $sql = "insert into catalog_link (catalog_code,cuscode,created_by,created_date)
-        values (:catalog_code,:cuscode,:action_user,:action_date)";
+        $sql = "insert into catalog_link (catalog_code,cuscode,updated_date,created_by,updated_by)
+        values (:catalog_code,:cuscode,:updated_date,:created_by,:updated_by)";
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
         foreach ($customer as $ind => $val) {
             $val = (object)$val;
 
+           
             $stmt->bindParam(":catalog_code", $header->catalog_code, PDO::PARAM_STR);
             $stmt->bindParam(":cuscode", $val->cuscode, PDO::PARAM_STR);
+            $stmt->bindParam(":updated_date", $val->updated_date, PDO::PARAM_STR);
+            $stmt->bindParam(":created_by", $val->created_by, PDO::PARAM_STR);
+            $stmt->bindParam(":updated_by", $val->updated_by, PDO::PARAM_STR);
+          
         
             if (!$stmt->execute()) {
                 $error = $conn->errorInfo();
                 throw new PDOException("Insert data error => $error");
             }
         }
-
+        $sql = "delete from catalog_detail where catalog_code = :catalog_code";
+        $stmt = $conn->prepare($sql);
+        if (!$stmt->execute(['catalog_code' => $header->catalog_code])) {
+            $error = $conn->errorInfo();
+            throw new PDOException("Remove data error => $error");
+        }
         $sql = "insert into catalog_detail (catalog_code,stcode,price)
         values (:catalog_code,:stcode,:price)";
         $stmt = $conn->prepare($sql);
@@ -201,7 +213,7 @@ try {
         }
         $detail = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT a.catalog_code,a.cuscode";
+        $sql = "SELECT a.catalog_code,a.cuscode,a.updated_date,a.created_by,a.updated_by,i.cusname,i.prename ";
         $sql .= " FROM `catalog_link` as a inner join `customer` as i on (a.cuscode=i.cuscode)  ";
         $sql .= " where a.catalog_code = :code";
 
