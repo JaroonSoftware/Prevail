@@ -133,13 +133,13 @@ const ShippingAccess = () => {
     setIsModalDNOpen(true);
   };
 
-  const handleOkDN = () => {
-    setIsModalDNOpen(false);
-  };
-  const handleCancelDN = () => {
-    setIsModalDNOpen(false);
-  };
-  const prodcolumns = productColumn({ handleEdit });
+  // const handleOkDN = () => {
+  //   setIsModalDNOpen(false);
+  // };
+  // const handleCancelDN = () => {
+  //   setIsModalDNOpen(false);
+  // };
+  const prodcolumns = productColumn({ handleEdit, handleScan });
   const prodcolumnsItem = productColumnModal({ handleScan });
   const SectionCustomers = (
     <>

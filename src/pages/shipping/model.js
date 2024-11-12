@@ -101,7 +101,7 @@ export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrints
   }, 
 ];
 
-export const productColumn = ({handleEdit}) => [
+export const productColumn = ({handleEdit, handleScan}) => [
   {
     title: "ลำดับ",
     dataIndex: "code",
@@ -171,6 +171,28 @@ export const productColumn = ({handleEdit}) => [
             justifyContent: "center",
           }}
           onClick={(e) => handleEdit(record)}
+           size="small"
+        />
+      </Space>
+    ),
+  },
+  {
+    title: "แสกนสินค้า",
+    key: "operation",
+    width: "5%",
+    fixed: "right",
+    render: (text, record) => (
+      <Space style={{paddingLeft: 25}}>
+        <Button
+          icon={<BarcodeOutlined />}
+          className="bn-primary-outline"
+          style={{
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          onClick={(e) => handleScan(record)}
            size="small"
         />
       </Space>
