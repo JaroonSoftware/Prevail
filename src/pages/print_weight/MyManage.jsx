@@ -343,34 +343,7 @@ function MyManage() {
           summary={(record) => {
             return (
               <>
-                {listDetail.length > 0 && (
-                  <>
-                    <Table.Summary.Row>
-                      <Table.Summary.Cell
-                        index={0}
-                        colSpan={8}
-                      ></Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        index={4}
-                        align="end"
-                        className="!pe-4"
-                      >
-                        Grand Total
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        className="!pe-4 text-end"
-                        style={{ borderRigth: "0px solid" }}
-                      >
-                        <Typography.Text type="danger">
-                          {formatMoney(Number(formDetail?.total_price || 0), 2)}
-                        </Typography.Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell className="!pe-4 text-end">
-                        Baht
-                      </Table.Summary.Cell>
-                    </Table.Summary.Row>
-                  </>
-                )}
+                {listDetail.length > 0}
               </>
             );
           }}
@@ -402,7 +375,7 @@ function MyManage() {
                     <Table.Summary.Row>
                       <Table.Summary.Cell
                         index={0}
-                        colSpan={8}
+                        colSpan={7}
                       ></Table.Summary.Cell>
                       <Table.Summary.Cell
                         index={4}
