@@ -150,7 +150,7 @@ export const productColumn = ({ handleRemove, handleSelectChange }) => [
     width: "8%",
     align: "right",
     className: "!pe-3",
-    // editable: true,  
+    // editable: true,
     // required: true,
     // type: "number",
     render: (_, rec) => <>{comma(Number(rec?.price || 0), 2, 2)}</>,
@@ -243,12 +243,15 @@ export const columnsParametersEditable = (
   });
 };
 
-export const productColumnInCollape = ({ handleRemove, handleSelectChange }) => [
+export const productColumnInCollape = ({
+  handleRemove,
+  handleSelectChange,
+}) => [
   {
     title: "ลำดับ",
     dataIndex: "ind",
     key: "ind",
-    width: 80,
+    width: "5%",
     align: "center",
     render: (im, rc, index) => <>{index + 1}</>,
   },
@@ -256,13 +259,14 @@ export const productColumnInCollape = ({ handleRemove, handleSelectChange }) => 
     title: "รหัสสินค้า",
     dataIndex: "stcode",
     key: "stcode",
-    width: 120,
+    width: "5%",
     align: "left",
   },
   {
     title: "ชื่อสินค้า",
     dataIndex: "purdetail",
     key: "purdetail",
+    width: "80%",
     align: "left",
     render: (_, rec) => rec.stname,
   },
@@ -270,7 +274,7 @@ export const productColumnInCollape = ({ handleRemove, handleSelectChange }) => 
     title: "จำนวน",
     dataIndex: "qty",
     key: "qty",
-    width: "8%",
+    width: "10%",
     align: "right",
     className: "!pe-3",
     // editable: true,
@@ -279,79 +283,17 @@ export const productColumnInCollape = ({ handleRemove, handleSelectChange }) => 
     render: (_, rec) => <>{comma(Number(rec?.qty || 0), 2, 2)}</>,
   },
   {
-    title: "ราคาขาย",
-    dataIndex: "price",
-    key: "price",
-    width: "8%",
-    align: "right",
-    className: "!pe-3",
-    // editable: true,
-    // required: true,
-    // type: "number",
-    render: (_, rec) => <>{comma(Number(rec?.price || 0), 2, 2)}</>,
-  },
-  {
     title: "หน่วยสินค้า",
     dataIndex: "unit",
     key: "unit",
-    align: "right",
-    width: "8%",
+    align: "center",
+    width: "10%",
     // editable: true,
     // type: "select",
   },
-  {
-    title: "ส่วนลด(%)",
-    dataIndex: "discount",
-    key: "discount",
-    width: "10%",
-    align: "right",
-    className: "!pe-3",
-    // editable: true,
-    // type: "number",
-    render: (_, rec) => <>{comma(Number(rec?.discount || 0), 2, 2)}</>,
-  },
-  {
-    title: "ราคารวม",
-    dataIndex: "total",
-    key: "total",
-    width: "10%",
-    align: "right",
-    className: "!pe-3",
-    render: (_, rec) => <>{comma(calTotalDiscount(rec), 2, 2)}</>,
-  },
-  {
-    title: "VAT (%)",
-    dataIndex: "vat",
-    key: "vat",
-    width: "8%",
-    align: "right",
-    className: "!pe-3",
-    // editable: true,
-    // required: true,
-    // type: "number",
-    render: (_, rec) => <>{comma(Number(rec?.vat || 0), 2, 2)}</>,
-  },
-  {
-    title: "ราคารวมสุทธิ",
-    dataIndex: "totalnet",
-    key: "totalnet",
-    width: "8%",
-    align: "right",
-    className: "!pe-3",
-    render: (_, rec) => (
-      <>
-        {comma(
-          calTotalDiscount(rec) + calTotalDiscount(rec) * (rec.vat / 100),
-          2,
-          2
-        )}
-      </>
-    ),
-  },
-  
 ];
 
-export const columnsParametersInCollape  = (
+export const columnsParametersInCollape = (
   handleEditCell,
   optionsItems,
   { handleRemove }

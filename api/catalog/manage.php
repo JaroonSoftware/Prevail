@@ -98,7 +98,16 @@ try {
         $_PUT = json_decode($rest_json, true);
         extract($_PUT, EXTR_OVERWRITE, "_");
         // var_dump($_POST);
-
+        $sql2 = "
+        update catalog_link 
+        set
+        cuscode = :cuscode,
+        cusname = :cusname,
+        created_date = CURRENT_TIMESTAMP(),
+        updated_date = CURRENT_TIMESTAMP(),
+        where catalog_code = :catalog_code";
+        
+        $stmt = $conn->prepare($sql2);
         $sql = "
         update catalog_master 
         set
@@ -107,10 +116,10 @@ try {
         stop_date = :stop_date,
         active_status = :active_status,
         remark = :remark,
+        created_date = CURRENT_TIMESTAMP(),
         updated_date = CURRENT_TIMESTAMP(),
         updated_by = :action_user
         where catalog_code = :catalog_code";
-
         
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
@@ -132,7 +141,7 @@ try {
         }
 
         // var_dump($master); exit;
-
+       
         $sql = "delete from catalog_link where catalog_code = :catalog_code";
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute(['catalog_code' => $header->catalog_code])) {
