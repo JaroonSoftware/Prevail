@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState,useRef } from "react";
 import {
   Button,
   DatePicker,
@@ -15,6 +15,7 @@ import { Card, Col, Divider, Flex, Row, Space } from "antd";
 import OptionService from "../../service/Options.service";
 import SOService from "../../service/SO.service";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
+import ModalPreviewWRTags from "../../components/modal/print-weight/ModalPreviewWRTags";
 import {
   soForm,
   columnsParametersEditable,
@@ -27,6 +28,7 @@ import { formatMoney } from "../../utils/util";
 import { ButtonBack } from "../../components/button";
 import { useLocation } from "react-router-dom";
 import { BarcodeOutlined, PrinterOutlined } from "@ant-design/icons";
+import { useReactToPrint } from "react-to-print";
 
 const opservice = OptionService();
 const soservice = SOService();
@@ -43,6 +45,7 @@ function MyManage() {
   /** Modal handle */
   const [openCustomer, setOpenCustomer] = useState(false);
   const [openProduct, setOpenProduct] = useState(false);
+  const [openPrint, setOpenPrint] = useState(false);
 
   /** SaleOrder state */
   const [soCode, setSOCode] = useState(null);
@@ -53,11 +56,19 @@ function MyManage() {
   const [formDetail, setFormDetail] = useState(soForm);
 
   const [unitOption, setUnitOption] = React.useState([]);
+  const [selectedData, setSelectedData] = useState([]);
+
+  const printRef = useRef();
+  const reprintRef = useRef();
 
   const cardStyle = {
     backgroundColor: "#f0f0f0",
     height: "calc(100% - (25.4px + 1rem))",
   };
+
+  const printWrTagsReport = useReactToPrint({
+    content: () => printRef.current,
+  });
 
   useEffect(() => {
     const initial = async () => {
@@ -178,6 +189,14 @@ function MyManage() {
     handleSummaryPrice();
   };
 
+  const handlePrint = (code) => {
+    setOpenPrint(true)
+    // alert(code)
+    // const url = `/print-weight/${code}`;
+    // const newWindow = window.open('', url, url);
+    // newWindow.location.href = url;
+  };
+
   const handleRemove = (record) => {
     const itemDetail = [...listDetail];
     return itemDetail.length >= 1 ? (
@@ -209,6 +228,14 @@ function MyManage() {
       return newData;
     };
     setListDetail([...newData(row)]);
+  };
+
+  const rowSelection = {
+    onChange: (selectedRowKeys, selectedRows) => {
+      // console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
+      setSelectedData(selectedRows)
+      // console.log(selectedData)
+    },
   };
 
   /** setting column table */
@@ -302,6 +329,9 @@ function MyManage() {
           <Button
             icon={<PrinterOutlined style={{ fontSize: "1.2rem" }} />}
             className="bn-center justify-center bn-primary-outline"
+            onClick={() => {
+              handlePrint();
+            }}
           >
             Print
           </Button>
@@ -326,7 +356,8 @@ function MyManage() {
         <Table
           title={() => TitleTable}
           rowSelection={{
-            type: "checkbox",
+            type: "checkbox",            
+          ...rowSelection,
           }}
           components={componentsEditable}
           rowClassName={() => "editable-row"}
@@ -574,7 +605,17 @@ function MyManage() {
           selected={listDetail}
         ></ModalItems>
       )}
-    </div>
+
+      {openPrint && (
+      <ModalPreviewWRTags
+        show={openPrint}
+        close={() => setOpenPrint(false)}
+        printRef={reprintRef}
+        printData={selectedData}
+        // isReprint={true}
+        />
+      )}
+      </div>
   );
 }
 

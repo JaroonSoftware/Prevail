@@ -35,6 +35,7 @@
     "styled-components": "^5.3.0",
     "sweetalert2": "^11.7.28",
     "thai-address-autocomplete-react": "^1.0.1",
+    "thai-baht-text": "^1.0.8",
     "uuid": "^9.0.1",
     "web-vitals": "^1.1.2"
   },
