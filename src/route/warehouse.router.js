@@ -23,6 +23,8 @@ import { Receipt, ReceiptAccess, ReceiptManage } from "../pages/receipt";
 
 import { Shipping, ShippingAccess } from "../pages/shipping";
 
+import { County, CountyAccess, CountyManage } from "../pages/county";
+
 export const WarehouseRouter = (
   <>
     <Route path="/quotation/" exact element={<Quotation />}>
@@ -67,6 +69,15 @@ export const WarehouseRouter = (
 
     <Route path="/shipping/" exact element={<Shipping />}>
       <Route index element={<ShippingAccess />} />
+    </Route>
+
+    <Route path="/shipping/" exact element={<Shipping />}>
+      <Route index element={<ShippingAccess />} />
+    </Route>
+
+    <Route path="/county/" exact element={<County />}>
+      <Route index element={<CountyAccess />} />
+      <Route path="manage/:action" element={<CountyManage />} />
     </Route>
   </>
 );

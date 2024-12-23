@@ -20,7 +20,7 @@ const valueStyled = {
 const DocWRTag = forwardRef(({ printData }, ref) => {
   return (
     <div ref={ref}>
-      {printData.map((data, index) => (
+      {printData.map((data, index) => (  
         <Card
           title={null}
           style={{
@@ -29,6 +29,7 @@ const DocWRTag = forwardRef(({ printData }, ref) => {
           }}
           key={1}
         >
+          
           <table style={{ border: "1px solid", width: "100%" }}>
             <tr>
               <th
@@ -38,25 +39,15 @@ const DocWRTag = forwardRef(({ printData }, ref) => {
                   border: "1px solid",
                   fontSize: "16px",
                 }}
-                colspan="2"
               >
-                TAG WIREROD
-              </th>
-              <th
-                style={{
-                  padding: "4px 8px",
-                  textAlign: "center",
-                  fontSize: "16px",
-                  border: "1px solid",
-                }}
-              >
-                QR CODE
+                SPL ป้าย 2/1
               </th>
             </tr>
+
             <tr>
-              <td style={keyStyled}>GRADE</td>
-              <td style={valueStyled}>1</td>
-              <td style={{ ...valueStyled, width: "150px" }} rowspan="5">
+              <td style={keyStyled}>{data?.stname}</td>
+     
+              <td style={{ ...valueStyled, width: "150px" }} rowspan="1">
                 <div
                   style={{
                     display: "flex",
@@ -74,29 +65,19 @@ const DocWRTag = forwardRef(({ printData }, ref) => {
               </td>
             </tr>
             <tr>
-              <td style={keyStyled}>SIZE</td>
-              <td style={valueStyled}>1</td>
-            </tr>
-            <tr>
-              <td style={keyStyled}>CHARGE NO.</td>
-              <td style={valueStyled}>1</td>
-            </tr>
-            <tr>
-              <td style={keyStyled}>COIL NO.</td>
-              <td style={valueStyled}>1</td>
-            </tr>
-            {/* <tr>
-              <td style={keyStyled}>WEIGHT</td>
-              <td style={valueStyled}>
-                {data?.sup_weight?.toLocaleString() ||
-                  data.weight?.toLocaleString()}{" "}
-                KGs.
+              <td style={keyStyled}>
+                {data?.qty} {data?.unit} {data?.cusname}
               </td>
-            </tr> */}
+     
+            </tr>
+            <tr>
+              <td style={keyStyled}>ชื่อบริษัท</td>
+            </tr>
           </table>
-        </Card>        
-       ))} 
+        </Card>
+      ))}
     </div>
   );
+
 });
 export default DocWRTag;

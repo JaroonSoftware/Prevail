@@ -1,0 +1,72 @@
+.county-manage .ant-radio-button-wrapper:first-child {
+    border-radius: 8px 0 0 8px;
+}
+
+.county-manage .ant-radio-button-wrapper:last-child {
+    border-radius: 0 8px 8px 0;
+}
+
+.county-manage .ant-radio-group .ant-radio-button-wrapper {
+    font-weight: 600;
+    font-size: 12px;
+    height: 40px;
+    padding: 0 15px;
+    line-height: 2.4rem;
+}
+
+.county-manage .ant-collapse .ant-collapse-content {
+    color: rgba(0, 0, 0, 0.88);
+    background-color: #ffffff;
+    border-top: 1px solid #d9d9d9;
+    border-radius: 0px 0px 8px 8px;
+}
+
+.county-manage .ant-collapse {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    background: #ffffff00;
+}
+
+.county-manage  .ant-collapse>.ant-collapse-county >.ant-collapse-header { 
+    background-color: #d9d9d9;
+    background-color: #e5e5e5;
+}
+
+.county-manage .ant-collapse .ant-collapse-content>.ant-collapse-content-box {
+    padding: 16px 16px;
+}
+
+.county-manage .ant-collapse>.ant-collapse-county>.ant-collapse-header, 
+.county-manage .ant-collapse>.ant-collapse-county:last-child>.ant-collapse-header {
+    border-radius: 8px 8px 0px 0px;
+}
+
+.county-access .ant-table-tbody > tr > td, 
+.county-access .ant-table-thead > tr > th {
+    white-space: break-spaces;
+    vertical-align: top;
+}
+
+.county-access .ant-collapse>.ant-collapse-county:last-child, 
+.county-access .ant-collapse>.ant-collapse-county:last-child>.ant-collapse-header {
+    border-radius: 12px;
+    background-color: #d9d9d9;
+    border: none;
+}
+
+.county-access .ant-collapse .ant-collapse-header,
+.county-access .ant-collapse .ant-collapse-county-active .ant-collapse-header { 
+    border-bottom: 0px solid #fff;
+    padding-inline-start: 12px;
+    background-color: #d9d9d9;
+}
+
+
+.county-access .ant-collapse .ant-collapse-county-active .ant-collapse-content,
+.county-access .ant-collapse .ant-collapse-content {
+    color: rgba(0, 0, 0, 0.88);
+    background-color: #d9d9d9;
+    border-top: 0px solid #d9d9d9;
+    padding-inline: 12px;
+}

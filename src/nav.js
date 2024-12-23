@@ -96,6 +96,11 @@ let _nav = [
     to: "/unit",
   },
   {
+    title: "เขตขนส่ง",
+    icon: <FileTextFilled className="nav-ico" />, 
+    to: "/county",    
+  },  
+  {
     title: "ผู้ใช้งาน",
     icon: <FaUserCircle className="nav-ico" />,
     to: "/users",
