@@ -14,6 +14,7 @@ import {
 import { Card, Col, Divider, Flex, Row, Space } from "antd";
 import OptionService from "../../service/Options.service";
 import SOService from "../../service/SO.service";
+import PackageService from "../../service/Package.service";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
 import ModalPreviewWRTags from "../../components/modal/print-weight/ModalPreviewWRTags";
 import {
@@ -32,6 +33,7 @@ import { useReactToPrint } from "react-to-print";
 
 const opservice = OptionService();
 const soservice = SOService();
+const pkservice = PackageService();
 
 const gotoFrom = "/print-weight";
 const dateFormat = "DD/MM/YYYY";
@@ -190,7 +192,17 @@ function MyManage() {
   };
 
   const handlePrint = (code) => {
+
+
     setOpenPrint(true)
+
+    pkservice.Printpackage(selectedData).then(() => {
+          message.success("Process on going!");
+          // printProcess();
+          // reFetchAfterPrint();
+        })
+        .catch(() => message.error("Something went wrong !"));
+
     // alert(code)
     // const url = `/print-weight/${code}`;
     // const newWindow = window.open('', url, url);

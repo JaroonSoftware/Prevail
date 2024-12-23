@@ -11,7 +11,7 @@ import { PurchaseOrder, PurchaseOrderAccess, PurchaseOrderManage } from "../page
 
 import { GoodsReceipt, GoodsReceiptAccess, GoodsReceiptManage } from "../pages/goods-receipt";
 
-import { PrintWeight, PrintWeightAccess, PrintWeightManage } from "../pages/print-weight";
+import { PrintWeight, PrintWeightAccess, PrintWeightManage } from "../pages/print-package";
 
 import { SO, SOAccess, SOManage } from "../pages/so";
 

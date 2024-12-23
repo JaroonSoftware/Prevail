@@ -1,12 +1,12 @@
 import { requestService as api } from "./Request.service"  
 const API_URL = { 
-  API_MANAGE: `/purchaseorder/manage.php`, 
-  API_SEARCH: `/purchaseorder/search.php`, 
+  API_MANAGE: `/package/manage.php`, 
+  API_SEARCH: `/package/search.php`, 
 
-  API_GETCODE: `/purchaseorder/get-doc-code.php`, 
+  API_GETCODE: `/package/get-doc-code.php`, 
 };
   
-const QuotationService = () => { 
+const PackageService = () => { 
   
   const create = (parm = {}) => api.post(`${API_URL.API_MANAGE}`, parm);
   const update = (parm = {}) => api.put(`${API_URL.API_MANAGE}`, parm);
@@ -30,4 +30,4 @@ const QuotationService = () => {
   };
 };
 
-export default QuotationService;
+export default PackageService;
