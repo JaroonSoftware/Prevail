@@ -18,10 +18,10 @@ try {
 
         // var_dump($_POST);
         
-        $sql = "INSERT INTO customer (`cuscode`, `prename`, `cusname`, `taxnumber`, `idno`,`road`, `province`, 
+        $sql = "INSERT INTO customer (`cuscode`, `prename`, `cusname`, `taxnumber`,`county_code`, `idno`,`road`, `province`, 
         `subdistrict`,`district`,`zipcode`, `delidno`,`delroad`, `delprovince`, 
         `delsubdistrict`,`deldistrict`,`delzipcode`, `tel`, `fax`,`contact`, `email`,`remark`, `active_status`, created_by, created_date) 
-        values (:cuscode,:prename,:cusname,:taxnumber,:idno,:road,:province,:subdistrict,:district,:zipcode,
+        values (:cuscode,:prename,:cusname,:taxnumber,:county_code,:idno,:road,:province,:subdistrict,:district,:zipcode,
         :delidno,:delroad,:delprovince,:delsubdistrict,:deldistrict,:delzipcode,
         :tel,:fax,:contact,:email,:remark,'Y',:action_user,:action_date)";
         
@@ -30,7 +30,8 @@ try {
         
         $stmt->bindParam(":cuscode", $cuscode, PDO::PARAM_STR);
         $stmt->bindParam(":prename", $prename, PDO::PARAM_STR);
-        $stmt->bindParam(":cusname", $cusname, PDO::PARAM_STR);     
+        $stmt->bindParam(":cusname", $cusname, PDO::PARAM_STR); 
+        $stmt->bindParam(":county_code", $county_code, PDO::PARAM_STR);    
         $stmt->bindParam(":taxnumber", $taxnumber, PDO::PARAM_STR);
         $stmt->bindParam(":idno", $idno, PDO::PARAM_STR); 
         $stmt->bindParam(":road", $road, PDO::PARAM_STR);         
@@ -105,6 +106,7 @@ try {
         cuscode = :cuscode,
         prename = :prename,
         cusname = :cusname,
+        county_code = :county_code,
         taxnumber = :taxnumber,
         idno = :idno,
         road = :road,
@@ -134,7 +136,8 @@ try {
 
         $stmt->bindParam(":cuscode", $cuscode, PDO::PARAM_STR);
         $stmt->bindParam(":prename", $prename, PDO::PARAM_STR);
-        $stmt->bindParam(":cusname", $cusname, PDO::PARAM_STR);     
+        $stmt->bindParam(":cusname", $cusname, PDO::PARAM_STR);   
+        $stmt->bindParam(":county_code", $county_code, PDO::PARAM_STR);  
         $stmt->bindParam(":taxnumber", $taxnumber, PDO::PARAM_STR);
         $stmt->bindParam(":idno", $idno, PDO::PARAM_STR); 
         $stmt->bindParam(":road", $road, PDO::PARAM_STR);         
