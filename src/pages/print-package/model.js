@@ -138,9 +138,7 @@ export const productColumn = ({ handleRemove, handleSelectChange }) => [
     width: "8%",
     align: "right",
     className: "!pe-3",
-    // editable: true,
     required: true,
-    // type: "number",
     render: (_, rec) => <>{comma(Number(rec?.qty || 0), 2, 2)}</>,
   },
   {
@@ -243,10 +241,7 @@ export const columnsParametersEditable = (
   });
 };
 
-export const productColumnInCollape = ({
-  handleRemove,
-  handleSelectChange,
-}) => [
+export const productColumnInCollape = () => [
   {
     title: "ลำดับ",
     dataIndex: "ind",
@@ -259,14 +254,13 @@ export const productColumnInCollape = ({
     title: "รหัสสินค้า",
     dataIndex: "stcode",
     key: "stcode",
-    width: "5%",
-    align: "left",
+    width: "8%",
+    align: "center",
   },
   {
     title: "ชื่อสินค้า",
     dataIndex: "purdetail",
     key: "purdetail",
-    width: "80%",
     align: "left",
     render: (_, rec) => rec.stname,
   },
@@ -277,10 +271,16 @@ export const productColumnInCollape = ({
     width: "10%",
     align: "right",
     className: "!pe-3",
-    // editable: true,
-    // required: true,
-    // type: "number",
     render: (_, rec) => <>{comma(Number(rec?.qty || 0), 2, 2)}</>,
+  },
+  {
+    title: "น้ำหนักสูงสุดต่อถุง",
+    dataIndex: "packing_weight",
+    key: "packing_weight",
+    width: "10%",
+    align: "right",
+    className: "!pe-3",
+    required: true,
   },
   {
     title: "หน่วยสินค้า",

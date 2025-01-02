@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useState,useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Button,
   DatePicker,
@@ -16,7 +16,7 @@ import OptionService from "../../service/Options.service";
 import SOService from "../../service/SO.service";
 import PackageService from "../../service/Package.service";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
-import ModalPreviewWRTags from "../../components/modal/print-weight/ModalPreviewWRTags";
+import ModalPreviewPKBarcode from "../../components/modal/print-weight/ModalPreviewPKBarcode";
 import {
   soForm,
   columnsParametersEditable,
@@ -59,18 +59,14 @@ function MyManage() {
 
   const [unitOption, setUnitOption] = React.useState([]);
   const [selectedData, setSelectedData] = useState([]);
+  const [resultData, setResultData] = useState([]);
 
   const printRef = useRef();
-  const reprintRef = useRef();
 
   const cardStyle = {
     backgroundColor: "#f0f0f0",
     height: "calc(100% - (25.4px + 1rem))",
   };
-
-  const printWrTagsReport = useReactToPrint({
-    content: () => printRef.current,
-  });
 
   useEffect(() => {
     const initial = async () => {
@@ -191,22 +187,21 @@ function MyManage() {
     handleSummaryPrice();
   };
 
-  const handlePrint = (code) => {
+  const handlePrint = () => {
 
+    let obj = { detail: selectedData };
 
-    setOpenPrint(true)
-
-    pkservice.Printpackage(selectedData).then(() => {
-          message.success("Process on going!");
-          // printProcess();
-          // reFetchAfterPrint();
-        })
-        .catch(() => message.error("Something went wrong !"));
-
-    // alert(code)
-    // const url = `/print-weight/${code}`;
-    // const newWindow = window.open('', url, url);
-    // newWindow.location.href = url;
+    pkservice
+      .printpackage(obj)
+      .then((r) => {
+        // console.log(r.data)
+        setResultData(r.data.data)
+        message.success("Process on going!");
+        setOpenPrint(true);
+        // printProcess();
+        // reFetchAfterPrint();
+      })
+      .catch(() => message.error("Something went wrong !"));
   };
 
   const handleRemove = (record) => {
@@ -245,7 +240,7 @@ function MyManage() {
   const rowSelection = {
     onChange: (selectedRowKeys, selectedRows) => {
       // console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
-      setSelectedData(selectedRows)
+      setSelectedData(selectedRows);
       // console.log(selectedData)
     },
   };
@@ -368,8 +363,8 @@ function MyManage() {
         <Table
           title={() => TitleTable}
           rowSelection={{
-            type: "checkbox",            
-          ...rowSelection,
+            type: "checkbox",
+            ...rowSelection,
           }}
           components={componentsEditable}
           rowClassName={() => "editable-row"}
@@ -384,11 +379,7 @@ function MyManage() {
             emptyText: <span>No data available, please add some data.</span>,
           }}
           summary={(record) => {
-            return (
-              <>
-                {listDetail.length > 0}
-              </>
-            );
+            return <>{listDetail.length > 0}</>;
           }}
         />
       </Flex>
@@ -510,7 +501,7 @@ function MyManage() {
                         <Form.Item name="sodate" className="!m-0">
                           <DatePicker
                             className="input-40"
-                            disabled 
+                            disabled
                             allowClear={false}
                             onChange={handleSO}
                             format={dateFormat}
@@ -592,15 +583,15 @@ function MyManage() {
       )}
 
       {openPrint && (
-      <ModalPreviewWRTags
-        show={openPrint}
-        close={() => setOpenPrint(false)}
-        printRef={reprintRef}
-        printData={selectedData}
-        // isReprint={true}
+        <ModalPreviewPKBarcode
+          show={openPrint}
+          close={() => setOpenPrint(false)}
+          printRef={printRef}
+          printData={resultData}
+          // isReprint={true}
         />
       )}
-      </div>
+    </div>
   );
 }
 

@@ -17,10 +17,12 @@ const valueStyled = {
   fontSize: "28px",
 };
 
-const DocWRTag = forwardRef(({ printData }, ref) => {
+const FormPKBarcode = forwardRef(({ printData }, ref) => {
+
   return (
     <div ref={ref}>
-      {printData.map((data, index) => (  
+      {printData.map((maindata, index) => (  
+        maindata.map((data, index) => (  
         <Card
           title={null}
           style={{
@@ -40,12 +42,14 @@ const DocWRTag = forwardRef(({ printData }, ref) => {
                   fontSize: "16px",
                 }}
               >
-                SPL ป้าย 2/1
+                {data?.county_code}
               </th>
             </tr>
 
             <tr>
-              <td style={keyStyled}>{data?.stname}</td>
+              <td style={keyStyled}>
+                {data?.stname}
+                </td>
      
               <td style={{ ...valueStyled, width: "150px" }} rowspan="1">
                 <div
@@ -58,7 +62,7 @@ const DocWRTag = forwardRef(({ printData }, ref) => {
                   <QRCode
                     size={128}
                     style={{ height: "auto" }}
-                    value={data?.stcode}
+                    value={data?.package_id}
                     viewBox={`0 0 256 256`}
                   />
                 </div>
@@ -66,18 +70,19 @@ const DocWRTag = forwardRef(({ printData }, ref) => {
             </tr>
             <tr>
               <td style={keyStyled}>
-                {data?.qty} {data?.unit} {data?.cusname}
+                {data?.weight} KG
               </td>
      
             </tr>
             <tr>
-              <td style={keyStyled}>ชื่อบริษัท</td>
+              <td style={keyStyled}>{data?.cusname} {data?.socode}</td>
             </tr>
           </table>
         </Card>
-      ))}
+        ))
+       ))} 
     </div>
   );
 
 });
-export default DocWRTag;
+export default FormPKBarcode;

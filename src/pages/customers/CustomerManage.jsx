@@ -29,9 +29,10 @@ const ItemsManage = () => {
   const location = useLocation();
 
   const { config } = location.state || { config: null };
-  const [form] = Form.useForm();
-  const [setoptionsCatalog] = useState([]);
+  const [form] = Form.useForm();  
   const [formDetail, setFormDetail] = useState({});
+  const [optionsCounty,setOptionsCounty] = useState([]);
+  
 
   const init = async () => {
     const cuscodeRes = await customerservice
@@ -46,7 +47,7 @@ const ItemsManage = () => {
 
   useEffect(() => {
     // setLoading(true);
-    GetCatalog();
+    GetCounty();
     if (config?.action !== "create") {
       getsupData(config.code);
     } else {
@@ -57,10 +58,10 @@ const ItemsManage = () => {
     }
   }, []);
 
-  const GetCatalog = () => {
-    opService.optionsCatalog().then((res) => {
+  const GetCounty = () => {
+    opService.optionsCounty().then((res) => {
       let { data } = res.data;
-      setoptionsCatalog(data);
+      setOptionsCounty(data);
     });
   };
   const getsupData = (v) => {
@@ -146,7 +147,6 @@ const ItemsManage = () => {
           >
             <Input
               placeholder="กรอกรหัสลูกค้า"
-              className="!bg-zinc-300"
               disabled={config.action === "edit"}
             />
           </Form.Item>
@@ -200,27 +200,34 @@ const ItemsManage = () => {
             <Input placeholder="กรอกชื่อลูกค้า" />
           </Form.Item>
         </Col>
-        <Col xs={24} sm={24} md={24} lg={24} xl={12} xxl={8}>
+        <Col xs={24} sm={24} md={24} lg={24} xl={8} xxl={8}>
           <Form.Item label="เลขที่ผู้เสียภาษี" name="taxnumber">
             <Input placeholder="กรอกเลขที่ผู้เสียภาษี" />
           </Form.Item>
         </Col>     
-        {/* <Col xs={24} sm={24} md={24} lg={24} xl={16}>
-          <Form.Item label="แคตตาล๊อก" name="catalog_code">
+        <Col xs={24} sm={24} md={24} lg={24} xl={8}>
+          <Form.Item label="เขตขนส่ง" name="county_code">
             <Select
               size="large"
               showSearch
-              mode="multiple"
               allowClear
               filterOption={filterOption}
-              placeholder="เลือกแคตตาล๊อก"
-              options={optionsCatalog.map((item) => ({
-                value: item.catalog_code,
-                label: item.catalog_name,
+              placeholder="เลือกเขตขนส่ง"
+              options={optionsCounty.map((item) => ({
+                value: item.county_code,
+                label: item.county_name,
               }))}
             />
+            {/* <Select
+                                    size="large"
+                                    showSearch
+                                    filterOption={filterOption}
+                                    placeholder="เลือกจังหวัด"
+                                    onChange={handleSearch}
+                                    options={PROVINCE_OPTIONS}
+                                  /> */}
           </Form.Item>
-        </Col> */}
+        </Col>
         <Col
           xs={24}
           sm={24}
