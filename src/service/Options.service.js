@@ -15,6 +15,7 @@ const API_URL = {
   OPTION_CATALOG: `/common/options-catalog.php`,
   OPTION_USER: `/common/options-user.php`,
   OPTION_County: `/common/options-county.php`,
+  OPTION_SO: `/common/options-so.php`,
 };
  
 
@@ -34,6 +35,7 @@ const OptionService = () => {
   const optionsCatalog = () => api.get(`${API_URL.OPTION_CATALOG}`, { ignoreLoading : true });  
   const optionsUser = () => api.get(`${API_URL.OPTION_USER}`, { ignoreLoading : true });  
   const optionsCounty = () => api.get(`${API_URL.OPTION_County}`, { ignoreLoading : true });  
+  const optionsSO = (parm = {}) => api.get(`${API_URL.OPTION_SO}?${getParmeter(parm)}`, { ignoreLoading : true });
 
   return {
     optionsItems,
@@ -51,6 +53,7 @@ const OptionService = () => {
     optionsCatalog,
     optionsUser,
     optionsCounty,
+    optionsSO,
   };
 };
 

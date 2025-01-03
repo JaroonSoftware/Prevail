@@ -26,9 +26,6 @@ function TagSalesOrderStatus({result}) {
     case 'รอออกใบวางบิล':
       elementToRender = <Tag icon={<ClockCircleFilled />} color="#a569bd"> รอออกใบวางบิล </Tag>;
       break;
-    case 'รอออกใบส่งของ':
-      elementToRender = <Tag icon={<ClockCircleFilled />} color="#d35400"> รอออกใบส่งของ </Tag>;
-      break;
     case 'โหลดสินค้ายังไม่ครบ':
       elementToRender = <Tag icon={<ClockCircleFilled />} color="#008080"> โหลดสินค้ายังไม่ครบ </Tag>;
       break;

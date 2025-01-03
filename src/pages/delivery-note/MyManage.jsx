@@ -13,11 +13,9 @@ import {
 import { Card, Col, Divider, Flex, Row, Space, InputNumber,Popconfirm } from "antd";
 import OptionService from "../../service/Options.service";
 import DeliveryNoteService from "../../service/DeliveryNote.service";
-// import QuotationService from "../../service/Quotation.service";
 import { SearchOutlined, SaveFilled,QuestionCircleOutlined } from "@ant-design/icons";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
-// import ModalQuotation from "../../components/modal/quotation/MyModal";
-import { ModalItems } from "../../components/modal/items/modal-items";
+import { ModalItems } from "../../components/modal/SO/modal-items";
 
 import {
   DEFALUT_CHECK_DELIVERY,

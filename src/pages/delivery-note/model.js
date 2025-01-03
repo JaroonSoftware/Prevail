@@ -115,6 +115,14 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
     render: (im, rc, index) => <>{index + 1}</>,
   },
   {
+    title: "ใบขายสินค้า",
+    dataIndex: "socode",
+    key: "socode",
+    width: "8%",
+    align: "right",
+    className: "!pe-3",
+  },
+  {
     title: "รหัสสินค้า",
     dataIndex: "stcode",
     key: "stcode",
@@ -123,8 +131,8 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
   },
   {
     title: "ชื่อสินค้า",
-    dataIndex: "purdetail",
-    key: "purdetail", 
+    dataIndex: "stname",
+    key: "stname", 
     align: "left", 
     render: (_, rec) => rec.stname,
   },
@@ -160,6 +168,15 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
       width: "8%",
       editable: true,
       type:'select',    
+  },  
+  {
+    title: "ต้นทุน",
+    dataIndex: "cost",
+    key: "cost", 
+    width: "8%",
+    align: "right",
+    className: "!pe-3",        
+    // hidden: true,
   },
   {
     title: "ราคารวม",

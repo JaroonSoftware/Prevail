@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
-import { Button, Form, Modal, Table, Typography, message } from "antd";
+import { Button, Form, Table, Typography, message } from "antd";
 import {
   Card,
   Col,
@@ -118,10 +118,10 @@ function CatalogManage() {
     form
       .validateFields()
       .then((v) => {
-        if (listDetail.length < 1)
-          throw new Error("กรุณาเพิ่มข้อมูลให้ถูกต้อง");
-        if (listCustomer.length < 1)
-          throw new Error("กรุณาเพิ่มข้อมูลให้ถูกต้อง");
+        // if (listDetail.length < 1)
+        //   throw new Error("กรุณาเพิ่มข้อมูลให้ถูกต้อง");
+        // if (listCustomer.length < 1)
+        //   throw new Error("กรุณาเพิ่มข้อมูลให้ถูกต้อง");
         const data = { ...v };
 
         if (!!data?.catalog_date) {
@@ -160,10 +160,7 @@ function CatalogManage() {
           });
       })
       .catch((err) => {
-        Modal.error({
-          title: "This is an error message",
-          content: "Please enter require data",
-        });
+        message.error('คุณกรอกข้อมูล ไม่ครบถ้วน');
       });
   };
 
@@ -321,10 +318,10 @@ function CatalogManage() {
             </Form.Item>
           </Col>
           <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-            <Form.Item label="วันที่ใช้งาน" name="catalog_date">
+            <Form.Item label="วันที่ใช้งาน" name="catalog_date" rules={[{ required: true, message: "โปรดระบุช่วงวันที่ใช้งาน" }]}>
               <RangePicker
                 placeholder={["From Date", "To date"]}
-                style={{ width: "100%", height: 40 }}
+                style={{ width: "100%", height: 40 }}                
               />
             </Form.Item>
           </Col>
