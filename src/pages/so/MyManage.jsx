@@ -10,7 +10,7 @@ import {
   Typography,
   message,
 } from "antd";
-import { Card, Col, Divider, Flex, Row, Space } from "antd";
+import { Card, Col, Divider, Flex, Row, Space, InputNumber } from "antd";
 
 import OptionService from "../../service/Options.service";
 import SOService from "../../service/SO.service";
@@ -20,7 +20,7 @@ import ModalCustomers from "../../components/modal/customers/ModalCustomers";
 import { soForm, columnsParametersEditable, componentsEditable } from "./model";
 import { ModalItems } from "../../components/modal/itemsbyCL/modal-items";
 import dayjs from "dayjs";
-import { delay, formatMoney } from "../../utils/util";
+import { delay, comma } from "../../utils/util";
 import { ButtonBack } from "../../components/button";
 import { useLocation, useNavigate } from "react-router-dom";
 import { TbSquareRoundedX, TbExclamationCircle } from "react-icons/tb";
@@ -114,18 +114,19 @@ function MyManage() {
       (a, v) =>
         (a +=
           Number(v.qty || 0) *
-            Number(v?.price || 0) *
-            (1 - Number(v?.discount || 0) / 100) +
-          Number(v.qty || 0) *
-            Number(v?.price || 0) *
-            (1 - Number(v?.discount || 0) / 100) *
-            (v.vat / 100)),
+          Number(v?.price || 0) *
+          (1 - Number(v?.discount || 0) / 100)),
       0
     );
+    const vat = form.getFieldValue("vat");
+    const grand_total_price =
+      total_price + (total_price * form.getFieldValue("vat")) / 100;
 
     setFormDetail(() => ({
       ...formDetail,
       total_price,
+      vat,
+      grand_total_price,
     }));
     // console.log(formDetail)
   };
@@ -163,9 +164,9 @@ function MyManage() {
     ];
     const customer = {
       ...val,
-      cusaddress: addr.join(""),
-      cuscontact: val.contact,
-      custel: val?.tel?.replace(/[^(0-9, \-, \s, \\,)]/g, "")?.trim(),
+      address: addr.join(""),
+      contact: val.contact,
+      tel: val?.tel?.replace(/[^(0-9, \-, \s, \\,)]/g, "")?.trim(),
     };
     // console.log(val.contact)
     setFormDetail((state) => ({ ...state, ...customer }));
@@ -192,7 +193,7 @@ function MyManage() {
         const detail = listDetail;
 
         const parm = { header, detail };
-        console.log(parm)
+        console.log(parm);
         const actions =
           config?.action !== "create" ? soservice.update : soservice.create;
         actions(parm)
@@ -237,7 +238,7 @@ function MyManage() {
           <RiDeleteBin5Line style={{ fontSize: "1rem", marginTop: "3px" }} />
         }
         onClick={() => handleDelete(record?.stcode)}
-        disabled={!record?.stcode||(config.action!=='create')}
+        disabled={!record?.stcode || config.action !== "create"}
       />
     ) : null;
   };
@@ -256,15 +257,17 @@ function MyManage() {
       okType: "danger",
       cancelText: "ยกเลิก",
       onOk() {
-        soservice.deleted(formDetail.socode).then((r) => {
-          handleClose().then((r) => {
-            message.success("ยกเลิกใบขายสินค้าสำเร็จ");
+        soservice
+          .deleted(formDetail.socode)
+          .then((r) => {
+            handleClose().then((r) => {
+              message.success("ยกเลิกใบขายสินค้าสำเร็จ");
+            });
+          })
+          .catch((err) => {
+            message.error("Request SaleOrder fail.");
+            console.warn(err);
           });
-        })
-        .catch((err) => {
-          message.error("Request SaleOrder fail.");
-          console.warn(err);
-        });
         // setListSouce((state) => state.filter( soc => soc.stcode !== key));
       },
       // onCancel() { },
@@ -329,7 +332,18 @@ function MyManage() {
               <Input placeholder="Customer Name." readOnly />
             </Form.Item>
           </Col>
-          <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+          <Col xs={24} sm={24} md={6} lg={6}>
+            <Form.Item label="วันที่นัดส่งสินค้า" name="deldate" className="!m-0">
+              <DatePicker
+                size="large"
+                placeholder="วันที่นัดส่งสินค้า"
+                className="input-40"
+                style={{ width: "100%" }}
+                format={dateFormat}
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={24} md={24} lg={24} xl={18} xxl={18}>
             <Form.Item name="address" label="ที่อยู่" className="!mb-1">
               <Input placeholder="Customer Address." readOnly />
             </Form.Item>
@@ -398,7 +412,74 @@ function MyManage() {
                     <Table.Summary.Row>
                       <Table.Summary.Cell
                         index={0}
-                        colSpan={8}
+                        colSpan={5}
+                      ></Table.Summary.Cell>
+                      <Table.Summary.Cell
+                        index={4}
+                        align="end"
+                        className="!pe-4"
+                      >
+                        Total
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell
+                        className="!pe-4 text-end border-right-0"
+                        style={{ borderRigth: "0px solid" }}
+                      >
+                        <Typography.Text type="danger">
+                          {comma(Number(formDetail?.total_price || 0))}
+                        </Typography.Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>Baht</Table.Summary.Cell>
+                    </Table.Summary.Row>
+                    <Table.Summary.Row>
+                      <Table.Summary.Cell
+                        index={0}
+                        colSpan={4}
+                      ></Table.Summary.Cell>
+                      <Table.Summary.Cell
+                        index={4}
+                        align="end"
+                        className="!pe-4"
+                      >
+                        Vat
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell
+                        className="!pe-4 text-end border-right-0"
+                        style={{ borderRigth: "0px solid" }}
+                      >
+                        <Form.Item name="vat" className="!m-0">
+                          <InputNumber
+                            className="width-100 input-30 text-end"
+                            addonAfter="%"
+                            controls={false}
+                            min={0}
+                            onFocus={(e) => {
+                              e.target.select();
+                            }}
+                            onChange={() => {
+                              handleSummaryPrice();
+                            }}
+                          />
+                        </Form.Item>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell
+                        className="!pe-4 text-end border-right-0"
+                        style={{ borderRigth: "0px solid" }}
+                      >
+                        <Typography.Text type="danger">
+                          {comma(
+                            Number(
+                              (formDetail.total_price * formDetail?.vat) / 100
+                            )
+                          )}
+                        </Typography.Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>Baht</Table.Summary.Cell>
+                    </Table.Summary.Row>
+                    <Table.Summary.Row>
+                      <Table.Summary.Cell
+                        index={0}
+                        colSpan={5}
                       ></Table.Summary.Cell>
                       <Table.Summary.Cell
                         index={4}
@@ -408,16 +489,14 @@ function MyManage() {
                         Grand Total
                       </Table.Summary.Cell>
                       <Table.Summary.Cell
-                        className="!pe-4 text-end"
+                        className="!pe-4 text-end border-right-0"
                         style={{ borderRigth: "0px solid" }}
                       >
                         <Typography.Text type="danger">
-                          {formatMoney(Number(formDetail?.total_price || 0), 2)}
+                          {comma(Number(formDetail?.grand_total_price || 0))}
                         </Typography.Text>
                       </Table.Summary.Cell>
-                      <Table.Summary.Cell className="!pe-4 text-end">
-                        Baht
-                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>Baht</Table.Summary.Cell>
                     </Table.Summary.Row>
                   </>
                 )}
@@ -452,34 +531,40 @@ function MyManage() {
     >
       <Col span={12} className="p-0">
         <Flex gap={4} justify="start">
-          <ButtonBack target={gotoFrom} />          
+          <ButtonBack target={gotoFrom} />
         </Flex>
-      </Col>      
+      </Col>
       <Col span={12} className="p-0">
         <Flex gap={4} justify="end">
-        {(formDetail.active_status==='Y')?(<Button
-            icon={<TbSquareRoundedX style={{ fontSize: "1.4rem" }} />}
-            type="primary"
-            onClick={() => handleCancleSO()}
-            className="bn-center justify-center"
-            style={{ width: "9.5rem" }}
-            danger
-          >
-            ยกเลิกใบขายสินค้า
-          </Button>
-        ):<></>}
-        {(formDetail.active_status==='Y'||config.action === "create")?(<Button
-            className="bn-center justify-center"
-            icon={<SaveFilled style={{ fontSize: "1rem" }} />}
-            type="primary"
-            style={{ width: "9.5rem" ,marginLeft: "10px"}}
-            onClick={() => {
-              handleConfirm();
-            }}
-          >
-            Save
-          </Button>
-        ):<></>}  
+          {formDetail.active_status === "Y" ? (
+            <Button
+              icon={<TbSquareRoundedX style={{ fontSize: "1.4rem" }} />}
+              type="primary"
+              onClick={() => handleCancleSO()}
+              className="bn-center justify-center"
+              style={{ width: "9.5rem" }}
+              danger
+            >
+              ยกเลิกใบขายสินค้า
+            </Button>
+          ) : (
+            <></>
+          )}
+          {formDetail.active_status === "Y" || config.action === "create" ? (
+            <Button
+              className="bn-center justify-center"
+              icon={<SaveFilled style={{ fontSize: "1rem" }} />}
+              type="primary"
+              style={{ width: "9.5rem", marginLeft: "10px" }}
+              onClick={() => {
+                handleConfirm();
+              }}
+            >
+              Save
+            </Button>
+          ) : (
+            <></>
+          )}
         </Flex>
       </Col>
     </Row>
@@ -497,18 +582,21 @@ function MyManage() {
       </Col>
       <Col span={12} style={{ paddingInline: 0 }}>
         <Flex gap={4} justify="end">
-        {(formDetail.active_status==='Y'||config.action === "create")?(<Button
-            className="bn-center justify-center"
-            icon={<SaveFilled style={{ fontSize: "1rem" }} />}
-            type="primary"
-            style={{ width: "9.5rem" }}
-            onClick={() => {
-              handleConfirm();
-            }}
-          >
-            Save
-          </Button>
-        ):<></>}          
+          {formDetail.active_status === "Y" || config.action === "create" ? (
+            <Button
+              className="bn-center justify-center"
+              icon={<SaveFilled style={{ fontSize: "1rem" }} />}
+              type="primary"
+              style={{ width: "9.5rem" }}
+              onClick={() => {
+                handleConfirm();
+              }}
+            >
+              Save
+            </Button>
+          ) : (
+            <></>
+          )}
         </Flex>
       </Col>
     </Row>
@@ -526,7 +614,7 @@ function MyManage() {
             autoComplete="off"
           >
             {/* style={{ backgroundColor: "red" }} */}
-            <Card 
+            <Card
               title={
                 <>
                   <Row className="m-0 py-3 sm:py-0" gutter={[12, 12]}>

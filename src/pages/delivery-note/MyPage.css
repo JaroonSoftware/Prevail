@@ -1,29 +1,29 @@
-.so-access .ant-table-tbody > tr > td, 
-.so-access .ant-table-thead > tr > th {
+.dn-access .ant-table-tbody > tr > td, 
+.dn-access .ant-table-thead > tr > th {
     white-space: break-spaces;
     vertical-align: top;
 }
 
-.so-access .ant-collapse>.ant-collapse-item:last-child, 
-.so-access .ant-collapse>.ant-collapse-item:last-child>.ant-collapse-header {
+.dn-access .ant-collapse>.ant-collapse-item:last-child, 
+.dn-access .ant-collapse>.ant-collapse-item:last-child>.ant-collapse-header {
     border-radius: 12px;
     background-color: #d9d9d9;
     border: none;
 }
 
-.so-access .ant-collapse .ant-collapse-header,
-.so-access .ant-collapse .ant-collapse-item-active .ant-collapse-header { 
-    border-bottom: 0px solid #fff;
+.dn-access .ant-collapse .ant-collapse-header,
+.dn-access .ant-collapse .ant-collapse-item-active .ant-collapse-header { 
+    border-bottom: 0px dnlid #fff;
     padding-inline-start: 12px;
     background-color: #d9d9d9;
 }
 
 
-.so-access .ant-collapse .ant-collapse-item-active .ant-collapse-content,
-.so-access .ant-collapse .ant-collapse-content {
+.dn-access .ant-collapse .ant-collapse-item-active .ant-collapse-content,
+.dn-access .ant-collapse .ant-collapse-content {
     color: rgba(0, 0, 0, 0.88);
     background-color: #d9d9d9;
-    border-top: 0px solid #d9d9d9;
+    border-top: 0px dnlid #d9d9d9;
     padding-inline: 12px;
 }
 
@@ -40,32 +40,32 @@ h4.ant-typography+.ant-form-item.\!m-0
     margin-bottom: 0px !important;
 }
   
-.so-manage .ant-table-wrapper .ant-table-thead >tr>th, 
-.so-manage .ant-table-wrapper .ant-table-thead >tr>td {
+.dn-manage .ant-table-wrapper .ant-table-thead >tr>th, 
+.dn-manage .ant-table-wrapper .ant-table-thead >tr>td {
     vertical-align: middle;
 }
 
-.so-manage .text-end .ant-input-number-input {
+.dn-manage .text-end .ant-input-number-input {
     text-align: right;
 }
 
-/* .so-manage .ant-drawer-content-wrapper {
+/* .dn-manage .ant-drawer-content-wrapper {
     transform: translateX(0px) !important;
 }  */
 
 @media screen and (max-width: 768px) {
-  .so-manage .ant-drawer-content-wrapper {
+  .dn-manage .ant-drawer-content-wrapper {
      width: 100vw !important; /* Adjust the width for smaller screens */
    } 
 }
 
 @media screen and (min-width: 768px) {
-  .so-manage .ant-drawer-content-wrapper {
+  .dn-manage .ant-drawer-content-wrapper {
       width: 40vw !important; /* Set a fixed width for larger screens */
     } 
 }
 
 
-.so-manage-form .ant-descriptions-item-label{
+.dn-manage-form .ant-descriptions-item-label{
     min-width: 120px;
 }

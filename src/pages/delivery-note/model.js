@@ -10,6 +10,11 @@ import dayjs from 'dayjs';
 import {  EditOutlined, PrinterOutlined } from "@ant-design/icons";
 import { comma } from '../../utils/util';
 
+const calTotalDiscount = (rec) => {
+  const total =  Number(rec?.qty ||  0) * Number(rec?.price ||  0);
+
+  return total ;
+}
 /** export component for edit table */
 export const componentsEditable = {
   body: { row: EditableRow, cell: EditableCell },
@@ -104,9 +109,8 @@ export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrints
 export const productColumn = ({handleRemove,handleSelectChange}) => [
   {
     title: "ลำดับ",
-    dataIndex: "code",
-    key: "code",
-    align: "center",
+    dataIndex: "ind",
+    key: "ind",
     width: 80, 
     render: (im, rc, index) => <>{index + 1}</>,
   },
@@ -115,7 +119,7 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
     dataIndex: "stcode",
     key: "stcode",
     width: 120, 
-    align: "center",
+    align: "left",
   },
   {
     title: "ชื่อสินค้า",
@@ -125,33 +129,55 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
     render: (_, rec) => rec.stname,
   },
   {
-    title: "น้ำหนัก",
-    dataIndex: "unit_weight",
-    key: "unit_weight", 
-    width: "10%",
+    title: "จำนวน",
+    dataIndex: "qty",
+    key: "qty", 
+    width: "8%",
     align: "right",
     className: "!pe-3",
     editable: true,
     required: true,
     type:'number',
-    render: (_, rec) => <>{ comma( Number(rec?.unit_weight ||  0),  2, 0 )}</>,
+    render: (_, rec) => <>{ comma( Number(rec?.qty ||  0),  2, 2 )}</>,
+  },
+  {
+    title: "ราคาขาย",
+    dataIndex: "price",
+    key: "price", 
+    width: "8%",
+    align: "right",
+    className: "!pe-3",
+    editable: true,
+    required: true,
+    type:'number',
+    render: (_, rec) => <>{ comma( Number(rec?.price ||  0),  2, 2 )}</>,
   },
   {
     title: "หน่วยสินค้า",
     dataIndex: "unit",
     key: "unit", 
       align: "right", 
-      width: "10%",
+      width: "8%",
       editable: true,
       type:'select',    
   },
   {
-    title: "วัน/เวลา ทำรายการ",
-    dataIndex: "created_date",
-    key: "created_date",
-    width: "15%",
+    title: "ราคารวม",
+    dataIndex: "total",
+    key: "total",
+    width: "10%",
     align: "right",
     className: "!pe-3",
+    render: (_, rec) => <>{ comma( calTotalDiscount(rec),  2, 2 )}</>,
+  }, 
+  {
+    title: "ตัวเลือก",
+    align: "center",
+    key: "operation",
+    dataIndex: "operation",
+    render: (_, record, idx) => handleRemove(record),
+    width: '90px',
+    fixed: 'right',
   },
 ];
 

@@ -1,10 +1,10 @@
 import React from "react";
-import { Modal, Button, message } from "antd";
+import { Modal, Button } from "antd";
 import { PrinterFilled } from "@ant-design/icons";
 import FormPKBarcode from "./FormPKBarcode";
 import { useReactToPrint } from "react-to-print";
 
-export default function ModalPreviewPKBarcode({ show, close, printRef, printData,isReprint,reFetchAfterPrint }) {
+export default function ModalPreviewPKBarcode({ show, close, printRef, printData }) {
   const handlePrint = () => {
        printProcess();
   };

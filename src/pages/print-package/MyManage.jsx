@@ -29,7 +29,7 @@ import { formatMoney } from "../../utils/util";
 import { ButtonBack } from "../../components/button";
 import { useLocation } from "react-router-dom";
 import { BarcodeOutlined, PrinterOutlined } from "@ant-design/icons";
-import { useReactToPrint } from "react-to-print";
+// import { useReactToPrint } from "react-to-print";
 
 const opservice = OptionService();
 const soservice = SOService();

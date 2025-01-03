@@ -13,9 +13,8 @@ import { TagSalesOrderStatus } from "../../components/badge-and-tag";
 
 const calTotalDiscount = (rec) => {
   const total =  Number(rec?.qty ||  0) * Number(rec?.price ||  0);
-  const discount = 1 - ( Number(rec?.discount ||  0) / 100 );
 
-  return total * discount;
+  return total ;
 }
 /** export component for edit table */
 export const componentsEditable = {
@@ -160,17 +159,6 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
       type:'select',    
   },
   {
-    title: "ส่วนลด(%)",
-    dataIndex: "discount",
-    key: "discount",
-    width: "10%",
-    align: "right",
-    className: "!pe-3",
-    editable: true,
-    type:'number',
-    render: (_, rec) => <>{ comma( Number(rec?.discount ||  0),  2, 2 )}</>,
-  },
-  {
     title: "ราคารวม",
     dataIndex: "total",
     key: "total",
@@ -179,27 +167,6 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
     className: "!pe-3",
     render: (_, rec) => <>{ comma( calTotalDiscount(rec),  2, 2 )}</>,
   },
-  {
-    title: "VAT (%)",
-    dataIndex: "vat",
-    key: "vat", 
-    width: "8%",
-    align: "right",
-    className: "!pe-3",
-    editable: true,
-    required: true,
-    type:'number',
-    render: (_, rec) => <>{ comma( Number(rec?.vat ||  0),  2, 2 )}</>,
-  },  
-  {
-    title: "ราคารวมสุทธิ",
-    dataIndex: "totalnet",
-    key: "totalnet",
-    width: "8%",
-    align: "right",
-    className: "!pe-3",
-    render: (_, rec) => <>{ comma( calTotalDiscount(rec)+calTotalDiscount(rec)*(rec.vat/100),  2, 2 )}</>,
-  }, 
   {
     title: "ตัวเลือก",
     align: "center",
