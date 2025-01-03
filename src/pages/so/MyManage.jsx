@@ -308,7 +308,7 @@ function MyManage() {
               htmlFor="cuscode-1"
               label="รหัสลูกค้า"
               className="!mb-1"
-              rules={[{ required: true, message: "Missing Loading type" }]}
+              rules={[{ required: true, message: "โปรดเลือกลูกค้า" }]}
             >
               <Space.Compact style={{ width: "100%" }}>
                 <Input
@@ -333,7 +333,11 @@ function MyManage() {
             </Form.Item>
           </Col>
           <Col xs={24} sm={24} md={6} lg={6}>
-            <Form.Item label="วันที่นัดส่งสินค้า" name="deldate" className="!m-0">
+            <Form.Item
+              label="วันที่นัดส่งสินค้า"
+              name="deldate"
+              className="!m-0"
+            >
               <DatePicker
                 size="large"
                 placeholder="วันที่นัดส่งสินค้า"
@@ -378,7 +382,14 @@ function MyManage() {
             icon={<LuPackageSearch style={{ fontSize: "1.2rem" }} />}
             className="bn-center justify-center bn-primary-outline"
             onClick={() => {
-              setOpenProduct(true);
+              form
+                .validateFields()
+                .then(() => {
+                  setOpenProduct(true);
+                })
+                .catch((err) => {
+                  message.error("กรุณาเลือกลูกค้าก่อน");
+                });
             }}
           >
             Choose Product

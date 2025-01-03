@@ -59,9 +59,10 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
 			select i.stcode,i.stname, d.price, i.unit,i.vat, UUID() `key`, t.typename
             from catalog_link as a
             inner join catalog_detail d on (a.catalog_code=d.catalog_code)
+            inner join catalog_master m on (a.catalog_code=m.catalog_code)
             inner join items i on (d.stcode=i.stcode)
             left outer join `itemtype` t on i.typecode = t.typecode
-            where a.cuscode= '$cuscode'
+            where a.cuscode= '$cuscode' and (CURDATE() BETWEEN m.start_date AND m.stop_date)
             $type_code";
 
             $stmt = $conn->prepare($sql); 
