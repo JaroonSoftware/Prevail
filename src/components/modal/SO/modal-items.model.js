@@ -21,27 +21,6 @@ export const columns = ()=>{
       dataIndex: "socode", 
     },
     {
-      title: "รูปประกอบ",
-      dataIndex: "file",
-      key: "file",
-      width: 120,
-      align: "center",
-      render: (im, rec) => 
-        {
-          const img = (!!rec.file_name ? `/uploads/` + rec.file_name : `/logo.png`
-          );
-          return <>
-          <Image
-        style={{ borderRadius: 10 }}
-        preview={false}
-        height={75}
-        alt={`Image ${rec.file_name}`}
-        src={`${BACKEND_URL_MAIN}` + img}
-      />
-      </>
-      },
-    },
-    {
       title: "ชื่อสินค้า",
       dataIndex: "stname",
       key: "stname",

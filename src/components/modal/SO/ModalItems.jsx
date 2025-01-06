@@ -82,7 +82,7 @@ export default function ModalSO({show, close,cuscode, values, selected}) {
         selectedRowKeys : itemsRowKeySelect,
         type: "checkbox",
         fixed: true,
-        hideSelectAll:true,
+        // hideSelectAll:true,
         onChange: (selectedRowKeys, selectedRows) => { 
             // setItemsRowKeySelect([...new Set([...selectedRowKeys, ...itemsRowKeySelect])]);
             // setItemsList(selectedRows);

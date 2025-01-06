@@ -29,7 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
         left join customer c on a.cuscode = c.cuscode  
         left join user u on a.created_by = u.code
         left join customer cus on a.cuscode = cus.cuscode  
-        where 1 = 1 and a.doc_status != 'ยกเลิก'
+        where 1 = 1 
         $socode
         $cuscode
         $cusname

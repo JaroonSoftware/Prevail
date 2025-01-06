@@ -68,11 +68,11 @@ function MyManage() {
         const {
           data: { header, detail },
         } = res.data;
-        const { socode, sodate } = header;
+        const { socode, sodate,deldate } = header;
         setFormDetail(header);
         setListDetail(detail);
         setSOCode(socode);
-        form.setFieldsValue({ ...header, sodate: dayjs(sodate) });
+        form.setFieldsValue({ ...header, sodate: dayjs(sodate), deldate: dayjs(deldate) });
 
         // setTimeout( () => {  handleCalculatePrice(head?.valid_price_until, head?.dated_price_until) }, 200);
         // handleChoosedCustomer(head);
@@ -88,6 +88,7 @@ function MyManage() {
           ...formDetail,
           socode: code,
           sodate: dayjs(new Date()),
+          deldate: dayjs(new Date()),
         };
         setFormDetail(ininteial_value);
         form.setFieldsValue(ininteial_value);
@@ -188,6 +189,7 @@ function MyManage() {
         const header = {
           ...formDetail,
           sodate: dayjs(form.getFieldValue("sodate")).format("YYYY-MM-DD"),
+          deldate: dayjs(form.getFieldValue("deldate")).format("YYYY-MM-DD"),
           remark: form.getFieldValue("remark"),
         };
         const detail = listDetail;
