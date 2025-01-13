@@ -20,7 +20,7 @@ try {
 
             $count = 0;
 
-            $strSQL = "SELECT count(package_id) as num FROM `package_barcode` where stcode = '" . $val['stcode'] . "' and socode = '" . $val['socode'] . "'  ";
+            $strSQL = "SELECT count(code) as num FROM `sodetail` where packing_status != 'ยังไม่ปริ้นหน้าถุง' and stcode = '" . $val['stcode'] . "' and socode = '" . $val['socode'] . "'  ";
             $stmt = $conn->prepare($strSQL);
             $stmt->execute();
             $res = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -82,6 +82,24 @@ try {
                     $listbarcode[$ind][$count]['socode'] = $val['socode'];
                     $listbarcode[$ind][$count]['cusname'] = $val['cusname'];
                 }
+
+                $sql = "update sodetail
+                set
+                packing_status = 'ปริ้นหน้าถุงแล้ว'
+                where socode = :socode and stcode = :stcode";
+
+                $stmt4 = $conn->prepare($sql);
+                if (!$stmt4) throw new PDOException("Insert data error => {$conn->errorInfo()}");
+    
+                $stmt4->bindValue(":socode", $val['socode'], PDO::PARAM_STR);
+                $stmt4->bindValue(":stcode", $val['stcode'], PDO::PARAM_STR);
+    
+                if (!$stmt4->execute()) {
+                    $error = $conn->errorInfo();
+                    throw new PDOException("Insert data error => $error");
+                    die;
+                }
+                
             }
             else
             {
@@ -99,6 +117,51 @@ try {
                 $listbarcode[$ind] = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }
         }
+
+            $strSQL = "SELECT count(code) as count FROM `sodetail` where socode = :socode and packing_status != 'ปริ้นหน้าถุงแล้ว' ";
+            $stmt5 = $conn->prepare($strSQL);
+            if (!$stmt5) throw new PDOException("Insert data error => {$conn->errorInfo()}");
+
+            $stmt5->bindParam(":socode", $val['socode'], PDO::PARAM_STR);
+
+            if (!$stmt5->execute()) {
+                $error = $conn->errorInfo();
+                throw new PDOException("Insert data error => $error");
+                die;
+            }
+
+            $res = $stmt5->fetch(PDO::FETCH_ASSOC);
+            extract($res, EXTR_OVERWRITE, "_");
+            if ($count == 0) {
+
+                $sql = "
+                update somaster 
+                set
+                doc_status = 'รอออกใบส่งของ',
+                updated_date = CURRENT_TIMESTAMP(),
+                updated_by = :action_user
+                where socode = :socode";
+            } else {
+                $sql = "
+                update somaster 
+                set
+                doc_status = 'ปริ้นใบปะยังไม่ครบ',
+                updated_date = CURRENT_TIMESTAMP(),
+                updated_by = :action_user
+                where socode = :socode";
+            }
+
+            $stmt3 = $conn->prepare($sql);
+            if (!$stmt3) throw new PDOException("Insert data error => {$conn->errorInfo()}");
+
+            $stmt3->bindParam(":action_user", $action_user, PDO::PARAM_INT);
+            $stmt3->bindValue(":socode", $val['socode'], PDO::PARAM_STR);
+
+            if (!$stmt3->execute()) {
+                $error = $conn->errorInfo();
+                throw new PDOException("Insert data error => $error");
+                die;
+            }
 
         $conn->commit();
         http_response_code(200);

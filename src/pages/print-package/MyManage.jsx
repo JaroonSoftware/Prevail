@@ -337,6 +337,7 @@ function MyManage() {
             icon={<PrinterOutlined style={{ fontSize: "1.2rem" }} />}
             className="bn-center justify-center bn-primary-outline"
             onClick={() => {
+              
               handlePrint();
             }}
           >
