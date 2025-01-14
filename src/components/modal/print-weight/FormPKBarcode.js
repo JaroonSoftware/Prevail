@@ -3,56 +3,39 @@ import { Card, QRCode } from "antd";
 
 const keyStyled = {
   fontSize: "20px",
-  fontWeight: "920",
+  fontWeight: "920px",
 };
-
-
 
 const FormPKBarcode = forwardRef(({ printData }, ref) => {
   return (
-    
-    <div ref={ref} style={{pageBreakAfter: "always"}}>
+    <div ref={ref} >
       {printData.map((maindata, index) =>
         maindata.map((data, index) => (
-          <Card
-            title={null}
-            style={{
-              marginBottom: "20px",
-              pageBreakAfter:  "always",
-            }}
-            key={1}
-          >
-            <table style={{  width: "100%" ,height: "100%",}}>
+          <Card title={null} key={1} style={{ pageBreakAfter: "always", marginTop: 5}}>
+            <table style={{ height: "150px"}}>
               <tr>
-                <th
-                  style={{
-                    textAlign: "left",
-                    fontSize: "22px",
-                  }}
-                  colSpan={2}
+                <td
+                 style={{fontWeight: "bold", fontSize: "20px", width: "320px"}}
                 >
                   {data?.stcode}/{data?.package_id}
-                </th>
+                </td>
               </tr>
               <tr>
-                <td style={{ ...keyStyled, fontSize: "22px",width: "60%" }} colSpan={2}>
+                <td
+                  style={{fontWeight: "bold", fontSize: "18px"}}
+                  colSpan={2}
+                >
                   {data?.stname}
                 </td>
                 <td rowSpan={3}>
-                  <QRCode
-                    size={100}
-                    style={{ height: "auto" }}
-                    value={data?.package_id}
-                  />
+                  <QRCode size={80} value={data.package_id.toString()} />
                 </td>
               </tr>
               <tr>
-                <td style={keyStyled}>
-                  {data?.weight} KG
-                </td>
+                <td style={{fontWeight: "bold", fontSize: "18px"}}>{data?.weight} KG</td>
               </tr>
               <tr>
-                <td style={{keyStyled, fontSize: "14px"}} colSpan={2}>
+                <td style={{ fontSize: "14px" }} colSpan={2}>
                   {data?.cusname} {data?.socode}
                 </td>
               </tr>
