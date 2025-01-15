@@ -52,6 +52,7 @@ try {
                     $listbarcode[$ind][$count]['stname'] = $val['stname'];
                     $listbarcode[$ind][$count]['socode'] = $val['socode'];
                     $listbarcode[$ind][$count]['cusname'] = $val['cusname'];
+                    $listbarcode[$ind][$count]['cuscode'] = $val['cuscode'];
                     
                 }
 
@@ -81,11 +82,12 @@ try {
                     $listbarcode[$ind][$count]['stname'] = $val['stname'];
                     $listbarcode[$ind][$count]['socode'] = $val['socode'];
                     $listbarcode[$ind][$count]['cusname'] = $val['cusname'];
+                    $listbarcode[$ind][$count]['cuscode'] = $val['cuscode'];
                 }
             }
             else
             {
-                $strSQL = "SELECT a.stcode,a.weight,a.package_id,i.stname,a.socode,c.cusname FROM `package_barcode` as a
+                $strSQL = "SELECT a.stcode,a.weight,a.package_id,i.stname,a.socode,c.cusname,c.cuscode FROM `package_barcode` as a
                 inner join items as i on (a.stcode=i.stcode)
                 inner join somaster as s on (a.socode=s.socode)
                 inner join customer as c on (s.cuscode=c.cuscode)
