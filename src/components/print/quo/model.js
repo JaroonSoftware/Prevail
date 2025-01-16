@@ -1,52 +1,44 @@
-// import { Typography } from "antd";
+import { Typography } from "antd";
 import { comma } from "../../../utils/util";
 
-export const pickuplistColumn = () => [
+export const column = [
   {
-    title: "ลำดับ",
-    dataIndex: "ind",
-    key: "ind",
-    width: 80,
-    render: (im, rc, index) => <>{index + 1}</>,
+    title: <>ลำดับ</>,
+    key: "index",
+    align: "center",
+    width: "10%",
+    render: (_, record, idx) => (
+      <Typography.Text className="tx-info">{idx + 1}</Typography.Text>
+    ),
   },
   {
-    title: "ประเภทสินค้า",
-    key: "typename",
-    dataIndex: "typename",
-    align: "left",
-    render: (_, rec) => rec.typename,
-  },
-  {
-    title: "รหัสสินค้า",
-    dataIndex: "stcode",
-    key: "stcode",
-    width: 120,
-    align: "left",
-  },
-  {
-    title: "ชื่อสินค้า",
+    title: <>รายการสินค้า</>,
+    align: "center",
     key: "stname",
     dataIndex: "stname",
-    align: "left",
-    render: (_, rec) => rec.stname,
   },
   {
-    title: "จำนวน",
-    key: "qty",
-    dataIndex: "qty",
+    title: <>หน่วย</>,
     align: "right",
-    className: "!pe-3",
-    editable: true,
-    required: true,
-    type: 'number',
-    render: (_, rec) => <>{comma(Number(rec?.qty || 0), 2, 2)}</>,
-    // width:'12%',
+    width: 100,
+    key: "unit",
+    dataIndex: "unit",
   },
   {
-    title: "หน่วยสินค้า",
-    dataIndex: "unit",
-    key: "unit", 
-      align: "right", 
-      width: "8%",
+    title: <>ราคา</>,
+    align: "right",
+    width: 100,
+    key: "price",
+    dataIndex: "price",
+    onCell: () => ({
+      style: {
+        borderRight: "1px solid var(---color--1)",
+      },
+    }),
+    // render: (_, record) => (
+    //   <Typography.Text className="tx-info">
+    //     {comma(Number(record.price), 2, 2)}
+    //   </Typography.Text>
+    // ),
   },
 ];

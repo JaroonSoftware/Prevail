@@ -1,11 +1,6 @@
 import React, { forwardRef } from "react";
 import { Card, QRCode } from "antd";
 
-const keyStyled = {
-  fontSize: "20px",
-  fontWeight: "920px",
-};
-
 const FormPKBarcode = forwardRef(({ printData }, ref) => {
   return (
     <div ref={ref} >
