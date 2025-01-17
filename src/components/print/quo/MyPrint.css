@@ -138,7 +138,7 @@
   }
   
   .quopv-pages .print-content {
-    width: 100%;
+    width: 50%;
     position: relative;
     /* height: 211.34mm;  */
     display: flex;
@@ -283,7 +283,6 @@
     border-bottom: 0px solid #f0f0f0;
 }
 
- 
 .quopv-pages .ant-table-wrapper .ant-table.ant-table-small .ant-table-title, 
 .quopv-pages .ant-table-wrapper .ant-table.ant-table-small .ant-table-footer, 
 .quopv-pages .ant-table-wrapper .ant-table.ant-table-small .ant-table-cell, 
