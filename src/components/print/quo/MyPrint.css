@@ -1,15 +1,15 @@
 @media print {
   @page {
     size: A4;
-    font-family: open sans, Helvetica, Arial, sans-serif; 
+    font-family: "Angsana New"; 
   }
-  #pickup.page-show {
+  #quo.page-show {
     visibility: visible;
     margin: 0px !important;
     padding: 0px !important;
     display: block;
   }
-  .pickup-pages { 
+  .quopv-pages { 
     letter-spacing: .48px;
     width: 21cm; /* A4 width */
     height: 29.7cm; /* A4 height */
@@ -25,27 +25,16 @@
     /* top: 0;  */
     box-shadow: none !important;
     border-radius: 0px !important;
-    font-family: var(--font-family); 
-    background-color: #ffffff;
-    /* box-sizing: border-box; */
+    font-family: "Angsana New"; 
   } 
+
   
-  .pickup-pages .ant-table-wrapper .ant-table-thead >tr>th, 
-  .pickup-pages .ant-table-wrapper .ant-table-thead >tr>td { 
+  .quopv-pages .ant-table-wrapper .ant-table-thead >tr>th, 
+  .quopv-pages .ant-table-wrapper .ant-table-thead >tr>td { 
     background-color: #ffffff;
     color: #000000;
-    border: 1px solid #000;
-    font-size: 12pt;
-  }
-   
-  .pickup-pages .ant-table-wrapper .ant-table-body tr td.ant-table-cell { 
-    background-color: #ffffff;
-    color: #000000;
-    border: 1px solid #000;
-    font-size: 12pt;
-    height: 32px;
-    max-height: 32px;
-    min-height: 32px;
+    border-bottom: 0.5px solid ;
+    font-size: 16px;
   }
 
   .page-break {
@@ -53,10 +42,10 @@
   }
 }
  
-  #pickup.page-show {
+  #quo.page-show {
     ---width-padding-param : 4mm;
     ---width-param : 0mm;
-    ---width-items : calc( 21cm - var(---width-param) );  
+    ---width-items : calc( 21cm - var(---width-param) );
     width: 100%;
     height: 100vh;
     position: relative;
@@ -70,12 +59,12 @@
     background-color: #d9d9d9;
   }
 
-  #pickup .title-preview { 
+  #quo .title-preview { 
     width: calc( 21cm + (var(---width-padding-param) * 2) ); /* A4 width */
     box-sizing: border-box;
   }
 
-  #pickup .layout-preview {
+  #quo .layout-preview {
     padding: var(---width-padding-param);
     width: calc( 21cm + (var(---width-padding-param) * 2) ); /* A4 width */
     /* min-height: 29.7cm;*/
@@ -90,37 +79,34 @@
     position: relative;
   }
 
-  .pickup-pages {
+  .quopv-pages {
+    ---color--1 : #000;
     position: relative;
     width: 21cm;
     min-height: 29.7cm;
   }
 
-  .pickup-pages .print-logo {
+  .quopv-pages .print-logo {
     position: absolute;
     right: 1.5mm;
     top: 1.5mm;
     left: auto;
   }
   
-  .pickup-pages .print-title {
+  .quopv-pages .print-title {
     width: 100%;
-    /* border-bottom: 2px solid #508ecc; */
+    /* border-bottom: 2px solid var(---color--1); */
   }
 
-  .pickup-pages .print-title p {
+  .quopv-pages .print-title p {
     margin-bottom: .234rem;
   }
 
-  .pickup-pages .print-head .print-title { 
-    border-bottom: 2px solid #508ecc;
-  }
-
-  .pickup-pages .print-foot .print-title { 
-    border-top: 2px solid #508ecc;
+  .quopv-pages .print-foot .print-title { 
+    border-top: 2px solid ;
   }
   
-  .pickup-pages .print-head{
+  .quopv-pages .print-head{
     width: 100%;
     position: relative;
     /* height: 26.8mm; */
@@ -129,10 +115,10 @@
     display: flex;
   }
   
-  .pickup-pages .print-head-content{
+  .quopv-pages .print-head-content{
     width: 100%;
     position: relative;
-    /* height: 40mm;  */
+    height: 28mm; 
     padding-block: 1.4mm;
     padding-inline: 1.4mm;
     border-bottom: 0px solid #000; 
@@ -140,7 +126,7 @@
     flex-direction: column;
   }
   
-  .pickup-pages .print-foot{
+  .quopv-pages .print-foot{
     width: 100%;
     position: relative;
     /* height: 40mm;  */
@@ -151,8 +137,8 @@
     display: flex;
   }
   
-  .pickup-pages .print-content {
-    width: 100%;
+  .quopv-pages .print-content {
+    width: 50%;
     position: relative;
     /* height: 211.34mm;  */
     display: flex;
@@ -162,112 +148,127 @@
     border-bottom: 0px solid #000;  
   }
   
-  .pickup-pages .th-text{
-    font-size: 13pt;
+  .quopv-pages .th-text{
+    font-size: 18pt;
     font-weight: 700; 
   }
   
-  .pickup-pages .ts-text{
-    font-size: 10pt;
+  .quopv-pages .ts-text{
+    font-size: 18pt;
     font-weight: 700; 
   }
   
-  .pickup-pages .h-group-text {
+  .quopv-pages .h-group-text {
     font-weight: 600;
     display: flex; 
-    font-size: 10pt;
+    font-size: 18pt;
   }
   
-  .pickup-pages span.h-label {
+  .quopv-pages span.h-label {
     width: 180px;
   }
   
-  .pickup-pages .h-group-text span {
+  .quopv-pages .h-group-text span {
     line-height: 1.5rem;
   }
   
-  .pickup-pages .h-title {
+  .quopv-pages .h-title {
     display: flex;
     align-items: flex-start;
     font-weight: 600;
   }
   
-  .pickup-pages  .print-layout .c-text{
+  .quopv-pages  .print-layout .c-text{
     display: flex;
     align-items: flex-start;
-    font-size: 10pt;
+    font-size: 18pt;
     font-weight: 400;
   }
   
-  .pickup-pages .tx-form{
-    font-size: 11px;
+  .quopv-pages .tx-form{
+    font-size: 18px;
     line-height: 18px;
   }
   
-  .pickup-pages .sec-item {
+  .quopv-pages .sec-item {
     width: var(---width-items);
     display: flex;
     flex-direction: column;
   }
   
   
-  .pickup-pages .sec-parm {
+  .quopv-pages .sec-parm {
     width: var(---width-param);
     display: flex;
     flex-direction: column;
   } 
 
-  .pickup-pages .ant-typography {
-    font-family: inherit; 
+  .quopv-pages .ant-typography {
+    font-family: "Angsana New"; 
     box-sizing: border-box;
     vertical-align: top;
   }
   
-  .pickup-pages .ant-card {
+  .quopv-pages .ant-card {
     background: #ffffff;
     border-radius: 0;
     box-shadow: none; 
-    font-family: inherit !important;
+    font-family: "Angsana New" !important;
   }
 
-  .pickup-pages [class^="ant-table"], .pickup-pages [class*=" ant-table"] {
-    font-family: inherit;
-    font-size: 14px;
+  .quopv-pages [class^="ant-table"], .quopv-pages [class*=" ant-table"] {
+    font-family: "Angsana New";
+    font-size: 18px;
     box-sizing: border-box;
   }
-  .pickup-pages .ant-table-wrapper .ant-table {
-    font-family: inherit;
+  .quopv-pages .ant-table-wrapper .ant-table {
+    font-family: "Angsana New";
   }
 
 
-  .pickup-pages .ant-table-wrapper .ant-table-thead >tr>th, 
-  .pickup-pages .ant-table-wrapper .ant-table-thead >tr>td { 
-    background-color: #ffffff;
-    color: #000000;
-    border: 1px solid #000;
-    font-size: 12pt;
+  .quopv-pages .ant-table-wrapper .ant-table-thead >tr>th, 
+  .quopv-pages .ant-table-wrapper .ant-table-thead >tr>td { 
+    background-color: #D9F2D0;
+    /* color: #e9e5e5; */
+    border-left: 1px solid;
+    border-top: 1px solid;
+    border-bottom: 1px solid;
+    font-size: 14px;
+    vertical-align: middle;
   }
 
-  .pickup-pages .text-sm { 
+  .quopv-pages .ant-table-wrapper .ant-table-thead>tr>th:last-child{
+    border-right: 1px solid;
+  }
+
+  .quopv-pages .text-sm { 
     color: #242121; 
   }
  
-  .pickup-pages .ant-table-wrapper .ant-table-tbody >tr >td {
+  .quopv-pages .ant-table-wrapper .ant-table-tbody >tr >td {
     transition: none;
-    border: 1px solid #000;
+    border: 0px solid ;
     white-space: break-spaces;
-    font-size: 12pt;
+    font-size: 14px;
     vertical-align: top;
   }
-  .pickup-pages .ant-table-wrapper .ant-table-tbody tr:last-child td {
-    border: 1px solid #000;
+  .quopv-pages .ant-table-wrapper .ant-table-tbody tr:last-child td {
+    border-bottom: 0.5px solid ;
+  }
+
+  .quopv-pages .ant-table-wrapper .ant-table-container table>thead>tr:first-child >*:first-child {
+    border-start-start-radius: 0px;
+  }
+
+  .quopv-pages .ant-table-wrapper .ant-table-container table>thead>tr:first-child >*:last-child {
+    border-start-end-radius: 0px;
   }
  
-  /* .pickup-pages .ant-table-wrapper .ant-table-tbody >tr:nth-child(even) >td {
+  /* .quopv-pages .ant-table-wrapper .ant-table-tbody >tr:nth-child(even) >td {
     background-color: aliceblue;
   } */
-  .pickup-pages .ant-table-wrapper .ant-table-thead >tr>th:not(:last-child):not(.ant-table-selection-column):not(.ant-table-row-expand-icon-cell):not([colspan])::before, 
-  .pickup-pages .ant-table-wrapper .ant-table-thead >tr>td:not(:last-child):not(.ant-table-selection-column):not(.ant-table-row-expand-icon-cell):not([colspan])::before {
+  .quopv-pages .ant-table-wrapper .ant-table-thead >tr>th:not(:last-child):not(.ant-table-selection-column):not(.ant-table-row-expand-icon-cell):not([colspan])::before, 
+  .quopv-pages .ant-table-wrapper .ant-table-thead >tr>td:not(:last-child):not(.ant-table-selection-column):not(.ant-table-row-expand-icon-cell):not([colspan])::before {
     position: absolute;
     top: 50%;
     inset-inline-end: 0;
@@ -277,45 +278,94 @@
     content: "";
  }
 
-.pickup-pages .ant-table-wrapper .ant-table-summary >tr >th, 
-.pickup-pages .ant-table-wrapper .ant-table-summary >tr >td {
-  border: 1px solid #000;
+.quopv-pages .ant-table-wrapper .ant-table-summary >tr >th, 
+.quopv-pages .ant-table-wrapper .ant-table-summary >tr >td {
+    border-bottom: 0px solid #f0f0f0;
 }
 
- 
-.pickup-pages .ant-table-wrapper .ant-table.ant-table-small .ant-table-title, 
-.pickup-pages .ant-table-wrapper .ant-table.ant-table-small .ant-table-footer, 
-.pickup-pages .ant-table-wrapper .ant-table.ant-table-small .ant-table-cell, 
-.pickup-pages .ant-table-wrapper .ant-table.ant-table-small .ant-table-thead>tr>th, 
-.pickup-pages .ant-table-wrapper .ant-table.ant-table-small .ant-table-tbody>tr>th, 
-.pickup-pages .ant-table-wrapper .ant-table.ant-table-small .ant-table-tbody>tr>td, 
-.pickup-pages .ant-table-wrapper .ant-table.ant-table-small tfoot>tr>th, 
-.pickup-pages .ant-table-wrapper .ant-table.ant-table-small tfoot>tr>td {
+.quopv-pages .ant-table-wrapper .ant-table.ant-table-small .ant-table-title, 
+.quopv-pages .ant-table-wrapper .ant-table.ant-table-small .ant-table-footer, 
+.quopv-pages .ant-table-wrapper .ant-table.ant-table-small .ant-table-cell, 
+.quopv-pages .ant-table-wrapper .ant-table.ant-table-small .ant-table-thead>tr>th,
+.quopv-pages .ant-table-wrapper .ant-table.ant-table-small tfoot>tr>th, 
+.quopv-pages .ant-table-wrapper .ant-table.ant-table-small tfoot>tr>td {
   padding: 2px 6px;
-  font-family: inherit;
-  background: #fff !important;
+  font-family: "Angsana New";
   transform: unset !important;
 }
 
+ 
+.quopv-pages .ant-table-wrapper .ant-table.ant-table-small .ant-table-tbody>tr>th, 
+.quopv-pages .ant-table-wrapper .ant-table.ant-table-small .ant-table-tbody>tr>td
+{
+  background: #fff;
+}
+
+.quopv-pages tr.ant-table-row.ant-table-row-level-0.r-sub td {
+  border-left: 1px solid ;
+  padding-bottom: 18px !important; 
+}
+
+/* .quopv-pages tr.ant-table-row.ant-table-row-level-0.r-sub:first-child::after{
+  content: '';
+  border-bottom: 1px solid #ffffff !important;
+}
+.quopv-pages tr.ant-table-row.ant-table-row-level-0.r-sub::after {
+  content: ' ';
+  border-bottom: 1px solid var(---color--1) !important;
+  width: 100%;
+  position: absolute;
+  left: 0;
+} */
+.quopv-pages tr.r-sum td.ant-table-cell.text-summary{
+  /* border-top: 1px solid ; */
+  border-left: 1px solid ;
+  height: 27px;
+  border-bottom: 1px solid  !important;
+}
+.quopv-pages tr.r-sum td.ant-table-cell.text-summary:last-child { 
+  border-right: 1px solid ;
+}
+
+.quopv-pages  .ant-table-wrapper .ant-table-summary tr.rl td.ant-table-cell.text-summary {
+  border-bottom: 1px solid  !important;
+  /* background-color: #77b1f6;
+  color: #ffffff !important; */
+}
 
 
-.pickup-pages .ant-card.ant-card-small >.ant-card-head {
+.quopv-pages .ant-card.ant-card-small >.ant-card-head {
     min-height: 30px;
     padding: 0 2px;
     padding-inline-start: 6px;
-    font-size: 10.8pt;
+    font-size: 14px;
     color: #000;
-    background-color: #508ecc;
+    /* background-color: var(---color--1); */
     border-radius: 0;
 }
 
-.pickup-pages .ant-card-bordered {
+.quopv-pages .ant-card-bordered {
     border: 0px solid #f0f0f0;
-    /* background-color: #bebebe; */
     border-radius: 0px;
 }
 
-.pickup-pages .ant-card .ant-card-head, 
-.pickup-pages .ant-card .ant-card-body {
+.quopv-pages .ant-card .ant-card-head, 
+.quopv-pages .ant-card .ant-card-body {
   padding: 0px;
+}
+
+.quopv-pages .tx-title {
+  font-size: 16px;
+  font-family: "Angsana New";
+}
+
+.quopv-pages .tx-info {
+  font-size: 14px;
+  font-family: "Angsana New";
+}
+
+.quopv-pages .tx-sub {
+  font-size: 11px;
+  line-height: 1.4rem;
+  font-family: "Angsana New";
 }
