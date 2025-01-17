@@ -9,9 +9,9 @@ import { SearchOutlined, ClearOutlined } from "@ant-design/icons";
 import { accessColumn } from "./model";
 
 import dayjs from "dayjs";
-import SOService from "../../service/SO.service";
+import PackageService from "../../service/Package.service";
 
-const soservice = SOService();
+const pkservice = PackageService();
 const mngConfig = {
   title: "",
   textOk: null,
@@ -172,7 +172,7 @@ const MyAccess = () => {
   const column = accessColumn({ handleEdit, handlePrintsData });
 
   const getData = (data) => {
-    soservice
+    pkservice
       .search(data, { ignoreLoading: loading })
       .then((res) => {
         const { data } = res.data;

@@ -13,7 +13,6 @@ import {
 } from "antd";
 import { Card, Col, Divider, Flex, Row, Space } from "antd";
 import OptionService from "../../service/Options.service";
-import SOService from "../../service/SO.service";
 import PackageService from "../../service/Package.service";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
 import ModalPreviewPKBarcode from "../../components/modal/print-weight/ModalPreviewPKBarcode";
@@ -32,7 +31,6 @@ import { BarcodeOutlined, PrinterOutlined } from "@ant-design/icons";
 // import { useReactToPrint } from "react-to-print";
 
 const opservice = OptionService();
-const soservice = SOService();
 const pkservice = PackageService();
 
 const gotoFrom = "/print-weight";
@@ -70,8 +68,7 @@ function MyManage() {
 
   useEffect(() => {
     const initial = async () => {
-      if (config?.action !== "create") {
-        const res = await soservice
+        const res = await pkservice
           .get(config?.code)
           .catch((error) => message.error("get SaleOrder data fail."));
         const {
@@ -83,24 +80,6 @@ function MyManage() {
         setSOCode(socode);
         form.setFieldsValue({ ...header, sodate: dayjs(sodate) });
 
-        // setTimeout( () => {  handleCalculatePrice(head?.valid_price_until, head?.dated_price_until) }, 200);
-        // handleChoosedCustomer(head);
-      } else {
-        const { data: code } = (
-          await soservice.code().catch((e) => {
-            message.error("get SaleOrder code fail.");
-          })
-        ).data;
-        setSOCode(code);
-        form.setFieldValue("vat", 7);
-        const ininteial_value = {
-          ...formDetail,
-          socode: code,
-          sodate: dayjs(new Date()),
-        };
-        setFormDetail(ininteial_value);
-        form.setFieldsValue(ininteial_value);
-      }
       const [unitOprionRes] = await Promise.all([
         opservice.optionsUnit({ p: "unit-option" }),
       ]);
@@ -337,7 +316,7 @@ function MyManage() {
             icon={<PrinterOutlined style={{ fontSize: "1.2rem" }} />}
             className="bn-center justify-center bn-primary-outline"
             onClick={() => {
-              
+            if (selectedData.length < 1) throw message.error("กรุณาเลือกสินค้าก่อนปริ้น");
               handlePrint();
             }}
           >
