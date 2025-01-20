@@ -18,9 +18,8 @@ try {
         extract($_POST, EXTR_OVERWRITE, "_");
 
         // var_dump($_POST);
-        $sql = "insert ivmaster (`ivcode`, `ivdate`, `cuscode`,`qtcode`,
-        `payment`,`deldate`, `total_price`, `balance`,`remark`,created_by,updated_by) 
-        values (:ivcode,:ivdate,:cuscode,:qtcode,:payment,:deldate,:total_price,:balance,
+        $sql = "insert ivmaster (`ivcode`, `ivdate`, `cuscode`,`payment`,`deldate`, `total_price`,`remark`,created_by,updated_by) 
+        values (:ivcode,:ivdate,:cuscode,:payment,:deldate,:total_price,
         :remark,:action_user,:action_user)";
 
         $stmt = $conn->prepare($sql);
@@ -30,11 +29,9 @@ try {
         $stmt->bindParam(":ivcode", $header->ivcode, PDO::PARAM_STR);
         $stmt->bindParam(":ivdate", $header->ivdate, PDO::PARAM_STR);
         $stmt->bindParam(":cuscode", $header->cuscode, PDO::PARAM_STR);
-        $stmt->bindParam(":qtcode", $header->qtcode, PDO::PARAM_STR);
         $stmt->bindParam(":payment", $header->payment, PDO::PARAM_STR);
         $stmt->bindParam(":deldate", $header->deldate, PDO::PARAM_STR);
         $stmt->bindParam(":total_price", $header->total_price, PDO::PARAM_STR);
-        $stmt->bindParam(":balance", $header->grand_total_price, PDO::PARAM_STR);
         $stmt->bindParam(":remark", $header->remark, PDO::PARAM_STR);
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_STR);
 
@@ -134,8 +131,7 @@ try {
         cuscode = :cuscode,
         payment = :payment,
         deldate = :deldate,
-        total_price = :total_price,
-        balance = :balance,        
+        total_price = :total_price,    
         remark = :remark,
         updated_date = CURRENT_TIMESTAMP(),
         updated_by = :action_user
@@ -151,7 +147,6 @@ try {
         $stmt->bindParam(":payment", $header->payment, PDO::PARAM_STR);
         $stmt->bindParam(":deldate", $header->deldate, PDO::PARAM_STR);
         $stmt->bindParam(":total_price", $header->total_price, PDO::PARAM_STR);
-        $stmt->bindParam(":balance", $header->grand_total_price, PDO::PARAM_STR);
         $stmt->bindParam(":remark", $header->remark, PDO::PARAM_STR);
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_INT);
         $stmt->bindParam(":ivcode", $header->ivcode, PDO::PARAM_STR);
@@ -217,8 +212,8 @@ try {
         echo json_encode(array("status" => 1));
     } else  if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $code = $_GET["code"];
-        $sql = "SELECT a.ivcode,a.ivdate,a.qtcode,a.deldate,a.cuscode,CONCAT(c.prename,' ',c.cusname) as cusname,CONCAT(COALESCE(c.idno, '') ,' ', COALESCE(c.road, ''),' ', COALESCE(c.subdistrict, ''),' ', COALESCE(c.district, ''),' ',COALESCE(c.zipcode, '') ) as address
-        ,c.zipcode,c.contact,c.tel,c.fax,a.payment,a.total_price,a.balance,a.remark ";
+        $sql = "SELECT a.ivcode,a.ivdate,a.deldate,a.cuscode,CONCAT(c.prename,' ',c.cusname) as cusname,CONCAT(COALESCE(c.idno, '') ,' ', COALESCE(c.road, ''),' ', COALESCE(c.subdistrict, ''),' ', COALESCE(c.district, ''),' ',COALESCE(c.zipcode, '') ) as address
+        ,c.zipcode,c.contact,c.tel,c.fax,a.payment,a.total_price,a.remark ";
         $sql .= " FROM `ivmaster` as a ";
         $sql .= " inner join `customer` as c on (a.cuscode)=(c.cuscode)";
         $sql .= " where a.ivcode = :code";

@@ -182,7 +182,6 @@ function InvoiceManage() {
     ];
     const customers = {
       ...val,
-      qtcode: "",
       cusname: cusname.join(""),
       address: addr.join(""),
       contact: val.contact,

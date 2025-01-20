@@ -154,11 +154,11 @@ const MyAccess = () => {
         });
     }; 
 
-    const handlePrint = (recode) => {
-        const newWindow = window.open('', '_blank');
-        newWindow.location.href = `/quo-print/${recode.qtcode}`;
-      };
-    
+    const handlePrint = (code) => { 
+        const url = `/iv-print/${code.ivcode}`;
+        const newWindow = window.open('', url, url);
+        newWindow.location.href = url;
+      }
 
     const column = accessColumn( {handleEdit, handleDelete, handlePrint });
 
