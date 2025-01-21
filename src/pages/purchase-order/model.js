@@ -11,7 +11,7 @@ import { EditOutlined, PrinterOutlined } from "@ant-design/icons";
 import { comma } from '../../utils/util';
 
 const calTotalDiscount = (rec) => {
-  const total =  Number(rec?.qty ||  0) * Number(rec?.price ||  0);
+  const total =  Number(rec?.qty ||  0) * Number(rec?.buyprice ||  0);
   const discount = 1 - ( Number(rec?.discount ||  0) / 100 );
 
   return total * discount;
@@ -273,8 +273,8 @@ export const purchaseorderForm = {
   tel: null,
   remark: null,
   total_price: 0,
-  vat: 7,
-  grand_total_price: 0,
+  // vat: 7,
+  // grand_total_price: 0,
 }
 
 export const purchaseorderDetailForm = {  
@@ -285,6 +285,7 @@ export const purchaseorderDetailForm = {
   qty : 0,
   price : 0,
   unit: null,
+  val: null,
 }
 
 

@@ -11,11 +11,11 @@ import {
   message,
   Select,
 } from "antd";
-import { Card, Col, Divider, Flex, Row, Space } from "antd";
+import { Card, Col, Divider, Flex, Row, Space,Popconfirm } from "antd";
 
 import OptionService from "../../service/Options.service";
 import PurchaseOrderService from "../../service/PurchaseOrder.service";
-import { SaveFilled, SearchOutlined } from "@ant-design/icons";
+import { SaveFilled, SearchOutlined,QuestionCircleOutlined } from "@ant-design/icons";
 import ModalSupplier from "../../components/modal/supplier/ModalSupplier";
 
 import {
@@ -32,8 +32,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { LuPackageSearch } from "react-icons/lu";
 import { LuPrinter } from "react-icons/lu";
+import { CloseCircleFilledIcon } from '../../components/icon';
+
 const opservice = OptionService();
-const quservice = PurchaseOrderService();
+const poservice = PurchaseOrderService();
 
 const gotoFrom = "/purchase-order";
 const dateFormat = 'DD/MM/YYYY';
@@ -67,7 +69,7 @@ function PurchaseOrderManage() {
   useEffect(() => {
     const initial = async () => {
       if (config?.action !== "create") {
-        const res = await quservice
+        const res = await poservice
           .get(config?.code)
           .catch((error) => message.error("get PurchaseOrder data fail."));
         const {
@@ -83,7 +85,7 @@ function PurchaseOrderManage() {
         // handleChoosedSupplier(head);
       } else {
         const { data: code } = (
-          await quservice.code().catch((e) => {
+          await poservice.code().catch((e) => {
             message.error("get PurchaseOrder code fail.");
           })
         ).data;
@@ -120,9 +122,9 @@ function PurchaseOrderManage() {
       (a, v) =>
         a +=
           Number(v.qty || 0) *
-          Number(v?.price || 0) *
+          Number(v?.buyprice || 0) *
           (1 - Number(v?.discount || 0) / 100)+(Number(v.qty || 0) *
-          Number(v?.price || 0) *
+          Number(v?.buyprice || 0) *
           (1 - Number(v?.discount || 0) / 100)*(v.vat/100)),
       0
     );
@@ -201,7 +203,7 @@ function PurchaseOrderManage() {
         const parm = { header, detail };
         // console.log(parm)
         const actions =
-          config?.action !== "create" ? quservice.update : quservice.create;
+          config?.action !== "create" ? poservice.update : poservice.create;
         actions(parm)
           .then((r) => {
             handleClose().then((r) => {
@@ -220,6 +222,19 @@ function PurchaseOrderManage() {
         });
       });
   };
+
+  const handleCancel = () => {
+      poservice.deleted(config?.code).then( _ => {
+        handleClose().then((r) => {
+          message.success( "ยกเลิกใบสั่งซื้อเรียบร้อย." ); 
+        });
+      })
+      .catch( err => {
+          console.warn(err);
+          const { data:{ message:mes } } = err.response;
+          message.error( mes || "error request"); 
+      });
+  }
 
   const handleClose = async () => {
     navigate(gotoFrom, { replace: true });
@@ -381,6 +396,7 @@ function PurchaseOrderManage() {
             onClick={() => {
               setOpenProduct(true);
             }}
+            disabled={formDetail.doc_status !== "ยังไม่ได้รับของ"}
           >
             Choose Product
           </Button>
@@ -469,7 +485,26 @@ function PurchaseOrderManage() {
         </Flex>
       </Col>
       <Col span={12} style={{ paddingInline: 0 }}>
-        <Flex gap={4} justify="end">
+      <Flex gap={4} justify="end">
+      {(formDetail.doc_status === "ยังไม่ได้รับของ"&&config?.action !== "create")&&
+          <Popconfirm 
+          placement="topRight"
+          title="ยืนยันการยกเลิก"  
+          description="คุณแน่ใจที่จะยกเลิกใบสั่งซื้อ?"
+          icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+          onConfirm={() => handleCancel()}
+        >
+          <Button
+            className="bn-center justify-center"
+            icon={<CloseCircleFilledIcon style={{ fontSize: "1rem" }} />}
+            type="primary"
+            style={{ width: "9.5rem" }}
+            danger
+          >
+            ยกเลิกใบสั่งซื้อ
+          </Button>
+        </Popconfirm>
+          }
           <Button
             className="bn-center justify-center"
             icon={<SaveFilled style={{ fontSize: "1rem" }} />}
@@ -478,6 +513,7 @@ function PurchaseOrderManage() {
             onClick={() => {
               handleConfirm();
             }}
+            disabled={formDetail.doc_status !== "ยังไม่ได้รับของ"}
           >
             Save
           </Button>
@@ -521,6 +557,7 @@ function PurchaseOrderManage() {
             onClick={() => {
               handleConfirm();
             }}
+            disabled={formDetail.doc_status !== "ยังไม่ได้รับของ"}
           >
             Save
           </Button>

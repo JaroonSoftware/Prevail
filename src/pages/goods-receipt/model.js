@@ -137,13 +137,13 @@ export const productColumn = ({handleRemove},optionsItems) => [
   },
   {
     title: "ราคาซื้อ",
-    dataIndex: "buyprice",
-    key: "buyprice", 
+    dataIndex: "price",
+    key: "price", 
     width: "10%",
     align: "right",
     className: "!pe-3",
     type:'number',
-    render: (_, rec) => <>{ comma( Number(rec?.buyprice ||  0),  2, 2 )}</>,
+    render: (_, rec) => <>{ comma( Number(rec?.price ||  0),  2, 2 )}</>,
   },  
   {
     title: "หน่วยสินค้า",
@@ -159,13 +159,13 @@ export const productColumn = ({handleRemove},optionsItems) => [
   },
   {
     title: "จำนวนที่สั่ง",
-    dataIndex: "qty_buy",
-    key: "qty_buy", 
+    dataIndex: "qty",
+    key: "qty", 
     width: "10%",
     align: "right",
     className: "!pe-3",
     type:'number',
-    render: (_, rec) => <>{ comma( Number(rec?.qty_buy ||  0),  2, 2 )}</>,
+    render: (_, rec) => <>{ comma( Number(rec?.qty ||  0),  2, 2 )}</>,
   },  
   {
     title: "จำนวนที่รับแล้ว",
@@ -245,8 +245,6 @@ export const goodsreceiptForm = {
   tel: null,
   remark: null,
   total_price: 0,
-  vat: 7,
-  grand_total_price: 0,
 }
 
 export const goodsreceiptDetailForm = {  
