@@ -163,57 +163,98 @@ function IVPrintPreview() {
   const ReceiptSummary = (rec) => {
     return (
       <>
-        <Table.Summary.Cell colSpan={6} className="!align-top !ps-0   !pe-0" 
-        style={{height: 20}}>
-          <Flex
-            style={{
-              borderTop: "1px solid",
-              borderLeft: "1px solid",
-              // borderRight: "1px solid",
-            }}
+        <Table.Summary.Row style={{}}>
+          <Table.Summary.Cell
+            colSpan={5}
+            className="!align-top !ps-0   !pe-0"
+            style={{ height: 20 }}
           >
-            <Typography.Text
-              className="tx-info "
-              style={{ fontSize: 13, marginLeft: 10 }}
-              strong
+            <Flex
+              style={{
+                borderTop: "1px solid",
+                borderLeft: "1px solid",
+                // borderRight: "1px solid",
+                
+              }}
             >
-             ({thaiBahtText(hData?.total_price || 0, 2, 2)}).
-            </Typography.Text>
-          </Flex>
-          <Flex style={{ border: "1px solid",borderRight: "0px solid", padding: 3 }}>
-            <Typography.Text
-              className="tx-info"
-              style={{ fontSize: 11, paddingLeft: 5, lineHeight: "1em" }}
+              <Typography.Text
+                className="tx-info "
+                style={{ fontSize: 18, marginLeft: 10 }}
+                strong
+              >
+                ({thaiBahtText(hData?.total_price || 0, 2, 2)}).
+              </Typography.Text>
+            </Flex>
+          </Table.Summary.Cell>
+          <Table.Summary.Cell colSpan={1} className="!align-top !ps-0   !pe-0">
+            <Flex
+              style={{
+                borderTop: "1px solid",
+                // borderLeft: "1px solid",
+                // borderRight: "1px solid",
+              }}
             >
-              จำนวนเงิน<br></br>Amount In Word
-            </Typography.Text>
-          </Flex>
-        </Table.Summary.Cell>
-        <Table.Summary.Cell colSpan={1} className="!align-top !ps-0   !pe-0">
-          <Flex
-            style={{
-              borderTop: "1px solid",
-              borderLeft: "1px solid",
-              borderRight: "1px solid",
-            }}
-          >
-            <Typography.Text
-              className="tx-info "
-              style={{ fontSize: 13, marginLeft: 10 }}
-              strong
+              <Typography.Text
+                className="tx-info "
+                style={{ fontSize: 15, marginLeft: 10, marginTop: 4 }}
+                strong
+              >
+                รวมเงินทั้งสิ้น
+              </Typography.Text>
+            </Flex>
+          </Table.Summary.Cell>
+          <Table.Summary.Cell colSpan={1} className="!align-top !ps-0   !pe-0">
+            <Flex
+              style={{
+                borderTop: "1px solid",
+                borderLeft: "1px solid",
+                borderRight: "1px solid",
+              }}
             >
-           {hData?.total_price}
-            </Typography.Text>
-          </Flex>
-          <Flex style={{ border: "1px solid", padding: 3 }}>
-            <Typography.Text
-              className="tx-info"
-              style={{ fontSize: 11, paddingLeft: 5, lineHeight: "1em" }}
+              <Typography.Text
+                className="tx-info "
+                style={{ fontSize: 15, marginLeft: 10, marginTop: 4 }}
+                strong
+              >
+                {hData?.total_price}
+              </Typography.Text>
+            </Flex>
+          </Table.Summary.Cell>
+        </Table.Summary.Row>
+        <Table.Summary.Row>
+          <Table.Summary.Cell colSpan={8} className="!align-top !ps-0   !pe-0">
+            <Flex
+              style={{
+                border: "1px solid",
+                borderRight: "1px solid",
+                padding: 3,
+                height: 70,
+              }}
             >
-              จำนวนเงิน<br></br>Amount In Word
-            </Typography.Text>
-          </Flex>
-        </Table.Summary.Cell>
+              <Typography.Text
+                className="tx-info"
+                style={{
+                  fontSize: 15,
+                  paddingLeft: 5,
+                  lineHeight: "1em",
+                  paddingTop: 7,
+                }}
+              >
+                <p>
+                  ชื่อผู้รับวางบิล
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;__________________________________
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ในนาม บริษัท
+                  พรีเวล อินเตอร์เนชั่นแนล ฟู้ด จำกัด
+                </p>
+                <p>
+                  พิมพ์โดย
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  วันที่
+                </p>
+              </Typography.Text>
+            </Flex>
+          </Table.Summary.Cell>
+        </Table.Summary.Row>
       </>
     );
   };

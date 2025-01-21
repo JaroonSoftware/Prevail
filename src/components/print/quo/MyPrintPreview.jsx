@@ -91,7 +91,7 @@ function POPrintPreview() {
         const table = cdata.querySelector("#tb-data");
         // const thead = table?.querySelector("thead");
         const tbody = table?.querySelector("tbody");
-        const tfoot = table?.querySelector("tfoot");
+        // const tfoot = table?.querySelector("tfoot");
 
         // tbody.style.height = `${limitPage - hfoot}px`;
 
@@ -99,7 +99,7 @@ function POPrintPreview() {
           .map((m) => m.outerHTML)
           .join("")}`;
 
-        if (rind < samplesPage.length - 1) tfoot.remove();
+        // if (rind < samplesPage.length - 1) tfoot.remove();
         // else {
         //     tbody.innerHTML = `${tbody.innerHTML}<tr><td colspan='6' style="height:100%">&nbsp;</td></tr>`;
         // }
