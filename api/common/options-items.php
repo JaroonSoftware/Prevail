@@ -35,11 +35,11 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
             $res = $stmt->fetchAll(PDO::FETCH_ASSOC); 
         } else if ($p === 'gr' ){
             $sql = "
-			SELECT a.code,a.pocode, a.stcode,i.stname, a.qty, a.price, a.unit, a.discount, a.recamount
+			SELECT a.code,a.pocode, a.stcode,i.stname, a.qty, a.price as buyprice, a.unit, a.discount, a.recamount
             FROM podetail a 
             inner join pomaster b on (a.pocode=b.pocode)
             inner join items i on (a.stcode=i.stcode)
-            where b.supcode= '$supcode' and b.active_status = 'Y' and b.doc_status != 'รับของครบแล้ว' and a.qty>a.recamount "; 
+            where b.supcode= '$supcode' and b.active_status = 'Y' and b.doc_status != 'รับของครบแล้ว' and b.doc_status != 'ยกเลิก' and a.qty>a.recamount "; 
             $stmt = $conn->prepare($sql); 
             $stmt->execute();
             $res = $stmt->fetchAll(PDO::FETCH_ASSOC);             

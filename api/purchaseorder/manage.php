@@ -19,8 +19,8 @@ try {
 
         // var_dump($_POST);
         $sql = "insert pomaster (`pocode`, `podate`, `supcode`,
-        `deldate`,`payment`,`poqua`, `total_price`, `vat`, `grand_total_price`,`remark`,created_by,updated_by) 
-        values (:pocode,:podate,:supcode,:deldate,:payment,:poqua,:total_price,:vat,:grand_total_price,
+        `deldate`,`payment`,`poqua`, `total_price`,`remark`,created_by,updated_by) 
+        values (:pocode,:podate,:supcode,:deldate,:payment,:poqua,:total_price,
         :remark,:action_user,:action_user)";
 
         $stmt = $conn->prepare($sql);
@@ -34,8 +34,6 @@ try {
         $stmt->bindParam(":payment", $header->payment, PDO::PARAM_STR);
         $stmt->bindParam(":poqua", $header->poqua, PDO::PARAM_STR);
         $stmt->bindParam(":total_price", $header->total_price, PDO::PARAM_STR);
-        $stmt->bindParam(":vat", $header->vat, PDO::PARAM_STR);
-        $stmt->bindParam(":grand_total_price", $header->grand_total_price, PDO::PARAM_STR); 
         $stmt->bindParam(":remark", $header->remark, PDO::PARAM_STR); 
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_STR); 
 
@@ -72,7 +70,7 @@ try {
             $stmt->bindParam(":price", $val->buyprice, PDO::PARAM_INT);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);            
             $stmt->bindParam(":discount", $val->discount, PDO::PARAM_INT);
-            $stmt->bindParam(":vat", $val->vat, PDO::PARAM_INT);
+            $stmt->bindParam(":vat", $val->vat, PDO::PARAM_STR);
             
             if(!$stmt->execute()) {
                 $error = $conn->errorInfo();
@@ -98,8 +96,6 @@ try {
         payment = :payment,
         poqua = :poqua,
         total_price = :total_price,
-        vat = :vat,
-        grand_total_price = :grand_total_price,
         remark = :remark,
         updated_date = CURRENT_TIMESTAMP(),
         updated_by = :action_user
@@ -116,8 +112,6 @@ try {
         $stmt->bindParam(":payment", $header->payment, PDO::PARAM_STR);
         $stmt->bindParam(":poqua", $header->poqua, PDO::PARAM_STR);
         $stmt->bindParam(":total_price", $header->total_price, PDO::PARAM_STR);
-        $stmt->bindParam(":vat", $header->vat, PDO::PARAM_STR);
-        $stmt->bindParam(":grand_total_price", $header->grand_total_price, PDO::PARAM_STR);
         $stmt->bindParam(":remark", $header->remark, PDO::PARAM_STR); 
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_INT);  
         $stmt->bindParam(":pocode", $header->pocode, PDO::PARAM_STR); 
@@ -164,28 +158,21 @@ try {
     } else  if($_SERVER["REQUEST_METHOD"] == "DELETE"){
         // $code = $_DELETE["code"];
         $code = $_GET["code"];
-        
-        $sql = "delete from packingset where code = :code";
-        $stmt = $conn->prepare($sql); 
-        if (!$stmt->execute([ 'code' => $code ])){
-            $error = $conn->errorInfo();
-            throw new PDOException("Remove data error => $error");
-        }            
-        
-        $sql = "delete from packingset_detail where packingsetcode = :code";
-        $stmt = $conn->prepare($sql); 
-        if (!$stmt->execute([ 'code' => $code ])){
+
+        $sql = "update pomaster set doc_status = 'ยกเลิก' where pocode = :code";
+        $stmt = $conn->prepare($sql);
+        if (!$stmt->execute(['code' => $code])) {
             $error = $conn->errorInfo();
             throw new PDOException("Remove data error => $error");
         }
 
         $conn->commit();
         http_response_code(200);
-        echo json_encode(array("status"=> 1));
+        echo json_encode(array("status" => 1));
     } else  if($_SERVER["REQUEST_METHOD"] == "GET"){
         $code = $_GET["code"]; 
         $sql = " SELECT a.pocode,a.podate,a.supcode,c.prename,c.supname,CONCAT(COALESCE(c.idno, '') ,' ', COALESCE(c.road, ''),' ', COALESCE(c.subdistrict, ''),' ', COALESCE(c.district, ''),' ',COALESCE(c.zipcode, '') ) as address
-        ,c.zipcode,c.contact,c.tel,c.fax,a.deldate,a.payment,a.poqua,a.total_price,a.vat,a.grand_total_price,a.remark ";
+        ,c.zipcode,c.contact,c.tel,c.fax,a.deldate,a.payment,a.poqua,a.total_price,a.remark,a.doc_status ";
         $sql .= " FROM `pomaster` as a ";
         $sql .= " left outer join `supplier` as c on (a.supcode)=(c.supcode)";
         $sql .= " where a.pocode = :code";
@@ -198,7 +185,7 @@ try {
         }
         $header = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT a.pocode,a.stcode, a.price, a.discount,a.vat, a.unit, a.qty ,i.stname,a.recamount ";
+        $sql = "SELECT a.pocode,a.stcode, a.price as buyprice, a.discount,a.vat, a.unit, a.qty,i.stname,a.recamount ";
         $sql .= " FROM `podetail` as a inner join `items` as i on (a.stcode=i.stcode)  ";        
         $sql .= " where a.pocode = :code";
         
