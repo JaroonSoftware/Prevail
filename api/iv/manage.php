@@ -18,7 +18,7 @@ try {
         extract($_POST, EXTR_OVERWRITE, "_");
 
         // var_dump($_POST);
-        $sql = "insert ivmaster (`ivcode`, `ivdate`, `cuscode`,`payment`,`deldate`, `total_price`,`remark`,created_by,updated_by) 
+        $sql = "insert bl_master (`ivcode`, `ivdate`, `cuscode`,`payment`,`deldate`, `total_price`,`remark`,created_by,updated_by) 
         values (:ivcode,:ivdate,:cuscode,:payment,:deldate,:total_price,
         :remark,:action_user,:action_user)";
 

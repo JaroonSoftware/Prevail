@@ -65,10 +65,10 @@ function update_dncode($pdo){
     }
 } 
 
-function update_ivcode($pdo){
+function update_blcode($pdo){
     $year = date("Y");
     $month = date("m");
-    $sql = "update options set ivcode = ivcode + 1 where year = :y and month = :m";
+    $sql = "update options set blcode = blcode + 1 where year = :y and month = :m";
     $stmt = $pdo->prepare($sql);
 
     if (!$stmt->execute([ 'y' => $year, 'm' => $month ])){
@@ -289,11 +289,11 @@ function request_dncode($pdo){
     return $prefix.sprintf("%03s", ( $number) );   
 }
 
-function request_ivcode($pdo){
+function request_blcode($pdo){
     $year = date("Y");
     $month = date("m");
 
-    $sql = "select ivcode code from options where year = :y and month = :m";
+    $sql = "select blcode code from options where year = :y and month = :m";
     $stmt = $pdo->prepare($sql); 
     if (!$stmt->execute([ 'y' => $year, 'm' => $month ])){
         $error = $pdo->errorInfo();
@@ -316,12 +316,12 @@ function request_ivcode($pdo){
     while(true){
         $code = sprintf("%03s", ( $number) );
         $format = $prefix.$code;
-        $sql = "SELECT 1 r FROM ivmaster where ivcode = '$format'"; 
+        $sql = "SELECT 1 r FROM blmaster where blcode = '$format'"; 
         $stmt = $pdo->prepare($sql); 
         $stmt->execute(); 
         if ($stmt->rowCount() > 0){
             $number += 1;
-            update_ivcode($pdo);
+            update_blcode($pdo);
             continue;
         } else break;
     } 

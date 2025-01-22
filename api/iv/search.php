@@ -10,13 +10,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
     $_POST = json_decode($rest_json, true);
 
     extract($_POST, EXTR_OVERWRITE, "_");  
-    $ivcode = !empty($ivcode) ? "and a.ivcode like '%$ivcode%'" : "";
+    $blcode = !empty($blcode) ? "and a.blcode like '%$blcode%'" : "";
     $cuscode = !empty($cuscode) ? "and c.cuscode like '%$cuscode%'" : "";
     $cusname = !empty($cusname) ? "and c.cusname like '%$cusname%'" : "";
     $created_by = !empty($created_by) ? "and ( u.firstname like '%$created_by%' or u.lastname like '%$created_by%' )" : "";
-    $ivdate = "";
-    if( !empty($ivdate_form) && !empty($ivdate_to) ) {
-        $ivdate = "and date_format( a.ivdate, '%Y-%m-%d' ) >= '$ivdate_form' and date_format( a.ivdate, '%Y-%m-%d' ) <= '$ivdate_to' ";
+    $bldate = "";
+    if( !empty($bldate_form) && !empty($bldate_to) ) {
+        $bldate = "and date_format( a.bldate, '%Y-%m-%d' ) >= '$bldate_form' and date_format( a.bldate, '%Y-%m-%d' ) <= '$bldate_to' ";
     } 
     
     try {   
@@ -25,16 +25,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
         a.*,
         c.*,
         concat(u.firstname, ' ', u.lastname) created_name
-        from ivmaster a        
+        from bl_master a        
         left join customer c on a.cuscode = c.cuscode        
         left join user u on a.created_by = u.code
         where 1 = 1 
-        $ivcode
+        $blcode
         $cuscode
         $cusname
         $created_by
-        $ivdate
-        order by a.ivcode desc ;";
+        $bldate
+        order by a.blcode desc ;";
 
 
         $stmt = $conn->prepare($sql); 

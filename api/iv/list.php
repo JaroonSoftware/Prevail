@@ -17,18 +17,18 @@ try {
         $rest_json = file_get_contents("php://input");
         $_POST = json_decode($rest_json, true);
         extract($_POST, EXTR_OVERWRITE, "_");
-        // echo $ivcode;
+        // echo $blcode;
         $code = [];
         foreach ($_POST as $ind => $val) {
             $val = (object)$val;
-            array_push($code,$val->ivcode);
+            array_push($code,$val->blcode);
         }
         
-        $sql = "SELECT a.ivcode,a.ivdate,a.deldate,a.cuscode,CONCAT(c.prename,' ',c.cusname) as cusname,CONCAT(COALESCE(c.idno, '') ,' ', COALESCE(c.road, ''),' ', COALESCE(c.subdistrict, ''),' ', COALESCE(c.district, ''),' ',COALESCE(c.zipcode, '') ) as address
+        $sql = "SELECT a.blcode,a.bldate,a.deldate,a.cuscode,CONCAT(c.prename,' ',c.cusname) as cusname,CONCAT(COALESCE(c.idno, '') ,' ', COALESCE(c.road, ''),' ', COALESCE(c.subdistrict, ''),' ', COALESCE(c.district, ''),' ',COALESCE(c.zipcode, '') ) as address
         ,c.zipcode,c.contact,c.tel,c.fax,a.payment,a.total_price,a.remark ";
-        $sql .= " FROM `ivmaster` as a ";
+        $sql .= " FROM `bl_master` as a ";
         $sql .= " inner join `customer` as c on (a.cuscode)=(c.cuscode)";
-        $sql .= " where a.ivcode in ('". implode("' , '", $code) . "')";
+        $sql .= " where a.blcode in ('". implode("' , '", $code) . "')";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute()) {
@@ -38,9 +38,9 @@ try {
         }
         $header = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT a.ivcode,a.dncode,a.stcode, a.price, a.discount, a.unit, a.qty ,a.vat ,i.stname ";
-        $sql .= " FROM `ivdetail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
-        $sql .= " where a.ivcode in ('". implode("' , '", $code) . "')";
+        $sql = "SELECT a.blcode,a.dncode,a.stcode, a.price, a.discount, a.unit, a.qty ,a.vat ,i.stname ";
+        $sql .= " FROM `bl_detail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
+        $sql .= " where a.blcode in ('". implode("' , '", $code) . "')";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute()) {

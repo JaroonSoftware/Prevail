@@ -9,7 +9,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
     extract($_GET, EXTR_OVERWRITE, "_"); 
    
     try {  
-        $code = request_ivcode($conn);
+        $code = request_blcode($conn);
 
         http_response_code(200);
         echo json_encode(array("data"=>$code));
