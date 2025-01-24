@@ -3,21 +3,21 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 // import ReactDOMServer from "react-dom/server";
 import { useReactToPrint } from "react-to-print";
-import "./iv.css";
+import "./bl.css";
 // import logo from "../../../assets/images/QRCODEDN.jpg";
 import { Button, Flex, Table, Typography, message } from "antd";
-import { column } from "./iv.model";
+import { column } from "./bl.model";
 import thaiBahtText from "thai-baht-text";
 import dayjs from "dayjs";
 // import { comma } from "../../../utils/util";
 import { PiPrinterFill } from "react-icons/pi";
 import { LoadingOutlined } from "@ant-design/icons";
 import { Spin } from "antd";
-import IVServiece from "../../../service/Invoice.service";
+import BillingNoteService from "../../../service/BillingNote.Service";
 
-const ivserviece = IVServiece();
+const blservice = BillingNoteService();
 
-function IVPrintPreview() {
+function BLPrintPreview() {
   const { code } = useParams();
   const componentRef = useRef(null);
 
@@ -44,7 +44,7 @@ function IVPrintPreview() {
 
   useEffect(() => {
     const init = () => {
-      ivserviece
+      blservice
         .get(code)
         .then(async (res) => {
           const {
@@ -336,4 +336,4 @@ function IVPrintPreview() {
   );
 }
 
-export default IVPrintPreview;
+export default BLPrintPreview;

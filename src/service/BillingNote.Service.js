@@ -1,12 +1,12 @@
 import { requestService as api } from "./Request.service"  
 const API_URL = { 
-  API_MANAGE: `/iv/manage.php`, 
-  API_SEARCH: `/iv/search.php`, 
-  API_LIST: `/iv/list.php`, 
-  API_GETCODE: `/iv/get-ivcode.php`, 
+  API_MANAGE: `/billing/manage.php`, 
+  API_SEARCH: `/billing/search.php`, 
+  API_LIST: `/billing/list.php`, 
+  API_GETCODE: `/billing/get-blcode.php`, 
 };
   
-const InvoiceService = () => { 
+const BillingNoteService = () => { 
   
   const create = (parm = {}) => api.post(`${API_URL.API_MANAGE}`, parm);
   const update = (parm = {}) => api.put(`${API_URL.API_MANAGE}`, parm);
@@ -30,4 +30,4 @@ const InvoiceService = () => {
   };
 };
 
-export default InvoiceService;
+export default BillingNoteService;

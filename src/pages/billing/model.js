@@ -25,16 +25,16 @@ export const componentsEditable = {
 export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}) => [
   {
     title: "เลขที่ใบแจ้งหนี้",
-    key: "ivcode",
-    dataIndex: "ivcode",
+    key: "blcode",
+    dataIndex: "blcode",
     align: "left",
-    sorter: (a, b) => (a.ivcode).localeCompare(b.ivcode),
+    sorter: (a, b) => (a.blcode).localeCompare(b.blcode),
     width:140,
   },
   {
     title: "วันที่ใบแจ้งหนี้",
-    dataIndex: "ivdate",
-    key: "ivdate",
+    dataIndex: "bldate",
+    key: "bldate",
     width: 140,
     sorter: (a, b) => (a.qtdate).localeCompare(b.qtdate),
     render: (v) => dayjs(v).format("DD/MM/YYYY"),
@@ -244,8 +244,8 @@ export const columnsParametersEditable = (handleEditCell,optionsItems,{handleRem
   }); 
 }
 export const DEFALUT_CHECK_INVOICE = {
-  ivcode: null,
-  ivdate: null,
+  blcode: null,
+  bldate: null,
   qtcode: null,  
   payment: null,
   cuscode: null,

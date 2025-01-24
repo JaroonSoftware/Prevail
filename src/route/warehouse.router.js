@@ -17,7 +17,7 @@ import { SO, SOAccess, SOManage } from "../pages/so";
 
 import { DN, DNAccess, DNManage } from "../pages/delivery-note";
 
-import { IV, IVAccess, IVManage } from "../pages/invoice";
+import { BL, BLAccess, BLManage } from "../pages/billing";
 
 import { Receipt, ReceiptAccess, ReceiptManage } from "../pages/receipt";
 
@@ -57,9 +57,9 @@ export const WarehouseRouter = (
       <Route path="manage/:action" element={<DNManage />} />
     </Route>
 
-    <Route path="/invoice/" exact element={<IV />}>
-      <Route index element={<IVAccess />} />
-      <Route path="manage/:action" element={<IVManage />} />
+    <Route path="/billing/" exact element={<BL />}>
+      <Route index element={<BLAccess />} />
+      <Route path="manage/:action" element={<BLManage />} />
     </Route>
 
     <Route path="/receipt/" exact element={<Receipt />}>

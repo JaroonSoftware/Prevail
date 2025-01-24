@@ -45,7 +45,12 @@ let _nav = [
   {
     title: "ใบวางบิล",
     icon: <ReconciliationFilled className="nav-ico" />,
-    to: "/invoice",    
+    to: "/billing",    
+  },
+  {
+    title: "ใบเสร็จรับเงิน",
+    icon: <TbReportMoney className="nav-ico" />,
+    to: "/receipt",
   },
   {
     title: "ข้อมูลลูกค้า",
@@ -105,21 +110,13 @@ let _nav = [
     icon: <FaUserCircle className="nav-ico" />,
     to: "/users",
   },
-
-  {
-    title: "กำลังปรับปรุง",
-    type: "group",
-  },  
-  {
-    title: "ใบเสร็จรับเงิน",
-    icon: <TbReportMoney className="nav-ico" />,
-    to: "/receipt",
-  },
+  
   {
     title: "แสกนส่งออกสินค้า",
     icon: <TfiTruck className="nav-ico" />,
     to: "/shipping",
   },
+ 
 ];
 
 export default _nav;
