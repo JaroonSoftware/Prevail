@@ -90,11 +90,13 @@ function PurchaseOrderManage() {
           })
         ).data;
         setPoCode(code);
+        // alert(config?.action)
         form.setFieldValue("payment", 'เงินสด');
         const ininteial_value = {
           ...formDetail,
           pocode: code,
-          podate: dayjs(new Date()),          
+          podate: dayjs(new Date()),   
+          doc_status: "ยังไม่ได้รับของ",       
         };
         
         setFormDetail(ininteial_value);
@@ -264,7 +266,9 @@ function PurchaseOrderManage() {
           <RiDeleteBin5Line style={{ fontSize: "1rem", marginTop: "3px" }} />
         }
         onClick={() => handleDelete(record?.stcode)}
-        disabled={!record?.stcode||(config.action!=='create')}
+        disabled={
+          !record?.stcode || formDetail.doc_status !== "ยังไม่ได้รับของ"
+        }
       />
     ) : null;
   };
