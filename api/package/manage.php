@@ -163,7 +163,7 @@ try {
     } else  if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $code = $_GET["code"];
         $sql = "SELECT a.socode,a.sodate,a.deldate,a.cuscode,CONCAT(c.prename,' ',c.cusname) as cusname,CONCAT(COALESCE(c.idno, '') ,' ', COALESCE(c.road, ''),' ', COALESCE(c.subdistrict, ''),' ', COALESCE(c.district, ''),' ', COALESCE(c.province, ''),' ',COALESCE(c.zipcode, '') ) as address
-        ,c.zipcode,c.contact,c.tel,c.fax,a.total_price,a.vat,a.grand_total_price,a.remark,a.active_status ";
+        ,c.zipcode,c.contact,c.tel,c.fax,a.total_price,a.discount,a.grand_total_price,a.remark,a.active_status ";
         $sql .= " FROM `somaster` as a ";
         $sql .= " left outer join `customer` as c on (a.cuscode)=(c.cuscode)";
         $sql .= " where a.socode = :code";
@@ -176,7 +176,7 @@ try {
         }
         $header = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT a.socode,a.stcode, a.price, a.unit, a.qty,i.stname,i.packing_weight ";
+        $sql = "SELECT a.socode,a.stcode, a.price, a.unit, a.qty,i.stname,i.packing_weight,a.vat ";
         $sql .= " FROM `sodetail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
         $sql .= " where a.socode = :code";
         $sql .= " order by stcode asc";

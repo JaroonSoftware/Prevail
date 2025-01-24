@@ -139,7 +139,7 @@ try {
                 $sql = "
                 update somaster 
                 set
-                doc_status = 'รอออกใบส่งของ',
+                print_status = 'ปริ้นหน้าถุงครบแล้ว',
                 updated_date = CURRENT_TIMESTAMP(),
                 updated_by = :action_user
                 where socode = :socode";
@@ -147,7 +147,7 @@ try {
                 $sql = "
                 update somaster 
                 set
-                doc_status = 'ปริ้นใบปะยังไม่ครบ',
+                print_status = 'ปริ้นใบปะยังไม่ครบ',
                 updated_date = CURRENT_TIMESTAMP(),
                 updated_by = :action_user
                 where socode = :socode";

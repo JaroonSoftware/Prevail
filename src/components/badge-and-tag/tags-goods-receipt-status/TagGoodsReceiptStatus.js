@@ -11,6 +11,9 @@ function TagGoodsReceiptStatus({result}) {
     case 'ชั่งสินค้าครบแล้ว':
       elementToRender = <Tag icon={<CheckCircleFilled />} color="#87d068"> ชั่งสินค้าครบแล้ว </Tag>;
       break;
+    case 'ชั่งสินค้ายังไม่ครบ':
+      elementToRender = <Tag icon={<CloseCircleFilledIcon />} color="#ffab47"> ชั่งสินค้ายังไม่ครบ </Tag>;
+      break;
     case 'รอชั่งสินค้า':
       elementToRender = <Tag icon={<ClockCircleFilled />} color="#347C98"> รอชั่งสินค้า </Tag>;
       break;

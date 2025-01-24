@@ -17,9 +17,9 @@ try {
         $socode = request_socode($conn);
         $sql = " 
         insert somaster ( 
-            socode, cuscode, sodate, total_price, vat, grand_total_price,deldate, remark, active_status, doc_status, created_date, created_by
+            socode, cuscode, sodate, total_price,deldate, remark, active_status, doc_status, created_date, created_by
         ) 
-        values (:socode, :cuscode, :sodate, :total_price, :vat, :grand_total_price,:deldate, :remark, 'Y', 'รอปริ้นใบปะหน้าถุง', :action_datetime,:action_user)";
+        values (:socode, :cuscode, :sodate, :total_price,:deldate, :remark, 'Y', 'รอปริ้นใบปะหน้าถุง', :action_datetime,:action_user)";
 
 
         $stmt = $conn->prepare($sql);
@@ -30,8 +30,6 @@ try {
         $stmt->bindParam(":sodate", $header->sodate, PDO::PARAM_STR);
         $stmt->bindParam(":cuscode", $header->cuscode, PDO::PARAM_STR);
         $stmt->bindParam(":total_price", $header->total_price, PDO::PARAM_STR);
-        $stmt->bindParam(":vat", $header->vat, PDO::PARAM_STR);
-        $stmt->bindParam(":grand_total_price", $header->grand_total_price, PDO::PARAM_STR);
         $stmt->bindParam(":deldate", $header->deldate, PDO::PARAM_STR);
         $stmt->bindParam(":remark", $header->remark, PDO::PARAM_STR);
         $stmt->bindParam(":action_datetime", $action_datetime, PDO::PARAM_STR);
@@ -48,8 +46,8 @@ try {
         $code = $conn->lastInsertId();
         // var_dump($master); exit;
 
-        $sql = "insert into sodetail (socode,stcode,qty,price,unit)
-        values (:socode,:stcode,:qty,:price,:unit)";
+        $sql = "insert into sodetail (socode,stcode,qty,price,unit,vat)
+        values (:socode,:stcode,:qty,:price,:unit,:vat)";
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
@@ -61,6 +59,7 @@ try {
             $stmt->bindParam(":qty", $val->qty, PDO::PARAM_INT);
             $stmt->bindParam(":price", $val->price, PDO::PARAM_INT);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
+            $stmt->bindParam(":vat", $val->vat, PDO::PARAM_INT);
             if (!$stmt->execute()) {
                 $error = $conn->errorInfo();
                 throw new PDOException("Insert data error => $error");
@@ -84,8 +83,6 @@ try {
         cuscode = :cuscode,
         sodate = :sodate,
         total_price = :total_price,
-        vat = :vat,
-        grand_total_price = :grand_total_price,
         deldate = :deldate,
         remark = :remark, 
         updated_date = :action_datetime,
@@ -101,8 +98,6 @@ try {
         $stmt->bindParam(":cuscode", $header->cuscode, PDO::PARAM_STR);
         $stmt->bindValue(":sodate", $header->sodate, PDO::PARAM_STR);
         $stmt->bindValue(":total_price", $header->total_price, PDO::PARAM_STR);
-        $stmt->bindValue(":vat", $header->vat, PDO::PARAM_STR);
-        $stmt->bindValue(":grand_total_price", $header->grand_total_price, PDO::PARAM_STR);
         $stmt->bindValue(":deldate", $header->deldate, PDO::PARAM_STR);
         $stmt->bindValue(":remark", $header->remark, PDO::PARAM_STR);
         $stmt->bindParam(":action_datetime", $action_datetime, PDO::PARAM_STR);
@@ -123,8 +118,8 @@ try {
             throw new PDOException("Remove data error => $error");
         }
 
-        $sql = "insert into sodetail (socode,stcode,unit,qty,price)
-        values (:socode,:stcode,:unit,:qty,:price)";
+        $sql = "insert into sodetail (socode,stcode,unit,qty,price,vat)
+        values (:socode,:stcode,:unit,:qty,:price,:vat)";
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
@@ -136,6 +131,7 @@ try {
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
             $stmt->bindParam(":qty", $val->qty, PDO::PARAM_INT);
             $stmt->bindParam(":price", $val->price, PDO::PARAM_INT);
+            $stmt->bindParam(":vat", $val->vat, PDO::PARAM_INT);
             if (!$stmt->execute()) {
                 $error = $conn->errorInfo();
                 throw new PDOException("Insert data error => $error");
@@ -163,7 +159,7 @@ try {
     } else  if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $code = $_GET["code"];
         $sql = "SELECT a.socode,a.sodate,a.deldate,a.cuscode,CONCAT(c.prename,' ',c.cusname) as cusname,CONCAT(COALESCE(c.idno, '') ,' ', COALESCE(c.road, ''),' ', COALESCE(c.subdistrict, ''),' ', COALESCE(c.district, ''),' ', COALESCE(c.province, ''),' ',COALESCE(c.zipcode, '') ) as address
-        ,c.zipcode,c.contact,c.tel,c.fax,a.total_price,a.vat,a.grand_total_price,a.remark,a.active_status ";
+        ,c.zipcode,c.contact,c.tel,c.fax,a.total_price,a.remark,a.active_status ";
         $sql .= " FROM `somaster` as a ";
         $sql .= " left outer join `customer` as c on (a.cuscode)=(c.cuscode)";
         $sql .= " where a.socode = :code";
@@ -176,7 +172,7 @@ try {
         }
         $header = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT a.socode,a.stcode, a.price, a.unit, a.qty,i.stname,i.packing_weight ";
+        $sql = "SELECT a.socode,a.stcode, a.price, a.unit, a.qty,a.vat,i.stname,i.packing_weight ";
         $sql .= " FROM `sodetail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
         $sql .= " where a.socode = :code";
         $sql .= " order by stcode asc";

@@ -126,19 +126,13 @@ function InvoiceManage() {
       (a, v) =>
         (a +=
           Number(v.qty || 0) *
-          Number(v?.price || 0) *
-          (1 - Number(v?.discount || 0) / 100)),
+          Number(v?.price || 0) ),
       0
     );
-    const vat = form.getFieldValue("vat");
-    const grand_total_price =
-      total_price + (total_price * form.getFieldValue("vat")) / 100;
 
     setFormDetail(() => ({
       ...formDetail,
       total_price,
-      vat,
-      grand_total_price,
     }));
     // console.log(formDetail)
   };
@@ -425,7 +419,7 @@ function InvoiceManage() {
                         align="end"
                         className="!pe-4"
                       >
-                        Total
+                        Grand Total
                       </Table.Summary.Cell>
                       <Table.Summary.Cell
                         className="!pe-4 text-end border-right-0"
@@ -436,74 +430,7 @@ function InvoiceManage() {
                         </Typography.Text>
                       </Table.Summary.Cell>
                       <Table.Summary.Cell>Baht</Table.Summary.Cell>
-                    </Table.Summary.Row>
-                    <Table.Summary.Row>
-                      <Table.Summary.Cell
-                        index={0}
-                        colSpan={5}
-                      ></Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        index={4}
-                        align="end"
-                        className="!pe-4"
-                      >
-                        Vat
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        className="!pe-4 text-end border-right-0"
-                        style={{ borderRigth: "0px solid" }}
-                      >
-                        <Form.Item name="vat" className="!m-0">
-                          <InputNumber
-                            className="width-100 input-30 text-end"
-                            addonAfter="%"
-                            controls={false}
-                            min={0}
-                            onFocus={(e) => {
-                              e.target.select();
-                            }}
-                            onChange={() => {
-                              handleSummaryPrice();
-                            }}
-                          />
-                        </Form.Item>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        className="!pe-4 text-end border-right-0"
-                        style={{ borderRigth: "0px solid" }}
-                      >
-                        <Typography.Text type="danger">
-                          {comma(
-                            Number(
-                              (formDetail.total_price * formDetail?.vat) / 100
-                            )
-                          )}
-                        </Typography.Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>Baht</Table.Summary.Cell>
-                    </Table.Summary.Row>
-                    <Table.Summary.Row>
-                      <Table.Summary.Cell
-                        index={0}
-                        colSpan={6}
-                      ></Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        index={4}
-                        align="end"
-                        className="!pe-4"
-                      >
-                        Grand Total
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        className="!pe-4 text-end border-right-0"
-                        style={{ borderRigth: "0px solid" }}
-                      >
-                        <Typography.Text type="danger">
-                          {comma(Number(formDetail?.grand_total_price || 0))}
-                        </Typography.Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>Baht</Table.Summary.Cell>
-                    </Table.Summary.Row>
+                    </Table.Summary.Row>                    
                   </>
                 )}
               </>

@@ -10,7 +10,7 @@ import {
   Typography,
   message,
 } from "antd";
-import { Card, Col, Divider, Flex, Row, Space, Select } from "antd";
+import { Card, Col, Divider, Flex, Row, Space, Select,InputNumber } from "antd";
 
 import OptionService from "../../service/Options.service";
 import InvoiceService from "../../service/Invoice.service";
@@ -103,7 +103,7 @@ function InvoiceManage() {
 
         setFormDetail(ininteial_value);
         form.setFieldsValue(ininteial_value);
-        form.setFieldValue("vat", 7);
+        form.setFieldValue("discount", 0);
         form.setFieldValue("payment", "เงินสด");
         form.setFieldValue("deldate", dayjs(new Date()));
       }
@@ -128,19 +128,20 @@ function InvoiceManage() {
     const total_price = newData.reduce(
       (a, v) =>
         (a +=
-          formatMoney(Number(v.qty || 0), 2, 0) *
-            Number(v?.price || 0) *
-            (1 - Number(v?.discount || 0) / 100) +
-          formatMoney(Number(v.qty || 0), 2, 0) *
-            Number(v?.price || 0) *
-            (1 - Number(v?.discount || 0) / 100) *
-            (v.vat / 100)),
+          Number(v?.qty || 0) *
+          Number(v?.price || 0) + (Number(v?.qty || 0) *
+          Number(v?.price || 0)*(v?.vat/100)) ),
       0
     );
+    const discount = form.getFieldValue("discount");
+    const grand_total_price =
+      total_price - form.getFieldValue("discount");
 
     setFormDetail(() => ({
       ...formDetail,
       total_price,
+      discount,
+      grand_total_price,
     }));
     // console.log(formDetail)
   };
@@ -436,7 +437,62 @@ function InvoiceManage() {
                     <Table.Summary.Row>
                       <Table.Summary.Cell
                         index={0}
-                        colSpan={8}
+                        colSpan={7}
+                      ></Table.Summary.Cell>
+                      <Table.Summary.Cell
+                        index={4}
+                        align="end"
+                        className="!pe-4"
+                      >
+                        Total
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell
+                        className="!pe-4 text-end border-right-0"
+                        style={{ borderRigth: "0px solid" }}
+                      >
+                        <Typography.Text type="danger">
+                          {formatMoney(Number(formDetail?.total_price || 0))}
+                        </Typography.Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>Baht</Table.Summary.Cell>
+                    </Table.Summary.Row>
+                    <Table.Summary.Row>
+                      <Table.Summary.Cell
+                        index={0}
+                        colSpan={7}
+                      ></Table.Summary.Cell>
+                      <Table.Summary.Cell
+                        index={4}
+                        align="end"
+                        className="!pe-4"
+                      >
+                        ส่วนลด
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell
+                        className="!pe-4 border-right-0"
+                        style={{ borderRigth: "0px solid" }}
+                      >
+                        <Form.Item name="discount" className="!m-0">
+                          <InputNumber
+                            className="width-100 input-30"
+                            controls={false}
+                            style={{ textAlignLast: 'right' }} 
+                            min={0}
+                            onFocus={(e) => {
+                              e.target.select();
+                            }}
+                            onChange={() => {
+                              handleSummaryPrice();
+                            }}
+                          />
+                        </Form.Item>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>Baht</Table.Summary.Cell>
+                    </Table.Summary.Row>
+                    <Table.Summary.Row>
+                      <Table.Summary.Cell
+                        index={0}
+                        colSpan={7}
                       ></Table.Summary.Cell>
                       <Table.Summary.Cell
                         index={4}
@@ -446,16 +502,14 @@ function InvoiceManage() {
                         Grand Total
                       </Table.Summary.Cell>
                       <Table.Summary.Cell
-                        className="!pe-4 text-end"
+                        className="!pe-4 text-end border-right-0"
                         style={{ borderRigth: "0px solid" }}
                       >
                         <Typography.Text type="danger">
-                          {formatMoney(Number(formDetail?.total_price || 0), 2)}
+                          {formatMoney(Number(formDetail?.grand_total_price || 0))}
                         </Typography.Text>
                       </Table.Summary.Cell>
-                      <Table.Summary.Cell className="!pe-4 text-end">
-                        Baht
-                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>Baht</Table.Summary.Cell>
                     </Table.Summary.Row>
                   </>
                 )}

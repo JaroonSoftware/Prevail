@@ -170,15 +170,6 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
       type:'select',    
   },  
   {
-    title: "ต้นทุน",
-    dataIndex: "cost",
-    key: "cost", 
-    width: "8%",
-    align: "right",
-    className: "!pe-3",        
-    // hidden: true,
-  },
-  {
     title: "ราคารวม",
     dataIndex: "total",
     key: "total",

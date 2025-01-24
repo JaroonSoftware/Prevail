@@ -83,7 +83,7 @@ function MyManage() {
           })
         ).data;
         setSOCode(code);
-        form.setFieldValue("vat", 7);
+        // form.setFieldValue("discount", 0);
         const ininteial_value = {
           ...formDetail,
           socode: code,
@@ -114,20 +114,20 @@ function MyManage() {
     const total_price = newData.reduce(
       (a, v) =>
         (a +=
-          Number(v.qty || 0) *
-          Number(v?.price || 0) *
-          (1 - Number(v?.discount || 0) / 100)),
+          Number(v?.qty || 0) *
+          Number(v?.price || 0) + (Number(v?.qty || 0) *
+          Number(v?.price || 0)*(v?.vat/100)) ),
       0
     );
-    const vat = form.getFieldValue("vat");
-    const grand_total_price =
-      total_price + (total_price * form.getFieldValue("vat")) / 100;
+    // const discount = form.getFieldValue("discount");
+    // const grand_total_price =
+    //   total_price - form.getFieldValue("discount");
 
     setFormDetail(() => ({
       ...formDetail,
       total_price,
-      vat,
-      grand_total_price,
+      // discount,
+      // grand_total_price,
     }));
     // console.log(formDetail)
   };
@@ -425,14 +425,14 @@ function MyManage() {
                     <Table.Summary.Row>
                       <Table.Summary.Cell
                         index={0}
-                        colSpan={5}
+                        colSpan={7}
                       ></Table.Summary.Cell>
                       <Table.Summary.Cell
                         index={4}
                         align="end"
                         className="!pe-4"
                       >
-                        Total
+                        Grand Total
                       </Table.Summary.Cell>
                       <Table.Summary.Cell
                         className="!pe-4 text-end border-right-0"
@@ -444,27 +444,27 @@ function MyManage() {
                       </Table.Summary.Cell>
                       <Table.Summary.Cell>Baht</Table.Summary.Cell>
                     </Table.Summary.Row>
-                    <Table.Summary.Row>
+                    {/* <Table.Summary.Row>
                       <Table.Summary.Cell
                         index={0}
-                        colSpan={4}
+                        colSpan={7}
                       ></Table.Summary.Cell>
                       <Table.Summary.Cell
                         index={4}
                         align="end"
                         className="!pe-4"
                       >
-                        Vat
+                        ส่วนลด
                       </Table.Summary.Cell>
                       <Table.Summary.Cell
-                        className="!pe-4 text-end border-right-0"
+                        className="!pe-4 border-right-0"
                         style={{ borderRigth: "0px solid" }}
                       >
-                        <Form.Item name="vat" className="!m-0">
+                        <Form.Item name="discount" className="!m-0">
                           <InputNumber
-                            className="width-100 input-30 text-end"
-                            addonAfter="%"
+                            className="width-100 input-30"
                             controls={false}
+                            style={{ textAlignLast: 'right' }} 
                             min={0}
                             onFocus={(e) => {
                               e.target.select();
@@ -475,24 +475,12 @@ function MyManage() {
                           />
                         </Form.Item>
                       </Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        className="!pe-4 text-end border-right-0"
-                        style={{ borderRigth: "0px solid" }}
-                      >
-                        <Typography.Text type="danger">
-                          {comma(
-                            Number(
-                              (formDetail.total_price * formDetail?.vat) / 100
-                            )
-                          )}
-                        </Typography.Text>
-                      </Table.Summary.Cell>
                       <Table.Summary.Cell>Baht</Table.Summary.Cell>
                     </Table.Summary.Row>
                     <Table.Summary.Row>
                       <Table.Summary.Cell
                         index={0}
-                        colSpan={5}
+                        colSpan={7}
                       ></Table.Summary.Cell>
                       <Table.Summary.Cell
                         index={4}
@@ -510,7 +498,7 @@ function MyManage() {
                         </Typography.Text>
                       </Table.Summary.Cell>
                       <Table.Summary.Cell>Baht</Table.Summary.Cell>
-                    </Table.Summary.Row>
+                    </Table.Summary.Row> */}
                   </>
                 )}
               </>
