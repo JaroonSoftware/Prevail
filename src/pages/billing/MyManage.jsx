@@ -13,7 +13,7 @@ import {
 import { Card, Col, Divider, Flex, Row, Space, Select,InputNumber } from "antd";
 
 import OptionService from "../../service/Options.service";
-import InvoiceService from "../../service/Invoice.service";
+import BillingNoteService from "../../service/BillingNote.Service";
 import DeliveryNoteService from "../../service/DeliveryNote.service";
 import { SaveFilled, SearchOutlined } from "@ant-design/icons";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
@@ -34,13 +34,13 @@ import { RiDeleteBin5Line } from "react-icons/ri";
 import { LuPackageSearch } from "react-icons/lu";
 import { LuPrinter } from "react-icons/lu";
 const opservice = OptionService();
-const ivservice = InvoiceService();
+const blservice = BillingNoteService();
 const dnservice = DeliveryNoteService();
 
-const gotoFrom = "/invoice";
+const gotoFrom = "/billing";
 const dateFormat = "DD/MM/YYYY";
 
-function InvoiceManage() {
+function BillingnoteManage() {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -51,8 +51,8 @@ function InvoiceManage() {
   const [openCustomers, setOpenCustomers] = useState(false);
   const [openProduct, setOpenProduct] = useState(false);
 
-  /** Invoice state */
-  const [ivCode, setIVCode] = useState(null);
+  /** Billing Note state */
+  const [blCode, setBLCode] = useState(null);
 
   /** Detail Data State */
   const [listDetail, setListDetail] = useState([]);
@@ -69,19 +69,21 @@ function InvoiceManage() {
   useEffect(() => {
     const initial = async () => {
       if (config?.action !== "create") {
-        const res = await ivservice
+        const res = await blservice
           .get(config?.code)
-          .catch((error) => message.error("get Invoice data fail."));
+          .catch((error) => message.error("get Billing Note data fail."));
         const {
           data: { header, detail },
         } = res.data;
-        const { ivcode, ivdate, deldate } = header;
+        const { blcode, bldate, deldate } = header;
+        console.log(header)
         setFormDetail(header);
         setListDetail(detail);
-        setIVCode(ivcode);
+        setBLCode(blcode);
+       
         form.setFieldsValue({
           ...header,
-          ivdate: dayjs(ivdate),
+          bldate: dayjs(bldate),
           deldate: dayjs(deldate),
         });
 
@@ -89,16 +91,16 @@ function InvoiceManage() {
         // handleChoosedCustomers(head);
       } else {
         const { data: code } = (
-          await ivservice.code().catch((e) => {
-            message.error("get Invoice code fail.");
+          await blservice.code().catch((e) => {
+            message.error("get Billing Note code fail.");
           })
         ).data;
-        setIVCode(code);
+        setBLCode(code);
 
         const ininteial_value = {
           ...formDetail,
-          ivcode: code,
-          ivdate: dayjs(new Date()),
+          blcode: code,
+          bldate: dayjs(new Date()),
         };
 
         setFormDetail(ininteial_value);
@@ -221,7 +223,7 @@ function InvoiceManage() {
 
         const header = {
           ...formDetail,
-          ivdate: dayjs(form.getFieldValue("ivdate")).format("YYYY-MM-DD"),
+          bldate: dayjs(form.getFieldValue("bldate")).format("YYYY-MM-DD"),
           remark: form.getFieldValue("remark"),
           deldate: dayjs(form.getFieldValue("deldate")).format("YYYY-MM-DD"),
           payment: form.getFieldValue("payment"),
@@ -231,15 +233,15 @@ function InvoiceManage() {
         const parm = { header, detail };
         // console.log(detail);
         const actions =
-              config?.action !== "create" ? ivservice.update : ivservice.create;
+              config?.action !== "create" ? blservice.update : blservice.create;
             actions(parm)
               .then((r) => {
                 handleClose().then((r) => {
-                  message.success("Request Invoice success.");
+                  message.success("Request Billing Note success.");
                 });
               })
               .catch((err) => {
-                message.error("Request Invoice fail.");
+                message.error("Request Billing Note fail.");
                 console.warn(err);
               });
           })
@@ -625,7 +627,7 @@ function InvoiceManage() {
                   <Row className="m-0 py-3 sm:py-0" gutter={[12, 12]}>
                     <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
                       <Typography.Title level={3} className="m-0">
-                        เลขที่ใบแจ้งหนี้ : {ivCode}
+                        เลขที่ใบแจ้งหนี้ : {blCode}
                       </Typography.Title>
                     </Col>
                     <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
@@ -637,7 +639,7 @@ function InvoiceManage() {
                         <Typography.Title level={3} className="m-0">
                           วันที่ใบแจ้งหนี้ :{" "}
                         </Typography.Title>
-                        <Form.Item name="ivdate" className="!m-0">
+                        <Form.Item name="bldate" className="!m-0">
                           <DatePicker
                             className="input-40"
                             allowClear={false}
@@ -706,4 +708,4 @@ function InvoiceManage() {
   );
 }
 
-export default InvoiceManage;
+export default BillingnoteManage;

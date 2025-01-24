@@ -7,7 +7,7 @@ import thaiBahtText from "thai-baht-text";
 import "./MyPrint.css";
 import logo from "../../../assets/images/logo.png";
 // import QRCode from "../../../assets/images/QRCode.jpg";
-import IVService from "../../../service/Invoice.service";
+import BillingNoteService from "../../../service/BillingNote.Service";
 import {
   Button,
   Card,
@@ -28,7 +28,7 @@ import { PiPrinterFill } from "react-icons/pi";
 import { LoadingOutlined } from "@ant-design/icons";
 import { comma } from "../../../utils/util";
 
-const ivservice = IVService();
+const blservice = BillingNoteService();
 
 function DelPrintPreview() {
   const { code } = useParams();
@@ -137,7 +137,7 @@ function DelPrintPreview() {
 
   useEffect(() => {
     const init = () => {
-      ivservice
+      blservice
         .get(code)
         .then(async (res) => {
           const { header, detail } = res.data.data;

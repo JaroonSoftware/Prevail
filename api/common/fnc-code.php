@@ -316,7 +316,7 @@ function request_blcode($pdo){
     while(true){
         $code = sprintf("%03s", ( $number) );
         $format = $prefix.$code;
-        $sql = "SELECT 1 r FROM blmaster where blcode = '$format'"; 
+        $sql = "SELECT 1 r FROM bl_master where blcode = '$format'"; 
         $stmt = $pdo->prepare($sql); 
         $stmt->execute(); 
         if ($stmt->rowCount() > 0){

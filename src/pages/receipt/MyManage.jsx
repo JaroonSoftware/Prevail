@@ -13,7 +13,7 @@ import { Card, Col, Divider, Flex, Row, Space, Table, InputNumber } from "antd";
 
 import OptionService from "../../service/Options.service";
 import ReceiptService from "../../service/Receipt.service";
-import InvoiceService from "../../service/Invoice.service";
+import BillingNoteService from "../../service/BillingNote.Service";
 import {
   SaveFilled,
   SearchOutlined,
@@ -39,7 +39,7 @@ import { LuPrinter } from "react-icons/lu";
 import { LuPackageSearch } from "react-icons/lu";
 const opservice = OptionService();
 const reservice = ReceiptService();
-const ivservice = InvoiceService();
+const blservice = BillingNoteService();
 
 const gotoFrom = "/receipt";
 const dateFormat = "DD/MM/YYYY";
@@ -208,7 +208,7 @@ function ReceiptManage() {
   
   const handleChoosedInvoice = async (val) => {
 
-    const res = await ivservice.getlist(val);
+    const res = await blservice.getlist(val);
     const {
       data: { detail },
     } = res.data;

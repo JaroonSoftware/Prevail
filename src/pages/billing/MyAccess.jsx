@@ -9,10 +9,10 @@ import { SearchOutlined, ClearOutlined, FileAddOutlined } from '@ant-design/icon
 import { accessColumn } from "./model";
 
 import dayjs from 'dayjs';
-import InvoiceService from '../../service/Invoice.service';
+import BillingNoteService from '../../service/BillingNote.Service';
 
 
-const ivService = InvoiceService(); 
+const blservice = BillingNoteService(); 
 const mngConfig = {title:"", textOk:null, textCancel:null, action:"create", code:null};
 
 const RangePicker = DatePicker.RangePicker;
@@ -29,12 +29,12 @@ const MyAccess = () => {
         <>  
         <Row gutter={[8,8]}> 
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='เลขที่ใบแจ้งหนี้' name='ivcode'>
-                    <Input placeholder='Enter Invoice Code.' />
+                <Form.Item label='เลขที่ใบแจ้งหนี้' name='blcode'>
+                    <Input placeholder='Enter Billing Code.' />
                 </Form.Item>                            
             </Col>
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='วันที่ใบแจ้งหนี้' name='ivdate'>
+                <Form.Item label='วันที่ใบแจ้งหนี้' name='bldate'>
                     <RangePicker placeholder={['From Date', 'To date']} style={{width:'100%', height:40}}  />
                 </Form.Item>
             </Col> 
@@ -106,14 +106,14 @@ const MyAccess = () => {
 
         form.validateFields().then((v) => {
             const data = { ...v };
-            if( !!data?.ivdate) {
-                const arr = data?.ivdate.map( m => dayjs(m).format("YYYY-MM-DD") )
-                const [ivdate_form, ivdate_to] = arr; 
+            if( !!data?.bldate) {
+                const arr = data?.bldate.map( m => dayjs(m).format("YYYY-MM-DD") )
+                const [bldate_form, bldate_to] = arr; 
                 //data.created_date = arr
-                Object.assign(data, {ivdate_form, ivdate_to});
+                Object.assign(data, {bldate_form, bldate_to});
             }
             setTimeout( () => 
-                ivService.search(data, { ignoreLoading: Object.keys(data).length !== 0}).then( res => {
+                blservice.search(data, { ignoreLoading: Object.keys(data).length !== 0}).then( res => {
                     const {data} = res.data;
         
                     setAccessData(data);
@@ -138,12 +138,12 @@ const MyAccess = () => {
 
     const handleEdit = (data) => {
         
-        navigate("manage/edit", { state: { config: {...mngConfig, title:"แก้ไขใบแจ้งหนี้", action:"edit", code:data?.ivcode} }, replace:true } );
+        navigate("manage/edit", { state: { config: {...mngConfig, title:"แก้ไขใบแจ้งหนี้", action:"edit", code:data?.blcode} }, replace:true } );
     }; 
 
     const handleDelete = (data) => { 
         // startLoading();
-        ivService.deleted(data?.quotcode).then( _ => {
+        blservice.deleted(data?.quotcode).then( _ => {
             const tmp = accessData.filter( d => d.quotcode !== data?.quotcode );
 
             setAccessData([...tmp]); 
@@ -155,7 +155,7 @@ const MyAccess = () => {
     }; 
 
     const handlePrint = (code) => { 
-        const url = `/iv-print/${code.ivcode}`;
+        const url = `/bl-print/${code.blcode}`;
         const newWindow = window.open('', url, url);
         newWindow.location.href = url;
       }
@@ -181,7 +181,7 @@ const MyAccess = () => {
         <Flex className='width-100' align='center'>
             <Col span={12} className='p-0'>
                 <Flex gap={4} justify='start' align='center'>
-                  <Typography.Title className='m-0 !text-zinc-800' level={3}>หน้าจัดการใบแจ้งหนี้ (Invoice)</Typography.Title>
+                  <Typography.Title className='m-0 !text-zinc-800' level={3}>หน้าจัดการใบแจ้งหนี้ (Billing)</Typography.Title>
                 </Flex>
             </Col>
             <Col span={12} style={{paddingInline:0}}>
@@ -209,7 +209,7 @@ const MyAccess = () => {
                         <Table 
                         title={()=>TitleTable} 
                         size='small' 
-                        rowKey="ivcode" 
+                        rowKey="blcode" 
                         columns={column} 
                         dataSource={accessData} 
                         scroll={{ x: 'max-content' }} 
