@@ -112,6 +112,10 @@ const ShippingAccess = () => {
     setFormDetail((state) => ({ ...state, ...customer }));
     form.setFieldsValue({ ...fvalue, ...customer });
   };
+
+  const handleScanBarcode = (val) => {
+    alert(val)
+  };
   const TitleTable = (
     <Flex className="width-100" align="center">
       <Col span={12} className="p-0">
@@ -127,12 +131,6 @@ const ShippingAccess = () => {
     setIsModalDNOpen(true);
   };
 
-  // const handleOkDN = () => {
-  //   setIsModalDNOpen(false);
-  // };
-  // const handleCancelDN = () => {
-  //   setIsModalDNOpen(false);
-  // };
   const prodcolumns = productColumn({ handleScan });
   const SectionCustomers = (
     <>
@@ -312,6 +310,9 @@ const ShippingAccess = () => {
         <ModalScan
           show={isModalOpenDN}
           close={() => setIsModalDNOpen(false)}
+          values={(v) => {
+            handleScanBarcode(v);
+          }}
         ></ModalScan>
       )}
     </div>
