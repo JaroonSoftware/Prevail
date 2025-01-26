@@ -83,11 +83,13 @@ export default function ModalSO({show, close,cuscode, values, selected}) {
         type: "checkbox",
         fixed: true,
         // hideSelectAll:true,
-        onChange: (selectedRowKeys, selectedRows) => { 
-            // setItemsRowKeySelect([...new Set([...selectedRowKeys, ...itemsRowKeySelect])]);
-            // setItemsList(selectedRows);
-            //setItemsRowKeySelect(selectedRowKeys);
-        },
+        onChange: (selectedRowKeys, selectedRows) => {
+            setItemsRowKeySelect([
+              ...new Set([...selectedRowKeys, ...itemsRowKeySelect]),
+            ]);
+            setItemsList(selectedRows);
+            setItemsRowKeySelect(selectedRowKeys);
+          },
         getCheckboxProps: (record) => { 
             return {
                 disabled: handleCheckDuplicate(record.code), 
