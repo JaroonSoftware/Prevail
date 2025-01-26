@@ -16,22 +16,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $typecode = !empty($typecode) ? "and a.typecode like '%$typecode%'" : "";
     $active_status = !empty($active_status) ? "and a.active_status = '$active_status'" : "";
     try {
-        $sql = "SELECT a.stcode, a.stname,a.stnameEN, b.typename, a.price,a.min, a.buyprice, a.weight_stable, a.weight, a.vat ,a.active_status,a.unit,
-        (
-        CASE 
-        WHEN a.weight_stable = 'N' THEN sum(s.unit_weight) 
-        WHEN a.weight_stable = 'Y' THEN count(s.barcode_id) 
-        WHEN a.weight_stable IS NULL THEN count(s.barcode_id) 
-        ELSE 0 END) as stock 
+        $sql = "SELECT a.stcode, a.stname,a.stnameEN, b.typename, a.price,a.min, a.buyprice, a.weight_stable, a.weight, a.vat ,a.active_status,a.unit,        
+        s.qty as stock 
         FROM `items` as a
         left outer join `itemtype` as b on (a.typecode=b.typecode)   
-        left outer join `items_barcode` as s on (a.stcode=s.stcode)        
+        left outer join `items_stock` as s on (a.stcode=s.stcode)     
         where 1=1
         $stcode
         $stname
         $typecode
         $active_status
-        GROUP by a.stcode 
         order by a.stcode asc";
 
         $stmt = $conn->prepare($sql);

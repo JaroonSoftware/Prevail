@@ -42,6 +42,13 @@ export const accessColumn = ({ handleEdit, handleDelete, handleView }) => [
     width: 140,
   },
   {
+    title: "หน่วย",
+    dataIndex: "unit",
+    key: "unit",
+    sorter: (a, b) => (a?.unit || "").localeCompare(b?.unit || ""),
+    width: 140,
+  },
+  {
     title: "สถานะ",
     dataIndex: "active_status",
     key: "status",

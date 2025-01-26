@@ -46,6 +46,23 @@ try {
             die;
         }
 
+        $sql = "INSERT INTO items_stock (stcode,price,amtprice,qty,places,created_by,created_date) 
+        values (:stcode,0,0,0,'1',:action_user,:action_date)";
+
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
+
+        
+        $stmt->bindParam(":stcode", $stcode, PDO::PARAM_STR);
+        $stmt->bindParam(":action_date", $action_date, PDO::PARAM_STR);
+        $stmt->bindParam(":action_user", $action_user, PDO::PARAM_STR);
+
+        if (!$stmt->execute()) {
+            $error = $conn->errorInfo();
+            throw new PDOException("Insert data error => $error");
+            die;
+        }    
+
         $conn->commit();
         http_response_code(200);
         echo json_encode(array("data" => array("id" => "ok")));
