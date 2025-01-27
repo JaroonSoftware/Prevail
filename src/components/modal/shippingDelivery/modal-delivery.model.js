@@ -7,9 +7,9 @@ export const customersColumn = ({handleChoose})=>{
     return [
       {
         title: "รหัสใบส่งสินค้า",
-        key: "cuscode",
+        key: "dncode",
         width: "30%",
-        dataIndex: "cuscode", 
+        dataIndex: "dncode", 
         render: (v, record) => <Link className="text-select" onClick={()=>handleChoose(record)}>{v}</Link>
       },
       {

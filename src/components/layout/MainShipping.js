@@ -11,8 +11,7 @@ function Main({ children }) {
       <Layout>
         <LoadingProvider>
           <AxiosInterceptor>
-            <Headerecommerce/>
-            <br></br>
+            <Headerecommerce /><br></br>
             <Content>{children}</Content>
           </AxiosInterceptor>
         </LoadingProvider>

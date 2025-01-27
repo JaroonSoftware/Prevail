@@ -13,6 +13,7 @@ import {
   Input,
   Table,
   message,
+  Collapse,
 } from "antd";
 import { productColumn } from "./model";
 import OptionService from "../../service/Options.service";
@@ -31,20 +32,13 @@ const ShippingAccess = () => {
   const [accessData, setAccessData] = useState([]);
   const [listDetail] = useState([]);
   const dnservice = DeliveryNoteService();
-  const [
-    dnCode,
-    //  setDNCode
-  ] = useState(null);
+  const [dnCode, setDNCode] = useState(null);
   const [setUnitOption] = React.useState([]);
-  const cardStyle = {
-    backgroundColor: "#f0f0f0",
-    height: "calc(100% - (25.4px + 1rem))",
-  };
   useEffect(() => {
     const initial = async () => {
       const data = {};
       dnservice
-
+        .setDNCode(dnCode)
         .search({ ignoreLoading: Object.keys(data).length !== 0 })
         .then((res) => {
           const { data } = res.data;
@@ -91,7 +85,7 @@ const ShippingAccess = () => {
     // console.log(formDetail)
   };
   const handleChoosedDN = (val) => {
-    console.log(val)
+    console.log(val);
     const fvalue = form.getFieldsValue();
     const addr = [
       !!val?.idno ? `${val.idno} ` : "",
@@ -104,9 +98,7 @@ const ShippingAccess = () => {
     ];
     const customer = {
       ...val,
-      cusaddress: addr.join(""),
-      cuscontact: val.contact,
-      custel: val?.tel?.replace(/[^(0-9, \-, \s, \\,)]/g, "")?.trim(),
+      dncode: val.dncode,
     };
     // console.log(val.contact)
     setFormDetail((state) => ({ ...state, ...customer }));
@@ -114,7 +106,7 @@ const ShippingAccess = () => {
   };
 
   const handleScanBarcode = (val) => {
-    alert(val)
+    alert(val);
   };
   const TitleTable = (
     <Flex className="width-100" align="center">
@@ -134,20 +126,37 @@ const ShippingAccess = () => {
   const prodcolumns = productColumn({ handleScan });
   const SectionCustomers = (
     <>
-      <Space size="small" direction="vertical" className="flex gap-2">
-        <Row gutter={[8, 8]} className="m-0">
-          <Col xs={24} sm={24} md={12} lg={12}>
+      <Form
+        form={form}
+        layout="vertical"
+        className="width-100"
+        autoComplete="off"
+      >
+        <Row className="m-0" gutter={[12, 12]}>
+          <Col xs={12} sm={12} md={12} lg={12} xl={12} xxl={12}>
+            <Form.Item name="dncode" label="รหัสใบส่งสินค้า" className="!mb-1">
+              <Input readOnly placeholder="รหัสใบส่งสินค้า" />
+            </Form.Item>
+          </Col>
+          <Col xs={12} sm={12} md={12} lg={12} xl={12} xxl={12}>
+            <Form.Item
+              name="dndate"
+              label="วันที่ใบส่งสินค้า"
+              className="!mb-1"
+            >
+              <Input readOnly placeholder="วันที่ใบส่งสินค้า" />
+            </Form.Item>
+          </Col>
+          <Col xs={12} sm={12} md={12} lg={12} xl={12} xxl={12}>
             <Form.Item name="cuscode" label="รหัสลูกค้า" className="!mb-1">
               <Input readOnly placeholder="รหัสลูกค้า" />
             </Form.Item>
           </Col>
-          <Col xs={24} sm={24} md={12} lg={12}>
+          <Col xs={12} sm={12} md={12} lg={12} xl={12} xxl={12}>
             <Form.Item name="cusname" label="ชื่อลูกค้า" className="!mb-1">
               <Input placeholder="ชื่อลูกค้า" readOnly />
             </Form.Item>
           </Col>
-        </Row>
-        <Row gutter={[8, 8]} className="m-0">
           <Col xs={12} sm={12} md={12} lg={12} xl={12} xxl={12}>
             <Form.Item
               name="address"
@@ -199,12 +208,12 @@ const ShippingAccess = () => {
             </Form.Item>
           </Col>
         </Row>
-      </Space>
+      </Form>
     </>
   );
   const SectionProduct = (
     <>
-      <Flex className="width-100" vertical gap={4}>
+      <Flex className="width-100" vertical gap={4} style={{borderRadius: 25}}>
         <Table
           title={() => TitleTable}
           rowClassName={() => "editable-row"}
@@ -221,6 +230,34 @@ const ShippingAccess = () => {
       </Flex>
     </>
   );
+  const DN = [
+    {
+      key: "1",
+      label: "ข้อมูลใบส่งสินค้า",
+      children: (
+        <>
+          <Flex gap="small" wrap>
+            <Row className="m-0 py-3 sm:py-0" gutter={[12, 12]}>
+              <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
+                <Button
+                  onClick={() => {
+                    setOpenDN(true);
+                  }}
+                  type="primary"
+                >
+                  เลือกใบส่งสินค้า
+                </Button>
+              </Col>
+              <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+                {SectionCustomers}
+              </Col>
+            </Row>
+          </Flex>
+        </>
+      ),
+    },
+  ];
+ 
   return (
     <div className="item-access">
       <Space
@@ -228,75 +265,19 @@ const ShippingAccess = () => {
         size="middle"
         style={{ display: "flex", position: "relative" }}
       >
-        <Card>
-          <Flex gap="small" wrap>
-            <Button
-              onClick={() => {
-                setOpenDN(true);
-              }}
-              type="primary"
-            >
-              เลือกใบส่งสินค้า
-            </Button>
-          </Flex>
-        </Card>
-        <Form
-          form={form}
-          layout="vertical"
-          className="width-100"
-          autoComplete="off"
-        >
-          <Card
-            title={
-              <>
-                <Row className="m-0 py-3 sm:py-0" gutter={[12, 12]}>
-                  <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
-                    <Typography.Title level={3} className="m-0">
-                      เลขที่ใบส่งของ : {dnCode}
-                    </Typography.Title>
-                  </Col>
-                  <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
-                    <Flex
-                      gap={10}
-                      align="center"
-                      className="justify-start sm:justify-end"
-                    >
-                      <Typography.Title level={3} className="m-0">
-                        วันที่ใบส่งของ :
-                      </Typography.Title>
-                      <Form.Item name="dndate" className="!m-0">
-                        <DatePicker
-                          className="input-40"
-                          allowClear={false}
-                          // onChange={handleQuotDate}
-                          format={dateFormat}
-                        />
-                      </Form.Item>
-                    </Flex>
-                  </Col>
-                </Row>
-              </>
-            }
-          >
-            <Row className="m-0" gutter={[12, 12]}>
-              <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-                <Divider orientation="left" className="!mb-3 !mt-1">
-                  ข้อมูลใบส่งของ
-                </Divider>
-                <Card style={cardStyle}>{SectionCustomers}</Card>
-              </Col>
-              <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-                <Divider orientation="left" className="!my-0">
-                  รายการใบส่งสินค้า
-                </Divider>
-                <Card style={{ backgroundColor: "#f0f0f0" }}>
-                  {SectionProduct}
-                </Card>
-              </Col>
-            </Row>
-          </Card>
-        </Form>
+        <Collapse
+          style={{ border: "1px solid" }}
+          items={DN}
+          defaultActiveKey={["1"]}
+        />
+        <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+          <Divider orientation="left" className="!my-0">
+            รายการใบส่งสินค้า
+          </Divider>
+          {SectionProduct}
+        </Col>
       </Space>
+
       {openDN && (
         <ModalDN
           show={openDN}

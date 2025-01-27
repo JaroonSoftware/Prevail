@@ -61,7 +61,9 @@ function ReceiptManage() {
 
   /** Detail Data State */
   const [listDetail, setListDetail] = useState([]);
-  const [listPayment, setListPayment] = useState([]);
+  const [listPayment,
+    //  setListPayment
+    ] = useState([]);
   
   const [unitOption, setUnitOption] = useState([]);
 

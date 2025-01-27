@@ -9,17 +9,17 @@ import { useForm } from "antd/es/form/Form";
 // import { ModalDeliveryManage } from './modal-delivery.js';
 
 import { customersColumn } from "./modal-delivery.model.js";
-import CustomerService from "../../../service/Customer.Service.js";
+import DeliveryrService from "../../../service/DeliveryNote.service.js";
 import OptionService from "../../../service/Options.service";
 
-const ctmService = CustomerService();
+const DNService = DeliveryrService();
 const opservice = OptionService();
 
 export default function ModalCustomers({ show, close, values, selected }) {
   const [form] = useForm();
 
-  const [customersData, setCustomersData] = useState([]);
-  const [customersDataWrap, setCustomersDataWrap] = useState([]);
+  const [deliveryData, setCustomersData] = useState([]);
+  const [deliveryDataWrap, setDeliveryDataWrap] = useState([]);
 
   const [openModal, setOpenModel] = useState(show);
   const [loading, setLoading] = useState(true);
@@ -37,15 +37,15 @@ export default function ModalCustomers({ show, close, values, selected }) {
 
   const handleSearch = (value) => {
     if (!!value) {
-      const f = customersData.filter(
+      const f = deliveryData.filter(
         (d) =>
-          d.cuscode?.toLowerCase().includes(value?.toLowerCase()) ||
+          d.dncode?.toLowerCase().includes(value?.toLowerCase()) ||
           d.cusname?.toLowerCase().includes(value?.toLowerCase())
       );
 
-      setCustomersDataWrap(f);
+      setDeliveryDataWrap(f);
     } else {
-      setCustomersDataWrap(customersData);
+      setDeliveryDataWrap(deliveryData);
     }
   };
 
@@ -57,7 +57,7 @@ export default function ModalCustomers({ show, close, values, selected }) {
   const manageSubmit = (v) => {
     setOpenManage(false);
     setLoading(true);
-    const action = ctmService.create;
+    const action = DNService.create;
 
     action({ ...v })
       .then((_) => {
@@ -81,11 +81,11 @@ export default function ModalCustomers({ show, close, values, selected }) {
   const search = () => {
     setLoading(true);
     opservice
-      .optionsCustomer()
+      .optionsDeliverynote()
       .then((res) => {
         let { data } = res.data;
         setCustomersData(data);
-        setCustomersDataWrap(data);
+        setDeliveryDataWrap(data);
         // console.log(modalData, data)
       })
       .catch((err) => {
@@ -163,13 +163,13 @@ export default function ModalCustomers({ show, close, values, selected }) {
             <Card style={{ minHeight: "60vh" }}>
               <Table
                 bordered
-                dataSource={customersDataWrap}
+                dataSource={deliveryDataWrap}
                 columns={column}
-                rowKey="cuscode"
+                rowKey="dncode"
                 pagination={{
-                  total: customersDataWrap.length,
+                  total: deliveryDataWrap.length,
                   showTotal: (_, range) =>
-                    `${range[0]}-${range[1]} of ${customersData.length} items`,
+                    `${range[0]}-${range[1]} of ${deliveryData.length} items`,
                   defaultPageSize: 25,
                   pageSizeOptions: [25, 35, 50, 100],
                 }}

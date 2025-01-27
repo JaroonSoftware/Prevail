@@ -63,8 +63,8 @@ const PrivateRoute = ({ allowdRole, layout = "child" }) => {
         <Provider store={store}>
           <LoadingProvider>
           <Main>
-            <Outlet />
           </Main>
+            <Outlet />
           </LoadingProvider>
         </Provider>
       );

@@ -10,7 +10,7 @@ import {
   Typography,
   message,
 } from "antd";
-import { Card, Col, Divider, Flex, Row, Space, InputNumber } from "antd";
+import { Card, Col, Divider, Flex, Row, Space,  } from "antd";
 
 import OptionService from "../../service/Options.service";
 import SOService from "../../service/SO.service";

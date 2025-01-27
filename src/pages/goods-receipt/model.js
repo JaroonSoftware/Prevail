@@ -8,7 +8,7 @@ import { Tooltip } from "antd";
 import { TagGoodsReceiptStatus } from "../../components/badge-and-tag";
 import { EditableRow, EditableCell } from "../../components/table/TableEditAble";
 import dayjs from 'dayjs';
-import { EditOutlined, PrinterOutlined } from "@ant-design/icons";
+import { EditOutlined } from "@ant-design/icons";
 import { comma } from '../../utils/util';
 
 /** export component for edit table */

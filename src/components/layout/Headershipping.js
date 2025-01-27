@@ -52,13 +52,13 @@ const App = () => {
             },
           }}
         >
-          <Row style={{ height: 45, minWidth: 390 }}>
+          <Row style={{ height: 45}}>
             <Col xs={24} sm={24} md={24} lg={24} xl={24}>
               <Menu
                 onClick={onClick}
                 selectedKeys={[current]}
                 mode="horizontal"
-                style={{ paddingLeft: 20 }}
+        
               >
                 <Menu.Item>
                   <HomeOutlined style={{ paddingRight: 5 }} />
@@ -72,7 +72,6 @@ const App = () => {
                     top: 0,
                     right: 0,
                     backgroundColor: "#196f3d",
-                    width: 160,
                   }}
                 >
                   <Typography.Link
