@@ -27,6 +27,7 @@ const ShippingAccess = () => {
   const [form] = Form.useForm();
   const [isModalOpenDN, setIsModalDNOpen] = useState(false);
   const [openDN, setOpenDN] = useState(false);
+  const [selected, setSelected] = useState('');
   const [formDetail, setFormDetail] = useState(DEFALUT_CHECK_DELIVERY);
   const [accessData, setAccessData] = useState([]);
   const [listDetail] = useState([]);
@@ -99,6 +100,8 @@ const ShippingAccess = () => {
 
   const handleScanBarcode = (val) => {
     alert(val);
+    // alert(form.getFieldValue('dncode'))
+
   };
   const TitleTable = (
     <Flex className="width-100" align="center">
@@ -112,6 +115,8 @@ const ShippingAccess = () => {
     </Flex>
   );
   const handleScan = async (data) => {
+    // alert
+    setSelected(data.stcode)
     setIsModalDNOpen(true);
   };
 
@@ -278,6 +283,7 @@ const ShippingAccess = () => {
       {isModalOpenDN && (
         <ModalScan
           show={isModalOpenDN}
+          selected={selected}
           close={() => setIsModalDNOpen(false)}
           values={(v) => {
             handleScanBarcode(v);

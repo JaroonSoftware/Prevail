@@ -38,7 +38,7 @@ const dnservice = DeliveryNoteService();
 const gotoFrom = "/delivery-note";
 const dateFormat = "DD/MM/YYYY";
 
-function InvoiceManage() {
+function DeliveryNoteManage() {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -353,7 +353,7 @@ function InvoiceManage() {
         </Row>
         <Row gutter={[8, 8]} className="m-0">
           <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-            <Form.Item className="" name="remark" label="หมายเหตุ">
+            <Form.Item name="remark" label="หมายเหตุ">
               <Input.TextArea placeholder="Enter Remark" rows={4} />
             </Form.Item>
           </Col>
@@ -616,4 +616,4 @@ function InvoiceManage() {
   );
 }
 
-export default InvoiceManage;
+export default DeliveryNoteManage;
