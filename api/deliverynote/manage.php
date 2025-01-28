@@ -18,8 +18,8 @@ try {
         extract($_POST, EXTR_OVERWRITE, "_");
 
         // var_dump($_POST);
-        $sql = "insert dnmaster (`dncode`, `dndate`, `cuscode`,`total_price`,`remark`,created_by,updated_by) 
-        values (:dncode,:dndate,:cuscode,:total_price,:remark,:action_user,:action_user)";
+        $sql = "insert dnmaster (`dncode`, `dndate`, `cuscode`,`total_price`,`remark`,doc_status,created_by,updated_by) 
+        values (:dncode,:dndate,:cuscode,:total_price,:remark,'รอจัดเตรียมสินค้า',:action_user,:action_user)";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
@@ -249,20 +249,9 @@ try {
         echo json_encode(array("status"=> 1));
     } else  if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $code = $_GET["code"];
-        $sql = "SELECT a.dncode,a.dndate,x.socode,x.delcode,a.cuscode,x.claim_no,x.require_no,x.car_engineno,x.car_model_code,x.car_no,c.prename,c.cusname,CONCAT(COALESCE(c.idno, '') ,' ', COALESCE(c.road, ''),' ', COALESCE(c.subdistrict, ''),' ', COALESCE(c.district, ''),' ',COALESCE(c.zipcode, '') ) as address
-        ,c.zipcode,c.contact,c.tel,c.fax,c.contact,c.tel,CONCAT(COALESCE(d.idno, '') ,' ', COALESCE(d.road, ''),' ', COALESCE(d.subdistrict, ''),' ', COALESCE(d.district, ''),' ',COALESCE(d.zipcode, '') )  as deladdress
-        ,d.contact as delcontact,d.tel as deltel,a.total_price,a.vat,a.grand_total_price,a.remark,CONCAT(d.prename,' ',d.cusname) as delname,
-        CONCAT(d.tel) as deltel,a.doc_status ,m.car_model_code,m.brand_code,m.model_code,m.year,m.car_model_name,m.model_code,m.brand_code,k.model_name,j.brand_name";
+        $sql = "SELECT * ";
         $sql .= " FROM `dnmaster` as a ";
-        $sql .= " left outer join `somaster` as x on (a.cuscode)=(x.cuscode)";
-        // $sql .= " left outer join `sodetail` as s on (x.cuscode=s.cuscode) ";
-        $sql .= " left outer join `customer` as c on (x.cuscode)=(c.cuscode)";
-        $sql .= " left outer join `customer` as d on (x.delcode)=(d.cuscode)";
-        $sql .= " left outer join `car_model` as m on (x.car_model_code)=(m.car_model_code)";
-        $sql .= " left outer join `model_table` as k on (m.model_code)=(k.model_code)";
-        $sql .= " left outer join `brand` as j on (m.brand_code)=(j.brand_code)";
-        // $sql .= " left outer join `brand` as b on (b.brand_code)=(m.brand_code)";
-        // $sql .= " left outer join `model_table` as mo on (mo.model_code)=(m.model_code)";
+        $sql .= " left outer join `customer` as c on (a.cuscode)=(c.cuscode)";
         $sql .= " where a.dncode = :code";
 
         $stmt = $conn->prepare($sql);
@@ -273,13 +262,9 @@ try {
         }
         $header = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT a.code,a.dncode,a.stcode, a.price, a.unit, a.qty ,i.stname,a.discount,s.delamount, k.kind_name,j.socode,r.remark";
+        $sql = "SELECT a.code,a.dncode,a.stcode, a.price, a.unit, a.qty ,i.stname,a.del_qty";
         $sql .= " FROM `dndetail` as a";
         $sql .= " inner join `items` as i on (a.stcode=i.stcode)  ";
-        $sql .= " left outer join `sodetail` as s on (a.stcode=s.stcode) and a.socode=s.socode ";
-        $sql .= " left outer join `somaster` as j on (a.socode=j.socode)  ";
-        $sql .= " left outer join `dnmaster` as r on (a.dncode=r.dncode)  ";
-        $sql .= " left outer join kind k on (i.kind_code=k.kind_code)  ";
         $sql .= " where a.dncode = :code";
 
         $stmt = $conn->prepare($sql);
@@ -292,7 +277,7 @@ try {
 
         $conn->commit();
         http_response_code(200);
-        echo json_encode(array('status' => 1, 'data' => array("header" => $header, "detail" => $detail)));
+        echo json_encode(array('status' => 1, "header" => $header, "detail" => $detail));
     }
 } catch (PDOException $e) {
     $conn->rollback();
