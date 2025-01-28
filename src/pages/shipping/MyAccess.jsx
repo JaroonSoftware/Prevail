@@ -17,21 +17,24 @@ import {
 import { productColumn } from "./model";
 import OptionService from "../../service/Options.service";
 import DeliveryNoteService from "../../service/DeliveryNote.service";
+import BarcodeService from "../../service/Barcode.service";
 import ModalDN from "../../components/modal/shippingDelivery/ModalDelivery";
 import ModalScan from "../../components/modal/scan-shipping/MyModal";
 import { Button, Typography } from "antd";
 import { DEFALUT_CHECK_DELIVERY } from "./model";
 const opservice = OptionService();
+const dnservice = DeliveryNoteService();
+const barcodeservice = BarcodeService();
 // const dateFormat = "DD/MM/YYYY";
 const ShippingAccess = () => {
   const [form] = Form.useForm();
   const [isModalOpenDN, setIsModalDNOpen] = useState(false);
   const [openDN, setOpenDN] = useState(false);
-  const [selected, setSelected] = useState('');
+  const [selected, setSelected] = useState("");
   const [formDetail, setFormDetail] = useState(DEFALUT_CHECK_DELIVERY);
-  const [accessData] = useState([]);
+  const [accessData, setAccessData] = useState([]);
   const [listDetail] = useState([]);
-  const dnservice = DeliveryNoteService();
+
   const [setUnitOption] = React.useState([]);
   useEffect(() => {
     const initial = async () => {
@@ -81,17 +84,16 @@ const ShippingAccess = () => {
     // console.log(formDetail)
   };
   const handleChoosedDN = (val) => {
-
-    const { header,detail } = val;
+    const { header, detail } = val;
     // console.log(header);
-    setAccessData(detail)
-    
+    setAccessData(detail);
+
     const fvalue = form.getFieldsValue();
     const customer = {
       ...header,
       dncode: header.dncode,
-      county_code:header.county_code,
-      remark:header.remark,
+      county_code: header.county_code,
+      remark: header.remark,
     };
     // console.log(val.contact)
     setFormDetail((state) => ({ ...state, ...customer }));
@@ -99,9 +101,25 @@ const ShippingAccess = () => {
   };
 
   const handleScanBarcode = (val) => {
-    alert(val);
+    // alert(val);
     // alert(form.getFieldValue('dncode'))
 
+    const header = {
+      ...form.getFieldsValue(),
+      barcode_id:val,
+    };
+
+    const parm = { header };
+    // console.log(header);
+    barcodeservice
+      .confirm_shipping(parm)
+      .then((r) => {
+          message.success("Request GoodsReceipt success.");
+      })
+      .catch((err) => {
+        message.error("Request GoodsReceipt fail.");
+        console.warn(err);
+      });
   };
   const TitleTable = (
     <Flex className="width-100" align="center">
@@ -116,7 +134,7 @@ const ShippingAccess = () => {
   );
   const handleScan = async (data) => {
     // alert
-    setSelected(data.stcode)
+    setSelected(data.stcode);
     setIsModalDNOpen(true);
   };
 
@@ -210,7 +228,7 @@ const ShippingAccess = () => {
   );
   const SectionProduct = (
     <>
-      <Flex className="width-100" vertical >
+      <Flex className="width-100" vertical>
         <Table
           title={() => TitleTable}
           rowClassName={() => "editable-row"}

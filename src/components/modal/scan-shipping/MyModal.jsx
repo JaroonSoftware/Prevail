@@ -58,18 +58,23 @@ export default function ModalScan({ show, selected, close, values }) {
     barcodeservice.getshipping(val).then(async (res) => {
       const { data } = res.data;
 
-      console.log(data)
+      // console.log(data.barcode_status)
 
-      const init = {
-        ...data,
-      };
-
-      form.setFieldsValue({ ...init });
-
+      if(data.barcode_status!=undefined)
+      {
+        if(data.barcode_status!='ขายแล้ว')
+        {
+          values(data.barcode_id);
+          handleClose(false);
+        }
+        else{
+          message.error("ส่งสินค้าแล้วให้กับ "+data.dncode)
+        }  
+      }
+      else{
+        message.error("ไม่รู้จัก Barcode สินค้านี้")
+      }
       
-    
-      // values(val);
-      // handleClose(false);
     })
     .catch((err) => {
       console.log(err);
@@ -102,7 +107,9 @@ export default function ModalScan({ show, selected, close, values }) {
           </Col>
         </Row>
       </Form>
+      <Button onClick={() => CloseModal("10")}>test 10</Button>
         <Button onClick={() => CloseModal("11")}>test 11</Button>
+        <Button onClick={() => CloseModal("111")}>test 111</Button>
         <Spin spinning={loading}>
           <BarcodeScannerComponent
             width={500}
