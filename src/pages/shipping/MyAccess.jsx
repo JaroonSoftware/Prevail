@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from "react";
-import { Card } from "antd";
+
 import {
   Form,
   Flex,
@@ -8,7 +8,6 @@ import {
   Row,
   Col,
   Space,
-  DatePicker,
   Divider,
   Input,
   Table,
@@ -23,7 +22,7 @@ import ModalScan from "../../components/modal/scan-shipping/MyModal";
 import { Button, Typography } from "antd";
 import { DEFALUT_CHECK_DELIVERY } from "./model";
 const opservice = OptionService();
-const dateFormat = "DD/MM/YYYY";
+// const dateFormat = "DD/MM/YYYY";
 const ShippingAccess = () => {
   const [form] = Form.useForm();
   const [isModalOpenDN, setIsModalDNOpen] = useState(false);
@@ -32,13 +31,11 @@ const ShippingAccess = () => {
   const [accessData, setAccessData] = useState([]);
   const [listDetail] = useState([]);
   const dnservice = DeliveryNoteService();
-  const [dnCode, setDNCode] = useState(null);
   const [setUnitOption] = React.useState([]);
   useEffect(() => {
     const initial = async () => {
       const data = {};
       dnservice
-        .setDNCode(dnCode)
         .search({ ignoreLoading: Object.keys(data).length !== 0 })
         .then((res) => {
           const { data } = res.data;
@@ -213,7 +210,7 @@ const ShippingAccess = () => {
   );
   const SectionProduct = (
     <>
-      <Flex className="width-100" vertical gap={4} style={{borderRadius: 25}}>
+      <Flex className="width-100" vertical gap={4}>
         <Table
           title={() => TitleTable}
           rowClassName={() => "editable-row"}
@@ -257,7 +254,7 @@ const ShippingAccess = () => {
       ),
     },
   ];
- 
+
   return (
     <div className="item-access">
       <Space
@@ -265,11 +262,7 @@ const ShippingAccess = () => {
         size="middle"
         style={{ display: "flex", position: "relative" }}
       >
-        <Collapse
-          style={{ border: "1px solid" }}
-          items={DN}
-          defaultActiveKey={["1"]}
-        />
+        <Collapse items={DN} defaultActiveKey={["1"]} />
         <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
           <Divider orientation="left" className="!my-0">
             รายการใบส่งสินค้า
