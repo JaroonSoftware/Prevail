@@ -31,6 +31,7 @@ const ShippingAccess = () => {
   const [isModalOpenDN, setIsModalDNOpen] = useState(false);
   const [openDN, setOpenDN] = useState(false);
   const [selected, setSelected] = useState("");
+  const [selectsocode, setSelectSOcode] = useState("");
   const [formDetail, setFormDetail] = useState(DEFALUT_CHECK_DELIVERY);
   const [accessData, setAccessData] = useState([]);
   const [listDetail] = useState([]);
@@ -107,6 +108,7 @@ const ShippingAccess = () => {
     const header = {
       ...form.getFieldsValue(),
       barcode_id:val,
+      socode:selectsocode,
     };
 
     const parm = { header };
@@ -134,6 +136,7 @@ const ShippingAccess = () => {
   );
   const handleScan = async (data) => {
     // alert
+    setSelectSOcode(data.socode)
     setSelected(data.stcode);
     setIsModalDNOpen(true);
   };
