@@ -8,11 +8,11 @@ export default function TagDeliveryNoteStatus({result}) {
   let elementToRender;
 
   switch (result) {
-    case 'ออกใบแจ้งหนี้แล้ว':
-      elementToRender = <Tag icon={<CheckCircleFilled />} color="#87d068"> ออกใบแจ้งหนี้แล้ว </Tag>;
+    case 'จัดเตรียมสินค้าแล้ว':
+      elementToRender = <Tag icon={<CheckCircleFilled />} color="#87d068"> จัดเตรียมสินค้าแล้ว </Tag>;
       break;
-    case 'รอออกใบแจ้งหนี้':
-      elementToRender = <Tag icon={<ClockCircleFilled />} color="#347C98"> รอออกใบแจ้งหนี้ </Tag>;
+    case 'รอจัดเตรียมสินค้า':
+      elementToRender = <Tag icon={<ClockCircleFilled />} color="#347C98"> รอจัดเตรียมสินค้า </Tag>;
       break;
     case 'ยกเลิก':
       elementToRender = <Tag icon={<CloseCircleFilledIcon />} color="#ababab"> ยกเลิก </Tag>;

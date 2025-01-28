@@ -50,7 +50,7 @@ function InvoiceManage() {
   const [openProduct, setOpenProduct] = useState(false);
   // const [openQuotation, setOpenQuotation] = useState(false);
 
-  /** Invoice state */
+  /** Delivery-Note state */
   const [dnCode, setDNCode] = useState(null);
 
   /** Detail Data State */
@@ -70,16 +70,16 @@ function InvoiceManage() {
       if (config?.action !== "create") {
         const res = await dnservice
           .get(config?.code)
-          .catch((error) => message.error("get Invoice data fail."));
-          const { header, detail } = res.data;
-        const { dncode, dndate, deldate } = header;
+          .catch((error) => message.error("get Delivery Note data fail."));
+          const { header, detail } = res.data;          
+        const { dncode, dndate } = header;
+        
         setFormDetail(header);
         setListDetail(detail);
         setDNCode(dncode);
         form.setFieldsValue({
           ...header,
           dndate: dayjs(dndate),
-          deldate: dayjs(deldate),
         });
 
         // console.log(dncode)
