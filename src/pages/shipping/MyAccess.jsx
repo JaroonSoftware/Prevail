@@ -29,7 +29,7 @@ const ShippingAccess = () => {
   const [openDN, setOpenDN] = useState(false);
   const [selected, setSelected] = useState('');
   const [formDetail, setFormDetail] = useState(DEFALUT_CHECK_DELIVERY);
-  const [accessData, setAccessData] = useState([]);
+  const [accessData] = useState([]);
   const [listDetail] = useState([]);
   const dnservice = DeliveryNoteService();
   const [setUnitOption] = React.useState([]);
