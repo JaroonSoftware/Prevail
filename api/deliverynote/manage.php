@@ -262,7 +262,7 @@ try {
         }
         $header = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT a.code,a.dncode,a.stcode, a.price, a.unit, a.qty ,i.stname,a.del_qty";
+        $sql = "SELECT a.code,a.dncode,a.stcode,a.socode, a.price, a.unit, a.qty ,i.stname,a.del_qty";
         $sql .= " FROM `dndetail` as a";
         $sql .= " inner join `items` as i on (a.stcode=i.stcode)  ";
         $sql .= " where a.dncode = :code";

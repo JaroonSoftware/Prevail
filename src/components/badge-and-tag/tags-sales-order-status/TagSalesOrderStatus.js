@@ -29,11 +29,8 @@ function TagSalesOrderStatus({result}) {
     case 'รอออกใบวางบิล':
       elementToRender = <Tag icon={<ClockCircleFilled />} color="#a569bd"> รอออกใบวางบิล </Tag>;
       break;
-    case 'โหลดสินค้ายังไม่ครบ':
-      elementToRender = <Tag icon={<ClockCircleFilled />} color="#008080"> โหลดสินค้ายังไม่ครบ </Tag>;
-      break;
-    case 'รอโหลดสินค้า':
-      elementToRender = <Tag icon={<ClockCircleFilled />} color="#800000"> รอโหลดสินค้า </Tag>;
+    case 'รอจัดเตรียมสินค้า':
+      elementToRender = <Tag icon={<ClockCircleFilled />} color="#008080"> รอจัดเตรียมสินค้า </Tag>;
       break;
     case 'รอปริ้นใบปะหน้าถุง':
       elementToRender = <Tag icon={<ClockCircleFilled />} color="#6495ED"> รอปริ้นใบปะหน้าถุง </Tag>;

@@ -12,6 +12,7 @@ const DeliveryNoteService = () => {
   
   const create = (parm = {}) => api.post(`${API_URL.API_MANAGE}`, parm);
   const update = (parm = {}) => api.put(`${API_URL.API_MANAGE}`, parm);
+  const deleted = (code) => api.delete(`${API_URL.API_MANAGE}?code=${code}`);
   const get = (code) => api.get(`${API_URL.API_MANAGE}?code=${code}`);
   const getlist = (parm = {}) => api.post(`${API_URL.API_LIST}`, parm);
   const getPrint = (code) => api.get(`${API_URL.API_DELIVERY_NOTE}?code=${code}`);
@@ -22,6 +23,7 @@ const DeliveryNoteService = () => {
   return {
     create,
     update,
+    deleted,
     get,
     getlist,
     getPrint,

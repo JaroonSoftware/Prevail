@@ -96,7 +96,7 @@ function InvoiceManage() {
           ...formDetail,
           dncode: code,
           dndate: dayjs(new Date()),
-          doc_status: "รอออกใบเสร็จรับเงิน",
+          doc_status: "รอจัดเตรียมสินค้า",
         };
         // console.log(ininteial_value);
         setFormDetail(ininteial_value);
@@ -247,7 +247,7 @@ function InvoiceManage() {
           <RiDeleteBin5Line style={{ fontSize: "1rem", marginTop: "3px" }} />
         }
         onClick={() => handleDelete(record?.code)}
-        disabled={formDetail.doc_status !== "รอออกใบเสร็จรับเงิน"}
+        disabled={formDetail.doc_status !== "รอจัดเตรียมสินค้า"}
       />
     ) : null;
   };
@@ -379,7 +379,7 @@ function InvoiceManage() {
             onClick={() => {
               setOpenProduct(true);
             }}
-            disabled={formDetail.doc_status !== "รอออกใบเสร็จรับเงิน"}
+            disabled={formDetail.doc_status !== "รอจัดเตรียมสินค้า"}
           >
             เลือกใบขายสินค้า
           </Button>
@@ -460,7 +460,7 @@ function InvoiceManage() {
       </Col>
       <Col span={12} className="p-0">
         <Flex gap={4} justify="end">
-        {formDetail.doc_status === "รอออกใบเสร็จรับเงิน" &&
+        {formDetail.doc_status === "รอจัดเตรียมสินค้า" &&
             config?.action !== "create" && (
               <Popconfirm
                 placement="topRight"
@@ -488,7 +488,7 @@ function InvoiceManage() {
             onClick={() => {
               handleConfirm();
             }}
-            disabled={formDetail.doc_status !== "รอออกใบเสร็จรับเงิน"}
+            disabled={formDetail.doc_status !== "รอจัดเตรียมสินค้า"}
           >
             Save
           </Button>
@@ -516,7 +516,7 @@ function InvoiceManage() {
             onClick={() => {
               handleConfirm();
             }}
-            disabled={formDetail.doc_status !== "รอออกใบเสร็จรับเงิน"}
+            disabled={formDetail.doc_status !== "รอจัดเตรียมสินค้า"}
           >
             Save
           </Button>

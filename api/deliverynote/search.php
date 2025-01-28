@@ -26,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
         c.*
         from dnmaster a        
         left join customer c on (a.cuscode = c.cuscode)
-        where 1 = 1 and a.doc_status != 'ยกเลิก'
+        where 1 = 1 
         $dncode
         $cuscode
         $cusname

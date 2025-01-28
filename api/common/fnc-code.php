@@ -254,7 +254,7 @@ function request_dncode($pdo){
     $year = date("Y");
     $month = date("m");
 
-    $sql = "select socode code from options where year = :y and month = :m";
+    $sql = "select dncode code from options where year = :y and month = :m";
     $stmt = $pdo->prepare($sql); 
     if (!$stmt->execute([ 'y' => $year, 'm' => $month ])){
         $error = $pdo->errorInfo();
