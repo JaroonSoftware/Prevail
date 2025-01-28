@@ -80,20 +80,17 @@ const ShippingAccess = () => {
     // console.log(formDetail)
   };
   const handleChoosedDN = (val) => {
-    console.log(val);
+
+    const { header,detail } = val;
+    // console.log(header);
+    setAccessData(detail)
+    
     const fvalue = form.getFieldsValue();
-    const addr = [
-      !!val?.idno ? `${val.idno} ` : "",
-      !!val?.road ? `${val?.road} ` : "",
-      !!val?.subdistrict ? `${val.subdistrict} ` : "",
-      !!val?.district ? `${val.district} ` : "",
-      !!val?.province ? `${val.province} ` : "",
-      !!val?.zipcode ? `${val.zipcode} ` : "",
-      !!val?.country ? `(${val.country})` : "",
-    ];
     const customer = {
-      ...val,
-      dncode: val.dncode,
+      ...header,
+      dncode: header.dncode,
+      county_code:header.county_code,
+      remark:header.remark,
     };
     // console.log(val.contact)
     setFormDetail((state) => ({ ...state, ...customer }));
@@ -154,7 +151,7 @@ const ShippingAccess = () => {
           </Col>
           <Col xs={12} sm={12} md={12} lg={12} xl={12} xxl={12}>
             <Form.Item
-              name="address"
+              name="county_code"
               label="ที่อยู่จัดส่งสินค้า"
               className="!mb-1"
             >
@@ -165,11 +162,11 @@ const ShippingAccess = () => {
                 filterOption={filterOption}
                 options={[
                   {
-                    value: "กะตะ",
+                    value: "1",
                     label: "กะตะ",
                   },
                   {
-                    value: "กะรน",
+                    value: "2",
                     label: "กะรน",
                   },
                   {
@@ -216,7 +213,7 @@ const ShippingAccess = () => {
           columns={prodcolumns}
           dataSource={accessData}
           pagination={false}
-          rowKey="dncode"
+          rowKey="stcode"
           scroll={{ x: "max-content" }}
           locale={{
             emptyText: <span>No data available, please add some data.</span>,

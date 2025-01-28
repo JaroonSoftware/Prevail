@@ -8,14 +8,14 @@ import { useForm } from "antd/es/form/Form";
 
 // import { ModalDeliveryManage } from './modal-delivery.js';
 
-import { customersColumn } from "./modal-delivery.model.js";
+import { deliverynoteColumn } from "./modal-delivery.model.js";
 import DeliveryrService from "../../../service/DeliveryNote.service.js";
 import OptionService from "../../../service/Options.service";
 
-const DNService = DeliveryrService();
+const dnservice = DeliveryrService();
 const opservice = OptionService();
 
-export default function ModalCustomers({ show, close, values, selected }) {
+export default function ModalDeliverynote({ show, close, values, selected }) {
   const [form] = useForm();
 
   const [deliveryData, setCustomersData] = useState([]);
@@ -49,35 +49,19 @@ export default function ModalCustomers({ show, close, values, selected }) {
     }
   };
 
-  const handleChoose = (value) => {
-    values(value);
+  const handleChoose = async (value) => {
+    let { dncode } = value;
+
+    const res = await dnservice
+      .get(dncode)
+      .catch((error) => message.error("get Delivery Note data fail."));
+    
+    values(res.data);
     setOpenModel(false);
   };
 
-  const manageSubmit = (v) => {
-    setOpenManage(false);
-    setLoading(true);
-    const action = DNService.create;
-
-    action({ ...v })
-      .then((_) => {
-        search();
-      })
-      .catch((err) => {
-        console.warn(err);
-        const data = err?.response?.data;
-        message.error(data?.message || "error request");
-      })
-      .finally(() => {
-        setTimeout(() => {
-          setLoading(false);
-        }, 300);
-      });
-    setOpenManage(false);
-  };
-
   /** setting initial component */
-  const column = customersColumn({ handleChoose });
+  const column = deliverynoteColumn({ handleChoose });
   const search = () => {
     setLoading(true);
     opservice
@@ -177,19 +161,6 @@ export default function ModalCustomers({ show, close, values, selected }) {
                 size="small"
               />
             </Card>
-            {/* { openManage &&
-                    <Drawer
-                        destroyOnClose={true}
-                        title="Create Customer"
-                        width={isSmallScreen ? '100%' : '50vw'}
-                        className='custom-drawer-class'
-                        onClose={()=>{setOpenManage(false)}}
-                        open={openManage} 
-                        styles={{ body: { padding: '0px 24px 8px' } }}
-                        getContainer={() => document.querySelector(".modal-customers")}
-                    >
-                        <ModalDeliveryManage submit={(val)=>manageSubmit(val)} /> 
-                    </Drawer>} */}
           </Space>
         </Spin>
       </Modal>

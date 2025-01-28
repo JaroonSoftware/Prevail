@@ -11,7 +11,7 @@ export const accessColumn = ({ handleEdit, handleDelete, handleView }) => [
     dataIndex: "county_code",
     align: "left",
     width: "20%",
-    // hidden: true,
+    hidden: true,
     sorter: (a, b) => (a?.county_code || "").localeCompare(b?.county_code || ""),
   },
   {

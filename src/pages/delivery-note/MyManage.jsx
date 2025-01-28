@@ -145,7 +145,7 @@ function InvoiceManage() {
         const header = {
           ...formDetail,
           dncode: dnCode,
-          sodate: dayjs(form.getFieldValue("sodate")).format("YYYY-MM-DD"),
+          dndate: dayjs(form.getFieldValue("dndate")).format("YYYY-MM-DD"),
           remark: form.getFieldValue("remark"),
         };
 

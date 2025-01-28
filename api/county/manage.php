@@ -18,14 +18,13 @@ try {
 
         // var_dump($_POST);
 
-        $sql = "INSERT INTO county (county_code,county_name,created_by,created_date) 
-        values (:county_code,:county_name,:action_user,:action_date)";
+        $sql = "INSERT INTO county (county_name,created_by,created_date) 
+        values (:county_name,:action_user,:action_date)";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
 
-        $stmt->bindParam(":county_code", $county_code, PDO::PARAM_STR);
         $stmt->bindParam(":county_name", $county_name, PDO::PARAM_STR);
         $stmt->bindParam(":action_date", $action_date, PDO::PARAM_STR);
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_INT);

@@ -12,7 +12,6 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
         $sql = "SELECT d.dncode,d.dndate,c.cuscode, c.cusname,c.prename, c.idno, c.road, c.subdistrict, c.district, c.province, c.zipcode,d.doc_status
             FROM dnmaster as d 
             inner join `customer` as c on (d.cuscode=c.cuscode) 
-            inner join `dndetail` as t on (d.dncode=t.dncode)
             where d.doc_status = 'รอจัดเตรียมสินค้า' 
             order by d.dncode ";
             // $type_code

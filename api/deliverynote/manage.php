@@ -135,11 +135,8 @@ try {
         set
         cuscode = :cuscode,
         dndate = :dndate,
-        socode = :socode,
         remark = :remark,
         total_price = :total_price,
-        vat = :vat,
-        grand_total_price = :grand_total_price,
         updated_date = CURRENT_TIMESTAMP(),
         updated_by = :action_user
         where dncode = :dncode";
@@ -152,11 +149,7 @@ try {
         $stmt->bindParam(":cuscode", $header->cuscode, PDO::PARAM_STR);
         $stmt->bindParam(":remark", $header->remark, PDO::PARAM_STR);
         $stmt->bindParam(":total_price", $header->total_price, PDO::PARAM_STR);
-        $stmt->bindParam(":vat", $header->vat, PDO::PARAM_STR);
-        $stmt->bindParam(":grand_total_price", $header->grand_total_price, PDO::PARAM_STR);
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_INT);
-        $stmt->bindParam(":dncode", $header->dncode, PDO::PARAM_STR);
-        $stmt->bindParam(":socode", $header->socode, PDO::PARAM_STR);
         $stmt->bindParam(":dndate", $header->dndate, PDO::PARAM_STR);
         $stmt->bindParam(":dncode", $header->dncode, PDO::PARAM_STR);
 
@@ -173,8 +166,8 @@ try {
             throw new PDOException("Remove data error => $error");
         }
 
-        $sql = "insert into dndetail (dncode,socode,stcode,qty,price,unit,discount,cost)
-        values (:dncode,:socode,:stcode,:qty,:price,:unit,:discount,:cost)";
+        $sql = "insert into dndetail (dncode,socode,stcode,qty,price,unit)
+        values (:dncode,:socode,:stcode,:qty,:price,:unit)";
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
@@ -187,8 +180,6 @@ try {
             $stmt->bindParam(":qty", $val->qty, PDO::PARAM_INT);
             $stmt->bindParam(":price", $val->price, PDO::PARAM_STR);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
-            $stmt->bindParam(":discount", $val->discount, PDO::PARAM_INT);
-            $stmt->bindParam(":cost", $val->cost, PDO::PARAM_STR);
         
             if (!$stmt->execute()) {
                 $error = $conn->errorInfo();
@@ -249,7 +240,7 @@ try {
         echo json_encode(array("status"=> 1));
     } else  if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $code = $_GET["code"];
-        $sql = "SELECT * ";
+        $sql = "SELECT * ,a.remark,c.county_code";
         $sql .= " FROM `dnmaster` as a ";
         $sql .= " left outer join `customer` as c on (a.cuscode)=(c.cuscode)";
         $sql .= " where a.dncode = :code";

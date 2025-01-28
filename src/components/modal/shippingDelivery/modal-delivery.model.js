@@ -2,7 +2,7 @@ import { Typography } from "antd";
 
 
 /** get items column */
-export const customersColumn = ({handleChoose})=>{
+export const deliverynoteColumn = ({handleChoose})=>{
     const Link = Typography.Link;
     return [
       {
