@@ -173,8 +173,8 @@ try {
             throw new PDOException("Remove data error => $error");
         }
 
-        $sql = "insert into dndetail (dncode,socode,stcode,qty,price,unit,discount,cost)
-        values (:dncode,:socode,:stcode,:qty,:price,:unit,:discount,:cost)";
+        $sql = "insert into dndetail (dncode,socode,stcode,price,unit,discount,cost)
+        values (:dncode,:socode,:stcode,:price,:unit,:discount,:cost)";
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
@@ -184,7 +184,6 @@ try {
             $stmt->bindParam(":dncode", $header->dncode, PDO::PARAM_STR);
             $stmt->bindParam(":socode", $val->socode, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
-            $stmt->bindParam(":qty", $val->qty, PDO::PARAM_INT);
             $stmt->bindParam(":price", $val->price, PDO::PARAM_STR);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
             $stmt->bindParam(":discount", $val->discount, PDO::PARAM_INT);

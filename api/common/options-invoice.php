@@ -10,7 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
         $res = null;
         
         $sql = "SELECT i.blcode,i.bldate,c.cuscode, c.cusname,c.prename, c.idno, c.road, c.subdistrict, c.district, c.province, c.zipcode,i.doc_status
-         FROM bl_master as i inner join `customer` as c on (i.cuscode=c.cuscode) where i.actble_status = 'Y' and (i.doc_status != 'ชำระครบแล้ว' and i.doc_status != 'ยกเลิก') ";
+         FROM bl_master as i inner join `customer` as c on (i.cuscode=c.cuscode) where (i.doc_status != 'ชำระครบแล้ว' and i.doc_status != 'ยกเลิก') ";
             // $type_code
             $stmt = $conn->prepare($sql); 
             $stmt->execute();

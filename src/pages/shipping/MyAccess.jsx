@@ -28,7 +28,7 @@ const ShippingAccess = () => {
   const [isModalOpenDN, setIsModalDNOpen] = useState(false);
   const [openDN, setOpenDN] = useState(false);
   const [formDetail, setFormDetail] = useState(DEFALUT_CHECK_DELIVERY);
-  const [accessData, setAccessData] = useState([]);
+  const [accessData] = useState([]);
   const [listDetail] = useState([]);
   const dnservice = DeliveryNoteService();
   const [setUnitOption] = React.useState([]);
