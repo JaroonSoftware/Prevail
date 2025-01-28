@@ -39,8 +39,6 @@ const ShippingAccess = () => {
         .search({ ignoreLoading: Object.keys(data).length !== 0 })
         .then((res) => {
           const { data } = res.data;
-
-          setAccessData(data);
         })
         .catch((err) => {
           console.log(err);
@@ -210,7 +208,7 @@ const ShippingAccess = () => {
   );
   const SectionProduct = (
     <>
-      <Flex className="width-100" vertical gap={4}>
+      <Flex className="width-100" vertical >
         <Table
           title={() => TitleTable}
           rowClassName={() => "editable-row"}
