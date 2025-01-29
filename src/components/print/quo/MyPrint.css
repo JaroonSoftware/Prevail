@@ -15,7 +15,6 @@
     height: 29.7cm; /* A4 height */
     /* margin: 0px !important; */
     /* padding: 0px !important; */
-    padding-inline: 0.15in;
     padding-block: 8mm;
     /* margin: 1cm; Margins */
     /* padding: 1cm; */
@@ -47,7 +46,7 @@
     ---width-param : 0mm;
     ---width-items : calc( 21cm - var(---width-param) );
     width: 100%;
-    height: 100vh;
+
     position: relative;
     display: flex;
     justify-content: flex-start;
@@ -67,8 +66,7 @@
   #quo .layout-preview {
     padding: var(---width-padding-param);
     width: calc( 21cm + (var(---width-padding-param) * 2) ); /* A4 width */
-    /* min-height: 29.7cm;*/
-    height: auto; 
+    /* min-height: 29.7cm;*
     /* min-height: 29.7cm; */
     box-sizing: border-box;
     box-shadow: 1px 1px 2px 1px #c5c7c5;
@@ -76,14 +74,14 @@
     background-color: #fff;
     letter-spacing: 0px; 
     color: #000;
-    position: relative;
+
   }
 
   .quopv-pages {
     ---color--1 : #000;
     position: relative;
     width: 21cm;
-    min-height: 29.7cm;
+
   }
 
   .quopv-pages .print-logo {
@@ -118,90 +116,30 @@
   .quopv-pages .print-head-content{
     width: 100%;
     position: relative;
-    height: 28mm; 
+
     padding-block: 1.4mm;
     padding-inline: 1.4mm;
     border-bottom: 0px solid #000; 
     display: inline-flex;
     flex-direction: column;
   }
-  
-  .quopv-pages .print-foot{
-    width: 100%;
-    position: relative;
-    /* height: 40mm;  */
-    padding-block: 1.4mm;
-    padding-inline: 1.4mm; 
-    /* bottom: 12px; */
-    /* left: 0; */
-    display: flex;
-  }
+
   
   .quopv-pages .print-content {
-    width: 50%;
-    position: relative;
+    width: 100%;
     /* height: 211.34mm;  */
-    display: flex;
-    flex-direction: column;
+    flex-direction: row;
     padding-block: 1.4mm;
     padding-inline: 1.4mm;
     border-bottom: 0px solid #000;  
   }
-  
-  .quopv-pages .th-text{
-    font-size: 18pt;
-    font-weight: 700; 
-  }
-  
-  .quopv-pages .ts-text{
-    font-size: 18pt;
-    font-weight: 700; 
-  }
-  
-  .quopv-pages .h-group-text {
-    font-weight: 600;
-    display: flex; 
-    font-size: 18pt;
-  }
-  
-  .quopv-pages span.h-label {
-    width: 180px;
-  }
-  
-  .quopv-pages .h-group-text span {
-    line-height: 1.5rem;
-  }
-  
-  .quopv-pages .h-title {
-    display: flex;
-    align-items: flex-start;
-    font-weight: 600;
-  }
-  
-  .quopv-pages  .print-layout .c-text{
-    display: flex;
-    align-items: flex-start;
-    font-size: 18pt;
-    font-weight: 400;
-  }
-  
-  .quopv-pages .tx-form{
-    font-size: 18px;
-    line-height: 18px;
-  }
-  
+
+
   .quopv-pages .sec-item {
     width: var(---width-items);
     display: flex;
     flex-direction: column;
   }
-  
-  
-  .quopv-pages .sec-parm {
-    width: var(---width-param);
-    display: flex;
-    flex-direction: column;
-  } 
 
   .quopv-pages .ant-typography {
     font-family: "Angsana New"; 
@@ -273,7 +211,6 @@
     top: 50%;
     inset-inline-end: 0;
     width: 0px;
-    height: 1.6em;
     background-color: #ffffff; 
     content: "";
  }
@@ -303,10 +240,10 @@
 
 .quopv-pages tr.ant-table-row.ant-table-row-level-0.r-sub td {
   border-left: 1px solid ;
-  padding-bottom: 18px !important; 
+
 }
 
-/* .quopv-pages tr.ant-table-row.ant-table-row-level-0.r-sub:first-child::after{
+.quopv-pages tr.ant-table-row.ant-table-row-level-0.r-sub:first-child::after{
   content: '';
   border-bottom: 1px solid #ffffff !important;
 }
@@ -316,11 +253,11 @@
   width: 100%;
   position: absolute;
   left: 0;
-} */
+}
 .quopv-pages tr.r-sum td.ant-table-cell.text-summary{
   /* border-top: 1px solid ; */
   border-left: 1px solid ;
-  height: 27px;
+
   border-bottom: 1px solid  !important;
 }
 .quopv-pages tr.r-sum td.ant-table-cell.text-summary:last-child { 
@@ -335,8 +272,6 @@
 
 
 .quopv-pages .ant-card.ant-card-small >.ant-card-head {
-    min-height: 30px;
-    padding: 0 2px;
     padding-inline-start: 6px;
     font-size: 14px;
     color: #000;
@@ -354,11 +289,6 @@
   padding: 0px;
 }
 
-.quopv-pages .tx-title {
-  font-size: 16px;
-  font-family: "Angsana New";
-}
-
 .quopv-pages .tx-info {
   font-size: 14px;
   font-family: "Angsana New";
@@ -366,6 +296,5 @@
 
 .quopv-pages .tx-sub {
   font-size: 11px;
-  line-height: 1.4rem;
   font-family: "Angsana New";
 }
