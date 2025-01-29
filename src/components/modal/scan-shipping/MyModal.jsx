@@ -69,18 +69,22 @@ export default function ModalScan({ show, selected, close, values }) {
       .then(async (res) => {
         const { data } = res.data;
 
-        // console.log(data.barcode_status)
+        // console.log(data.doc_status)
 
-        if (data.barcode_status !== undefined) {
-          if (data.barcode_status !== "ขายแล้ว") {
-            if (data.stcode === form.getFieldValue("stcode")) {
-              values(data);
-              handleClose(false);              
+        if (data.doc_status !== undefined) {
+          if (data.stcode === form.getFieldValue("stcode")) {
+            if (data.weight !== "0.00") {
+              if (data.doc_status !== "ขายแล้ว") {
+                values(data);
+                handleClose(false);
+              } else {
+                message.error("ส่งสินค้าแล้วให้กับ " + data.dncode);
+              }
             } else {
-              message.error("รหัสสินค้าไม่ตรงกัน");
+              message.error("ยังไม่ได้ชั่งน้ำหนักสินค้า ");
             }
           } else {
-            message.error("ส่งสินค้าแล้วให้กับ " + data.dncode);
+            message.error("รหัสสินค้าไม่ตรงกัน");
           }
         } else {
           message.error("ไม่รู้จัก Barcode สินค้านี้");
