@@ -37,7 +37,7 @@ try {
         $sql = "
         update items_barcode 
         set
-        barcode_status = :ขายแล้ว,
+        barcode_status = 'ขายแล้ว',
         socode = :socode,
         dncode = :dncode,
         updated_date = CURRENT_TIMESTAMP(),
@@ -62,7 +62,7 @@ try {
 
         $conn->commit();
         http_response_code(200);
-        echo json_encode(array("data" => array("code" => $code)));
+        echo json_encode(array("data" => array("code" => $header->barcode_id)));
     }
 } catch (PDOException $e) {
     $conn->rollback();

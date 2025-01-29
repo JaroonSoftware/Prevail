@@ -60,9 +60,9 @@ export default function ModalScan({ show, selected, close, values }) {
 
       // console.log(data.barcode_status)
 
-      if(data.barcode_status!=undefined)
+      if(data.barcode_status!==undefined)
       {
-        if(data.barcode_status!='ขายแล้ว')
+        if(data.barcode_status!=='ขายแล้ว')
         {
           values(data.barcode_id);
           handleClose(false);
@@ -107,9 +107,10 @@ export default function ModalScan({ show, selected, close, values }) {
           </Col>
         </Row>
       </Form>
+      {/* เอาไว้เทส
       <Button onClick={() => CloseModal("10")}>test 10</Button>
         <Button onClick={() => CloseModal("11")}>test 11</Button>
-        <Button onClick={() => CloseModal("111")}>test 111</Button>
+        <Button onClick={() => CloseModal("111")}>test 111</Button> */}
         <Spin spinning={loading}>
           <BarcodeScannerComponent
             width={500}
