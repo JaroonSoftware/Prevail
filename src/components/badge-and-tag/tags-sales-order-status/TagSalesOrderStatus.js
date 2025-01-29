@@ -14,8 +14,8 @@ function TagSalesOrderStatus({result}) {
     case 'ปริ้นหน้าถุงครบแล้ว':
       elementToRender = <Tag icon={<CheckCircleFilled />} color="#87d068"> ปริ้นหน้าถุงครบแล้ว </Tag>;
       break;
-    case 'รอชำระเงิน':
-      elementToRender = <Tag icon={<ClockCircleFilled />} color="#347C98"> รอชำระเงิน </Tag>;
+    case 'รอออกใบเสร็จรับเงิน':
+      elementToRender = <Tag icon={<ClockCircleFilled />} color="#347C98"> รอออกใบเสร็จรับเงิน </Tag>;
       break;
     case 'รอออกใบส่งของ':
       elementToRender = <Tag icon={<ClockCircleFilled />} color="#ffab47"> รอออกใบส่งของ </Tag>;

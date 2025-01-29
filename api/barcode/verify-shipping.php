@@ -28,8 +28,7 @@ try {
         $conn->commit();
         http_response_code(200);
         echo json_encode(array("data" => $res));
-    }
-    else  if ($_SERVER["REQUEST_METHOD"] == "PUT") {
+    } else  if ($_SERVER["REQUEST_METHOD"] == "PUT") {
         $rest_json = file_get_contents("php://input");
         $_PUT = json_decode($rest_json, true);
         extract($_PUT, EXTR_OVERWRITE, "_");
@@ -43,6 +42,8 @@ try {
         updated_date = CURRENT_TIMESTAMP(),
         updated_by = :action_user
         where barcode_id = :barcode_id";
+
+        // barcode_status = 'อยู่ในสต๊อก',
 
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
@@ -59,6 +60,100 @@ try {
             throw new PDOException("Insert data error => $error");
             die;
         }
+
+        $sql = "
+        update dndetail 
+        set
+        del_qty = del_qty+:unit_weight
+        where dncode = :dncode and stcode = :stcode ";
+
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
+
+        $stmt->bindParam(":dncode", $header->dncode, PDO::PARAM_STR);
+        $stmt->bindParam(":stcode", $header->stcode, PDO::PARAM_STR);
+        $stmt->bindParam(":unit_weight", $header->unit_weight, PDO::PARAM_STR);
+
+        if (!$stmt->execute()) {
+            $error = $conn->errorInfo();
+            throw new PDOException("Insert data error => $error");
+            die;
+        }
+
+        $sql = "
+        update dnmaster
+        set
+        doc_status = 'จัดเตรียมสินค้ายังไม่ครบ'
+        where dncode = :dncode  ";
+
+        $stmt1 = $conn->prepare($sql);
+        if (!$stmt1) throw new PDOException("Insert data error => {$conn->errorInfo()}");
+
+        $stmt1->bindParam(":dncode", $header->dncode, PDO::PARAM_STR);
+
+        if (!$stmt1->execute()) {
+            $error = $conn->errorInfo();
+            throw new PDOException("Insert data error => $error");
+            die;
+        }
+
+        $strSQL = "SELECT count(code) as count FROM `dndetail` where dncode = :dncode and qty>del_qty ";
+        $stmt5 = $conn->prepare($strSQL);
+        if (!$stmt5) throw new PDOException("Insert data error => {$conn->errorInfo()}");
+
+        $stmt5->bindParam(":dncode", $header->dncode, PDO::PARAM_STR);
+
+        if (!$stmt5->execute()) {
+            $error = $conn->errorInfo();
+            throw new PDOException("Insert data error => $error");
+            die;
+        }
+
+        $res = $stmt5->fetch(PDO::FETCH_ASSOC);
+        extract($res, EXTR_OVERWRITE, "_");
+        if ($count == 0) {
+
+            $sql = "
+                update somaster 
+                set
+                doc_status = 'รอออกใบวางบิล',
+                updated_date = CURRENT_TIMESTAMP(),
+                updated_by = :action_user
+                where socode = :socode";
+
+            $stmt4 = $conn->prepare($sql);
+            if (!$stmt4) throw new PDOException("Insert data error => {$conn->errorInfo()}");
+
+            $stmt4->bindParam(":action_user", $action_user, PDO::PARAM_INT);
+            $stmt4->bindParam(":socode", $header->socode, PDO::PARAM_STR);
+
+            if (!$stmt4->execute()) {
+                $error = $conn->errorInfo();
+                throw new PDOException("Insert data error => $error");
+                die;
+            }
+
+            $sql = "
+                update dnmaster 
+                set
+                doc_status = 'จัดเตรียมสินค้าแล้ว',
+                updated_date = CURRENT_TIMESTAMP(),
+                updated_by = :action_user
+                where dncode = :dncode";
+
+            $stmt4 = $conn->prepare($sql);
+            if (!$stmt4) throw new PDOException("Insert data error => {$conn->errorInfo()}");
+
+            $stmt4->bindParam(":action_user", $action_user, PDO::PARAM_INT);
+            $stmt4->bindParam(":dncode", $header->dncode, PDO::PARAM_STR);
+
+            if (!$stmt4->execute()) {
+                $error = $conn->errorInfo();
+                throw new PDOException("Insert data error => $error");
+                die;
+            }
+        }
+
 
         $conn->commit();
         http_response_code(200);

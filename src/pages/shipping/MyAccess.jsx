@@ -69,6 +69,17 @@ const ShippingAccess = () => {
   const filterOption = (input, option) =>
     (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
 
+  const getDNData = async () => {
+    const res = await dnservice
+      .get(form.getFieldValue("dncode"))
+      .catch((error) => message.error("get Delivery Note data fail."));
+
+    // values(res.data);
+    // console.log(res);
+    const { detail } = res.data;
+    setAccessData(detail);
+  };
+
   const handleSummaryPrice = () => {
     const newData = [...listDetail];
 
@@ -76,14 +87,14 @@ const ShippingAccess = () => {
       (a, v) => (a += Number(v.unit_weight || 0)),
       0
     );
-    // console.log(total_weight)
-    // const total_weight += newData.qty;
+
     setFormDetail(() => ({
       ...formDetail,
       total_weight,
     }));
     // console.log(formDetail)
   };
+
   const handleChoosedDN = (val) => {
     const { header, detail } = val;
     // console.log(header);
@@ -102,13 +113,12 @@ const ShippingAccess = () => {
   };
 
   const handleScanBarcode = (val) => {
-    // alert(val);
-    // alert(form.getFieldValue('dncode'))
 
     const header = {
       ...form.getFieldsValue(),
-      barcode_id:val,
-      socode:selectsocode,
+      ...val,
+      dncode: form.getFieldValue("dncode"),
+      socode: selectsocode,
     };
 
     const parm = { header };
@@ -116,13 +126,16 @@ const ShippingAccess = () => {
     barcodeservice
       .confirm_shipping(parm)
       .then((r) => {
-          message.success("Request GoodsReceipt success.");
+        message.success("Request GoodsReceipt success.");
+
+        getDNData();
       })
       .catch((err) => {
         message.error("Request GoodsReceipt fail.");
         console.warn(err);
       });
   };
+
   const TitleTable = (
     <Flex className="width-100" align="center">
       <Col span={12} className="p-0">
@@ -136,7 +149,7 @@ const ShippingAccess = () => {
   );
   const handleScan = async (data) => {
     // alert
-    setSelectSOcode(data.socode)
+    setSelectSOcode(data.socode);
     setSelected(data.stcode);
     setIsModalDNOpen(true);
   };
