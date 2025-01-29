@@ -3,11 +3,11 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 // import ReactDOMServer from "react-dom/server";
 import { useReactToPrint } from "react-to-print";
-import "./bl.css";
+import "./receipt.css";
 import { Authenticate } from "../../../service/Authenticate.service";
 // import logo from "../../../assets/images/QRCODEDN.jpg";
 import { Button, Flex, Table, Typography, message } from "antd";
-import { column } from "./bl.model";
+import { column } from "./receipt.model";
 import thaiBahtText from "thai-baht-text";
 import dayjs from "dayjs";
 // import { comma } from "../../../utils/util";
@@ -18,7 +18,7 @@ import BillingNoteService from "../../../service/BillingNote.Service";
 
 const blservice = BillingNoteService();
 
-function BLPrintPreview() {
+function ReceiptPrintPreview() {
   const { code } = useParams();
   const componentRef = useRef(null);
   const authService = Authenticate();
@@ -346,4 +346,4 @@ function BLPrintPreview() {
   );
 }
 
-export default BLPrintPreview;
+export default ReceiptPrintPreview;

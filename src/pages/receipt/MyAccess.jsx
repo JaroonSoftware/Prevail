@@ -196,10 +196,11 @@ const MyAccess = () => {
       });
   };
 
-  const handlePrint = (recode) => {
-    const newWindow = window.open("", "_blank");
-    newWindow.location.href = `/receipt/${recode.recode}`;
-  };
+  const handlePrint = (code) => { 
+    const url = `/re-print/${code.recode}`;
+    const newWindow = window.open('', url, url);
+    newWindow.location.href = url;
+  }
 
   const column = accessColumn({ handleEdit, handleDelete, handlePrint });
 
