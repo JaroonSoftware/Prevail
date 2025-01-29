@@ -8,7 +8,17 @@ import "./MyPrint.css";
 import logo from "../../../assets/images/logo.png";
 
 import QuotationService from "../../../service/Quotation.service";
-import { Button, Card, Flex, Table, Typography, message, Spin } from "antd";
+import {
+  Button,
+  Card,
+  Flex,
+  Table,
+  Typography,
+  message,
+  Spin,
+  Row,
+  Col,
+} from "antd";
 import { column } from "./model";
 
 // import dayjs from "dayjs";
@@ -46,7 +56,7 @@ function POPrintPreview() {
   };
 
   const handleCheckMultiPages = async () => {
-    const limitPage = 550;
+    const limitPage = 850;
     return new Promise((r) => {
       // const head = document.querySelector("#raw .in-head");
       const data = document.querySelector("#raw .in-data");
@@ -129,9 +139,9 @@ function POPrintPreview() {
         .get(code)
         .then(async (res) => {
           const { detail } = res.data.data;
-        
+
           setDetails(detail);
-          console.log(detail)
+          console.log(detail);
         })
         .catch((err) => {
           console.log(err);
@@ -146,7 +156,7 @@ function POPrintPreview() {
   const HeaderForm = ({ ...resProps }) => {
     return (
       <>
-        <div className="print-head" style={{ height: 90 }}>
+        <div className="print-head" style={{ height: 120 }}>
           <div className="print-title">
             <ContentHead {...resProps} />
           </div>
@@ -190,6 +200,9 @@ function POPrintPreview() {
                 TEL. 098-1929391 ID LINE : 0981929391 E-mail
                 :prevailinternational89@gmail.com
               </Typography.Text>
+              <Typography.Text style={{ fontSize: 18 }}>
+                รอบวันที่
+              </Typography.Text>
             </Flex>
             <div className="grow pb-2">
               <img
@@ -210,7 +223,7 @@ function POPrintPreview() {
   };
   const ContentBody = () => {
     return (
-      <div className="content-body in-data flex flex-col">
+      <div className="content-body in-data ">
         <Card size="small" bordered>
           <Table
             id="tb-data"
