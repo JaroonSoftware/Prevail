@@ -8,18 +8,8 @@ import "./MyPrint.css";
 import logo from "../../../assets/images/logo.png";
 
 import QuotationService from "../../../service/Quotation.service";
-import {
-  Button,
-  Card,
-  Flex,
-  Table,
-  Typography,
-  message,
-  Spin,
-  Row,
-  Col,
-} from "antd";
-import { column } from "./model";
+import { Button, Flex, Table, Typography, message, Spin, Row } from "antd";
+import { column, column2 } from "./model";
 
 // import dayjs from "dayjs";
 // import { comma } from '../../../utils/util';
@@ -45,7 +35,7 @@ function POPrintPreview() {
 
   const [newPageContent, setNewPageContent] = useState([]);
   const columnDesc = column;
-
+  const columnDesc2 = column2;
   const [loading, setLoading] = useState(false);
 
   const handleAfterPrint = () => {
@@ -56,7 +46,7 @@ function POPrintPreview() {
   };
 
   const handleCheckMultiPages = async () => {
-    const limitPage = 850;
+    const limitPage = 750;
     return new Promise((r) => {
       // const head = document.querySelector("#raw .in-head");
       const data = document.querySelector("#raw .in-data");
@@ -65,7 +55,7 @@ function POPrintPreview() {
       const mtbody = table?.querySelector("tbody");
       // const mtfoot = table?.querySelector("tfoot");
       const row = mtbody?.querySelectorAll("tr");
-
+      // const col = thead?.querySelectorAll("tr");
       const samplesPage = [];
       // console.log(mtfoot);
       // console.log(componentRef.current);
@@ -99,13 +89,19 @@ function POPrintPreview() {
         // const chead = head.cloneNode(true);
         const cdata = data.cloneNode(true);
         const table = cdata.querySelector("#tb-data");
+        const table2 = cdata.querySelector("#tb-data2");
         // const thead = table?.querySelector("thead");
         const tbody = table?.querySelector("tbody");
+        const tbody2 = table2?.querySelector("tbody");
         // const tfoot = table?.querySelector("tfoot");
 
         // tbody.style.height = `${limitPage - hfoot}px`;
 
         tbody.innerHTML = `${samplesPage[rind]
+          .map((m) => m.outerHTML)
+          .join("")}`;
+
+        tbody2.innerHTML = `${samplesPage[rind]
           .map((m) => m.outerHTML)
           .join("")}`;
 
@@ -223,24 +219,45 @@ function POPrintPreview() {
   };
   const ContentBody = () => {
     return (
-      <div className="content-body in-data ">
-        <Card size="small" bordered>
-          <Table
-            id="tb-data"
-            size="small"
-            dataSource={details}
-            columns={columnDesc}
-            pagination={false}
-            rowKey="stcode"
-            bordered={false}
-            locale={{
-              emptyText: <span>No data available, please add some data.</span>,
-            }}
-            onRow={(record, index) => {
-              return { className: "r-sub" };
-            }}
-          />
-        </Card>
+      <div className="content-body in-data " >
+        <Row >
+          <Flex horizontal>
+            <Table
+              id="tb-data"
+              size="small"
+              dataSource={details}
+              columns={columnDesc}
+              pagination={false}
+              rowKey="stcode"
+              bordered={false}
+              locale={{
+                emptyText: (
+                  <span>No data available, please add some data.</span>
+                ),
+              }}
+              onRow={(record, index) => {
+                return { className: "r-sub" };
+              }}
+            />
+            <Table
+              id="tb-data2"
+              size="small"
+              dataSource={details}
+              columns={columnDesc2}
+              pagination={false}
+              rowKey="stcode"
+              bordered={false}
+              locale={{
+                emptyText: (
+                  <span>No data available, please add some data.</span>
+                ),
+              }}
+              onRow={(record, index) => {
+                return { className: "r-sub2" };
+              }}
+            />
+          </Flex>
+        </Row>
       </div>
     );
   };
