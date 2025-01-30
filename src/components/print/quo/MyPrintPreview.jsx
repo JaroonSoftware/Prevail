@@ -56,7 +56,7 @@ function POPrintPreview() {
   };
 
   const handleCheckMultiPages = async () => {
-    const limitPage = 920;
+    const limitPage = 900;
     return new Promise((r) => {
       // const head = document.querySelector("#raw .in-head");
       const data = document.querySelector("#raw .in-data");

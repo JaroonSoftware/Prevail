@@ -1,6 +1,5 @@
 import { Typography } from "antd";
 
-
 export const column = [
   {
     title: <>ลำดับ</>,
@@ -8,19 +7,22 @@ export const column = [
     align: "center",
     width: "10%",
     render: (_, record, idx) => (
-      <Typography.Text className="tx-info">{idx + 1}</Typography.Text>
+      <Typography.Text style={{fontSize: "12px"}}>{idx + 1}</Typography.Text>
     ),
   },
   {
     title: <>รายการสินค้า</>,
     align: "center",
+    colSpan: 2,
     key: "stname",
-    width: "50%",
+    width: "40%",
     dataIndex: "stname",
-  }, {
-    title: <>รายการสินค้า</>,
+   
+  },
+  {
     align: "center",
     key: "stnameEN",
+    colSpan: 0,
     width: "50%",
     dataIndex: "stnameEN",
   },
@@ -30,7 +32,6 @@ export const column = [
     width: "15%",
     key: "unit",
     dataIndex: "unit",
-    
   },
   {
     title: <>ราคา</>,
@@ -38,18 +39,8 @@ export const column = [
     width: "15%",
     key: "price",
     dataIndex: "price",
-    // onCell: () => ({
-    //   style: {
-    //     borderRight: "1px solid var(---color--1)",
-    //   },
-    // }),
-    // render: (_, record) => (
-    //   <Typography.Text className="tx-info">
-    //     {comma(Number(record.price), 2, 2)}
-    //   </Typography.Text>
-    // ),
+   
   },
-  
 ];
 export const column2 = [
   {
@@ -58,19 +49,22 @@ export const column2 = [
     align: "center",
     width: "10%",
     render: (_, record, idx) => (
-      <Typography.Text className="tx-info">{idx + 1}</Typography.Text>
+      <Typography.Text style={{fontSize: "12px"}}>{idx + 1}</Typography.Text>
     ),
   },
   {
     title: <>รายการสินค้า</>,
     align: "center",
+    colSpan: 2,
     key: "stname",
-    width: "50%",
+    width: "40%",
     dataIndex: "stname",
-  }, {
-    title: <>รายการสินค้า</>,
+   
+  },
+  {
     align: "center",
     key: "stnameEN",
+    colSpan: 0,
     width: "50%",
     dataIndex: "stnameEN",
   },
@@ -80,7 +74,6 @@ export const column2 = [
     width: "15%",
     key: "unit",
     dataIndex: "unit",
-    
   },
   {
     title: <>ราคา</>,
@@ -89,6 +82,4 @@ export const column2 = [
     key: "price",
     dataIndex: "price",
   },
-  
-  
 ];

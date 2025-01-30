@@ -227,6 +227,7 @@
 .quopv-pages .ant-table-wrapper .ant-table.ant-table-small tfoot>tr>td {
   padding: 2px 6px;
   font-family: "Angsana New";
+  font-size: 12px;
   transform: unset !important;
 }
 
