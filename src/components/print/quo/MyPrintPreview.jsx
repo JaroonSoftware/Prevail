@@ -114,6 +114,14 @@ function POPrintPreview() {
 
           let firstrow = detail.slice(0, detail.length / 2);
           let lastrow = detail.slice(detail.length / 2, detail.length);
+          
+          lastrow = lastrow.map(function(entry) {
+            entry.total = detail.length/2;
+            return entry;
+          });
+
+          // console.log(lastrow);
+
           setDetails(firstrow);
           setDetails2(lastrow);
         })
