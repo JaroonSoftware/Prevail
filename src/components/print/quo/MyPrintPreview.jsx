@@ -146,9 +146,11 @@ function POPrintPreview() {
         .then(async (res) => {
           const { header, detail } = res.data.data;
           setHData(header);
-          setDetails(detail);
-          setDetails2(detail);
-          console.log(detail);
+
+          let firstrow = detail.slice(0, detail.length/2)
+          let lastrow = detail.slice(detail.length/2, detail.length)
+          setDetails(firstrow);
+          setDetails2(lastrow);
         })
         .catch((err) => {
           console.log(err);
