@@ -8,10 +8,19 @@ import "./MyPrint.css";
 import logo from "../../../assets/images/logo.png";
 
 import QuotationService from "../../../service/Quotation.service";
-import { Button, Flex, Table, Typography, message, Spin, Row } from "antd";
+import {
+  Button,
+  Flex,
+  Table,
+  Typography,
+  message,
+  Spin,
+  Row,
+
+} from "antd";
 import { column, column2 } from "./model";
 
-// import dayjs from "dayjs";
+import dayjs from "dayjs";
 // import { comma } from '../../../utils/util';
 import { PiPrinterFill } from "react-icons/pi";
 import { LoadingOutlined } from "@ant-design/icons";
@@ -30,7 +39,7 @@ function POPrintPreview() {
     removeAfterPrint: true,
   });
 
-  // const [setHData] = useState({});
+   const [hData, setHData] = useState({});
   const [details, setDetails] = useState([]);
 
   const [newPageContent, setNewPageContent] = useState([]);
@@ -46,7 +55,7 @@ function POPrintPreview() {
   };
 
   const handleCheckMultiPages = async () => {
-    const limitPage = 750;
+    const limitPage = 920;
     return new Promise((r) => {
       // const head = document.querySelector("#raw .in-head");
       const data = document.querySelector("#raw .in-data");
@@ -134,8 +143,8 @@ function POPrintPreview() {
       quoservice
         .get(code)
         .then(async (res) => {
-          const { detail } = res.data.data;
-
+          const { header, detail } = res.data.data;
+          setHData(header);
           setDetails(detail);
           console.log(detail);
         })
@@ -152,7 +161,7 @@ function POPrintPreview() {
   const HeaderForm = ({ ...resProps }) => {
     return (
       <>
-        <div className="print-head" style={{ height: 120 }}>
+        <div className="print-head" style={{ height: 75 }}>
           <div className="print-title">
             <ContentHead {...resProps} />
           </div>
@@ -163,10 +172,9 @@ function POPrintPreview() {
 
   const FooterForm = ({ page }) => {
     return (
-      <div className="print-foot" style={{ height: 34 }}>
+      <div className="print-foot">
         <div className="print-title flex justify-end">
-          <Flex className="mb-0">
-            <Typography.Text className="text-sm min-w-8">Page</Typography.Text>
+          <Flex className="mb-0 pe-6">
             <Typography.Text className="text-sm" strong>
               {page}
             </Typography.Text>
@@ -180,24 +188,24 @@ function POPrintPreview() {
     return (
       <div className="content-head in-sample flex flex-col">
         <div className="print-title flex pb-2">
-          <div className="flex ps-3 grow-0" style={{ width: 900 }}>
+          <div className="flex ps-3 grow-0" style={{ width: 900 ,}}>
             <Flex className="mb-1.5" vertical>
               <Typography.Text
                 className="tx-title min-w-48 weight600"
-                style={{ fontSize: 22 }}
+                style={{ fontSize: 22, lineHeight: "1em", }}
                 strong
               >
                 Prevail International Food Co.,Ltd
               </Typography.Text>
-              <Typography.Text style={{ fontSize: 14 }}>
-                60/3 ถ.กระ ต.ตลาดใหญ อ.เมอง จ.ภเกต 83000
+              <Typography.Text style={{ fontSize: 14, lineHeight: "1em",}}>
+                60/3 ถ.กระ ต.ตลาดใหญ่ อ.เมือง จ.ภูเก็ต 83000
               </Typography.Text>
-              <Typography.Text style={{ fontSize: 18 }}>
+              <Typography.Text style={{ fontSize: 18, lineHeight: "1em",}}>
                 TEL. 098-1929391 ID LINE : 0981929391 E-mail
                 :prevailinternational89@gmail.com
               </Typography.Text>
-              <Typography.Text style={{ fontSize: 18 }}>
-                รอบวันที่
+              <Typography.Text style={{ fontSize: 18 ,lineHeight: "1em",}}>
+                รอบวันที่ {dayjs(hData?.qtdate).format("DD/MM/YYYY")}
               </Typography.Text>
             </Flex>
             <div className="grow pb-2">
@@ -206,9 +214,9 @@ function POPrintPreview() {
                 alt=""
                 style={{
                   height: "100%",
-                  width: 240,
+                  width: 200,
                   float: "left",
-                  marginLeft: "75px",
+                  marginLeft: "50px",
                 }}
               />
             </div>
@@ -219,46 +227,40 @@ function POPrintPreview() {
   };
   const ContentBody = () => {
     return (
-      <div className="content-body in-data " >
-        <Row >
-          <Flex horizontal>
-            <Table
-              id="tb-data"
-              size="small"
-              dataSource={details}
-              columns={columnDesc}
-              pagination={false}
-              rowKey="stcode"
-              bordered={false}
-              locale={{
-                emptyText: (
-                  <span>No data available, please add some data.</span>
-                ),
-              }}
-              onRow={(record, index) => {
-                return { className: "r-sub" };
-              }}
-            />
-            <Table
-              id="tb-data2"
-              size="small"
-              dataSource={details}
-              columns={columnDesc2}
-              pagination={false}
-              rowKey="stcode"
-              bordered={false}
-              locale={{
-                emptyText: (
-                  <span>No data available, please add some data.</span>
-                ),
-              }}
-              onRow={(record, index) => {
-                return { className: "r-sub2" };
-              }}
-            />
-          </Flex>
-        </Row>
-      </div>
+      <Row className="content-body in-data  ps-3 pe-3" horizontal>
+        <Table
+          id="tb-data"
+          size="small"
+          style={{ width: "50%" }}
+          dataSource={details}
+          columns={columnDesc}
+          pagination={false}
+          rowKey="stcode"
+          bordered={false}
+          locale={{
+            emptyText: <span>No data available, please add some data.</span>,
+          }}
+          onRow={(record, index) => {
+            return { className: "r-sub" };
+          }}
+        />
+        <Table
+          id="tb-data2"
+          size="small"
+          style={{ width: "50%" ,borderRight: "1px solid"}}
+          dataSource={details}
+          columns={columnDesc2}
+          pagination={false}
+          rowKey="stcode"
+          bordered={false}
+          locale={{
+            emptyText: <span>No data available, please add some data.</span>,
+          }}
+          onRow={(record, index) => {
+            return { className: "r-sub2" };
+          }}
+        />
+      </Row>
     );
   };
 

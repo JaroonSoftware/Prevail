@@ -88,16 +88,6 @@ export const column2 = [
     width: "15%",
     key: "price",
     dataIndex: "price",
-    // onCell: () => ({
-    //   style: {
-    //     borderRight: "1px solid var(---color--1)",
-    //   },
-    // }),
-    // render: (_, record) => (
-    //   <Typography.Text className="tx-info">
-    //     {comma(Number(record.price), 2, 2)}
-    //   </Typography.Text>
-    // ),
   },
   
   
