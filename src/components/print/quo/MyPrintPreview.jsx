@@ -41,6 +41,7 @@ function POPrintPreview() {
 
    const [hData, setHData] = useState({});
   const [details, setDetails] = useState([]);
+  const [details2, setDetails2] = useState([]);
 
   const [newPageContent, setNewPageContent] = useState([]);
   const columnDesc = column;
@@ -146,6 +147,7 @@ function POPrintPreview() {
           const { header, detail } = res.data.data;
           setHData(header);
           setDetails(detail);
+          setDetails2(detail);
           console.log(detail);
         })
         .catch((err) => {
@@ -248,7 +250,7 @@ function POPrintPreview() {
           id="tb-data2"
           size="small"
           style={{ width: "50%" ,borderRight: "1px solid"}}
-          dataSource={details}
+          dataSource={details2}
           columns={columnDesc2}
           pagination={false}
           rowKey="stcode"
