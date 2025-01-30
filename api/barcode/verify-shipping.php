@@ -14,8 +14,8 @@ try {
     if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $code = $_GET["code"];
         $sql = " SELECT a.* ";
-        $sql .= " FROM `items_barcode` as a ";
-        $sql .= " where barcode_id = :code";
+        $sql .= " FROM `package_barcode` as a ";
+        $sql .= " where package_id = :code";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute(['code' => $code])) {
@@ -34,16 +34,16 @@ try {
         extract($_PUT, EXTR_OVERWRITE, "_");
         // var_dump($_POST);
         $sql = "
-        update items_barcode 
+        update package_barcode 
         set
-        barcode_status = 'ขายแล้ว',
+        doc_status = 'ขายแล้ว',
         socode = :socode,
         dncode = :dncode,
         updated_date = CURRENT_TIMESTAMP(),
         updated_by = :action_user
-        where barcode_id = :barcode_id";
+        where package_id = :package_id";
 
-        // barcode_status = 'อยู่ในสต๊อก',
+        // package_id = 'อยู่ในสต๊อก',
 
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
@@ -53,7 +53,7 @@ try {
         $stmt->bindParam(":socode", $header->socode, PDO::PARAM_STR);
         $stmt->bindParam(":dncode", $header->dncode, PDO::PARAM_STR);
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_INT);
-        $stmt->bindParam(":barcode_id", $header->barcode_id, PDO::PARAM_STR);
+        $stmt->bindParam(":package_id", $header->package_id, PDO::PARAM_STR);
 
         if (!$stmt->execute()) {
             $error = $conn->errorInfo();
@@ -64,7 +64,7 @@ try {
         $sql = "
         update dndetail 
         set
-        del_qty = del_qty+:unit_weight
+        del_qty = del_qty+:weight
         where dncode = :dncode and stcode = :stcode ";
 
         $stmt = $conn->prepare($sql);
@@ -72,7 +72,7 @@ try {
 
         $stmt->bindParam(":dncode", $header->dncode, PDO::PARAM_STR);
         $stmt->bindParam(":stcode", $header->stcode, PDO::PARAM_STR);
-        $stmt->bindParam(":unit_weight", $header->unit_weight, PDO::PARAM_STR);
+        $stmt->bindParam(":weight", $header->weight, PDO::PARAM_STR);
 
         if (!$stmt->execute()) {
             $error = $conn->errorInfo();

@@ -5,7 +5,7 @@ const API_URL = {
 
 const BarcodeService = () => { 
   
-  const getshipping = (code, conf = {}) => api.get(`${API_URL.API_SHIPPING}?code=${code}`, conf);
+  const getshipping = (code) => api.get(`${API_URL.API_SHIPPING}?code=${code}`, { ignoreLoading : true });
   const confirm_shipping = (parm = {}) => api.put(`${API_URL.API_SHIPPING}`, parm);
   return {
     getshipping,
