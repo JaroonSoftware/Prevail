@@ -8,16 +8,7 @@ import "./MyPrint.css";
 import logo from "../../../assets/images/logo.png";
 
 import QuotationService from "../../../service/Quotation.service";
-import {
-  Button,
-  Flex,
-  Table,
-  Typography,
-  message,
-  Spin,
-  Row,
-
-} from "antd";
+import { Button, Flex, Table, Typography, message, Spin, Row } from "antd";
 import { column, column2 } from "./model";
 
 import dayjs from "dayjs";
@@ -39,7 +30,7 @@ function POPrintPreview() {
     removeAfterPrint: true,
   });
 
-   const [hData, setHData] = useState({});
+  const [hData, setHData] = useState({});
   const [details, setDetails] = useState([]);
   const [details2, setDetails2] = useState([]);
 
@@ -147,8 +138,16 @@ function POPrintPreview() {
           const { header, detail } = res.data.data;
           setHData(header);
 
-          let firstrow = detail.slice(0, detail.length/2)
-          let lastrow = detail.slice(detail.length/2, detail.length)
+          let firstrow = detail.slice(0, detail.length / 2);
+          let lastrow = detail.slice(detail.length / 2, detail.length);
+          
+          lastrow = lastrow.map(function(entry) {
+            entry.total = detail.length/2;
+            return entry;
+          });
+
+          // console.log(lastrow);
+
           setDetails(firstrow);
           setDetails2(lastrow);
         })
@@ -192,23 +191,23 @@ function POPrintPreview() {
     return (
       <div className="content-head in-sample flex flex-col">
         <div className="print-title flex pb-2">
-          <div className="flex ps-3 grow-0" style={{ width: 900 ,}}>
+          <div className="flex ps-3 grow-0" style={{ width: 900 }}>
             <Flex className="mb-1.5" vertical>
               <Typography.Text
                 className="tx-title min-w-48 weight600"
-                style={{ fontSize: 22, lineHeight: "1em", }}
+                style={{ fontSize: 22, lineHeight: "1em" }}
                 strong
               >
                 Prevail International Food Co.,Ltd
               </Typography.Text>
-              <Typography.Text style={{ fontSize: 14, lineHeight: "1em",}}>
+              <Typography.Text style={{ fontSize: 14, lineHeight: "1em" }}>
                 60/3 ถ.กระ ต.ตลาดใหญ่ อ.เมือง จ.ภูเก็ต 83000
               </Typography.Text>
-              <Typography.Text style={{ fontSize: 18, lineHeight: "1em",}}>
+              <Typography.Text style={{ fontSize: 18, lineHeight: "1em" }}>
                 TEL. 098-1929391 ID LINE : 0981929391 E-mail
                 :prevailinternational89@gmail.com
               </Typography.Text>
-              <Typography.Text style={{ fontSize: 18 ,lineHeight: "1em",}}>
+              <Typography.Text style={{ fontSize: 18, lineHeight: "1em" }}>
                 รอบวันที่ {dayjs(hData?.qtdate).format("DD/MM/YYYY")}
               </Typography.Text>
             </Flex>
@@ -251,7 +250,7 @@ function POPrintPreview() {
         <Table
           id="tb-data2"
           size="small"
-          style={{ width: "50%" ,borderRight: "1px solid"}}
+          style={{ width: "50%", borderRight: "1px solid" }}
           dataSource={details2}
           columns={columnDesc2}
           pagination={false}
