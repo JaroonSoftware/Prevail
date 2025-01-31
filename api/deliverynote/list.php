@@ -40,7 +40,7 @@ try {
         // }
         // $header = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT b.code,d.dncode,d.dndate,i.stcode,i.stname,s.price,s.unit,i.vat,c.cuscode, c.cusname,c.prename, c.idno, c.road, c.subdistrict, c.district, c.province, c.zipcode,d.doc_status
+        $sql = "SELECT b.code,d.dncode,b.qty,i.stcode,i.stname,s.price,s.unit,i.vat,c.cuscode, c.cusname,c.prename, c.idno, c.road, c.subdistrict, c.district, c.province, c.zipcode,d.doc_status
             FROM dnmaster as d 
             inner join `dndetail` as b on (d.dncode=b.dncode)
             inner join `sodetail` as s on (b.socode=s.socode and s.stcode=b.stcode)

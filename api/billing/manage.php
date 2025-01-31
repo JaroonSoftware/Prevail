@@ -46,8 +46,8 @@ try {
         $code = $conn->lastInsertId();
         // var_dump($master); exit;
 
-        $sql = "insert into bl_detail (blcode,dncode,stcode,price,unit)
-        values (:blcode,:dncode,:stcode,:price,:unit)";
+        $sql = "insert into bl_detail (blcode,socode,stcode,price,unit)
+        values (:blcode,:socode,:stcode,:price,:unit)";
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
@@ -55,7 +55,7 @@ try {
         foreach ($detail as $ind => $val) {
             $val = (object)$val;
             $stmt->bindParam(":blcode", $header->blcode, PDO::PARAM_STR);
-            $stmt->bindParam(":dncode", $val->dncode, PDO::PARAM_STR);
+            $stmt->bindParam(":socode", $val->socode, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
             $stmt->bindParam(":price", $val->price, PDO::PARAM_STR);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
@@ -64,53 +64,27 @@ try {
                 $error = $conn->errorInfo();
                 throw new PDOException("Insert data error => $error");
             }
-            // echo $val->dncode;
-            $sql = "
-            update dnmaster
-            set
-            doc_status = 'ออกใบเสร็จแล้ว'
-            where dncode = :dncode and stcode = :stcode";
 
-
-            $stmt2 = $conn->prepare($sql);
-            if (!$stmt2) throw new PDOException("Insert data error => {$conn->errorInfo()}");
-
-            $stmt2->bindParam(":dncode", $val->dncode, PDO::PARAM_STR);
-            $stmt2->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
-
-            if (!$stmt2->execute()) {
-                $error = $conn->errorInfo();
-                throw new PDOException("Insert data error => $error");
-                die;
-            }
-
-            $strSQL = "SELECT count(code) as count FROM `dnmaster` where doc_status != 'ออกใบเสร็จแล้ว' and dncode = '$val->dncode' ";
-            $stmt4 = $conn->prepare($strSQL);
-            $stmt4->execute();
-            $res = $stmt4->fetch(PDO::FETCH_ASSOC);
-            extract($res, EXTR_OVERWRITE, "_");
-            if ($count == 0) {
 
                 $sql = "
-                        update dnmaster 
+                        update somaster 
                         set
-                        doc_status = 'ออกใบเสร็จแล้ว',
+                        doc_status = 'รอออกใบเสร็จรับเงิน',
                         updated_date = CURRENT_TIMESTAMP(),
                         updated_by = :action_user
-                        where dncode = :dncode ";
+                        where socode = :socode ";
 
                 $stmt3 = $conn->prepare($sql);
                 if (!$stmt3) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
                 $stmt3->bindParam(":action_user", $action_user, PDO::PARAM_INT);
-                $stmt3->bindValue(":dncode", $val->dncode, PDO::PARAM_STR);
+                $stmt3->bindValue(":socode", $val->socode, PDO::PARAM_STR);
 
                 if (!$stmt3->execute()) {
                     $error = $conn->errorInfo();
                     throw new PDOException("Insert data error => $error");
                     die;
                 }
-            }
         }
 
         $conn->commit();
@@ -161,8 +135,8 @@ try {
             throw new PDOException("Remove data error => $error");
         }
 
-        $sql = "insert into bl_detail (blcode,dncode,stcode,unit,price)
-        values (:blcode,:dncode,:stcode,:unit,:price)";
+        $sql = "insert into bl_detail (blcode,socode,stcode,unit,price)
+        values (:blcode,:socode,:stcode,:unit,:price)";
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
@@ -170,7 +144,7 @@ try {
         foreach ($detail as $ind => $val) {
             $val = (object)$val;
             $stmt->bindParam(":blcode", $header->blcode, PDO::PARAM_STR);
-            $stmt->bindParam(":dncode", $val->dncode, PDO::PARAM_STR);
+            $stmt->bindParam(":socode", $val->socode, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
          
@@ -221,7 +195,7 @@ try {
         }
         $header = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT a.blcode,a.dncode,a.stcode, a.price,a.unit,i.stname ";
+        $sql = "SELECT a.blcode,a.socode,a.stcode, a.price,a.unit,i.stname ";
         $sql .= " FROM `bl_detail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
         $sql .= " where a.blcode = :code";
 

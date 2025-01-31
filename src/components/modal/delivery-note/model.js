@@ -1,5 +1,5 @@
 /** get items column */
-import { TagDeliveryNoteStatus } from "../../badge-and-tag";
+import { TagSalesOrderStatus } from "../../badge-and-tag";
 export const columns = ()=>{
   return [
     {
@@ -9,16 +9,16 @@ export const columns = ()=>{
       hidden: "true",
     },
     {
-      title: "เลขที่ใบส่งของ",
-      key: "dncode",
+      title: "เลขที่ใบขายสินค้า",
+      key: "socode",
       width: "15%",
-      dataIndex: "dncode",         
+      dataIndex: "socode",         
     },
     {
-      title: "วันที่ใบส่งของ",
-      key: "dndate",
+      title: "วันที่ใบขายสินค้า",
+      key: "sodate",
       width: "15%",
-      dataIndex: "dndate", 
+      dataIndex: "sodate", 
     },
     {
       title: "รหัสลูกค้า",
@@ -38,7 +38,7 @@ export const columns = ()=>{
       key: "doc_status", 
       width: '20%',
       align: "center",
-      render: (data) => <TagDeliveryNoteStatus result={data} />,
+      render: (data) => <TagSalesOrderStatus result={data} />,
     },
   ]
 };
