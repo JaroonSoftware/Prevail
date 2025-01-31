@@ -47,7 +47,7 @@ function POPrintPreview() {
   };
 
   const handleCheckMultiPages = async () => {
-    const limitPage = 850;
+    const limitPage = 920;
     return new Promise((r) => {
       const data = document.querySelector("#raw .in-data");
 
@@ -85,7 +85,7 @@ function POPrintPreview() {
 
         // console.log( h, hPageCheck );
       }
-      if (emlContent2.length > 0) samplesPage2.push(emlContent2);
+      if (emlContent.length > 0) samplesPage.push(emlContent);
       for (let elm2 of row2) {
         const h = Number(
           window
@@ -156,15 +156,17 @@ function POPrintPreview() {
           let lastrow = detail.slice(detail.length / 2, detail.length);
 
           lastrow = lastrow.map(function (entry) {
-            entry.total = detail.length / 2;
+            entry.total = detail.length / 2; 
+
             return entry;
           });
 
-          // console.log(lastrow);
+          
 
           setDetails(firstrow);
           setDetails2(lastrow);
         })
+
         .catch((err) => {
           console.log(err);
           message.error("Error getting Quotation.");
