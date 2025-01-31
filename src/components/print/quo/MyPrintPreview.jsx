@@ -49,18 +49,12 @@ function POPrintPreview() {
   const handleCheckMultiPages = async () => {
     const limitPage = 900;
     return new Promise((r) => {
-      // const head = document.querySelector("#raw .in-head");
       const data = document.querySelector("#raw .in-data");
       const table = document.querySelector("#raw .in-data #tb-data");
-      // const thead = table?.querySelector("thead");
       const mtbody = table?.querySelector("tbody");
-      // const mtfoot = table?.querySelector("tfoot");
       const row = mtbody?.querySelectorAll("tr");
-      // const col = thead?.querySelectorAll("tr");
       const samplesPage = [];
-      // console.log(mtfoot);
-      // console.log(componentRef.current);
-      // let pageCount = 1;
+   
       let hPageCheck = 0;
       let emlContent = [];
       for (let elm of row) {
@@ -83,41 +77,21 @@ function POPrintPreview() {
         // console.log( h, hPageCheck );
       }
       if (emlContent.length > 0) samplesPage.push(emlContent);
-
-      // const hfoot = Number(window.getComputedStyle(mtfoot).getPropertyValue('height')?.replace("px", ""));
       const pages = [];
       for (let rind in samplesPage) {
-        // const chead = head.cloneNode(true);
         const cdata = data.cloneNode(true);
         const table = cdata.querySelector("#tb-data");
-        const table2 = cdata.querySelector("#tb-data2");
-        // const thead = table?.querySelector("thead");
         const tbody = table?.querySelector("tbody");
-        const tbody2 = table2?.querySelector("tbody");
-        // const tfoot = table?.querySelector("tfoot");
-
-        // tbody.style.height = `${limitPage - hfoot}px`;
-
         tbody.innerHTML = `${samplesPage[rind]
           .map((m) => m.outerHTML)
           .join("")}`;
-
-        tbody2.innerHTML = `${samplesPage[rind]
-          .map((m) => m.outerHTML)
-          .join("")}`;
-
-        // if (rind < samplesPage.length - 1) tfoot.remove();
-        // else {
-        //     tbody.innerHTML = `${tbody.innerHTML}<tr><td colspan='6' style="height:100%">&nbsp;</td></tr>`;
-        // }
+        console.log(tbody);
         const temp = document.createElement("div");
-
-        // temp.appendChild( chead );
         temp.appendChild(cdata);
         temp.classList.add("on-page");
         pages.push(temp);
       }
-      // console.log( pages );
+
       setNewPageContent((state) => [...state, ...pages]);
       r(pages);
     });
@@ -230,7 +204,7 @@ function POPrintPreview() {
   };
   const ContentBody = () => {
     return (
-      <Row className="content-body in-data  ps-3 pe-3" horizontal>
+      <Row className="content-body in-data  ps-3 pe-3 " horizontal>
         <Table
           id="tb-data"
           size="small"
