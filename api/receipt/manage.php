@@ -45,8 +45,8 @@ try {
         $code = $conn->lastInsertId();
         // var_dump($master); exit;
 
-        $sql = "insert into receipt_detail (recode,ivcode,stcode,qty,price,unit,discount,vat)
-        values (:recode,:ivcode,:stcode,:qty,:price,:unit,:discount,:vat)";
+        $sql = "insert into receipt_detail (recode,blcode,stcode,qty,price,unit,discount,vat)
+        values (:recode,:blcode,:stcode,:qty,:price,:unit,:discount,:vat)";
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
@@ -54,7 +54,7 @@ try {
         foreach ($detail as $ind => $val) {
             $val = (object)$val;
             $stmt->bindParam(":recode", $header->recode, PDO::PARAM_STR);
-            $stmt->bindParam(":ivcode", $val->ivcode, PDO::PARAM_STR);
+            $stmt->bindParam(":blcode", $val->blcode, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
             $stmt->bindParam(":qty", $val->qty, PDO::PARAM_STR);
             $stmt->bindParam(":price", $val->price, PDO::PARAM_STR);
@@ -68,18 +68,18 @@ try {
             }
             // echo $val->dncode;
             $sql = "
-            update ivmaster 
+            update bl_master 
             set
             doc_status = 'ออกใบเสร็จแล้ว',
             updated_date = CURRENT_TIMESTAMP(),
             updated_by = :action_user
-            where ivcode = :ivcode";
+            where blcode = :blcode";
 
             $stmt2 = $conn->prepare($sql);
             if (!$stmt2) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
             $stmt2->bindParam(":action_user", $action_user, PDO::PARAM_INT);
-            $stmt2->bindParam(":ivcode", $val->ivcode, PDO::PARAM_STR);
+            $stmt2->bindParam(":blcode", $val->blcode, PDO::PARAM_STR);
 
             if (!$stmt2->execute()) {
                 $error = $conn->errorInfo();
@@ -162,7 +162,7 @@ try {
         }
         $header = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT a.ivcode,a.recode,a.stcode, a.price, a.discount, a.unit, a.qty ,a.vat ,i.stname ";
+        $sql = "SELECT a.blcode,a.recode,a.stcode, a.price, a.discount, a.unit, a.qty ,a.vat ,i.stname ";
         $sql .= " FROM `receipt_detail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
         $sql .= " where a.recode = :code";
 

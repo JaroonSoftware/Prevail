@@ -47,16 +47,25 @@ function POPrintPreview() {
   };
 
   const handleCheckMultiPages = async () => {
-    const limitPage = 900;
+    const limitPage = 920;
     return new Promise((r) => {
       const data = document.querySelector("#raw .in-data");
+
       const table = document.querySelector("#raw .in-data #tb-data");
       const mtbody = table?.querySelector("tbody");
       const row = mtbody?.querySelectorAll("tr");
+
+      const table2 = document.querySelector("#raw .in-data #tb-data2");
+      const mtbody2 = table2?.querySelector("tbody");
+      const row2 = mtbody2?.querySelectorAll("tr");
+
       const samplesPage = [];
-   
+
       let hPageCheck = 0;
       let emlContent = [];
+      const samplesPage2 = [];
+      let hPageCheck2 = 0;
+      let emlContent2 = [];
       for (let elm of row) {
         const h = Number(
           window
@@ -77,15 +86,46 @@ function POPrintPreview() {
         // console.log( h, hPageCheck );
       }
       if (emlContent.length > 0) samplesPage.push(emlContent);
+      for (let elm2 of row2) {
+        const h = Number(
+          window
+            .getComputedStyle(elm2)
+            .getPropertyValue("height")
+            ?.replace("px", "")
+        );
+        if (hPageCheck2 + h > limitPage) {
+          // console.log( { hPageCheck } );
+          samplesPage2.push([...emlContent2, elm2]);
+          emlContent2 = [];
+          hPageCheck2 = 0;
+        } else {
+          hPageCheck2 += h;
+          emlContent2 = [...emlContent2, elm2];
+        }
+
+        // console.log( h, hPageCheck );
+      }
+      if (emlContent2.length > 0) samplesPage2.push(emlContent2);
+      console.log(samplesPage);
+      console.log(samplesPage2);
       const pages = [];
+
       for (let rind in samplesPage) {
         const cdata = data.cloneNode(true);
+
         const table = cdata.querySelector("#tb-data");
+        const table2 = cdata.querySelector("#tb-data2");
         const tbody = table?.querySelector("tbody");
+        const tbody2 = table2?.querySelector("tbody");
         tbody.innerHTML = `${samplesPage[rind]
           .map((m) => m.outerHTML)
           .join("")}`;
+
+        tbody2.innerHTML = `${samplesPage2[rind]
+          .map((m) => m.outerHTML)
+          .join("")}`;
         console.log(tbody);
+        console.log(tbody2);
         const temp = document.createElement("div");
         temp.appendChild(cdata);
         temp.classList.add("on-page");
@@ -114,17 +154,19 @@ function POPrintPreview() {
 
           let firstrow = detail.slice(0, detail.length / 2);
           let lastrow = detail.slice(detail.length / 2, detail.length);
-          
-          lastrow = lastrow.map(function(entry) {
-            entry.total = detail.length/2;
+
+          lastrow = lastrow.map(function (entry) {
+            entry.total = detail.length / 2; 
+
             return entry;
           });
 
-          // console.log(lastrow);
+          
 
           setDetails(firstrow);
           setDetails2(lastrow);
         })
+
         .catch((err) => {
           console.log(err);
           message.error("Error getting Quotation.");

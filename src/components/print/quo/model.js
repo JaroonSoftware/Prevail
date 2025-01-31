@@ -49,7 +49,7 @@ export const column2 = [
     align: "center",
     width: "10%",
     render: (_, record, idx) => (
-      <Typography.Text style={{fontSize: "12px"}}>{idx + 1+record.total}</Typography.Text>
+      <Typography.Text style={{fontSize: "12px"}} >{idx + 1+ Math.floor(record.total) }</Typography.Text>
     ),
   },
   {

@@ -14,9 +14,9 @@ import dayjs from "dayjs";
 import { PiPrinterFill } from "react-icons/pi";
 import { LoadingOutlined } from "@ant-design/icons";
 import { Spin } from "antd";
-import BillingNoteService from "../../../service/BillingNote.Service";
+import ReceiptService from "../../../service/Receipt.service";
 
-const blservice = BillingNoteService();
+const reservice = ReceiptService();
 
 function ReceiptPrintPreview() {
   const { code } = useParams();
@@ -46,7 +46,7 @@ function ReceiptPrintPreview() {
 
   useEffect(() => {
     const init = () => {
-      blservice
+      reservice
         .get(code)
         .then(async (res) => {
           const {
@@ -84,11 +84,14 @@ function ReceiptPrintPreview() {
               >
                 บริษัท พรีเวล อินเตอร์เนชั่นแนล ฟู้ด จำกัด
               </Typography.Text>
-              <Typography.Text className="tx-info" style={{ fontSize: 15 }}>
+              <Typography.Text className="tx-info" style={{ fontSize: 14 }}>
                 60/3 ถ.กระ ต.ตลาดใหญ่ อ.เมือง จ.ภูเก็ต 83000
               </Typography.Text>
-              <Typography.Text className="tx-info" style={{ fontSize: 15 }}>
+              <Typography.Text className="tx-info" style={{ fontSize: 14 }}>
                 TEL: 076 641 117, 098 192 9391
+              </Typography.Text>
+              <Typography.Text className="tx-info" style={{ fontSize: 14 }}>
+               เลขประจำตัวผู้เสียภาษี 083556101164 สำนักงานใหญ่
               </Typography.Text>
             </Flex>
           </div>
@@ -100,7 +103,7 @@ function ReceiptPrintPreview() {
                 style={{ textAlign: "right", fontSize: 17 }}
                 strong
               >
-                ใบวางบิล
+                ใบส่งสินค้า/ใบแจ้งหนี้
               </Typography.Text>
             </Flex>
           </div>
@@ -133,7 +136,11 @@ function ReceiptPrintPreview() {
                 </span>
               </Typography.Text>
               <Typography.Text className="tx-info" style={{ height: 21 }}>
-                หมายเหตุ
+                เลขประตัวผู้เสียภาษี
+                <span style={{ paddingLeft: 20 }}>{hData?.remark}</span>
+              </Typography.Text>
+              <Typography.Text className="tx-info" style={{ height: 21 }}>
+                ขนส่งโดย
                 <span style={{ paddingLeft: 20 }}>{hData?.remark}</span>
               </Typography.Text>
             </Flex>
@@ -141,8 +148,8 @@ function ReceiptPrintPreview() {
           <Flex className="flex ps-3 grow-0" style={{ width: "40%" }}>
             <Flex vertical>
               <Typography.Text className="tx-info">
-                เลขที่ใบวางบิล
-                <span style={{ paddingLeft: 22 }}>{hData?.ivcode}</span>
+                เลขที่
+                <span style={{ paddingLeft: 22 }}>{hData?.recode}</span>
               </Typography.Text>
               <Typography.Text className="tx-info">
                 <br></br>
@@ -157,7 +164,7 @@ function ReceiptPrintPreview() {
                 <br></br>
               </Typography.Text>
               <Typography.Text className="tx-info" style={{ height: 21 }}>
-                เงื่อนไขการชำระเงิน
+                อ้างอิง
                 <span style={{ paddingLeft: 20 }}>{hData?.payment}</span>
               </Typography.Text>
             </Flex>
