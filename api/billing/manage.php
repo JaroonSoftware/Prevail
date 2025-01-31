@@ -46,8 +46,8 @@ try {
         $code = $conn->lastInsertId();
         // var_dump($master); exit;
 
-        $sql = "insert into bl_detail (blcode,socode,stcode,price,unit)
-        values (:blcode,:socode,:stcode,:price,:unit)";
+        $sql = "insert into bl_detail (blcode,socode,dncode,stcode,price,unit)
+        values (:blcode,:socode,:dncode,:stcode,:price,:unit)";
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
@@ -56,6 +56,7 @@ try {
             $val = (object)$val;
             $stmt->bindParam(":blcode", $header->blcode, PDO::PARAM_STR);
             $stmt->bindParam(":socode", $val->socode, PDO::PARAM_STR);
+            $stmt->bindParam(":dncode", $val->dncode, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
             $stmt->bindParam(":price", $val->price, PDO::PARAM_STR);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
