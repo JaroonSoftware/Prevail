@@ -12,7 +12,7 @@ import OptionService from '../../../service/Options.service.js';
 
 const opservice = OptionService();
 
-export default function ModalInvoice({show, close, values, selected}) {
+export default function ModalBilling({show, close, values, selected}) {
     const [form] = useForm(); 
 
     const [customersData, setCustomersData] = useState([]);
@@ -55,13 +55,13 @@ export default function ModalInvoice({show, close, values, selected}) {
         setItemsList([...itemsList, newData]);
     };
 
-    const handleCheckDuplicate = (itemCode) => !!selected.find( (item) =>  item?.ivcode === itemCode ) ; 
+    const handleCheckDuplicate = (itemCode) => !!selected.find( (item) =>  item?.blcode === itemCode ) ; 
 
     const handleConfirm = () => { 
-        const choosed = selected.map( m => m.ivcode );
-        const itemsChoose = (customersData.filter( f => itemsRowKeySelect.includes(f.ivcode) && !choosed.includes(f.ivcode) )).map( (m, i) => (
+        const choosed = selected.map( m => m.blcode );
+        const itemsChoose = (customersData.filter( f => itemsRowKeySelect.includes(f.blcode) && !choosed.includes(f.blcode) )).map( (m, i) => (
         {
-            ivcode:m.ivcode,
+            blcode:m.blcode,
             stcode:m.stcode,
             stname:m.stname,            
             price: m.price,
@@ -91,16 +91,16 @@ export default function ModalInvoice({show, close, values, selected}) {
         },
         getCheckboxProps: (record) => { 
             return {
-                disabled: handleCheckDuplicate(record.ivcode), 
-                name: record.ivcode,
+                disabled: handleCheckDuplicate(record.blcode), 
+                name: record.blcode,
             }
         },
         onSelect: (record, selected, selectedRows, nativeEvent) => {
             //console.log(record, selected, selectedRows, nativeEvent);
             if( selected ){
-                setItemsRowKeySelect([...new Set([...itemsRowKeySelect, record.ivcode])]);
+                setItemsRowKeySelect([...new Set([...itemsRowKeySelect, record.blcode])]);
             } else {
-                const ind = itemsRowKeySelect.findIndex( d => d === record.ivcode);
+                const ind = itemsRowKeySelect.findIndex( d => d === record.blcode);
                 const tval = [...itemsRowKeySelect];
                 tval.splice(ind, 1);
                 setItemsRowKeySelect([...tval]);
@@ -117,7 +117,7 @@ export default function ModalInvoice({show, close, values, selected}) {
     useEffect( () => {
         const onload = () =>{            
             setLoading(true);
-            opservice.optionsInvoice().then((res) => {
+            opservice.optionsBilling().then((res) => {
                 let { data } = res.data; 
                 setCustomersData(data);
                 setCustomersDataWrap(data);
@@ -152,7 +152,7 @@ export default function ModalInvoice({show, close, values, selected}) {
         <>
         <Modal
             open={show}
-            title="เลือกใบแจ้งหนี้"
+            title="เลือกใบวางบิล"
             onCancel={() => handleClose() } 
             footer={ButtonModal}
             maskClosable={false}
@@ -179,7 +179,7 @@ export default function ModalInvoice({show, close, values, selected}) {
                             dataSource={customersDataWrap}
                             columns={column} 
                             rowSelection={itemSelection}
-                            rowKey="ivcode"
+                            rowKey="blcode"
                             pagination={{ 
                                 total:customersDataWrap.length, 
                                 showTotal:(_, range) => `${range[0]}-${range[1]} of ${customersData.length} items`,

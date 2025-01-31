@@ -11,10 +11,10 @@ import {  EditOutlined, PrinterOutlined } from "@ant-design/icons";
 import { comma } from '../../utils/util';
 
 const calTotalDiscount = (rec) => {
-  const total =  Number(rec?.qty ||  0) * Number(rec?.price ||  0);
-  const discount = 1 - ( Number(rec?.discount ||  0) / 100 );
+  const total_price =  Number(rec?.total_price ||  0);
+  const discount =  Number(rec?.discount ||  0);
 
-  return total * discount;
+  return total_price - discount;
 }
 /** export component for edit table */
 export const componentsEditable = {
@@ -124,75 +124,37 @@ export const productColumn = ({handleRemove}) => [
     dataIndex: "code",
     key: "code",
     align: "center",
-    width: 80, 
+    width: "10%",
     render: (im, rc, index) => <>{index + 1}</>,
   },
   {
-    title: "เลขที่แจ้งหนี้",
-    dataIndex: "ivcode",
-    key: "ivcode",
-    width: 120, 
+    title: "เลขที่ใบวางบิล",
+    dataIndex: "blcode",
+    key: "blcode",
     align: "center",
   },
   {
-    title: "รหัสสินค้า",
-    dataIndex: "stcode",
-    key: "stcode",
-    width: 120, 
-    align: "center",
+    title: "วันที่ใบวางบิล",
+    key: "bldate",
+    width: "10%",
+    dataIndex: "bldate", 
   },
   {
-    title: "ชื่อสินค้า",
-    dataIndex: "purdetail",
-    key: "purdetail", 
-    align: "left", 
-    render: (_, rec) => rec.stname,
-  },
-  {
-    title: "จำนวน",
-    dataIndex: "qty",
-    key: "qty", 
-    width: "8%",
+    title: "ราคา",
+    dataIndex: "total_price",
+    key: "total_price", 
+    width: "10%",
     align: "right",
     className: "!pe-3",
     required: true,
     type:'number',
-    render: (_, rec) => <>{ comma( Number(rec?.qty ||  0),  2, 0 )}</>,
+    render: (_, rec) => <>{ comma( Number(rec?.total_price ||  0),  2, 2 )}</>,
   },
-  {
-    title: "หน่วยสินค้า",
-    dataIndex: "unit",
-    key: "unit", 
-      align: "right", 
-      width: "8%",
-      type:'select',    
-  },
-  {
-    title: "ราคาขาย",
-    dataIndex: "price",
-    key: "price", 
-    width: "8%",
-    align: "right",
-    className: "!pe-3",
-    required: true,
-    type:'number',
-    render: (_, rec) => <>{ comma( Number(rec?.price ||  0),  2, 2 )}</>,
-  },
-  {
-    title: "VAT (%)",
-    dataIndex: "vat",
-    key: "vat", 
-    width: "8%",
-    align: "right",
-    className: "!pe-3",
-    type:'number',
-    render: (_, rec) => <>{ comma( Number(rec?.vat ||  0),  2, 2 )}</>,
-  },  
   {
     title: "ส่วนลด(%)",
     dataIndex: "discount",
     key: "discount",
-    width: "8%",
+    width: "10%",
     align: "right",
     className: "!pe-3",
     editable: true,
@@ -201,12 +163,12 @@ export const productColumn = ({handleRemove}) => [
   },
   {
     title: "ราคารวม",
-    dataIndex: "total",
-    key: "total",
-    width: "8%",
+    dataIndex: "grand_total_price",
+    key: "grand_total_price",
+    width: "10%",
     align: "right",
     className: "!pe-3",
-    render: (_, rec) => <>{ comma( calTotalDiscount(rec)+calTotalDiscount(rec)*(rec.vat/100),  2, 2 )}</>,
+    render: (_, rec) => <>{ comma( calTotalDiscount(rec),  2, 2 )}</>,
   },
   {
     title: "ตัวเลือก",

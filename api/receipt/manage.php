@@ -45,8 +45,8 @@ try {
         $code = $conn->lastInsertId();
         // var_dump($master); exit;
 
-        $sql = "insert into receipt_detail (recode,blcode,stcode,qty,price,unit,discount,vat)
-        values (:recode,:blcode,:stcode,:qty,:price,:unit,:discount,:vat)";
+        $sql = "insert into receipt_detail (recode,blcode,price,discount)
+        values (:recode,:blcode,:price,:discount)";
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
@@ -55,12 +55,8 @@ try {
             $val = (object)$val;
             $stmt->bindParam(":recode", $header->recode, PDO::PARAM_STR);
             $stmt->bindParam(":blcode", $val->blcode, PDO::PARAM_STR);
-            $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
-            $stmt->bindParam(":qty", $val->qty, PDO::PARAM_STR);
             $stmt->bindParam(":price", $val->price, PDO::PARAM_STR);
-            $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
             $stmt->bindParam(":discount", $val->discount, PDO::PARAM_INT);
-            $stmt->bindParam(":vat", $val->vat, PDO::PARAM_INT);
 
             if (!$stmt->execute()) {
                 $error = $conn->errorInfo();
@@ -162,8 +158,8 @@ try {
         }
         $header = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT a.blcode,a.recode,a.stcode, a.price, a.discount, a.unit, a.qty ,a.vat ,i.stname ";
-        $sql .= " FROM `receipt_detail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
+        $sql = "SELECT a.blcode,a.recode,a.price, a.discount ";
+        $sql .= " FROM `receipt_detail` as a   ";
         $sql .= " where a.recode = :code";
 
         $stmt = $conn->prepare($sql);

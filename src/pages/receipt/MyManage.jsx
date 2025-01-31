@@ -20,7 +20,7 @@ import {
   CreditCardOutlined,
 } from "@ant-design/icons";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
-import ModalInvoice from "../../components/modal/invoice/MyModal";
+import ModalBilling from "../../components/modal/billing/MyModal";
 import ModalPayment from "../../components/modal/payment/MyModal";
 
 import {
@@ -53,7 +53,7 @@ function ReceiptManage() {
 
   /** Modal handle */
   const [openCustomers, setOpenCustomers] = useState(false);
-  const [openInvoice, setOpenInvoice] = useState(false);
+  const [openBilling, setOpenBilling] = useState(false);
   const [openPayment, setOpenPayment] = useState(false);
   
   /** Receipt state */
@@ -132,29 +132,30 @@ function ReceiptManage() {
     const total_price = newData.reduce(
       (a, v) =>
         a +=
-          Number(v.qty || 0) *
-          Number(v?.price || 0) *
-          (1 - Number(v?.discount || 0) / 100)+(Number(v.qty || 0) *
-          Number(v?.price || 0) *
-          (1 - Number(v?.discount || 0) / 100)*(v.vat/100)),
+          Number(v.total_price || 0),
       0
     );
 
-    const balance = newData.reduce(
+    const discount = newData.reduce(
       (a, v) =>
         a +=
-          Number(v.qty || 0) *
-          Number(v?.price || 0) *
-          (1 - Number(v?.discount || 0) / 100)+(Number(v.qty || 0) *
-          Number(v?.price || 0) *
-          (1 - Number(v?.discount || 0) / 100)*(v.vat/100)),
+      Number(v?.discount ||  0),
       0
     );
+
+    const grand_total_price = newData.reduce(
+      (a, v) =>
+        a +=
+      Number(v.total_price || 0) - Number(v?.discount ||  0),
+      0
+    );    
+
 
     setFormDetail(() => ({
       ...formDetail,
       total_price,
-      balance,
+      discount,
+      grand_total_price,
     }));
     // console.log(formDetail)
   };
@@ -208,13 +209,13 @@ function ReceiptManage() {
     setListDetail([]);
   };
   
-  const handleChoosedInvoice = async (val) => {
+  const handleChoosedBilling = async (val) => {
 
     const res = await blservice.getlist(val);
     const {
-      data: { detail },
+      data: { header },
     } = res.data;
-    setListDetail(detail);
+    setListDetail(header);
     handleSummaryPrice();
     // console.log(header.balance)
     
@@ -425,10 +426,10 @@ function ReceiptManage() {
             icon={<LuPackageSearch style={{ fontSize: "1.2rem" }} />}
             className="bn-center justify-center bn-primary-outline"
             onClick={() => {
-              setOpenInvoice(true);
+              setOpenBilling(true);
             }}
           >
-            Choose Invoice
+            Choose Billing
           </Button>
         </Flex>
       </Col>
@@ -484,7 +485,7 @@ function ReceiptManage() {
                     <Table.Summary.Row>
                       <Table.Summary.Cell
                         index={0}
-                        colSpan={8}
+                        colSpan={4}
                       ></Table.Summary.Cell>
                       <Table.Summary.Cell
                         index={4}
@@ -702,15 +703,15 @@ function ReceiptManage() {
         ></ModalCustomers>
       )}
 
-      {openInvoice && (
-        <ModalInvoice
-          show={openInvoice}
-          close={() => setOpenInvoice(false)}
+      {openBilling && (
+        <ModalBilling
+          show={openBilling}
+          close={() => setOpenBilling(false)}
           values={(v) => {
-            handleChoosedInvoice(v);
+            handleChoosedBilling(v);
           }}
           selected={listDetail}
-        ></ModalInvoice>
+        ></ModalBilling>
       )}
 
     {openPayment && (

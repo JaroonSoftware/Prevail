@@ -11,16 +11,16 @@ export const customersColumn = ()=>{
         hidden: "true",
       },
       {
-        title: "เลขที่ใบแจ้งหนี้",
-        key: "ivcode",
+        title: "เลขที่ใบวางบิล",
+        key: "blcode",
         width: "15%",
-        dataIndex: "ivcode",         
+        dataIndex: "blcode",         
       },
       {
-        title: "วันที่ใบแจ้งหนี้",
-        key: "ivdate",
+        title: "วันที่ใบวางบิล",
+        key: "bldate",
         width: "15%",
-        dataIndex: "ivdate", 
+        dataIndex: "bldate", 
       },
       {
         title: "รหัสลูกค้า",
