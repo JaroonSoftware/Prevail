@@ -128,9 +128,16 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
     render: (im, rc, index) => <>{index + 1}</>,
   },
   {
-    title: "เลขที่ใบสั่งของ",
+    title: "เลขที่ใบขายสินค้า",
     dataIndex: "socode",
     key: "socode",
+    width: 120, 
+    align: "center",
+  },
+  {
+    title: "เลขที่ใบส่งของ",
+    dataIndex: "dncode",
+    key: "dncode",
     width: 120, 
     align: "center",
   },
