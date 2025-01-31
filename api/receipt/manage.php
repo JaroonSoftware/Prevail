@@ -45,8 +45,8 @@ try {
         $code = $conn->lastInsertId();
         // var_dump($master); exit;
 
-        $sql = "insert into receipt_detail (recode,blcode,price,discount)
-        values (:recode,:blcode,:price,:discount)";
+        $sql = "insert into receipt_detail (recode,blcode,total_price,discount,grand_total_price)
+        values (:recode,:blcode,:total_price,:discount,:grand_total_price)";
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
@@ -55,8 +55,9 @@ try {
             $val = (object)$val;
             $stmt->bindParam(":recode", $header->recode, PDO::PARAM_STR);
             $stmt->bindParam(":blcode", $val->blcode, PDO::PARAM_STR);
-            $stmt->bindParam(":price", $val->price, PDO::PARAM_STR);
+            $stmt->bindParam(":total_price", $val->total_price, PDO::PARAM_STR);
             $stmt->bindParam(":discount", $val->discount, PDO::PARAM_INT);
+            $stmt->bindParam(":grand_total_price", $val->grand_total_price, PDO::PARAM_STR);
 
             if (!$stmt->execute()) {
                 $error = $conn->errorInfo();
@@ -158,7 +159,7 @@ try {
         }
         $header = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT a.blcode,a.recode,a.price, a.discount ";
+        $sql = "SELECT a.blcode,a.recode,a.total_price, a.discount,a.grand_total_price ";
         $sql .= " FROM `receipt_detail` as a   ";
         $sql .= " where a.recode = :code";
 

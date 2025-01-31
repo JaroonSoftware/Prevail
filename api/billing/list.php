@@ -25,7 +25,7 @@ try {
         }
         
         $sql = "SELECT a.blcode,a.bldate,a.deldate,a.cuscode,CONCAT(c.prename,' ',c.cusname) as cusname,CONCAT(COALESCE(c.idno, '') ,' ', COALESCE(c.road, ''),' ', COALESCE(c.subdistrict, ''),' ', COALESCE(c.district, ''),' ',COALESCE(c.zipcode, '') ) as address
-        ,c.zipcode,c.contact,c.tel,c.fax,a.payment,a.total_price,a.remark ";
+        ,c.zipcode,c.contact,c.tel,c.fax,a.payment,a.total_price,a.discount,a.grand_total_price,a.remark ";
         $sql .= " FROM `bl_master` as a ";
         $sql .= " inner join `customer` as c on (a.cuscode)=(c.cuscode)";
         $sql .= " where a.blcode in ('". implode("' , '", $code) . "')";

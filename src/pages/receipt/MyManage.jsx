@@ -132,30 +132,25 @@ function ReceiptManage() {
     const total_price = newData.reduce(
       (a, v) =>
         a +=
-          Number(v.total_price || 0),
+          Number(v?.total_price || 0) - Number(v?.discount || 0),
       0
     );
 
-    const discount = newData.reduce(
+    const balance = newData.reduce(
       (a, v) =>
         a +=
-      Number(v?.discount ||  0),
+          Number(v.qty || 0) *
+          Number(v?.price || 0) *
+          (1 - Number(v?.discount || 0) / 100)+(Number(v.qty || 0) *
+          Number(v?.price || 0) *
+          (1 - Number(v?.discount || 0) / 100)*(v.vat/100)),
       0
     );
-
-    const grand_total_price = newData.reduce(
-      (a, v) =>
-        a +=
-      Number(v.total_price || 0) - Number(v?.discount ||  0),
-      0
-    );    
-
 
     setFormDetail(() => ({
       ...formDetail,
       total_price,
-      discount,
-      grand_total_price,
+      balance,
     }));
     // console.log(formDetail)
   };
