@@ -1,6 +1,5 @@
 import { Typography } from "antd";
-import { comma } from "../../../utils/util";
-import dayjs from 'dayjs';
+
 export const column = [
   {
     title: (
@@ -18,57 +17,51 @@ export const column = [
   {
     title: (
       <div style={{ textAlign: "center" }}>
-        เลขที่ใบกำกับ
-
+        รายละเอียด
       </div>
     ),
     align: "center",
     width: "15%",
-    key: "blcode",
-    dataIndex: "blcode",
+    key: "dncode",
+    dataIndex: "dncode",
   },
   {
     title: (
       <div style={{ textAlign: "center" }}>
-        วันที่
+     จำนวน
+      </div>
+    ),
+    align: "center",
+    key: "qty",
+    width: "10%",
+    dataIndex: "qty",
+   
+  },
+  {
+    title: (
+      <div style={{ textAlign: "center" }}>
+     หน่วยละ
       </div>
     ),
     align: "center",
     key: "redate",
-    width: "10%",
     dataIndex: "redate",
-    render: (v) => dayjs(v).format("DD/MM/YYYY"),
-  },
-  {
-    title: (
-      <div style={{ textAlign: "center" }}>
-        ครบกำหนด
-      </div>
-    ),
-    align: "center",
-    key: "duedate",
     width: "10%",
-    dataIndex: "duedate",
-    render: (v) => dayjs(v).format("DD/MM/YYYY"),
   },
   {
     title: (
       <div style={{ textAlign: "center" }}>
-        จำนวนเงิน
+       จำนวนเงิน
       </div>
     ),
-    align: "right",
+    align: "left",
+    width: "10%",
     key: "price",
     dataIndex: "price",
-    width: "10%",
-    render: (v) => (
-      <Typography.Text className="tx-info" style={{paddingRight: "20px"}}>{comma(Number(v))}</Typography.Text>
-    ),
     onCell: () => ({
       style: {
         borderRight: "1px solid ",
       },
     }),
   },
-
 ];

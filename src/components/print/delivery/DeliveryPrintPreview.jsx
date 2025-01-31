@@ -3,22 +3,22 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 // import ReactDOMServer from "react-dom/server";
 import { useReactToPrint } from "react-to-print";
-import "./bl.css";
+import "./delivery.css";
 import { Authenticate } from "../../../service/Authenticate.service";
 // import logo from "../../../assets/images/QRCODEDN.jpg";
 import { Button, Flex, Table, Typography, message } from "antd";
-import { column } from "./bl.model";
+import { column } from "./delivery.model";
 import thaiBahtText from "thai-baht-text";
 import dayjs from "dayjs";
 // import { comma } from "../../../utils/util";
 import { PiPrinterFill } from "react-icons/pi";
 import { LoadingOutlined } from "@ant-design/icons";
 import { Spin } from "antd";
-import BillingNoteService from "../../../service/BillingNote.Service";
+import DeliveryService from "../../../service/DeliveryNote.service";
 
-const blservice = BillingNoteService();
+const dnservice = DeliveryService();
 
-function BLPrintPreview() {
+function DeliveryPrintPreview() {
   const { code } = useParams();
   const componentRef = useRef(null);
   const authService = Authenticate();
@@ -46,12 +46,12 @@ function BLPrintPreview() {
 
   useEffect(() => {
     const init = () => {
-      blservice
+      dnservice
         .get(code)
         .then(async (res) => {
           const {
             data: { header, detail },
-          } = res.data;
+          } = res.data.data;
 
           setHData(header);
           setDetails(detail);
@@ -84,11 +84,14 @@ function BLPrintPreview() {
               >
                 บริษัท พรีเวล อินเตอร์เนชั่นแนล ฟู้ด จำกัด
               </Typography.Text>
-              <Typography.Text className="tx-info" style={{ fontSize: 15 }}>
+              <Typography.Text className="tx-info" style={{ fontSize: 14 }}>
                 60/3 ถ.กระ ต.ตลาดใหญ่ อ.เมือง จ.ภูเก็ต 83000
               </Typography.Text>
-              <Typography.Text className="tx-info" style={{ fontSize: 15 }}>
+              <Typography.Text className="tx-info" style={{ fontSize: 14 }}>
                 TEL: 076 641 117, 098 192 9391
+              </Typography.Text>
+              <Typography.Text className="tx-info" style={{ fontSize: 14 }}>
+                เลขประจำตัวผู้เสียภาษี 083556101164 สำนักงานใหญ่
               </Typography.Text>
             </Flex>
           </div>
@@ -100,7 +103,7 @@ function BLPrintPreview() {
                 style={{ textAlign: "right", fontSize: 17 }}
                 strong
               >
-                ใบวางบิล
+                ใบส่งสินค้า/ใบแจ้งหนี้
               </Typography.Text>
             </Flex>
           </div>
@@ -133,7 +136,11 @@ function BLPrintPreview() {
                 </span>
               </Typography.Text>
               <Typography.Text className="tx-info" style={{ height: 21 }}>
-                หมายเหตุ
+                เลขประตัวผู้เสียภาษี
+                <span style={{ paddingLeft: 20 }}>{hData?.remark}</span>
+              </Typography.Text>
+              <Typography.Text className="tx-info" style={{ height: 21 }}>
+                ขนส่งโดย
                 <span style={{ paddingLeft: 20 }}>{hData?.remark}</span>
               </Typography.Text>
             </Flex>
@@ -141,11 +148,8 @@ function BLPrintPreview() {
           <Flex className="flex ps-3 grow-0" style={{ width: "40%" }}>
             <Flex vertical>
               <Typography.Text className="tx-info">
-                เลขที่ใบวางบิล
-                <span style={{ paddingLeft: 22 }}>{hData?.blcode}</span>
-              </Typography.Text>
-              <Typography.Text className="tx-info">
-                <br></br>
+                เลขที่
+                <span style={{ paddingLeft: 22 }}>{hData?.dncode}</span>
               </Typography.Text>
               <Typography.Text className="tx-info" style={{ height: 21 }}>
                 วันที่
@@ -153,11 +157,16 @@ function BLPrintPreview() {
                   {dayjs(hData?.ivdate).format("DD/MM/YYYY")}
                 </span>
               </Typography.Text>
-              <Typography.Text className="tx-info">
-                <br></br>
+              <Typography.Text className="tx-info" style={{ height: 21 }}>
+                อ้างอิง
+                <span style={{ paddingLeft: 20 }}>{hData?.payment}</span>
               </Typography.Text>
               <Typography.Text className="tx-info" style={{ height: 21 }}>
-                เงื่อนไขการชำระเงิน
+                เครดิต
+                <span style={{ paddingLeft: 20 }}>{hData?.payment}</span>
+              </Typography.Text>
+              <Typography.Text className="tx-info" style={{ height: 21 }}>
+                เขตการขาย
                 <span style={{ paddingLeft: 20 }}>{hData?.payment}</span>
               </Typography.Text>
             </Flex>
@@ -178,8 +187,8 @@ function BLPrintPreview() {
           >
             <Flex
               style={{
-                borderTop: "1px solid",
-                borderLeft: "1px solid",
+                borderTop: "1px dashed",
+
                 // borderRight: "1px solid",
               }}
             >
@@ -195,7 +204,7 @@ function BLPrintPreview() {
           <Table.Summary.Cell colSpan={1} className="!align-top !ps-0   !pe-0">
             <Flex
               style={{
-                borderTop: "1px solid",
+                borderTop: "1px dashed",
                 // borderLeft: "1px solid",
                 // borderRight: "1px solid",
               }}
@@ -205,16 +214,14 @@ function BLPrintPreview() {
                 style={{ fontSize: 15, marginLeft: 10, marginTop: 4 }}
                 strong
               >
-                รวมเงินทั้งสิ้น
+                รวมเป็นเงิน
               </Typography.Text>
             </Flex>
           </Table.Summary.Cell>
           <Table.Summary.Cell colSpan={1} className="!align-top !ps-0   !pe-0">
             <Flex
               style={{
-                borderTop: "1px solid",
-                borderLeft: "1px solid",
-                borderRight: "1px solid",
+                borderTop: "1px dashed",
               }}
             >
               <Typography.Text
@@ -231,8 +238,7 @@ function BLPrintPreview() {
           <Table.Summary.Cell colSpan={8} className="!align-top !ps-0   !pe-0">
             <Flex
               style={{
-                border: "1px solid",
-                borderRight: "1px solid",
+                borderTop: "1px dashed",
                 padding: 3,
                 height: 70,
               }}
@@ -246,16 +252,35 @@ function BLPrintPreview() {
                   paddingTop: 7,
                 }}
               >
+                <p>ได้รับสินค้าตามรายการข้างบนนี้ไว้ถูกต้อง</p>
                 <p>
-                  ชื่อผู้รับวางบิล
-                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;__________________________________
-                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ในนาม บริษัท
-                  พรีเวล อินเตอร์เนชั่นแนล ฟู้ด จำกัด
+                  Received by/ผู้รับสินค้า _____________________ วันที่
+                  ____/____/____
                 </p>
+              </Typography.Text>
+            </Flex>
+            <Flex
+              style={{
+                borderTop: "1px dashed",
+                padding: 3,
+                height: 70,
+              }}
+            >
+              {" "}
+              <Typography.Text
+                className="tx-info"
+                style={{
+                  fontSize: 15,
+                  paddingLeft: 5,
+                  lineHeight: "1em",
+                  paddingTop: 7,
+                }}
+              >
                 <p>
                   พิมพ์โดย
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                  วันที่ {dayjs(hData?.ivdate).format("DD/MM/YYYY  HH:mm:ss")}
+                  วันที่ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  {dayjs(hData?.ivdate).format("DD/MM/YYYY  HH:mm:ss")}
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; บันทึกโดย{" "}
@@ -303,7 +328,7 @@ function BLPrintPreview() {
 
   const ContentData = ({ children, pageNum = 1, total = 1 }) => {
     return (
-      <div className="bl-pages flex flex-col">
+      <div className="dnpv-pages flex flex-col">
         <div className="print-content">{children}</div>
       </div>
     );
@@ -346,4 +371,4 @@ function BLPrintPreview() {
   );
 }
 
-export default BLPrintPreview;
+export default DeliveryPrintPreview;
