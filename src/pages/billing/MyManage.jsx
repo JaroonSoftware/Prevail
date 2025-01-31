@@ -14,7 +14,7 @@ import { Card, Col, Divider, Flex, Row, Space, Select,InputNumber } from "antd";
 
 import OptionService from "../../service/Options.service";
 import BillingNoteService from "../../service/BillingNote.Service";
-import DeliveryNoteService from "../../service/DeliveryNote.service";
+import SOService from "../../service/SO.service";
 import { SaveFilled, SearchOutlined } from "@ant-design/icons";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
 import { ModalDeliverynote } from "../../components/modal/delivery-note";
@@ -35,7 +35,7 @@ import { LuPackageSearch } from "react-icons/lu";
 import { LuPrinter } from "react-icons/lu";
 const opservice = OptionService();
 const blservice = BillingNoteService();
-const dnservice = DeliveryNoteService();
+const soservice = SOService();
 
 const gotoFrom = "/billing";
 const dateFormat = "DD/MM/YYYY";
@@ -131,8 +131,7 @@ function BillingnoteManage() {
       (a, v) =>
         (a +=
           Number(v?.qty || 0) *
-          Number(v?.price || 0) + (Number(v?.qty || 0) *
-          Number(v?.price || 0)*(v?.vat/100)) ),
+          Number(v?.price || 0)),
       0
     );
     const discount = form.getFieldValue("discount");
@@ -196,20 +195,13 @@ function BillingnoteManage() {
     // setListDetail([]);
   };
 
-  // const handleItemsChoosed = (value) => {
-  //   console.log(value);
-  //   setListDetail(value);
-
-  //   handleSummaryPrice();
-  //   const detail = listDetail;
-  //   console.log(detail);
-  // };
-
   const handleItemsChoosed = async (val) => {
-    const res = await dnservice.getlist(val);
+    console.log(val)
+    const res = await soservice.getlist(val);
     const {
       data: { detail },
     } = res.data;
+    console.log(detail)
     setListDetail(detail);
     handleSummaryPrice();
     // console.log(header.balance)
@@ -439,7 +431,7 @@ function BillingnoteManage() {
                     <Table.Summary.Row>
                       <Table.Summary.Cell
                         index={0}
-                        colSpan={7}
+                        colSpan={6}
                       ></Table.Summary.Cell>
                       <Table.Summary.Cell
                         index={4}
@@ -461,7 +453,7 @@ function BillingnoteManage() {
                     <Table.Summary.Row>
                       <Table.Summary.Cell
                         index={0}
-                        colSpan={7}
+                        colSpan={6}
                       ></Table.Summary.Cell>
                       <Table.Summary.Cell
                         index={4}
@@ -494,7 +486,7 @@ function BillingnoteManage() {
                     <Table.Summary.Row>
                       <Table.Summary.Cell
                         index={0}
-                        colSpan={7}
+                        colSpan={6}
                       ></Table.Summary.Cell>
                       <Table.Summary.Cell
                         index={4}

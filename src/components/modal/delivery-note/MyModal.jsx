@@ -26,7 +26,7 @@ export default function ModalDeliverynote({show, close,cuscode, values, selected
  
     const handleSearch = (value) => {
         if(!!value){    
-            const f = itemsData.filter( d => ( (d.dncode?.includes(value)) || (d.dncode?.includes(value)) ) );
+            const f = itemsData.filter( d => ( (d.socode?.includes(value)) || (d.socode?.includes(value)) ) );
              
             setItemsDataWrap(f);            
         } else { 
@@ -42,26 +42,20 @@ export default function ModalDeliverynote({show, close,cuscode, values, selected
             percent: 0,
             totalpercent: 0,
         };
-        // console.log(newData);
 
         setItemsList([...itemsList, newData]);
     };
 
-    const handleCheckDuplicate = (itemCode) => !!selected.find( (item) =>  item?.dncode === itemCode ) ; 
+    const handleCheckDuplicate = (itemCode) => !!selected.find( (item) =>  item?.socode === itemCode ) ; 
 
     const handleConfirm = () => { 
-        const choosed = selected.map( m => m.dncode );
-        const itemsChoose = (itemsData.filter( f => itemsRowKeySelect.includes(f.dncode) && !choosed.includes(f.dncode) )).map( (m, i) => (
+        const choosed = selected.map( m => m.socode );
+        const itemsChoose = (itemsData.filter( f => itemsRowKeySelect.includes(f.socode) && !choosed.includes(f.socode) )).map( (m, i) => (
         {
-            dncode:m.dncode,
-            stcode:m.stcode,
-            stname:m.stname,            
-            price: m.price,
-            qty: m.qty,
-            unit:m.unit,        
-            vat:m.vat,     
-            discount:m.discount,        
+            socode:m.socode,    
         }));
+        
+        // console.log(itemsChoose);
         
         values([...selected, ...itemsChoose]);
         
@@ -83,16 +77,16 @@ export default function ModalDeliverynote({show, close,cuscode, values, selected
         },
         getCheckboxProps: (record) => { 
             return {
-                disabled: handleCheckDuplicate(record.dncode), 
-                name: record.dncode,
+                disabled: handleCheckDuplicate(record.socode), 
+                name: record.socode,
             }
         },
         onSelect: (record, selected, selectedRows, nativeEvent) => {
             //console.log(record, selected, selectedRows, nativeEvent);
             if( selected ){
-                setItemsRowKeySelect([...new Set([...itemsRowKeySelect, record.dncode])]);
+                setItemsRowKeySelect([...new Set([...itemsRowKeySelect, record.socode])]);
             } else {
-                const ind = itemsRowKeySelect.findIndex( d => d === record.dncode);
+                const ind = itemsRowKeySelect.findIndex( d => d === record.socode);
                 const tval = [...itemsRowKeySelect];
                 tval.splice(ind, 1);
                 setItemsRowKeySelect([...tval]);
@@ -115,7 +109,7 @@ export default function ModalDeliverynote({show, close,cuscode, values, selected
                     setItemsData(data.data);
                     setItemsDataWrap(data.data);
 
-                    const keySeleted = selected.map( m => m.dncode );
+                    const keySeleted = selected.map( m => m.socode );
 
                     setItemsRowKeySelect([...keySeleted]);
                     // console.log(selected);
@@ -174,7 +168,7 @@ export default function ModalDeliverynote({show, close,cuscode, values, selected
                             dataSource={itemsDataWrap}
                             columns={column} 
                             rowSelection={itemSelection}
-                            rowKey="dncode"
+                            rowKey="socode"
                             pagination={{ 
                                 total:itemsDataWrap.length, 
                                 showTotal:(_, range) => `${range[0]}-${range[1]} of ${itemsData.length} items`,

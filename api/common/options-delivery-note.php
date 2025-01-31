@@ -9,13 +9,11 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
     try { 
         $res = null;
         
-        $sql = "SELECT distinct d.dncode,d.dndate,c.cuscode, c.cusname,c.prename, d.doc_status
-            FROM dnmaster as d 
-            inner join dndetail as b on (d.dncode=b.dncode)
+        $sql = "SELECT distinct d.socode,d.sodate,c.cuscode, c.cusname,c.prename, d.doc_status
+            FROM somaster as d 
             inner join `customer` as c on (d.cuscode=c.cuscode) 
-            inner join somaster as s on (s.socode=b.socode)
-            where s.doc_status = 'รอออกใบวางบิล' 
-            order by d.dncode ";
+            where d.doc_status = 'รอออกใบวางบิล' 
+            order by d.socode desc ";
             // $type_code
             $stmt = $conn->prepare($sql); 
             $stmt->execute();
