@@ -18,8 +18,8 @@ try {
         extract($_POST, EXTR_OVERWRITE, "_");
 
         // var_dump($_POST);
-        $sql = "insert bl_master (`blcode`, `bldate`, `cuscode`,`payment`,`deldate`, `total_price`,`remark`,created_by,updated_by) 
-        values (:blcode,:bldate,:cuscode,:payment,:deldate,:total_price,
+        $sql = "insert bl_master (`blcode`, `bldate`, `cuscode`,`payment`,`duedate`, `total_price`,`discount`,`remark`,created_by,updated_by) 
+        values (:blcode,:bldate,:cuscode,:payment,:duedate,:total_price,:discount,
         :remark,:action_user,:action_user)";
 
         $stmt = $conn->prepare($sql);
@@ -30,8 +30,9 @@ try {
         $stmt->bindParam(":bldate", $header->bldate, PDO::PARAM_STR);
         $stmt->bindParam(":cuscode", $header->cuscode, PDO::PARAM_STR);
         $stmt->bindParam(":payment", $header->payment, PDO::PARAM_STR);
-        $stmt->bindParam(":deldate", $header->deldate, PDO::PARAM_STR);
+        $stmt->bindParam(":duedate", $header->duedate, PDO::PARAM_STR);
         $stmt->bindParam(":total_price", $header->total_price, PDO::PARAM_STR);
+        $stmt->bindParam(":discount", $header->discount, PDO::PARAM_STR);
         $stmt->bindParam(":remark", $header->remark, PDO::PARAM_STR);
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_STR);
 
@@ -46,8 +47,8 @@ try {
         $code = $conn->lastInsertId();
         // var_dump($master); exit;
 
-        $sql = "insert into bl_detail (blcode,socode,dncode,stcode,price,unit)
-        values (:blcode,:socode,:dncode,:stcode,:price,:unit)";
+        $sql = "insert into bl_detail (blcode,socode,dncode,stcode,qty,price,unit)
+        values (:blcode,:socode,:dncode,:stcode,:qty,:price,:unit)";
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
@@ -58,6 +59,7 @@ try {
             $stmt->bindParam(":socode", $val->socode, PDO::PARAM_STR);
             $stmt->bindParam(":dncode", $val->dncode, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
+            $stmt->bindParam(":qty", $val->qty, PDO::PARAM_STR);
             $stmt->bindParam(":price", $val->price, PDO::PARAM_STR);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
 
@@ -182,8 +184,8 @@ try {
         echo json_encode(array("status" => 1));
     } else  if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $code = $_GET["code"];
-        $sql = "SELECT a.blcode,a.bldate,a.deldate,a.cuscode,CONCAT(c.prename,' ',c.cusname) as cusname,CONCAT(COALESCE(c.idno, '') ,' ', COALESCE(c.road, ''),' ', COALESCE(c.subdistrict, ''),' ', COALESCE(c.district, ''),' ',COALESCE(c.zipcode, '') ) as address
-        ,c.zipcode,c.contact,c.tel,c.fax,a.payment,a.total_price,a.remark ";
+        $sql = "SELECT a.blcode,a.bldate,a.duedate,a.cuscode,CONCAT(c.prename,' ',c.cusname) as cusname,CONCAT(COALESCE(c.idno, '') ,' ', COALESCE(c.road, ''),' ', COALESCE(c.subdistrict, ''),' ', COALESCE(c.district, ''),' ',COALESCE(c.zipcode, '') ) as address
+        ,c.zipcode,c.contact,c.tel,c.fax,a.payment,a.total_price,a.discount,a.remark ";
         $sql .= " FROM `bl_master` as a ";
         $sql .= " inner join `customer` as c on (a.cuscode)=(c.cuscode)";
         $sql .= " where a.blcode = :code";
@@ -196,7 +198,7 @@ try {
         }
         $header = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT a.blcode,a.socode,a.stcode, a.price,a.unit,i.stname ";
+        $sql = "SELECT a.blcode,a.socode,a.dncode,a.qty,a.stcode, a.price,a.unit,i.stname ";
         $sql .= " FROM `bl_detail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
         $sql .= " where a.blcode = :code";
 

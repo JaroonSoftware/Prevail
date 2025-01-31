@@ -75,7 +75,7 @@ function BillingnoteManage() {
         const {
           data: { header, detail },
         } = res.data;
-        const { blcode, bldate, deldate } = header;
+        const { blcode, bldate, duedate } = header;
         console.log(header)
         setFormDetail(header);
         setListDetail(detail);
@@ -84,7 +84,7 @@ function BillingnoteManage() {
         form.setFieldsValue({
           ...header,
           bldate: dayjs(bldate),
-          deldate: dayjs(deldate),
+          duedate: dayjs(duedate),
         });
 
         // setTimeout( () => {  handleCalculatePrice(head?.valid_price_until, head?.dated_price_until) }, 200);
@@ -107,7 +107,7 @@ function BillingnoteManage() {
         form.setFieldsValue(ininteial_value);
         form.setFieldValue("discount", 0);
         form.setFieldValue("payment", "เงินสด");
-        form.setFieldValue("deldate", dayjs(new Date()));
+        form.setFieldValue("duedate", dayjs(new Date()));
       }
       const [unitOprionRes] = await Promise.all([
         opservice.optionsUnit({ p: "unit-option" }),
@@ -217,8 +217,9 @@ function BillingnoteManage() {
           ...formDetail,
           bldate: dayjs(form.getFieldValue("bldate")).format("YYYY-MM-DD"),
           remark: form.getFieldValue("remark"),
-          deldate: dayjs(form.getFieldValue("deldate")).format("YYYY-MM-DD"),
+          duedate: dayjs(form.getFieldValue("duedate")).format("YYYY-MM-DD"),
           payment: form.getFieldValue("payment"),
+          discount: form.getFieldValue("discount")
         };
         const detail = listDetail;
 
@@ -368,7 +369,7 @@ function BillingnoteManage() {
             </Form.Item>
           </Col>
           <Col xs={24} sm={24} md={6} lg={6}>
-            <Form.Item label="วันครบกำหนดชำระเงิน" name="deldate">
+            <Form.Item label="วันครบกำหนดชำระเงิน" name="duedate">
               <DatePicker
                 size="large"
                 placeholder="วันครบกำหนด."
@@ -431,7 +432,7 @@ function BillingnoteManage() {
                     <Table.Summary.Row>
                       <Table.Summary.Cell
                         index={0}
-                        colSpan={6}
+                        colSpan={7}
                       ></Table.Summary.Cell>
                       <Table.Summary.Cell
                         index={4}
@@ -453,7 +454,7 @@ function BillingnoteManage() {
                     <Table.Summary.Row>
                       <Table.Summary.Cell
                         index={0}
-                        colSpan={6}
+                        colSpan={7}
                       ></Table.Summary.Cell>
                       <Table.Summary.Cell
                         index={4}
@@ -486,7 +487,7 @@ function BillingnoteManage() {
                     <Table.Summary.Row>
                       <Table.Summary.Cell
                         index={0}
-                        colSpan={6}
+                        colSpan={7}
                       ></Table.Summary.Cell>
                       <Table.Summary.Cell
                         index={4}

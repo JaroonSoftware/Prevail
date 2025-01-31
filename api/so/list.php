@@ -24,9 +24,10 @@ try {
             array_push($code,$val->socode);
         }
 
-        $sql = "SELECT b.code,a.socode,b.qty,i.stcode,i.stname,b.price,b.unit,b.vat,c.cuscode, c.cusname,c.prename, c.idno, c.road, c.subdistrict, c.district, c.province, c.zipcode,a.doc_status
+        $sql = "SELECT b.code,a.socode,d.dncode,b.qty,i.stcode,i.stname,b.price,b.unit,b.vat,c.cuscode, c.cusname,c.prename, c.idno, c.road, c.subdistrict, c.district, c.province, c.zipcode,a.doc_status
             FROM somaster as a 
             inner join `sodetail` as b on (a.socode=b.socode)
+            inner join `dndetail` as d on (a.socode=b.socode) and (b.stcode=d.stcode)
             inner join `items` as i on (b.stcode=i.stcode)
             inner join `customer` as c on (a.cuscode=c.cuscode) 
             where a.socode in ('". implode("' , '", $code) . "')
