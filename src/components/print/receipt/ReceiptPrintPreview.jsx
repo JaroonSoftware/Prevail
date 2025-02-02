@@ -6,7 +6,7 @@ import { useReactToPrint } from "react-to-print";
 import "./receipt.css";
 import { Authenticate } from "../../../service/Authenticate.service";
 // import logo from "../../../assets/images/QRCODEDN.jpg";
-import { Button, Flex, Table, Typography, message } from "antd";
+import { Button, Flex, Table, Typography, message, Row, Col } from "antd";
 import { column } from "./receipt.model";
 import thaiBahtText from "thai-baht-text";
 import dayjs from "dayjs";
@@ -73,103 +73,58 @@ function ReceiptPrintPreview() {
   }, []);
   const ContentHead = ({ page }) => {
     return (
-      <div className="content-head in-sample flex flex-col">
-        <div className="print-title flex pb-2">
-          <div className="flex ps-3 grow-0" style={{ width: "80%" }}>
-            <Flex className="mb-1.5" vertical>
-              <Typography.Text
-                className="tx-title min-w-80 weight600"
-                strong
-                style={{ fontSize: 24 }}
-              >
-                บริษัท พรีเวล อินเตอร์เนชั่นแนล ฟู้ด จำกัด
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ fontSize: 14 }}>
-                60/3 ถ.กระ ต.ตลาดใหญ่ อ.เมือง จ.ภูเก็ต 83000
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ fontSize: 14 }}>
-                TEL: 076 641 117, 098 192 9391
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ fontSize: 14 }}>
-               เลขประจำตัวผู้เสียภาษี 083556101164 สำนักงานใหญ่
-              </Typography.Text>
-            </Flex>
-          </div>
-
-          <div className="flex ps-3 grow" style={{ float: "right" }}>
-            <Flex className="mb-1.5" vertical style={{ paddingLeft: 0 }}>
-              <Typography.Text
-                className="tx-title min-w-48"
-                style={{ textAlign: "right", fontSize: 17 }}
-                strong
-              >
-                ใบส่งสินค้า/ใบแจ้งหนี้
-              </Typography.Text>
-            </Flex>
-          </div>
-        </div>
-      </div>
+      <Flex vertical style={{ textAlign: "center" }}>
+        <Typography.Text
+          className="tx-title"
+          strong
+          style={{ fontSize: 24, paddingTop: "40px", paddingBottom: "30px" }}
+        >
+          ใบเสร็จรับเงิน
+        </Typography.Text>
+        <Typography.Text className="tx-title " strong style={{ fontSize: 16 }}>
+          บริษัท พรีเวล อินเตอร์เนชั่นแนล ฟู้ด จำกัด
+        </Typography.Text>
+        <Typography.Text className="tx-info" style={{ fontSize: 14 }}>
+          62/2 ถ.กระ ต.ตลาดใหญ่ อ.เมือง จ.ภูเก็ต 83000
+        </Typography.Text>
+        <Typography.Text className="tx-info" style={{ fontSize: 14 }}>
+          โทร. 076-214346 แฟกซ์ : 076-214347
+        </Typography.Text>
+        <Typography.Text className="tx-info" style={{ fontSize: 14 }}>
+          เลขประจำตัวผู้เสียภาษี : 0833556001953
+        </Typography.Text>
+        <Typography.Text
+          className="tx-info"
+          style={{ fontSize: 14, paddingTop: "20px", marginLeft: "100px" }}
+        >
+          วันที่ {dayjs(hData?.redate).format("DD/MM/YYYY")}
+        </Typography.Text>
+        <br></br>
+      </Flex>
     );
   };
 
   const ContentHead2 = () => {
     return (
-      <div className="content-head in-sample flex flex-col">
-        <div className="print-title flex pb-2">
-          <Flex className="flex ps-3 grow-0" style={{ width: "60%" }}>
-            <Flex vertical>
-              <Typography.Text className="tx-info">
-                ลูกค้า
-                <span style={{ paddingLeft: 22 }}>{hData?.cuscode}</span>
-              </Typography.Text>
-              <Typography.Text className="tx-info">
-                <span>
-                  {hData?.prename} {hData?.cusname}
-                </span>
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ height: 21 }}>
-                <span>{hData?.address}</span>
-              </Typography.Text>
-              <Typography.Text className="tx-info">
-                <span>
-                  <br></br>
-                </span>
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ height: 21 }}>
-                เลขประตัวผู้เสียภาษี
-                <span style={{ paddingLeft: 20 }}>{hData?.remark}</span>
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ height: 21 }}>
-                ขนส่งโดย
-                <span style={{ paddingLeft: 20 }}>{hData?.remark}</span>
-              </Typography.Text>
-            </Flex>
-          </Flex>
-          <Flex className="flex ps-3 grow-0" style={{ width: "40%" }}>
-            <Flex vertical>
-              <Typography.Text className="tx-info">
-                เลขที่
-                <span style={{ paddingLeft: 22 }}>{hData?.recode}</span>
-              </Typography.Text>
-              <Typography.Text className="tx-info">
+      <div className="print-title">
+        <Flex className="flex ps-3 grow-0" style={{ width: "60%" }}>
+          <Flex vertical>
+            <Typography.Text className="tx-info" style={{ fontSize: "15px" }}>
+              ได้รับเงินจาก ( Recived form ) :
+              <span style={{ paddingLeft: 22 }}>
+                {hData?.cuscode} {hData?.prename} {hData?.cusname}
+              </span>
+            </Typography.Text>
+            <Typography.Text className="tx-info" style={{ height: 21 }}>
+              <span></span>
+            </Typography.Text>
+            <Typography.Text className="tx-info">
+              <span>
                 <br></br>
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ height: 21 }}>
-                วันที่
-                <span style={{ paddingLeft: 70 }}>
-                  {dayjs(hData?.ivdate).format("DD/MM/YYYY")}
-                </span>
-              </Typography.Text>
-              <Typography.Text className="tx-info">
-                <br></br>
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ height: 21 }}>
-                อ้างอิง
-                <span style={{ paddingLeft: 20 }}>{hData?.payment}</span>
-              </Typography.Text>
-            </Flex>
+              </span>
+            </Typography.Text>
           </Flex>
-        </div>
+        </Flex>
       </div>
     );
   };
@@ -179,7 +134,7 @@ function ReceiptPrintPreview() {
       <>
         <Table.Summary.Row style={{}}>
           <Table.Summary.Cell
-            colSpan={5}
+            colSpan={1}
             className="!align-top !ps-0   !pe-0"
             style={{ height: 20 }}
           >
@@ -187,12 +142,12 @@ function ReceiptPrintPreview() {
               style={{
                 borderTop: "1px solid",
                 borderLeft: "1px solid",
-                // borderRight: "1px solid",
+                borderBottom: "1px solid",
               }}
             >
               <Typography.Text
                 className="tx-info "
-                style={{ fontSize: 18, marginLeft: 10 }}
+                style={{ fontSize: 18, marginLeft: 10, marginTop: 4 }}
                 strong
               >
                 ({thaiBahtText(hData?.total_price || 0, 2, 2)}).
@@ -203,30 +158,14 @@ function ReceiptPrintPreview() {
             <Flex
               style={{
                 borderTop: "1px solid",
-                // borderLeft: "1px solid",
-                // borderRight: "1px solid",
-              }}
-            >
-              <Typography.Text
-                className="tx-info "
-                style={{ fontSize: 15, marginLeft: 10, marginTop: 4 }}
-                strong
-              >
-                รวมเงินทั้งสิ้น
-              </Typography.Text>
-            </Flex>
-          </Table.Summary.Cell>
-          <Table.Summary.Cell colSpan={1} className="!align-top !ps-0   !pe-0">
-            <Flex
-              style={{
-                borderTop: "1px solid",
                 borderLeft: "1px solid",
                 borderRight: "1px solid",
+                borderBottom: "1px solid",
               }}
             >
               <Typography.Text
                 className="tx-info "
-                style={{ fontSize: 15, marginLeft: 10, marginTop: 4 }}
+                style={{ fontSize: 18, marginLeft: 10, marginTop: 4 }}
                 strong
               >
                 {hData?.total_price}
@@ -234,44 +173,73 @@ function ReceiptPrintPreview() {
             </Flex>
           </Table.Summary.Cell>
         </Table.Summary.Row>
-        <Table.Summary.Row>
-          <Table.Summary.Cell colSpan={8} className="!align-top !ps-0   !pe-0">
+        <Row style={{ paddingTop: 50, paddingLeft: 50 }}>
+          <Col className="!align-top" style={{ height: 20, width: 40 }}>
             <Flex
               style={{
-                border: "1px solid",
+                borderTop: "1px solid",
+                borderLeft: "1px solid",
                 borderRight: "1px solid",
-                padding: 3,
-                height: 70,
+                borderBottom: "1px solid",
               }}
             >
               <Typography.Text
-                className="tx-info"
-                style={{
-                  fontSize: 15,
-                  paddingLeft: 5,
-                  lineHeight: "1em",
-                  paddingTop: 7,
-                }}
+                className="tx-info "
+                style={{ fontSize: 18, marginLeft: 10, marginTop: 4 }}
+                strong
               >
-                <p>
-                  ชื่อผู้รับวางบิล
-                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;__________________________________
-                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ในนาม บริษัท
-                  พรีเวล อินเตอร์เนชั่นแนล ฟู้ด จำกัด
-                </p>
-                <p>
-                  พิมพ์โดย
-                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                  วันที่ {dayjs(hData?.ivdate).format("DD/MM/YYYY  HH:mm:ss")}
-                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; บันทึกโดย{" "}
-                  {userInfo?.firstname} {userInfo?.lastname}
-                </p>
+                <br></br>
               </Typography.Text>
             </Flex>
-          </Table.Summary.Cell>
-        </Table.Summary.Row>
+          </Col>
+          <Col
+            className="!align-top"
+            style={{ height: 20, width: 40, paddingLeft: 15, paddingTop: 5 }}
+          >
+            เงินสด
+          </Col>
+          
+          <Col style={{ height: 20, width: 40 ,marginLeft: 40}}>
+            <Flex
+              style={{
+                borderTop: "1px solid",
+                borderLeft: "1px solid",
+                borderRight: "1px solid",
+                borderBottom: "1px solid",
+              }}
+            >
+              <Typography.Text
+                className="tx-info "
+                style={{ fontSize: 18, marginLeft: 10, marginTop: 4 }}
+                strong
+              >
+                <br></br>
+              </Typography.Text>
+            </Flex>
+          </Col>
+          <Col
+            style={{ height: 20, paddingLeft: 15, paddingTop: 5 }}
+          >
+            เลขที่เช็ค : ............. ธนาคาร : ..............
+          </Col>
+        </Row>
+        <Row style={{ paddingTop: 50, paddingLeft: 50 }}>
+          
+          <Col
+            style={{ height: 20, paddingLeft: 200, paddingTop: 5 }}
+          >
+         เช็คลงวันที่ : ........................................
+          </Col>
+        </Row>
+        <Row style={{ paddingTop: 50, paddingLeft: 50 }}>
+          
+          <Col
+            style={{ height: 20, paddingLeft: 320, paddingTop: 30 }}
+          >
+          .............................................<br></br>
+          ผู้รับเงิน / Cash Collector
+          </Col>
+        </Row>
       </>
     );
   };
@@ -310,7 +278,7 @@ function ReceiptPrintPreview() {
 
   const ContentData = ({ children, pageNum = 1, total = 1 }) => {
     return (
-      <div className="ivpv-pages flex flex-col">
+      <div className="repv-pages flex flex-col">
         <div className="print-content">{children}</div>
       </div>
     );
