@@ -8,7 +8,8 @@ const API_URL = {
   OPTION_QUOTATION: `/common/options-quotation.php`,
   OPTION_INVOICE: `/common/options-invoice.php`,  
   OPTION_BILLING: `/common/options-billing.php`,  
-  OPTION_DELIVERY_NOTE: `/common/options-delivery-note.php`,  
+  OPTION_DELIVERY_NOTE: `/common/options-delivery-note.php`, 
+  OPTION_SHIPPING: `/common/options-shiping.php`, 
   OPTION_ITEMSTYPE: `/common/options-itemstype.php`,
   OPTION_UNIT: `/common/options-unit.php`,
   OPTION_PurchaseOrder: `/common/options-purchaseorder.php`,
@@ -30,6 +31,7 @@ const OptionService = () => {
   const optionsInvoice = (parm = {}) => api.get(`${API_URL.OPTION_INVOICE}?${getParmeter(parm)}`, { ignoreLoading : true });
   const optionsBilling = (parm = {}) => api.get(`${API_URL.OPTION_BILLING}?${getParmeter(parm)}`, { ignoreLoading : true });
   const optionsDeliverynote = (parm = {}) => api.get(`${API_URL.OPTION_DELIVERY_NOTE}?${getParmeter(parm)}`, { ignoreLoading : true });
+  const optionsShipping = (parm = {}) => api.get(`${API_URL.OPTION_SHIPPING}?${getParmeter(parm)}`, { ignoreLoading : true });
   const optionsItemstype = () => api.get(`${API_URL.OPTION_ITEMSTYPE}`, { ignoreLoading : true });
   const optionsUnit = () => api.get(`${API_URL.OPTION_UNIT}`, { ignoreLoading : true });  
   const optionsPurchaseOrder = () => api.get(`${API_URL.OPTION_PurchaseOrder}`, { ignoreLoading : true });
@@ -49,6 +51,7 @@ const OptionService = () => {
     optionsInvoice,
     optionsBilling,
     optionsDeliverynote,
+    optionsShipping,
     optionsItemstype,
     optionsUnit,
     optionsPurchaseOrder,

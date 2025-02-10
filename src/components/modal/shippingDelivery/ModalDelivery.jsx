@@ -65,7 +65,7 @@ export default function ModalDeliverynote({ show, close, values, selected }) {
   const search = () => {
     setLoading(true);
     opservice
-      .optionsDeliverynote()
+      .optionsShipping()
       .then((res) => {
         let { data } = res.data;
         setCustomersData(data);
