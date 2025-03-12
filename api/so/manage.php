@@ -19,7 +19,7 @@ try {
         insert somaster ( 
             socode, cuscode, sodate, total_price,deldate, remark, active_status, doc_status, created_date, created_by
         ) 
-        values (:socode, :cuscode, :sodate, :total_price,:deldate, :remark, 'Y', 'รอปริ้นใบปะหน้าถุง', :action_datetime,:action_user)";
+        values (:socode, :cuscode, :sodate, :total_price,:deldate, :remark, 'Y', 'รอออกใบส่งของ', :action_datetime,:action_user)";
 
 
         $stmt = $conn->prepare($sql);
