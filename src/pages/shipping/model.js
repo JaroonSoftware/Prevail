@@ -1,4 +1,4 @@
-import { Button, Space } from "antd";
+import { Button, Space,Badge } from "antd";
 import "../../assets/styles/banks.css";
 import { Tooltip } from "antd";
 import {
@@ -141,7 +141,6 @@ export const productColumn = ({ handleScan }) => [
     dataIndex: "stname",
     key: "stname",
     align: "left",
-    render: (_, rec) => rec.stname,
   },
   {
     title: "จำนวนส่ง",
@@ -156,6 +155,7 @@ export const productColumn = ({ handleScan }) => [
     key: "del_qty",
     align: "center",
     width: "10%",
+    render: (_, rec) => !!(rec.qty-rec.del_qty)<=0?<Badge status="success" text={rec.del_qty} />:<Badge status="error" text={rec.del_qty} /> ,
   },
   {
     title: "แสกนสินค้า",

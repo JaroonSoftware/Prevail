@@ -60,14 +60,13 @@ export default function ModalScan({ show, selected, close, values }) {
   }, []);
 
   const renderResult = (value, massage, data) => {
-    correctSound();
     if (value) {
-      setTimeout( () => correctSound(), 200 );  
+      setTimeout( () => correctSound(), 100 );  
       values(data);
       handleClose();
       message.success(massage);
     } else {
-      setTimeout( () => errorSound(), 200 );  
+      setTimeout( () => errorSound(), 100 );  
       message.error(massage);
     }
   };
