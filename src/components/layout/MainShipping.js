@@ -5,14 +5,14 @@ import Headerecommerce from "./Headershipping";
 
 const { Content } = Layout;
 
-function Main({ children }) {
+function Main({ }) {
   return (
     <Flex gap="middle" wrap>
       <Layout>
         <LoadingProvider>
           <AxiosInterceptor>
             <Headerecommerce /><br></br>
-            <Content>{children}</Content>
+            <Content></Content>
           </AxiosInterceptor>
         </LoadingProvider>
       </Layout>

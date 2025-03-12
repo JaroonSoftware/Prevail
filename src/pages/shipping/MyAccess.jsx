@@ -22,6 +22,10 @@ import ModalDN from "../../components/modal/shippingDelivery/ModalDelivery";
 import ModalScan from "../../components/modal/scan-shipping/MyModal";
 import { Button, Typography } from "antd";
 import { DEFALUT_CHECK_DELIVERY } from "./model";
+
+
+// C:\xampp\htdocs\Prevail\src\
+
 const opservice = OptionService();
 const dnservice = DeliveryNoteService();
 const barcodeservice = BarcodeService();
@@ -34,9 +38,8 @@ const ShippingAccess = () => {
   const [selectsocode, setSelectSOcode] = useState("");
   const [formDetail, setFormDetail] = useState(DEFALUT_CHECK_DELIVERY);
   const [accessData, setAccessData] = useState([]);
-  const [listDetail] = useState([]);
-
-  const [setUnitOption] = React.useState([]);
+  const [listDetail] = useState([]);  
+  
   useEffect(() => {
     const initial = async () => {
       const data = {};
@@ -52,12 +55,6 @@ const ShippingAccess = () => {
 
       // setTimeout( () => {  handleCalculatePrice(head?.valid_price_until, head?.dated_price_until) }, 200);
       // handleChoosedCustomers(head);
-
-      const [unitOprionRes] = await Promise.all([
-        opservice.optionsUnit({ p: "unit-option" }),
-      ]);
-      // console.log(unitOprionRes.data.data)
-      setUnitOption(unitOprionRes.data.data);
     };
 
     initial();
@@ -126,8 +123,7 @@ const ShippingAccess = () => {
     barcodeservice
       .confirm_shipping(parm)
       .then((r) => {
-        message.success("Request GoodsReceipt success.");
-
+        message.success("Request GoodsReceipt success.");      
         getDNData();
       })
       .catch((err) => {

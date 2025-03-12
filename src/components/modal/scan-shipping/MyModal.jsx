@@ -16,18 +16,24 @@ import BarcodeScannerComponent from "react-qr-barcode-scanner";
 import ItemService from "../../../service/Items.Service";
 import BarcodeService from "../../../service/Barcode.service";
 
+import useSound from "use-sound";
+import correct from "../../../assets/sounds/correct.mp3";
+import errorsound from "../../../assets/sounds/error.mp3";
+
 const itemservice = ItemService();
 const barcodeservice = BarcodeService();
 export default function ModalScan({ show, selected, close, values }) {
   const [loading, setLoading] = useState(true);
   const [form] = Form.useForm();
+  const [correctSound] = useSound(correct);
+  const [errorSound] = useSound(errorsound);
+
   /** handle logic component */
   const handleClose = () => {
     setTimeout(() => {
-      close(false);
-    }, 140);
-
-    //setTimeout( () => close(false), 200 );
+      close(false);      
+    }, 140);    
+    
   };
 
   useEffect(() => {
@@ -53,20 +59,23 @@ export default function ModalScan({ show, selected, close, values }) {
     }, 500);
   }, []);
 
-  /** setting child component */
-  const ButtonModal = (
-    <Space direction="horizontal" size="middle">
-      <Button onClick={() => handleClose()}>ปิด</Button>
-      {/* <Button type="primary" onClick={() => handleConfirm()}>
-        ยืนยันการเลือกสินค้า
-      </Button> */}
-    </Space>
-  );
+  const renderResult = (value, massage, data) => {
+    correctSound();
+    if (value) {
+      setTimeout( () => correctSound(), 200 );  
+      values(data);
+      handleClose();
+      message.success(massage);
+    } else {
+      setTimeout( () => errorSound(), 200 );  
+      message.error(massage);
+    }
+  };
 
-  const CloseModal = (val) => {
+  const ScanCode = (val) => {
     barcodeservice
       .getshipping(val)
-      .then(async (res) => {
+      .then((res) => {
         const { data } = res.data;
 
         // console.log(data.doc_status)
@@ -75,26 +84,28 @@ export default function ModalScan({ show, selected, close, values }) {
           if (data.stcode === form.getFieldValue("stcode")) {
             if (data.weight !== "0.00") {
               if (data.doc_status !== "ขายแล้ว") {
-                values(data);
-                handleClose(false);
-              } else {
-                message.error("ส่งสินค้าแล้วให้กับ " + data.dncode);
-              }
-            } else {
-              message.error("ยังไม่ได้ชั่งน้ำหนักสินค้า ");
-            }
-          } else {
-            message.error("รหัสสินค้าไม่ตรงกัน");
-          }
-        } else {
-          message.error("ไม่รู้จัก Barcode สินค้านี้");
-        }
+                renderResult(1, "สแกนสำเร็จ", data);
+              } else
+                renderResult(0, "ส่งสินค้าแล้วให้กับ " + data.dncode, data);
+            } else renderResult(0, "ยังไม่ได้ชั่งน้ำหนักสินค้า ", data);
+          } else renderResult(0, "รหัสสินค้าไม่ตรงกัน ", data);
+        } else renderResult(0, "ไม่รู้จัก Barcode สินค้านี้ ", data);
       })
       .catch((err) => {
         console.log(err);
         message.error("Error getting infomation Product.");
       });
   };
+
+  /** setting child component */
+  const ButtonModal = (
+    <Space direction="horizontal" size="middle">
+      <Button onClick={() => handleClose()}>ปิด</Button>
+      <Button type="primary" onClick={() => ScanCode()}>
+        ยืนยันการเลือกสินค้า
+      </Button>
+    </Space>
+  );
 
   return (
     <>
@@ -135,7 +146,7 @@ export default function ModalScan({ show, selected, close, values }) {
           </Row>
         </Form>
         {/* เอาไว้เทส */}
-        {/* <Button onClick={() => CloseModal(form.getFieldValue("barcode"))}>
+        {/* <Button onClick={() => ScanCode(form.getFieldValue("barcode"))}>
           Submit test
         </Button> */}
         <Spin spinning={loading}>
@@ -144,7 +155,9 @@ export default function ModalScan({ show, selected, close, values }) {
             height={500}
             onUpdate={(err, result) => {
               if (result) {
-                CloseModal(result.text);
+                  ScanCode(result.text);
+                  // handleClose()
+                  // message.success('massage');
               }
             }}
           />

@@ -12,7 +12,7 @@ import { LAYOUT } from "../../constant/constant";
 // import { LoadingProvider } from "../../store/context/loading-context"
 
 const authService = Authenticate();
-const PrivateRoute = ({ allowdRole, layout = "child" }) => {
+const ShippingRoutes = ({ allowdRole, layout = "child" }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -76,4 +76,4 @@ const PrivateRoute = ({ allowdRole, layout = "child" }) => {
   return <Contents />;
 };
 
-export default PrivateRoute;
+export default ShippingRoutes;

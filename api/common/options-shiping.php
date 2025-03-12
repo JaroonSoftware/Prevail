@@ -12,7 +12,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
         $sql = "SELECT distinct s.dncode,s.dncode,c.cuscode, c.cusname,c.prename, s.doc_status
             FROM dnmaster as s 
             inner join `customer` as c on (s.cuscode=c.cuscode) 
-            where s.doc_status = 'รอจัดเตรียมสินค้า' 
+            where s.doc_status = 'รอจัดเตรียมสินค้า' || s.doc_status = 'จัดเตรียมสินค้ายังไม่ครบ'
             order by s.dncode desc ";
             // $type_code
             $stmt = $conn->prepare($sql); 

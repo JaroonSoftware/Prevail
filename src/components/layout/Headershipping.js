@@ -20,7 +20,7 @@ const App = () => {
   const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [ModalLogoutOpen, setModalLogoutOpen] = useState(false);
-  const [current, setCurrent] = useState("menu1");
+  // const [current, setCurrent] = useState("menu1");
   const onLogout = () => {
     setLoading(true);
     setTimeout(() => {
@@ -35,10 +35,10 @@ const App = () => {
 
     return () => {};
   }, []);
-  const onClick = (e) => {
-    // console.log("click ", e);
-    setCurrent(e.key);
-  };
+  // const onClick = (e) => {
+  //   // console.log("click ", e);
+  //   setCurrent(e.key);
+  // };
   return (
     <Spin spinning={loading}>
       <Layout>
@@ -55,8 +55,9 @@ const App = () => {
           <Row style={{ height: 45}}>
             <Col xs={24} sm={24} md={24} lg={24} xl={24}>
               <Menu
-                onClick={onClick}
-                selectedKeys={[current]}
+                // onClick={onClick}
+                key={1}
+                // selectedKeys={[current]}
                 mode="horizontal"
         
               >

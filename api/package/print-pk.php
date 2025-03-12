@@ -58,14 +58,14 @@ try {
 
                 if ($val['qty'] % $val['packing_weight']) {
                     $sql = "INSERT INTO package_barcode
-                    (so_weight,weight, socode, stcode, created_date)
-                    VALUES(:so_weight,:weight, :socode, :stcode, current_timestamp())";
+                    (so_weight,sup_weight, socode, stcode, created_date)
+                    VALUES(:so_weight,:sup_weight, :socode, :stcode, current_timestamp())";
 
                     $stmt = $conn->prepare($sql);
                     if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
                     $stmt->bindParam(":so_weight", number_format($val['qty'], 2), PDO::PARAM_STR);
-                    $stmt->bindValue(":weight", number_format($val['qty'] % $val['packing_weight'], 2), PDO::PARAM_STR);
+                    $stmt->bindValue(":sup_weight", number_format($val['qty']%$val['packing_weight'], 2), PDO::PARAM_STR);
                     $stmt->bindValue(":socode", $val['socode'], PDO::PARAM_STR);
                     $stmt->bindValue(":stcode", $val['stcode'], PDO::PARAM_STR);
 
