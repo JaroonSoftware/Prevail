@@ -100,9 +100,9 @@ export default function ModalScan({ show, selected, close, values }) {
   const ButtonModal = (
     <Space direction="horizontal" size="middle">
       <Button onClick={() => handleClose()}>ปิด</Button>
-      <Button type="primary" onClick={() => ScanCode()}>
+      {/* <Button type="primary" onClick={() => ScanCode()}>
         ยืนยันการเลือกสินค้า
-      </Button>
+      </Button> */}
     </Space>
   );
 
