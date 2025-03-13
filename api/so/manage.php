@@ -56,7 +56,7 @@ try {
             $val = (object)$val;
             $stmt->bindParam(":socode", $socode, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
-            $stmt->bindParam(":qty", $val->qty, PDO::PARAM_INT);
+            $stmt->bindParam(":qty", $val->qty, PDO::PARAM_STR);
             $stmt->bindParam(":price", $val->price, PDO::PARAM_INT);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
             $stmt->bindParam(":vat", $val->vat, PDO::PARAM_INT);
@@ -129,7 +129,7 @@ try {
             $stmt->bindParam(":socode", $header->socode, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
-            $stmt->bindParam(":qty", $val->qty, PDO::PARAM_INT);
+            $stmt->bindParam(":qty", $val->qty, PDO::PARAM_STR);
             $stmt->bindParam(":price", $val->price, PDO::PARAM_INT);
             $stmt->bindParam(":vat", $val->vat, PDO::PARAM_INT);
             if (!$stmt->execute()) {
