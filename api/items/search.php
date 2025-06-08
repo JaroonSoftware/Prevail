@@ -26,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stname
         $typecode
         $active_status
-        order by a.stcode asc";
+        order by a.seq,a.stcode asc";
 
         $stmt = $conn->prepare($sql);
         $stmt->execute();

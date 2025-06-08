@@ -18,8 +18,15 @@ try {
 
         // var_dump($_POST);
 
-        $sql = "INSERT INTO items (stcode, stname, stnameEN, typecode,unit,remark, price,buyprice,weight_stable, weight, vat,packing_weight,created_by,created_date) 
-        values (:stcode,:stname,:stnameEN,:typecode,:unit,:remark,:price,:buyprice,:weight_stable, :weight, :vat,:packing_weight,:action_user,:action_date)";
+        // ดึง seq ล่าสุด
+        $sql_seq = "SELECT COUNT(stcode) as max_seq FROM items";
+        $stmt_seq = $conn->prepare($sql_seq);
+        $stmt_seq->execute();
+        $row_seq = $stmt_seq->fetch(PDO::FETCH_ASSOC);
+        $next_seq = ($row_seq['max_seq'] ?? 0) + 1;
+
+        $sql = "INSERT INTO items (stcode, stname, stnameEN, typecode,unit,remark, price,buyprice,weight_stable, weight, vat,packing_weight,seq,created_by,created_date) 
+        values (:stcode,:stname,:stnameEN,:typecode,:unit,:remark,:price,:buyprice,:weight_stable, :weight, :vat,:packing_weight,:seq,:action_user,:action_date)";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
@@ -37,6 +44,7 @@ try {
         $stmt->bindParam(":weight", $weight, PDO::PARAM_STR);
         $stmt->bindParam(":vat", $vat, PDO::PARAM_STR);
         $stmt->bindParam(":packing_weight", $packing_weight, PDO::PARAM_STR);
+        $stmt->bindParam(":seq", $next_seq, PDO::PARAM_INT);
         $stmt->bindParam(":action_date", $action_date, PDO::PARAM_STR);
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_INT);
 

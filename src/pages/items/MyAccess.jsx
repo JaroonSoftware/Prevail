@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, message } from "antd";
 import { Collapse, Form, Flex, Row, Col, Space, Select } from "antd";
@@ -48,13 +48,26 @@ const ItemsAccess = () => {
     handleSearch();
   };
 
-  const hangleAdd = () => {
+  const handleAdd = () => {
     navigate("manage/create", {
       state: {
         config: {
           ...mngConfig,
           title: "เพิ่มสินค้า",
           action: "create",
+        },
+      },
+      replace: true,
+    });
+  };
+
+  const handleOrder = () => {
+    navigate("order", {
+      state: {
+        config: {
+          ...mngConfig,
+          title: "จัดเรียงสินค้า",
+          action: "order",
         },
       },
       replace: true,
@@ -233,12 +246,22 @@ const ItemsAccess = () => {
       </Col>
       <Col span={12} style={{ paddingInline: 0 }}>
         <Flex gap={4} justify="end">
+        <Button
+            size="small"
+            className="bn-action bn-center bn-success-outline justify-center"
+            icon={<MdOutlineLibraryAdd style={{ fontSize: ".9rem" }} />}
+            onClick={() => {
+              handleOrder();
+            }}
+          >
+            จัดเรียงสินค้า
+          </Button>
           <Button
             size="small"
             className="bn-action bn-center bn-primary-outline justify-center"
             icon={<MdOutlineLibraryAdd style={{ fontSize: ".9rem" }} />}
             onClick={() => {
-              hangleAdd();
+              handleAdd();
             }}
           >
             เพิ่มสินค้า

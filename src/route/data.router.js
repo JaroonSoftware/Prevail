@@ -2,7 +2,7 @@ import React from "react";
 import { Route } from "react-router-dom";
 
 import { Users, UsersAccess, UsersManage } from "../pages/users";
-import { Items, ItemsAccess, ItemsManage } from "../pages/items";
+import { Items, ItemsAccess, ItemsManage,ItemsOrder } from "../pages/items";
 import { Itemtype, ItemtypeAccess, ItemtypeManage } from "../pages/itemtype";
 import { Unit, UnitAccess, UnitManage } from "../pages/unit";
 import { Customer, CustomerAccess, CustomerManage } from "../pages/customers";
@@ -19,6 +19,7 @@ export const DataRouter = (
     <Route path="/items/" exact element={<Items />}>
       <Route index element={<ItemsAccess />} />
       <Route path="manage/:action" element={<ItemsManage />} />
+      <Route path="order" element={<ItemsOrder />} />
     </Route>
 
     <Route path="/itemtype/" exact element={<Itemtype />}>

@@ -88,6 +88,34 @@ export const accessColumn = ({ handleEdit, handleDelete, handleView }) => [
   },
 ];
 
+export const columnsOrder = ({ DragHandle }) => [ 
+  { key: "sort", align: "center", width: 100, render: () => <DragHandle /> },
+   {
+    title: "No.",
+    key: "seq",
+    align: "left",
+    width: 80,
+    // ใช้ index ของแถวใน table โดยตรง
+    render: (text, record, index) => <span>{index + 1}</span>,
+  },
+  // { title: "key", dataIndex: "key" },
+  {
+    title: "รหัสสินค้า",
+    key: "stcode",
+    dataIndex: "stcode",
+    align: "left",
+    width: 200,
+    sorter: (a, b) => (a?.stcode || "").localeCompare(b?.stcode || ""),
+  },
+  {
+    title: "ชื่อสินค้า",
+    dataIndex: "stname",
+    key: "stname",
+    // width: "30%",
+    sorter: (a, b) => (a?.stname || "").localeCompare(b?.stname || ""),
+  },
+];
+
 export const Items = {
   id: null,
   stcode: null,

@@ -6,6 +6,7 @@ const API_URL = {
   Upload_Pic: `/items/upload_pic.php`,
   Delete_Pic: `/items/delete_pic.php`,
   Delete_Pic_Update: `items/delete_pic_update.php`,
+  API_ORDER: `/items/order.php`
 };
 
 
@@ -20,6 +21,7 @@ const ItemsService = () => {
   const uploadPic = (parm = {}) =>  api.post(`${API_URL.Upload_Pic}`, parm);
   const deletePic = (parm = {}) =>  api.post(`${API_URL.Delete_Pic}`, parm);
   const deletePicUpdate = (parm = {}) =>  api.post(`${API_URL.Delete_Pic_Update}`, parm);
+  const order = (parm = {}) => api.put(`${API_URL.API_ORDER}`, parm);
   
   return {
     create,
@@ -29,7 +31,8 @@ const ItemsService = () => {
     search,
     uploadPic,
     deletePic,
-    deletePicUpdate
+    deletePicUpdate,
+    order
   };
 };
 
