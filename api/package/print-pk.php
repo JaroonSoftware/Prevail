@@ -47,7 +47,7 @@ try {
                     $package_id = $conn->lastInsertId();
 
                     $listbarcode[$ind][$count]['stcode'] = $val['stcode'];
-                    $listbarcode[$ind][$count]['weight'] = number_format($val['packing_weight'], 2);
+                    $listbarcode[$ind][$count]['sup_weight'] = number_format($val['packing_weight'], 2);
                     $listbarcode[$ind][$count]['package_id'] = $package_id;
                     $listbarcode[$ind][$count]['stname'] = $val['stname'];
                     $listbarcode[$ind][$count]['socode'] = $val['socode'];
@@ -77,7 +77,7 @@ try {
                     $package_id = $conn->lastInsertId();
 
                     $listbarcode[$ind][$count]['stcode'] = $val['stcode'];
-                    $listbarcode[$ind][$count]['weight'] = number_format($val['qty'] % $val['packing_weight'], 2);
+                    $listbarcode[$ind][$count]['sup_weight'] = number_format($val['qty'] % $val['packing_weight'], 2);
                     $listbarcode[$ind][$count]['package_id'] = $package_id;
                     $listbarcode[$ind][$count]['stname'] = $val['stname'];
                     $listbarcode[$ind][$count]['socode'] = $val['socode'];
@@ -105,7 +105,7 @@ try {
             }
             else
             {
-                $strSQL = "SELECT a.stcode,a.weight,a.package_id,i.stname,a.socode,c.cusname,c.cuscode FROM `package_barcode` as a
+                $strSQL = "SELECT a.stcode,a.sup_weight,a.weight,a.package_id,i.stname,a.socode,c.cusname,c.cuscode FROM `package_barcode` as a
                 inner join items as i on (a.stcode=i.stcode)
                 inner join somaster as s on (a.socode=s.socode)
                 inner join customer as c on (s.cuscode=c.cuscode)

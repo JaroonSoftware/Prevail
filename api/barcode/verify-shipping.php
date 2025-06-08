@@ -81,6 +81,24 @@ try {
         }
 
         $sql = "
+            update items_stock 
+            set
+            qty = qty-:weight
+            where stcode = :stcode ";
+
+            $stmt5 = $conn->prepare($sql);
+            if (!$stmt5) throw new PDOException("Insert data error => {$conn->errorInfo()}");
+
+            $stmt5->bindParam(":stcode", $header->stcode, PDO::PARAM_STR);
+            $stmt5->bindParam(":weight", $header->weight, PDO::PARAM_STR);
+
+            if (!$stmt5->execute()) {
+                $error = $conn->errorInfo();
+                throw new PDOException("Insert data error => $error");
+                die;
+            }
+
+        $sql = "
         update dnmaster
         set
         doc_status = 'จัดเตรียมสินค้ายังไม่ครบ'
@@ -151,26 +169,10 @@ try {
                 $error = $conn->errorInfo();
                 throw new PDOException("Insert data error => $error");
                 die;
-            }
-
-            $sql = "
-            update items_stock 
-            set
-            qty = qty-:weight
-            where stcode = :stcode ";
-
-            $stmt5 = $conn->prepare($sql);
-            if (!$stmt5) throw new PDOException("Insert data error => {$conn->errorInfo()}");
-
-            $stmt5->bindParam(":stcode", $header->stcode, PDO::PARAM_STR);
-            $stmt5->bindParam(":weight", $header->weight, PDO::PARAM_STR);
-
-            if (!$stmt5->execute()) {
-                $error = $conn->errorInfo();
-                throw new PDOException("Insert data error => $error");
-                die;
-            }
+            }            
         }
+
+        
 
 
         $conn->commit();

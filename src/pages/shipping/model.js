@@ -155,7 +155,15 @@ export const productColumn = ({ handleScan }) => [
     key: "del_qty",
     align: "center",
     width: "10%",
-    render: (_, rec) => !!(rec.qty-rec.del_qty)<=0?<Badge status="success" text={rec.del_qty} />:<Badge status="error" text={rec.del_qty} /> ,
+    render: (_, rec) => (
+            <div>
+              {parseFloat(rec.del_qty)-parseFloat(rec.qty)<0 ? (
+                <Badge status="error" text={rec.del_qty} />
+              ) : (
+                <Badge status="success" text={rec.del_qty} />
+              )}
+            </div>
+          ),
   },
   {
     title: "แสกนสินค้า",

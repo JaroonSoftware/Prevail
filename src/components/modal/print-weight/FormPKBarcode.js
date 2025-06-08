@@ -1,5 +1,7 @@
 import React, { forwardRef } from "react";
-import { Card, QRCode } from "antd";
+// import { Card, QRCode } from "antd";
+import { Card } from "antd";
+import Barcode from 'react-barcode';
 
 const FormPKBarcode = forwardRef(({ printData }, ref) => {
   return (
@@ -25,12 +27,13 @@ const FormPKBarcode = forwardRef(({ printData }, ref) => {
                 >
                   {data?.stname}
                 </td>
-                <td rowSpan={3}>
-                  <QRCode size={80} value={data.package_id.toString()} />
+                <td rowSpan={2}>
+                  {/* <QRCode size={80} value={data.package_id.toString()} /> */}
+                  <Barcode displayValue={false} width={1} height={40} value={data.package_id.toString()} />
                 </td>
               </tr>
               <tr>
-                <td style={{fontWeight: "bold", fontSize: "18px"}}>{data?.weight} KG</td>
+                <td style={{fontWeight: "bold", fontSize: "18px"}}>{data?.sup_weight} KG</td>
               </tr>
               <tr>
                 <td style={{ fontSize: "14px" }} colSpan={2}>
