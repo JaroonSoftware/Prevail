@@ -33,6 +33,7 @@ try {
         $sql .= " inner join ivdetail as d on (a.ivcode=d.ivcode) ";
         $sql .= " inner join items as s on (d.stcode=s.stcode) ";
         $sql .= " where a.recode = :code";
+        $sql .= " order by s.seq";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute(['code' => $code])) {

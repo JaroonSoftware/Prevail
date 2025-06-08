@@ -201,6 +201,7 @@ try {
         $sql = "SELECT a.blcode,a.socode,a.dncode,a.qty,a.stcode, a.price,a.unit,i.stname ";
         $sql .= " FROM `bl_detail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
         $sql .= " where a.blcode = :code";
+        $sql .= " order by i.seq";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute(['code' => $code])) {

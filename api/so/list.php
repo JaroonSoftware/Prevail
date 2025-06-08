@@ -32,6 +32,7 @@ try {
             inner join `customer` as c on (a.cuscode=c.cuscode) 
             where a.socode in ('". implode("' , '", $code) . "')
             group by a.socode,i.stcode";
+            $sql .= " order by i.seq";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute()) {

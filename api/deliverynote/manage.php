@@ -256,6 +256,7 @@ try {
         $sql .= " FROM `dndetail` as a";
         $sql .= " inner join `items` as i on (a.stcode=i.stcode)  ";
         $sql .= " where a.dncode = :code";
+        $sql .= " order by i.seq";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute(['code' => $code])) {

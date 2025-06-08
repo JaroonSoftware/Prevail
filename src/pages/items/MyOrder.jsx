@@ -82,7 +82,6 @@ const ItemsOrder = () => {
           data.map((item, index) => ({
             ...item,
             key: index + 1, // ใช้ index เป็น key
-            seq: index + 1, // กำหนดค่า seq ให้ตรงกับ index
           }))
         );
       })

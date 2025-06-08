@@ -28,7 +28,7 @@ try {
         $sql .= " FROM `sodetail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
         $sql .= " left outer join `itemtype` as t on (t.typecode=i.typecode)  ";
         $sql .= " where a.socode = :code";
-        $sql .= " order by a.stcode asc";
+        $sql .= " order by i.seq";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute(['code' => $code])) {

@@ -17,6 +17,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
             left outer join `itemtype` t on i.typecode = t.typecode
             where 1 = 1 and i.active_status = 'Y'
             $type_code";
+            $sql .= " order by i.seq";
 
             $stmt = $conn->prepare($sql); 
             $stmt->execute();
@@ -29,6 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
             left outer join `itemtype` t on i.typecode = t.typecode
             where s.supcode= '$supcode' 
             $type_code";
+            $sql .= " order by i.seq";
 
             $stmt = $conn->prepare($sql); 
             $stmt->execute();
@@ -40,6 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
             inner join pomaster b on (a.pocode=b.pocode)
             inner join items i on (a.stcode=i.stcode)
             where b.supcode= '$supcode' and b.active_status = 'Y' and b.doc_status != 'รับของครบแล้ว' and b.doc_status != 'ยกเลิก' and a.qty>a.recamount "; 
+            $sql .= " order by i.seq";
             $stmt = $conn->prepare($sql); 
             $stmt->execute();
             $res = $stmt->fetchAll(PDO::FETCH_ASSOC);             
@@ -50,6 +53,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
             left outer join `itemtype` t on i.typecode = t.typecode
             where 1 = 1 and i.active_status = 'Y'
             $type_code";
+            $sql .= " order by i.seq";
 
             $stmt = $conn->prepare($sql); 
             $stmt->execute();
@@ -64,6 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
             left outer join `itemtype` t on i.typecode = t.typecode
             where a.cuscode= '$cuscode' and (CURDATE() BETWEEN m.start_date AND m.stop_date)
             $type_code";
+            $sql .= " order by i.seq";
 
             $stmt = $conn->prepare($sql); 
             $stmt->execute();
@@ -82,6 +87,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
             from items i
             where 1 = 1 and i.active_status = 'Y'
             $type_code"; 
+            $sql .= " order by i.seq";
 
             $stmt = $conn->prepare($sql); 
             $stmt->execute();

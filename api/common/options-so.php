@@ -13,6 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
             inner join somaster b on (a.socode=b.socode)
             inner join items i on (a.stcode=i.stcode)
             where b.cuscode= '$cuscode' and IF(a.delamount IS NULL,0,a.delamount) < a.qty and b.doc_status != 'ยกเลิก' ";
+            $sql .= " order by i.seq";
 
         $stmt = $conn->prepare($sql);
         $stmt->execute();

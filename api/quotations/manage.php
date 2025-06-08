@@ -185,6 +185,7 @@ try {
         $sql = "SELECT a.qtcode,a.stcode, a.price, a.unit, i.stname, i.stnameEN ";
         $sql .= " FROM `qtdetail` as a inner join `items` as i on (a.stcode=i.stcode)  ";        
         $sql .= " where a.qtcode = :code";
+        $sql .= " order by i.seq";
         
         $stmt = $conn->prepare($sql); 
         if (!$stmt->execute([ 'code' => $code ])){

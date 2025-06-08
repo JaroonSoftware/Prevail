@@ -188,6 +188,7 @@ try {
         $sql = "SELECT a.pocode,a.stcode, a.price as buyprice, a.discount,a.vat, a.unit, a.qty,i.stname,a.recamount ";
         $sql .= " FROM `podetail` as a inner join `items` as i on (a.stcode=i.stcode)  ";        
         $sql .= " where a.pocode = :code";
+        $sql .= " order by i.seq";
         
         $stmt = $conn->prepare($sql); 
         if (!$stmt->execute([ 'code' => $code ])){

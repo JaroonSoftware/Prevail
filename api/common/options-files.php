@@ -19,8 +19,8 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
             $sql = "
             select  i.stcode value, i.stname label 
             from items i
-            where 1 = 1 and i.status = 'Y'
-            $type_code"; 
+            where 1 = 1 and i.status = 'Y' "; 
+            $sql .= " order by i.seq";
 
             $stmt = $conn->prepare($sql); 
             $stmt->execute();

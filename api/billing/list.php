@@ -41,6 +41,7 @@ try {
         $sql = "SELECT a.blcode,a.dncode,a.stcode, a.price, a.unit, a.qty ,i.stname ";
         $sql .= " FROM `bl_detail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
         $sql .= " where a.blcode in ('". implode("' , '", $code) . "')";
+        $sql .= " order by i.seq";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute()) {

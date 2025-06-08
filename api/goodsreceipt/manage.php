@@ -262,6 +262,7 @@ try {
         $sql .= " FROM `grdetail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
         $sql .= " inner join `podetail` as p on (a.stcode=p.stcode) and a.pocode=p.pocode ";
         $sql .= " where a.grcode = :code";
+        $sql .= " order by i.seq";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute(['code' => $code])) {

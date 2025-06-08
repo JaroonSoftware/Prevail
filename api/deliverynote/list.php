@@ -48,6 +48,7 @@ try {
             inner join `customer` as c on (d.cuscode=c.cuscode) 
             where d.dncode in ('". implode("' , '", $code) . "')
             group by b.dncode,i.stcode";
+            $sql .= " order by i.seq";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute()) {

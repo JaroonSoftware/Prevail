@@ -29,7 +29,8 @@ try {
         $sql .= " inner join dnmaster as dm on (dm.dncode=a.dncode)    ";
         $sql .= " right outer join sodetail as sd on (sd.socode=dm.socode) and (a.stcode=sd.stcode)    ";
         $sql .= " where a.dncode = :code";
-        $sql .= " group by a.stcode order by a.stcode asc";
+        $sql .= " group by a.stcode ";
+        $sql .= " order by i.seq";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute(['code' => $code])) {

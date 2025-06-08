@@ -213,6 +213,7 @@ try {
         $sql = "SELECT a.catalog_code,a.stcode,i.stname,a.price ";
         $sql .= " FROM `catalog_detail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
         $sql .= " where a.catalog_code = :code";
+        $sql .= " order by i.seq";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute(['code' => $code])) {
