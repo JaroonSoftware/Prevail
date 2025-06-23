@@ -85,10 +85,10 @@ function ReceiptPrintPreview() {
           บริษัท พรีเวล อินเตอร์เนชั่นแนล ฟู้ด จำกัด
         </Typography.Text>
         <Typography.Text className="tx-info" style={{ fontSize: 14 }}>
-          62/2 ถ.กระ ต.ตลาดใหญ่ อ.เมือง จ.ภูเก็ต 83000
+          60/3 ถ.กระ ต.ตลาดใหญ่ อ.เมือง จ.ภูเก็ต 83000
         </Typography.Text>
         <Typography.Text className="tx-info" style={{ fontSize: 14 }}>
-          โทร. 076-214346 แฟกซ์ : 076-214347
+          โทร. 076-641117 แฟกซ์ : 076-214347
         </Typography.Text>
         <Typography.Text className="tx-info" style={{ fontSize: 14 }}>
           เลขประจำตัวผู้เสียภาษี : 0833556001953

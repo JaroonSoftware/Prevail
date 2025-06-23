@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from "react-router-dom";
 import { Menu, MenuItem } from "react-pro-sidebar";
 import { Badge, Flex } from "antd";
@@ -10,6 +10,7 @@ import { Authenticate } from '../../service/Authenticate.service.js';
 // import { useAppDispatch } from '../../store/store';
 const Sidenav = () => {
   const authService =  Authenticate();
+  const [search, setSearch] = useState("");
   // const [ waitApprove, setWaitAppreve ] = useState(0);
   // const dispatch = useAppDispatch();
   
@@ -36,18 +37,32 @@ const Sidenav = () => {
       default: return (<><span>{title}</span></>)
     }
   }
+  // ฟังก์ชันกรองเมนูตามข้อความค้นหา
+  const filterNav = (navList) =>
+    navList.filter(
+      (item) =>
+        !item.title || // สำหรับ group header
+        item.title.toLowerCase().includes(search.toLowerCase())
+    );
   return (
     <>
       <Flex vertical className="brand width-100" justify='center' align='center' >
-        <img src={logo} alt="9star logo" style={{width:160, height:80}}  />
-        <span></span>
+        <img src={logo} alt="Prevail logo" style={{width:160, height:80}}  />        
       </Flex>
-      <hr />
-
+<hr />
+      <input
+        type="text"
+        placeholder="ค้นหาเมนู..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        style={{ width: "90%", marginBottom: 8, padding: 0,marginLeft: 18 }}
+      />
       {/* <Sidebar style={{minWidth:"100%", width:"100%"}} > */}
         <Menu theme="light" mode="inline">
-          {nav.map((item, idx) => {
-            return ( !item?.type ? (
+        {filterNav(nav).filter( (item) => {
+            return ( !item.role || !!item?.role?.includes( authService.getType()?.toLowerCase() ) );
+          }).map((item, idx) => (
+          ( !item?.type ? (
               <MenuItem
                 icon={item?.icon}
                 key={idx}
@@ -57,12 +72,11 @@ const Sidenav = () => {
                 <Notification title={item?.title} />
               </MenuItem>
             ) : (
-              <MenuItem  type="primary" danger key={idx} className="nav-group-title">
+              <MenuItem key={idx} className="nav-group-title">
                 {item?.title}
               </MenuItem>
-            )
-            );
-          })}
+            ))
+        ))}
         </Menu>
       {/* </Sidebar> */}
     </>
