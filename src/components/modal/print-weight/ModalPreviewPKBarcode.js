@@ -16,7 +16,20 @@ export default function ModalPreviewPKBarcode({ show, close, printRef, printData
 return (
   <>
     <Modal
-      title="Preview"
+      title={
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <span>Preview</span>
+      <Button
+          icon={<PrinterFilled />}
+          size="large"
+          className="button-primary"
+          onClick={handlePrint}
+          style={{ marginRight: 30}}
+        >
+          พิมพ์
+        </Button>
+    </div>
+  }
       width={800}
       open={show}
       onCancel={close}
