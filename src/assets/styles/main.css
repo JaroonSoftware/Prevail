@@ -3362,6 +3362,13 @@ button, [type='button'], [type='reset'], [type='submit'] {
   visibility: visible;
 }
 
+.pkqrcode .ant-card-body {
+  padding-top: 0 !important;
+  padding-left: 18px !important;
+  padding-bottom: 10px ;
+  /* page-break-after: always; */
+}
+
 /* .ant-modal-root .ant-modal-wrap { 
   z-index: 10000; 
 }

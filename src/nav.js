@@ -3,7 +3,7 @@ import { TbReportMoney } from "react-icons/tb";
 import { RiTeamFill } from "react-icons/ri";
 import { MdOutlineDashboard } from "react-icons/md";
 import { TiThLarge } from "react-icons/ti";
-import { GiDatabase } from "react-icons/gi";
+import { GiDatabase,GiGrain } from "react-icons/gi";
 import { FaUserCircle } from "react-icons/fa";
 import { RiBox3Fill } from "react-icons/ri";
 import { TfiTruck } from "react-icons/tfi";
@@ -56,6 +56,15 @@ let _nav = [
     title: "ข้อมูลลูกค้า",
     icon: <RiTeamFill className="nav-ico" />,
     to: "/customers",
+  },
+   {
+    title: "Reports",
+    type: "group",
+  },
+  {
+    title: "รายงานการซื้อของแห้ง",
+    icon: <GiGrain  className="nav-ico" />,
+    to: "/dry-report",
   },
   {
     title: "BUY",

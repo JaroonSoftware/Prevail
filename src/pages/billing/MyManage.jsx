@@ -76,7 +76,7 @@ function BillingnoteManage() {
           data: { header, detail },
         } = res.data;
         const { blcode, bldate, duedate } = header;
-        console.log(header)
+        // console.log(header)
         setFormDetail(header);
         setListDetail(detail);
         setBLCode(blcode);
@@ -196,7 +196,7 @@ function BillingnoteManage() {
   };
 
   const handleItemsChoosed = async (val) => {
-    console.log(val)
+    // console.log(val)
     const res = await soservice.getlist(val);
     const {
       data: { detail },

@@ -26,6 +26,22 @@ try {
             $res = $stmt->fetch(PDO::FETCH_ASSOC);
             extract($res, EXTR_OVERWRITE, "_");
             if ($num==0) {
+                $strSQL = "SELECT a.cuscode FROM somaster as a 
+                where a.socode = :socode  ";
+                $stmt5 = $conn->prepare($strSQL);
+                if (!$stmt5) throw new PDOException("Insert data error => {$conn->errorInfo()}");
+
+                $stmt5->bindParam(":socode", $val['socode'], PDO::PARAM_STR);
+
+                if (!$stmt5->execute()) {
+                    $error = $conn->errorInfo();
+                    throw new PDOException("Insert data error => $error");
+                    die;
+                }
+
+                $res = $stmt5->fetch(PDO::FETCH_ASSOC);
+                extract($res, EXTR_OVERWRITE, "_");
+
                 for ($count = 0; $count < intval($val['qty'] / $val['packing_weight']); $count++) {
                     $sql = "INSERT INTO package_barcode
                     (so_weight,sup_weight,weight, socode, stcode, created_date)
@@ -52,7 +68,7 @@ try {
                     $listbarcode[$ind][$count]['stname'] = $val['stname'];
                     $listbarcode[$ind][$count]['socode'] = $val['socode'];
                     $listbarcode[$ind][$count]['cusname'] = $val['cusname'];
-                    $listbarcode[$ind][$count]['cuscode'] = $val['cuscode'];
+                    $listbarcode[$ind][$count]['cuscode'] = $cuscode;
                     
                 }
 

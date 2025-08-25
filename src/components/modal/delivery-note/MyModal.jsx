@@ -133,7 +133,7 @@ export default function ModalDeliverynote({show, close,cuscode, values, selected
         <Space direction="horizontal" size="middle" >
             
             <Button onClick={() => handleClose() }>ปิด</Button>
-            <Button type='primary' onClick={() => handleConfirm() }>ยืนยันการเลือกสินค้า</Button>
+            <Button type='primary' onClick={() => handleConfirm() }>ยืนยันเตรียมออกใบวางบิล</Button>
         </Space>
     )
     /** */
@@ -141,7 +141,7 @@ export default function ModalDeliverynote({show, close,cuscode, values, selected
         <>
         <Modal
             open={show}
-            title="เลือกสินค้า"
+            title="เลือกใบขายสินค้า"
             onCancel={() => handleClose() } 
             footer={ButtonModal}
             maskClosable={false}

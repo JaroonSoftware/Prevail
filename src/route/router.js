@@ -11,6 +11,7 @@ import { HeaderShipping } from "./shipping.router";
 import { WarehouseRouter } from "./warehouse.router";
 import { DataRouter } from "./data.router";
 import { PrintRouter } from "./print.route";
+import { ReportRouter } from "./reports.router";
 const Router = () => {
   return (
     <BrowserRouter>
@@ -32,6 +33,7 @@ const Router = () => {
         <Route element={<PrivateRoute allowdRole={[ROLES.ADMIN]} />}>
           {DataRouter}
           {WarehouseRouter}
+          {ReportRouter}
         </Route>
 
         <Route

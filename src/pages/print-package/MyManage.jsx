@@ -175,7 +175,7 @@ function MyManage() {
       .then((r) => {
         // console.log(r.data)
         setResultData(r.data.data)
-        message.success("Process on going!");
+        // message.success("สร้าง QRC เรียบร้อย!");
         setOpenPrint(true);
         // printProcess();
         // reFetchAfterPrint();
@@ -424,7 +424,7 @@ function MyManage() {
       <Space size="small" direction="vertical" className="flex gap-2">
         <Row gutter={[8, 8]} className="m-0">
           <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-            <Form.Item className="" name="remark" label="Remark">
+            <Form.Item name="remark" label="Remark">
               <Input.TextArea placeholder="Enter Remark" rows={4} />
             </Form.Item>
           </Col>
