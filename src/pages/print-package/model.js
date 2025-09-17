@@ -64,6 +64,15 @@ export const accessColumn = ({ handleEdit, handleView, handlePrintsData }) => [
       </Tooltip>
     ),
   },
+   {
+    title: "สถานะปริ้น",
+    dataIndex: "print_status",
+    key: "print_status", 
+    width: '13%',
+    sorter: (a, b) => a.print_status.localeCompare(b.print_status),
+    sortDirections: ["descend", "ascend"],
+    render: (data) => <TagSalesOrderStatus result={data} />,
+  },
   {
     title: "สถานะ",
     dataIndex: "doc_status",

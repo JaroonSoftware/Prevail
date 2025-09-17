@@ -60,7 +60,7 @@ try {
                         throw new PDOException("Insert data error => $error");
                         die;
                     }
-                    $package_id = $conn->lastInsertId();
+                    $package_id = str_pad($conn->lastInsertId(), 10, "0", STR_PAD_LEFT);
 
                     $listbarcode[$ind][$count]['stcode'] = $val['stcode'];
                     $listbarcode[$ind][$count]['sup_weight'] = number_format($val['packing_weight'], 2);

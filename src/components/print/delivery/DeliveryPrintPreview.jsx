@@ -51,7 +51,8 @@ function DeliveryPrintPreview() {
         .then(async (res) => {
           const {
             data: { header, detail },
-          } = res.data.data;
+          } = res;
+          console.log(header, detail);
 
           setHData(header);
           setDetails(detail);
@@ -140,8 +141,8 @@ function DeliveryPrintPreview() {
                 <span style={{ paddingLeft: 20 }}>{hData?.remark}</span>
               </Typography.Text>
               <Typography.Text className="tx-info" style={{ height: 21 }}>
-                ขนส่งโดย
-                <span style={{ paddingLeft: 20 }}>{hData?.remark}</span>
+                ขนส่งโดย ส่งให้ลูกค้า
+                {/* <span style={{ paddingLeft: 20 }}>{hData?.remark}</span> */}
               </Typography.Text>
             </Flex>
           </Flex>
@@ -167,7 +168,7 @@ function DeliveryPrintPreview() {
               </Typography.Text>
               <Typography.Text className="tx-info" style={{ height: 21 }}>
                 เขตการขาย
-                <span style={{ paddingLeft: 20 }}>{hData?.payment}</span>
+                <span style={{ paddingLeft: 20 }}>{hData?.county_name}</span>
               </Typography.Text>
             </Flex>
           </Flex>
@@ -341,7 +342,7 @@ function DeliveryPrintPreview() {
         {loading && <Spin fullscreen indicator={<LoadingOutlined />} />}
         <div className="title-preview">
           <Button
-            className="bn-center  bg-blue-400"
+            className="bn-center bg-blue-400"
             // onClick={() => { handleCheckMultiPages() }}
             onClick={() => {
               handlePrint(null, () => componentRef.current);

@@ -239,9 +239,10 @@ try {
         echo json_encode(array("status"=> 1));
     } else  if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $code = $_GET["code"];
-        $sql = "SELECT * ,a.remark,c.county_code";
+        $sql = "SELECT * ,a.remark,co.county_name";
         $sql .= " FROM `dnmaster` as a ";
         $sql .= " left outer join `customer` as c on (a.cuscode)=(c.cuscode)";
+        $sql .= " left outer join `county` as co on (c.county_code)=(co.county_code) ";
         $sql .= " where a.dncode = :code";
 
         $stmt = $conn->prepare($sql);
