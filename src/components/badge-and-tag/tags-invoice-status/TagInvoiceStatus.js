@@ -11,8 +11,8 @@ export default function TagInvoiceStatus({result}) {
     case 'ออกใบเสร็จแล้ว':
       elementToRender = <Tag icon={<CheckCircleFilled />} color="#87d068"> ออกใบเสร็จแล้ว </Tag>;
       break;
-    case 'รอชำระเงิน':
-      elementToRender = <Tag icon={<ClockCircleFilled />} color="#347C98"> รอชำระเงิน </Tag>;
+    case 'รอออกใบเสร็จรับเงิน':
+      elementToRender = <Tag icon={<ClockCircleFilled />} color="#347C98"> รอออกใบเสร็จรับเงิน </Tag>;
       break;
     case 'ชำระไม่ครบ':
       elementToRender = <Tag icon={<ClockCircleFilled />} color="#ffab47"> ชำระไม่ครบ</Tag>;

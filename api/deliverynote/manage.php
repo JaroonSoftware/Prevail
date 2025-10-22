@@ -12,20 +12,52 @@ try {
     $action_user = $token->userid;
     // echo $action_user;
 
+    // $doc_status = "รอออกใบส่งของ";
+    $doc_status = "รอออกใบวางบิล";
+    
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $rest_json = file_get_contents("php://input");
         $_POST = json_decode($rest_json, true);
         extract($_POST, EXTR_OVERWRITE, "_");
 
+        foreach ($detail as $ind => $val) {
+            $val = (object)$val;
+
+            $strSQL = "SELECT qty FROM items_stock where stcode = :stcode ";
+            $stmt5 = $conn->prepare($strSQL);
+            if (!$stmt5) throw new PDOException("Insert data error => {$conn->errorInfo()}");
+
+            $stmt5->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
+
+            if (!$stmt5->execute()) {
+                $error = $conn->errorInfo();
+                throw new PDOException("Insert data error => $error");
+                die;
+            }
+
+            $res = $stmt5->fetch(PDO::FETCH_ASSOC);
+            extract($res, EXTR_OVERWRITE, "_");
+            if ($qty < $val->qty) {
+                $error = $conn->errorInfo();
+                throw new PDOException("จำนวนสต๊อกเหลือไม่พอให้ตัดออก");
+                die;
+            }
+        }
+
         // var_dump($_POST);
+        // $sql = "insert dnmaster (`dncode`, `dndate`, `cuscode`,`total_price`,`remark`,doc_status,created_by,updated_by) 
+        // values (:dncode,:dndate,:cuscode,:total_price,:remark,'รอจัดเตรียมสินค้า',:action_user,:action_user)";
+
+        $dncode = request_dncode($conn);
+
         $sql = "insert dnmaster (`dncode`, `dndate`, `cuscode`,`total_price`,`remark`,doc_status,created_by,updated_by) 
-        values (:dncode,:dndate,:cuscode,:total_price,:remark,'รอจัดเตรียมสินค้า',:action_user,:action_user)";
+        values (:dncode,:dndate,:cuscode,:total_price,:remark,'จัดเตรียมสินค้าแล้ว',:action_user,:action_user)";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
         $header = (object)$header;
-        $stmt->bindParam(":dncode", $header->dncode, PDO::PARAM_STR);
+        $stmt->bindParam(":dncode", $dncode, PDO::PARAM_STR);
         $stmt->bindParam(":dndate", $header->dndate, PDO::PARAM_STR);
         $stmt->bindParam(":cuscode", $header->cuscode, PDO::PARAM_STR);
         $stmt->bindParam(":total_price", $header->total_price, PDO::PARAM_STR);
@@ -49,7 +81,7 @@ try {
         // $detail = $detail;  
         foreach ($detail as $ind => $val) {
             $val = (object)$val;
-            $stmt->bindParam(":dncode", $header->dncode, PDO::PARAM_STR);
+            $stmt->bindParam(":dncode", $dncode, PDO::PARAM_STR);
             $stmt->bindParam(":socode", $val->socode, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
             $stmt->bindParam(":qty", $val->qty, PDO::PARAM_INT);
@@ -61,7 +93,37 @@ try {
                 throw new PDOException("Insert data error => $error");
             }
 
-            $sql = "update sodetail set delamount = delamount+:qty where socode = :socode and stcode = :stcode";
+            $strSQL = "SELECT amtprice FROM `items_stock` where stcode =:stcode ";
+            $stmt6 = $conn->prepare($strSQL);
+            if (!$stmt6) throw new PDOException("Insert data error => {$conn->errorInfo()}");
+
+            $stmt6->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
+
+            if (!$stmt6->execute()) {
+                $error = $conn->errorInfo();
+                throw new PDOException("Insert data error => $error");
+                die;
+            }
+
+            $res = $stmt6->fetch(PDO::FETCH_ASSOC);
+            extract($res, EXTR_OVERWRITE, "_");
+
+            $sql2 = "UPDATE items_stock SET qty= qty-:qty,price= amtprice*qty,amtprice = price/qty,updated_date = CURRENT_TIMESTAMP() where stcode =:stcode ";
+            $stmt2 = $conn->prepare($sql2);
+            if (!$stmt2) throw new PDOException("Insert data error => {$conn->errorInfo()}");
+
+            // $stmt2->bindParam(":price", $val->price, PDO::PARAM_STR);
+            $stmt2->bindParam(":qty", $val->qty, PDO::PARAM_STR);
+            // $stmt2->bindParam(":discount", $val->discount, PDO::PARAM_STR);
+            $stmt2->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
+
+            if (!$stmt2->execute()) {
+                $error = $conn->errorInfo();
+                throw new PDOException("Insert data error => $error");
+                die;
+            }
+
+            $sql = "update sodetail set delamount = delamount+:qty,total_cost=total_cost+(:amtprice* :qty) where socode = :socode and stcode = :stcode";
 
             $stmt3 = $conn->prepare($sql);
             if (!$stmt3) throw new PDOException("Insert data error => {$conn->errorInfo()}");
@@ -69,6 +131,7 @@ try {
             $stmt3->bindParam(":qty", $val->qty, PDO::PARAM_STR);
             $stmt3->bindParam(":socode", $val->socode, PDO::PARAM_STR);
             $stmt3->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
+            $stmt3->bindParam(":amtprice", $amtprice, PDO::PARAM_STR);
 
             if (!$stmt3->execute()) {
                 $error = $conn->errorInfo();
@@ -95,7 +158,7 @@ try {
                 $sql = "
                 update somaster 
                 set
-                doc_status = 'รอจัดเตรียมสินค้า',
+                doc_status = '$doc_status',
                 updated_date = CURRENT_TIMESTAMP(),
                 updated_by = :action_user
                 where socode = :socode";
@@ -103,7 +166,7 @@ try {
                 $sql = "
                 update somaster 
                 set
-                doc_status = 'รอออกใบส่งของ',
+                doc_status = 'รอจัดเตรียมสินค้า',
                 updated_date = CURRENT_TIMESTAMP(),
                 updated_by = :action_user
                 where socode = :socode";
@@ -210,7 +273,8 @@ try {
 
             foreach ($res as $row) {
 
-                $sql = "update somaster set doc_status = 'รอออกใบส่งของ' where socode = :code";
+                // $sql = "update somaster set doc_status = 'รอออกใบส่งของ' where socode = :code";
+                $sql = "update somaster set doc_status = '$doc_status' where socode = :code";
                 $stmt2 = $conn->prepare($sql);
                 if (!$stmt2->execute(['code' => $row['socode']])) {
                     $error = $conn->errorInfo();

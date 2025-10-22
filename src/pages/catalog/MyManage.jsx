@@ -151,7 +151,7 @@ function CatalogManage() {
         actions(parm)
           .then((r) => {
             handleClose().then((r) => {
-              message.success("Request Catalog success.");
+              config?.action !== "create" ? message.success("แก้ไข Catalog สำเร็จ") : message.success("สร้าง Catalog สำเร็จ");
             });
           })
           .catch((err) => {

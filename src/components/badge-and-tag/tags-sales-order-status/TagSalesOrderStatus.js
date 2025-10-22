@@ -23,6 +23,9 @@ function TagSalesOrderStatus({result}) {
     case 'ยกเลิก':
       elementToRender = <Tag icon={<CloseCircleFilledIcon />} color="#ababab"> ยกเลิก </Tag>;
       break;
+    case 'รอชำระเงิน':
+      elementToRender = <Tag icon={<ClockCircleFilled />} color="#6495ED"> รอชำระเงิน </Tag>;
+      break;
     case 'ชำระยังไม่ครบ':
       elementToRender = <Tag icon={<ClockCircleFilled />} color="#454545"> ชำระยังไม่ครบ </Tag>;
       break;

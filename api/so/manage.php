@@ -46,8 +46,8 @@ try {
         $code = $conn->lastInsertId();
         // var_dump($master); exit;
 
-        $sql = "insert into sodetail (socode,stcode,qty,price,unit,vat)
-        values (:socode,:stcode,:qty,:price,:unit,:vat)";
+        $sql = "insert into sodetail (socode,stcode,qty,price,unit,vat,total_cost)
+        values (:socode,:stcode,:qty,:price,:unit,:vat,0)";
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
@@ -118,8 +118,8 @@ try {
             throw new PDOException("Remove data error => $error");
         }
 
-        $sql = "insert into sodetail (socode,stcode,unit,qty,price,vat)
-        values (:socode,:stcode,:unit,:qty,:price,:vat)";
+        $sql = "insert into sodetail (socode,stcode,unit,qty,price,vat,total_cost)
+        values (:socode,:stcode,:unit,:qty,:price,:vat,0)";
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 

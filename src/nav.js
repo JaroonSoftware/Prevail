@@ -57,15 +57,20 @@ let _nav = [
     icon: <RiTeamFill className="nav-ico" />,
     to: "/customers",
   },
-   {
-    title: "Reports",
-    type: "group",
-  },
   {
-    title: "รายงานการซื้อของแห้ง",
-    icon: <GiGrain  className="nav-ico" />,
-    to: "/dry-report",
+    title: "แคตตาล็อก",
+    icon: <AppstoreAddOutlined className="nav-ico" />,
+    to: "/catalog",
   },
+  //  {
+  //   title: "Reports",
+  //   type: "group",
+  // },
+  // {
+  //   title: "รายงานการซื้อของแห้ง",
+  //   icon: <GiGrain  className="nav-ico" />,
+  //   to: "/dry-report",
+  // },
   {
     title: "BUY",
     type: "group",
@@ -75,11 +80,11 @@ let _nav = [
     icon: <FileTextFilled className="nav-ico" />, 
     to: "/purchase-order",
   },
-  {
-    title: "ใบรับสินค้า",
-    icon: <FileDoneOutlined className="nav-ico"/>, 
-    to: "/goods-receipt",
-  },  
+  // {
+  //   title: "ใบรับสินค้า",
+  //   icon: <FileDoneOutlined className="nav-ico"/>, 
+  //   to: "/goods-receipt",
+  // },  
   {
     title: "ข้อมูลผู้ขาย",
     icon: <BsShop className="nav-ico" />,
@@ -93,11 +98,6 @@ let _nav = [
     title: "ข้อมูลสินค้า",
     icon: <GiDatabase className="nav-ico" />,
     to: "/items",
-  },
-  {
-    title: "แคตตาล็อก",
-    icon: <AppstoreAddOutlined className="nav-ico" />,
-    to: "/catalog",
   },
   {
     title: "ประเภทสินค้า",

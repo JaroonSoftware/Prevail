@@ -83,6 +83,36 @@ try {
                 throw new PDOException("Insert data error => $error");
                 die;
             }
+
+            $strSQL = "SELECT socode FROM bl_detail where blcode = :blcode ";
+            $stmt5 = $conn->prepare($strSQL);
+            if (!$stmt5) throw new PDOException("Insert data error => {$conn->errorInfo()}");
+
+            $stmt5->bindParam(":blcode", $val->blcode, PDO::PARAM_STR);
+
+            if (!$stmt5->execute()) {
+                $error = $conn->errorInfo();
+                throw new PDOException("Insert data error => $error");
+                die;
+            }
+
+            $res = $stmt5->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($res as $row) {
+
+                // $sql = "update somaster set doc_status = 'รอออกใบส่งของ' where socode = :code";
+                $sql = "update somaster 
+                set
+                doc_status = 'รอชำระเงิน',
+                updated_date = CURRENT_TIMESTAMP(),
+                updated_by = :action_user
+                where socode = :socode";
+                $stmt2 = $conn->prepare($sql);
+                if (!$stmt2->execute(['action_user' => $action_user, 'socode' => $row['socode']])) {
+                    $error = $conn->errorInfo();
+                    throw new PDOException("Remove data error => $error");
+                }
+            }
         }
 
         $conn->commit();
