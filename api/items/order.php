@@ -17,35 +17,41 @@ try {
         extract($_PUT, EXTR_OVERWRITE, "_");
         // var_dump($_POST);
 
+        $data = array();
+
         foreach ($detail as $ind => $val) {
-        $val = (object)$val;
-        // echo $val->stcode . '<br>';
+            $val = (object)$val;
+            // echo $val->stcode . '<br>';
 
-        $sql = "
-        update items 
-        set
-        seq = :seq
-        where stcode = :stcode";
+            // if ($val->stcode == "0503") {
+                $sql = "
+            update items 
+            set
+            seq = :seq
+            where stcode = :stcode";
 
-        $stmt = $conn->prepare($sql);
-        if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
+                $stmt = $conn->prepare($sql);
+                if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
 
-        $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
-        $stmt->bindParam(":seq", $val->seq, PDO::PARAM_STR);
-        // $stmt->bindParam(":action_date", date("Y-m-d H:i:s"), PDO::PARAM_STR);
+                $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
+                $stmt->bindParam(":seq", $val->seq, PDO::PARAM_STR);
+                // $stmt->bindParam(":action_date", date("Y-m-d H:i:s"), PDO::PARAM_STR);
 
-        if (!$stmt->execute()) {
-            $error = $conn->errorInfo();
-            throw new PDOException("Insert data error => $error");
-            die;
+                if (!$stmt->execute()) {
+                    $error = $conn->errorInfo();
+                    throw new PDOException("Insert data error => $error");
+                    die;
+                }
+
+                array_push($data, array("stcode" => $val->stcode, "seq" => $val->seq));
+            // }
         }
-    }
-        
+
 
         $conn->commit();
         http_response_code(200);
-        echo json_encode(array("data" => array("id" => $detail)));
+        echo json_encode(array("id" => $data));
     }
 } catch (PDOException $e) {
     $conn->rollback();

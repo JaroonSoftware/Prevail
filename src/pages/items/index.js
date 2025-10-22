@@ -1,6 +1,8 @@
 import Items from "./MyPage";
 import ItemsAccess from "./MyAccess";
 import ItemsManage from "./MyManage";
-import ItemsOrder from "./MyOrder";
+import UIOrder from "./../soft-order/MyOrder";
 
-export { Items, ItemsAccess, ItemsManage,ItemsOrder };
+export { Items, ItemsAccess, ItemsManage };
+
+export const ItemsOrder = () => <UIOrder source="items" />;

@@ -17,11 +17,10 @@ export const accessColumn = ({ handleEdit, handleDelete, handleView }) => [
     title: "ชื่อสินค้า",
     dataIndex: "stname",
     key: "stname",
-    width: "30%",
     sorter: (a, b) => (a?.stname || "").localeCompare(b?.stname || ""),
   },
   {
-    title: "ชื่อสินค้า",
+    title: "ชื่อสินค้า(Eng)",
     dataIndex: "stnameEN",
     key: "stnameEN",
     width: "30%",
@@ -52,7 +51,7 @@ export const accessColumn = ({ handleEdit, handleDelete, handleView }) => [
     title: "สถานะ",
     dataIndex: "active_status",
     key: "status",
-    width: 120,
+    width: 140,
     sorter: (a, b) => (a?.status || "").localeCompare(b?.status || ""),
     render: (data) => (
       <div>

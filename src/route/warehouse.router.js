@@ -5,6 +5,7 @@ import {
   Quotation,
   QuotationAccess,
   QuotationManage,
+  QuotationOrder,
 } from "../pages/quotation";
 
 import { PurchaseOrder, PurchaseOrderAccess, PurchaseOrderManage } from "../pages/purchase-order";
@@ -30,6 +31,7 @@ export const WarehouseRouter = (
     <Route path="/quotation/" exact element={<Quotation />}>
       <Route index element={<QuotationAccess />} />
       <Route path="manage/:action" element={<QuotationManage />} />
+      <Route path="order" element={<QuotationOrder />} />
     </Route>
 
     <Route path="/purchase-order/" exact element={<PurchaseOrder />}>

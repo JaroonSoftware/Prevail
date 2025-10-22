@@ -6,6 +6,7 @@ import { Card } from 'antd';
 import { Collapse, Form, Flex, Row, Col, Space } from 'antd';
 import { Input, Button, Table, message, DatePicker, Typography } from 'antd';
 import { SearchOutlined, ClearOutlined, FileAddOutlined } from '@ant-design/icons'; 
+import { MdOutlineLibraryAdd } from "react-icons/md";
 import { accessColumn } from "./model";
 
 import dayjs from 'dayjs';
@@ -135,6 +136,19 @@ const QuotationAccess = () => {
         navigate("manage/create", { state: { config: {...mngConfig, title:"สร้างใบเสนอราคา", action:"create"} } }); 
     }
 
+    const handleOrder = () => {
+    navigate("order", {
+      state: {
+        config: {
+          ...mngConfig,
+          title: "จัดเรียงสินค้า",
+          action: "order",
+        },
+      },
+      replace: true,
+    });
+  };
+
     const handleEdit = (data) => {
         
         navigate("manage/edit", { state: { config: {...mngConfig, title:"แก้ไขใบเสนอราคา", action:"edit", code:data?.qtcode} }, replace:true } );
@@ -189,6 +203,16 @@ const QuotationAccess = () => {
             </Col>
             <Col span={12} style={{paddingInline:0}}>
                 <Flex gap={4} justify='end'>
+                    <Button
+                                size="small"
+                                className="bn-action bn-center bn-success-outline justify-center"
+                                icon={<MdOutlineLibraryAdd style={{ fontSize: ".9rem" }} />}
+                                onClick={() => {
+                                  handleOrder();
+                                }}
+                              >
+                                จัดเรียงสินค้า
+                              </Button>
                       <Button  
                       size='small' 
                       className='bn-action bn-center bn-primary-outline justify-center'  
