@@ -65,8 +65,10 @@ try {
         $code = $conn->lastInsertId();
         // var_dump($master); exit;
 
+        // $sql = "insert into podetail (pocode,stcode,qty,price,unit,discount,vat,recamount)
+        // values (:pocode,:stcode,:qty,:price,:unit,:discount,:vat,0)";
         $sql = "insert into podetail (pocode,stcode,qty,price,unit,discount,vat,recamount)
-        values (:pocode,:stcode,:qty,:price,:unit,:discount,:vat,0)";
+        values (:pocode,:stcode,:qty,:price,:unit,:discount,:vat,:qty)";
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
@@ -108,7 +110,7 @@ try {
             $stmt3->bindValue(":qty", $val->qty, PDO::PARAM_STR);
             $stmt3->bindParam(":updated_by", $action_user, PDO::PARAM_STR);
 
-            echo ("Query: " . $sql);
+            // echo ("Query: " . $sql);
             if (!$stmt3->execute()) {
                 $error = $conn->errorInfo();
                 error_log("Execute failed: " . json_encode($error));
@@ -126,6 +128,43 @@ try {
         $rest_json = file_get_contents("php://input");
         $_PUT = json_decode($rest_json, true);
         extract($_PUT, EXTR_OVERWRITE, "_");
+
+        $header = (object)$header;
+
+        $pocode = $header->pocode;
+
+        $sql = "SELECT a.`code`, a.`pocode`, a.`stcode`, a.`qty`, a.`price`, a.`unit`, a.`vat`, a.`discount`, a.`recamount` ,i.stname";
+        $sql .= " FROM `podetail` as a";
+        $sql .= " inner join `items` as i on (a.stcode=i.stcode)  ";
+        $sql .= " where a.pocode = :pocode";
+        $sql .= " order by i.seq";
+
+        $stmt2 = $conn->prepare($sql);
+        if (!$stmt2->execute(['pocode' => $pocode])) {
+            $error = $conn->errorInfo();
+            http_response_code(404);
+            throw new PDOException("Geting data error => $error");
+        }
+        $detail2 = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($detail2 as $ind => $val) {
+            $val = (object)$val;            
+
+            $sql2 = "UPDATE items_stock SET qty= qty-:qty,price= amtprice*ABS(qty),updated_date = CURRENT_TIMESTAMP() where stcode =:stcode ";
+            $stmt3 = $conn->prepare($sql2);
+            if (!$stmt3) throw new PDOException("Insert data error => {$conn->errorInfo()}");
+
+            $stmt3->bindParam(":qty", $val->qty, PDO::PARAM_STR);
+            $stmt3->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
+
+            if (!$stmt3->execute()) {
+                $error = $conn->errorInfo();
+                throw new PDOException("Insert data error => $error");
+                die;
+            }
+        }
+
+        //-------------------------------------------------Update pomaster---------------------------------------------------//
         // var_dump($_POST);
         $sql = "
         update pomaster 
@@ -144,7 +183,7 @@ try {
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
-        $header = (object)$header;
+        // $header = (object)$header;
 
         $stmt->bindParam(":podate", $header->podate, PDO::PARAM_STR);
         $stmt->bindParam(":supcode", $header->supcode, PDO::PARAM_STR);
@@ -171,24 +210,52 @@ try {
 
         $sql = "insert into podetail (pocode,stcode,unit,qty,price,discount,vat,recamount)
         values (:pocode,:stcode,:unit,:qty,:price,:discount,:vat,:recamount)";
-        $stmt = $conn->prepare($sql);
-        if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
+        $stmt5 = $conn->prepare($sql);
+        if (!$stmt5) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
         // $detail = $detail;  
         foreach ($detail as $ind => $val) {
             $val = (object)$val;
-            $stmt->bindParam(":pocode", $header->pocode, PDO::PARAM_STR);
-            $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
-            $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
-            $stmt->bindParam(":qty", $val->qty, PDO::PARAM_INT);
-            $stmt->bindParam(":price", $val->buyprice, PDO::PARAM_INT);
-            $stmt->bindParam(":discount", $val->discount, PDO::PARAM_INT);
-            $stmt->bindParam(":vat", $val->vat, PDO::PARAM_INT);
-            $stmt->bindParam(":recamount", $val->recamount, PDO::PARAM_INT);
+            $stmt5->bindParam(":pocode", $header->pocode, PDO::PARAM_STR);
+            $stmt5->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
+            $stmt5->bindParam(":unit", $val->unit, PDO::PARAM_STR);
+            $stmt5->bindParam(":qty", $val->qty, PDO::PARAM_INT);
+            $stmt5->bindParam(":price", $val->buyprice, PDO::PARAM_INT);
+            $stmt5->bindParam(":discount", $val->discount, PDO::PARAM_INT);
+            $stmt5->bindParam(":vat", $val->vat, PDO::PARAM_INT);
+            $stmt5->bindParam(":recamount", $val->recamount, PDO::PARAM_INT);
 
-            if (!$stmt->execute()) {
+            if (!$stmt5->execute()) {
                 $error = $conn->errorInfo();
                 throw new PDOException("Insert data error => $error");
+            }
+
+            $sql = "
+                update items_stock 
+                set
+                qty= qty+:qty,
+                price= price + :price*:qty,
+                amtprice= price/ABS(qty),
+                updated_date = CURRENT_TIMESTAMP(),
+                updated_by = :updated_by
+                where stcode = :stcode ";
+
+            $stmt4 = $conn->prepare($sql);
+            if (!$stmt4) throw new PDOException("Insert data error => {$conn->errorInfo()}");
+
+            $stmt4->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
+            $stmt4->bindParam(":price", $val->buyprice, PDO::PARAM_INT);
+            $stmt4->bindValue(":qty", $val->qty, PDO::PARAM_STR);
+            $stmt4->bindParam(":updated_by", $action_user, PDO::PARAM_STR);
+
+            // echo ("Query: " . $sql);
+            if (!$stmt4->execute()) {
+                $error = $conn->errorInfo();
+                error_log("Execute failed: " . json_encode($error));
+                error_log("Query: " . $sql);
+                $stmt4->debugDumpParams();
+                throw new PDOException("Insert data error => " . json_encode($error));
+                die;
             }
         }
 

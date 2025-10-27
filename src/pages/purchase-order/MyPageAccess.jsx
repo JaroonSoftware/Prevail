@@ -148,10 +148,13 @@ const PurchaseOrderAccess = () => {
     const handlePrint = (recode) => {
         const newWindow = window.open('', '_blank');
         newWindow.location.href = `/quo-print/${recode.pocode}`;
-      };
-    
+    };
 
-    const column = accessColumn( {handleEdit, handleDelete, handlePrint });
+    const handleView = (data) => {
+        navigate("view", { state: { config: {...mngConfig, title:"View", code:data?.pocode} }, replace:true } );
+    };
+
+    const column = accessColumn( {handleEdit,handleView, handleDelete, handlePrint });
 
     const getData = (data) => {
         handleSearch()

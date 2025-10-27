@@ -433,7 +433,7 @@ function PurchaseOrderManage() {
                     <Table.Summary.Row>
                       <Table.Summary.Cell
                         index={0}
-                        colSpan={9}
+                        colSpan={8}
                       ></Table.Summary.Cell>
                       <Table.Summary.Cell
                         index={4}

@@ -2,13 +2,13 @@ import { Button, Space } from "antd";
 import "../../assets/styles/banks.css"
 // import { Typography } from "antd"; 
 // import { Popconfirm, Button } from "antd";
-import { Tooltip } from "antd";
-// import { EditOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons"; 
+import { Tooltip,Badge } from "antd";
+
 import { TagPurchaseOrderStatus } from "../../components/badge-and-tag";
 import { TagsCreateBy } from "../../components/badge-and-tag/";
 import { EditableRow, EditableCell } from "../../components/table/TableEditAble";
 import dayjs from 'dayjs';
-import { EditOutlined } from "@ant-design/icons";
+import { EditOutlined,ExclamationCircleOutlined } from "@ant-design/icons";
 import { comma } from '../../utils/util';
 
 const calTotalDiscount = (rec) => {
@@ -84,6 +84,20 @@ export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}
     width: 100,
     render: (text, record) => (
       <Space >
+        <Badge size="small" offset={[0, 1]}>
+            <Button
+              icon={<ExclamationCircleOutlined />}
+              className="bn-success-outline"
+              style={{
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              onClick={(e) => handleView(record)}
+              size="small"
+            />
+        </Badge>
         <Button
           icon={<EditOutlined />} 
           className='bn-primary-outline'
@@ -117,6 +131,93 @@ export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}
       </Space>
     ),
   }, 
+];
+
+export const poColumnView = [
+  {
+    title: "ลำดับ",
+    dataIndex: "ind",
+    key: "ind",
+    align: "center",
+    width: 70, 
+    render: (im, rc, index) => <>{index + 1}</>,
+  },
+  {
+    title: "รหัสสินค้า",
+    key: "stcode",
+    dataIndex: "stcode",
+    align: "left",
+    width:140,
+  },
+  {
+    title: "ชื่อสินค้า",
+    dataIndex: "stname",
+    key: "stname",
+    align: "left",
+    width: 140,
+  },
+  {
+    title: "จำนวน",
+    dataIndex: "qty",
+    key: "qty",
+    align: "right",
+    width: 100,
+    render: (v) => <>{ comma( Number(v ||  0),  2, 2 )}</>,
+  },
+  {
+    title: "ราคาซื้อ",
+    dataIndex: "buyprice",
+    key: "buyprice",
+    align: "right",
+    width: 100,
+    render: (v) => <>{ comma( Number(v ||  0),  2, 2 )}</>,
+  },
+  {
+    title: "หน่วยสินค้า",
+    dataIndex: "unit",
+    key: "unit",
+    align: "right",
+    width: 100,
+  },
+  {
+    title: "ส่วนลด (%)",
+    dataIndex: "discount",
+    key: "discount",
+    align: "right",
+    width: 100, 
+    render: (v) => <>{ comma( Number(v ||  0),  2, 2 )}</>,
+  },
+  // {
+  //   title: "จำนวนที่รับแล้ว",
+  //   dataIndex: "recamount",
+  //   key: "recamount",
+  //   align: "right",
+  //   width: 120,
+  // },
+  {
+    title: "ราคารวม",
+    dataIndex: "total",
+    key: "total",
+    align: "right",
+    width: 120,
+    render: (v, rec) => <>{ comma( calTotalDiscount(rec),  2, 2 )}</>,
+  },
+  {
+    title: "VAT (%)",
+    dataIndex: "vat",
+    key: "vat",
+    align: "right",
+    width: 100,
+    render: (v) => <>{ comma( Number(v ||  0),  2, 2 )}</>,
+  },
+  {
+    title: "ราคารวมสุทธิ",
+    dataIndex: "totalnet",
+    key: "totalnet",
+    align: "right",
+    width: 120,
+    render: (v, rec) => <>{ comma( calTotalDiscount(rec)+calTotalDiscount(rec)*(rec.vat/100),  2, 2 )}</>,
+  },  
 ];
 
 export const productColumn = ({handleRemove},optionsItems) => [
@@ -190,14 +291,14 @@ export const productColumn = ({handleRemove},optionsItems) => [
     type:'number',
     render: (_, rec) => <>{ comma( Number(rec?.discount ||  0),  2, 2 )}</>,
   },
-  {
-    title: "จำนวนที่รับแล้ว",
-    dataIndex: "recamount",
-    key: "recamount",
-    width: "8%",
-    align: "right",
-    className: "!pe-3",
-  },
+  // {
+  //   title: "จำนวนที่รับแล้ว",
+  //   dataIndex: "recamount",
+  //   key: "recamount",
+  //   width: "8%",
+  //   align: "right",
+  //   className: "!pe-3",
+  // },
   {
     title: "ราคารวม",
     dataIndex: "total",

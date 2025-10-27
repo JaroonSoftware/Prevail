@@ -8,7 +8,7 @@ import {
   QuotationOrder,
 } from "../pages/quotation";
 
-import { PurchaseOrder, PurchaseOrderAccess, PurchaseOrderManage } from "../pages/purchase-order";
+import { PurchaseOrder, PurchaseOrderAccess, PurchaseOrderManage,PurchaseOrderView } from "../pages/purchase-order";
 
 import { GoodsReceipt, GoodsReceiptAccess, GoodsReceiptManage } from "../pages/goods-receipt";
 
@@ -37,6 +37,7 @@ export const WarehouseRouter = (
     <Route path="/purchase-order/" exact element={<PurchaseOrder />}>
       <Route index element={<PurchaseOrderAccess />} />
       <Route path="manage/:action" element={<PurchaseOrderManage />} />
+      <Route path="view" element={<PurchaseOrderView />} />
     </Route>
 
     <Route path="/goods-receipt/" exact element={<GoodsReceipt />}>

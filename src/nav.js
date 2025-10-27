@@ -9,15 +9,15 @@ import { RiBox3Fill } from "react-icons/ri";
 import { TfiTruck } from "react-icons/tfi";
 import { BsShop } from "react-icons/bs";
 let _nav = [
-  {
-    title: "MENU",
-    type: "group",
-  },
-  {
-    title: "หน้าหลัก",
-    icon: <MdOutlineDashboard className="nav-ico" />,
-    to: "/dashboard",
-  },
+  // {
+  //   title: "MENU",
+  //   type: "group",
+  // },
+  // {
+  //   title: "หน้าหลัก",
+  //   icon: <MdOutlineDashboard className="nav-ico" />,
+  //   to: "/dashboard",
+  // },
   {
     title: "SELL",
     type: "group",

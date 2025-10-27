@@ -69,3 +69,24 @@ h4.ant-typography+.ant-form-item.\!m-0
 .purchaseorder-manage-form .ant-descriptions-item-label{
     min-width: 120px;
 }
+
+.view-collapse-sp {
+    background-color: transparent;
+    border: 1px solid #ebebeb !important;
+}
+
+.view-collapse-sp .ant-collapse-item{
+    box-shadow: none !important;
+}
+
+.view-collapse-sp .ant-collapse-header{
+    color: rgba(0, 0, 0, 0.65) !important;
+    background-color: rgba(0, 0, 0, 0.02);
+    border-bottom: 1px solid rgb(231 231 231);
+    font-size: clamp( 13px, 0.5vw, 1rem ) !important;
+    letter-spacing: 0.4px;
+    font-weight: 600;
+    cursor: default !important;
+    padding: 16px 24px; 
+    padding-inline-start: 24px !important; 
+} 
