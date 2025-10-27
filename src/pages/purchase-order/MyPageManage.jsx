@@ -266,9 +266,9 @@ function PurchaseOrderManage() {
           <RiDeleteBin5Line style={{ fontSize: "1rem", marginTop: "3px" }} />
         }
         onClick={() => handleDelete(record?.stcode)}
-        disabled={
-          !record?.stcode || formDetail.doc_status !== "ยังไม่ได้รับของ"
-        }
+        // disabled={
+        //   !record?.stcode || formDetail.doc_status !== "ยังไม่ได้รับของ"
+        // }
       />
     ) : null;
   };
@@ -400,7 +400,7 @@ function PurchaseOrderManage() {
             onClick={() => {
               setOpenProduct(true);
             }}
-            disabled={formDetail.doc_status !== "ยังไม่ได้รับของ"}
+            // disabled={formDetail.doc_status !== "ยังไม่ได้รับของ"}
           >
             Choose Product
           </Button>
@@ -517,7 +517,7 @@ function PurchaseOrderManage() {
             onClick={() => {
               handleConfirm();
             }}
-            disabled={formDetail.doc_status !== "ยังไม่ได้รับของ"}
+            // disabled={formDetail.doc_status !== "ยังไม่ได้รับของ"}
           >
             Save
           </Button>
@@ -561,7 +561,7 @@ function PurchaseOrderManage() {
             onClick={() => {
               handleConfirm();
             }}
-            disabled={formDetail.doc_status !== "ยังไม่ได้รับของ"}
+            // disabled={formDetail.doc_status !== "ยังไม่ได้รับของ"}
           >
             Save
           </Button>

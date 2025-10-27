@@ -20,6 +20,12 @@ export default function TagDeliveryNoteStatus({ result }) {
     case 'ยกเลิก':
       elementToRender = <Tag icon={<CloseCircleFilledIcon />} color="#ababab"> ยกเลิก </Tag>;
       break;
+      case 'ยังไม่ตัดสต๊อก':
+      elementToRender = <Tag icon={<CloseCircleFilledIcon />} color="#347C98"> ยังไม่ตัดสต๊อก </Tag>;
+      break;
+      case 'ตัดสต๊อกแล้ว':
+      elementToRender = <Tag icon={<CloseCircleFilledIcon />} color="#87d068"> ตัดสต๊อกแล้ว </Tag>;
+      break;
     default:
       elementToRender = <Tag > Not found </Tag>;
   }

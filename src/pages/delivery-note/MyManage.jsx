@@ -10,12 +10,12 @@ import {
   message,
   Modal,
 } from "antd";
-import { Card, Col, Divider, Flex, Row, Space, InputNumber,Popconfirm } from "antd";
+import { Card, Col, Divider, Flex, Row, Space, Popconfirm } from "antd";
 import OptionService from "../../service/Options.service";
 import DeliveryNoteService from "../../service/DeliveryNote.service";
 import { SearchOutlined, SaveFilled,QuestionCircleOutlined } from "@ant-design/icons";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
-import { ModalItems } from "../../components/modal/SO/modal-items";
+import { ModalSO } from "../../components/modal/so-for-dn";
 
 import {
   DEFALUT_CHECK_DELIVERY,
@@ -88,7 +88,7 @@ function DeliveryNoteManage() {
       } else {
         const { data: code } = (
           await dnservice.code().catch((e) => {
-            message.error("get Quotation code fail.");
+            message.error("get Delivery Note code fail.");
           })
         ).data;
         setDNCode(code);
@@ -225,10 +225,21 @@ function DeliveryNoteManage() {
     form.setFieldsValue({ ...fvalue, ...customers });
     // setListDetail([]);
   };
-  const handleChoosedSO = (value) => {
+  const handleChoosedSO = (v) => {
+    let value = { detail: v };
+    dnservice
+      .getdetail_for_issue(value)
+      .then((res) => {
+        const { data } = res.data;
+      setListDetail(data);
+      // handleSummaryPrice();
+      })
+      .catch((err) => {
+        message.error("Get Sales Order detail fail.");
+        console.warn(err);
+      });
+
     // console.log(value);
-    setListDetail(value);
-    handleSummaryPrice();
   };
   const handleDelete = (code) => {
     const itemDetail = [...listDetail];
@@ -602,7 +613,7 @@ function DeliveryNoteManage() {
       )}
 
       {openProduct && (
-        <ModalItems
+        <ModalSO
           show={openProduct}
           close={() => setOpenProduct(false)}
           cuscode={form.getFieldValue("cuscode")}
@@ -610,7 +621,7 @@ function DeliveryNoteManage() {
             handleChoosedSO(v);
           }}
           selected={listDetail}
-        ></ModalItems>
+        ></ModalSO>
       )}
     </div>
   );

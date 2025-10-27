@@ -89,7 +89,7 @@ export const accessColumn = ({handleEdit, handleView, handlePrintsData}) => [
     title: "Action",
     key: "operation", 
     fixed: 'right',
-    width: 100,
+    width: 80,
     render: (text, record) => (
       <Space >
         <Button
@@ -100,13 +100,13 @@ export const accessColumn = ({handleEdit, handleView, handlePrintsData}) => [
           size="small"
         />
 
-        <Button
+        {/* <Button
           icon={<PrinterOutlined />} 
           className='bn-warning-outline'
           style={{ cursor: "pointer", display: 'flex', alignItems: 'center', justifyContent: 'center'}}
           onClick={(e) => handlePrintsData(record.socode) }
           size="small"
-        />        
+        />         */}
       </Space>
     ),
   }, 

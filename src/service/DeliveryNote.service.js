@@ -4,7 +4,9 @@ const API_URL = {
   API_SEARCH: `/deliverynote/search.php`, 
   API_GETCODE: `/deliverynote/get-doc-code.php`, 
   API_LIST: `/deliverynote/list.php`, 
-  API_DELIVERY_NOTE: `/deliverynote/deliverynote-print.php`,   
+  API_DELIVERY_NOTE: `/deliverynote/deliverynote-print.php`, 
+  API_ISSUE: `/deliverynote/issue.php`,
+  API_GETDETAIL: `/deliverynote/getdetail.php`, 
 };
  
 
@@ -18,6 +20,8 @@ const DeliveryNoteService = () => {
   const getPrint = (code) => api.get(`${API_URL.API_DELIVERY_NOTE}?code=${code}`);
   const code = () => api.get(`${API_URL.API_GETCODE}`);
   const search = (parm = {}) => api.post(`${API_URL.API_SEARCH}`, parm, { cancle: true, ignoreLoading : true});
+  const issue = (code) => api.get(`${API_URL.API_ISSUE}?code=${code}`);
+  const getdetail_for_issue = (parm = {}) => api.post(`${API_URL.API_GETDETAIL}`, parm);
   
 
   return {
@@ -29,6 +33,8 @@ const DeliveryNoteService = () => {
     getPrint,
     code,
     search,
+    issue,
+    getdetail_for_issue
   };
 };
 

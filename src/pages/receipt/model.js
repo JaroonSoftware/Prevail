@@ -6,6 +6,7 @@ import { Tooltip } from "antd";
 // import { EditOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons"; 
 import { EditableRow, EditableCell } from "../../components/table/TableEditAble";
 import { TagReceiptStatus } from "../../components/badge-and-tag/";
+import { TagsCreateBy } from "../../components/badge-and-tag/";
 import dayjs from 'dayjs';
 import {  EditOutlined, PrinterOutlined } from "@ant-design/icons";
 import { comma } from '../../utils/util';
@@ -65,16 +66,16 @@ export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}
     sortDirections: ["descend", "ascend"],
     render: (data) => <TagReceiptStatus result={data} />,
   },
-  { 
+  {
     title: "จัดทำโดย",
     dataIndex: "created_name",
-    key: "created_name", 
-    width: '15%',
-    sorter: (a, b) => (a.created_name).localeCompare(b.created_name),
+    key: "created_name",
+    sorter: (a, b) => a.created_name.localeCompare(b.created_name),
+    width: "15%",
     ellipsis: {
       showTitle: false,
     },
-    render: (v) => <Tooltip placement="topLeft" title={v}>{v}</Tooltip>, 
+    render: (data, role) => <TagsCreateBy result={data} role={role} />,
   },
   {
     title: "Action",

@@ -1,17 +1,21 @@
-import { Button, Space } from "antd"; 
-import "../../assets/styles/banks.css"
-// import { Typography } from "antd"; 
+import { Button, Space } from "antd";
+import "../../assets/styles/banks.css";
+// import { Typography } from "antd";
 // import { Popconfirm, Button } from "antd";
 import { Tooltip } from "antd";
-// import { EditOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons"; 
-import { EditableRow, EditableCell } from "../../components/table/TableEditAble";
+// import { EditOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  EditableRow,
+  EditableCell,
+} from "../../components/table/TableEditAble";
 import { TagQuotationStatus } from "../../components/badge-and-tag";
+import { TagsCreateBy } from "../../components/badge-and-tag/";
 // import TagIs from '../../components/badge-and-tag/tags-is/TagIs';
 
-import dayjs from 'dayjs';
-import { EditOutlined,PrinterOutlined } from "@ant-design/icons";
+import dayjs from "dayjs";
+import { EditOutlined, PrinterOutlined } from "@ant-design/icons";
 // import { EditOutlined, PrinterOutlined } from "@ant-design/icons";
-import { comma } from '../../utils/util';
+import { comma } from "../../utils/util";
 
 /** export component for edit table */
 export const componentsEditable = {
@@ -19,21 +23,21 @@ export const componentsEditable = {
 };
 
 /** get sample column */
-export const accessColumn = ({handleEdit, handleDelete, handlePrint}) => [
+export const accessColumn = ({ handleEdit, handleDelete, handlePrint }) => [
   {
     title: "เลขที่ใบเสนอราคา",
     key: "qtcode",
     dataIndex: "qtcode",
     align: "left",
-    sorter: (a, b) => (a.qtcode).localeCompare(b.qtcode),
-    width:140,
+    sorter: (a, b) => a.qtcode.localeCompare(b.qtcode),
+    width: 140,
   },
   {
     title: "วันที่ใบเสนอราคา",
     dataIndex: "qtdate",
     key: "qtdate",
     width: 140,
-    sorter: (a, b) => (a.qtdate).localeCompare(b.qtdate),
+    sorter: (a, b) => a.qtdate.localeCompare(b.qtdate),
     render: (v) => dayjs(v).format("DD/MM/YYYY"),
   },
   {
@@ -41,110 +45,124 @@ export const accessColumn = ({handleEdit, handleDelete, handlePrint}) => [
     dataIndex: "cuscode",
     key: "cuscode",
     width: 120,
-    sorter: (a, b) => (a.cuscode).localeCompare(b.cuscode),
+    sorter: (a, b) => a.cuscode.localeCompare(b.cuscode),
   },
   {
     title: "ชื่อลูกค้า",
     dataIndex: "cusname",
-    key: "cusname", 
-    sorter: (a, b) => (a.cusname).localeCompare(b.cusname),
+    key: "cusname",
+    sorter: (a, b) => a.cusname.localeCompare(b.cusname),
     ellipsis: {
       showTitle: false,
     },
-    render: (v) => <Tooltip placement="topLeft" title={v}>{v}</Tooltip>, 
+    render: (v) => (
+      <Tooltip placement="topLeft" title={v}>
+        {v}
+      </Tooltip>
+    ),
   },
   {
     title: "สถานะ",
     dataIndex: "doc_status",
-    key: "doc_status", 
-    width: '13%',
+    key: "doc_status",
+    width: "13%",
     sorter: (a, b) => a.doc_status.localeCompare(b.doc_status),
     sortDirections: ["descend", "ascend"],
     render: (data) => <TagQuotationStatus result={data} />,
   },
-  { 
+  {
     title: "จัดทำโดย",
     dataIndex: "created_name",
-    key: "created_name", 
-    width: '15%',
-    sorter: (a, b) => (a.created_name).localeCompare(b.created_name),
+    key: "created_name",
+    sorter: (a, b) => a.created_name.localeCompare(b.created_name),
+    width: "15%",
     ellipsis: {
       showTitle: false,
     },
-    render: (v) => <Tooltip placement="topLeft" title={v}>{v}</Tooltip>, 
+    render: (data, role) => <TagsCreateBy result={data} role={role} />,
   },
   {
     title: "Action",
-    key: "operation", 
-    fixed: 'right',
+    key: "operation",
+    fixed: "right",
     width: 100,
     render: (text, record) => (
-      <Space >
+      <Space>
         <Button
-          icon={<EditOutlined />} 
-          className='bn-primary-outline'
-          style={{ cursor: "pointer", display: 'flex', alignItems: 'center', justifyContent: 'center'}}
-          onClick={(e) => handleEdit(record) }
+          icon={<EditOutlined />}
+          className="bn-primary-outline"
+          style={{
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          onClick={(e) => handleEdit(record)}
           size="small"
         />
         <Button
-          icon={<PrinterOutlined />} 
-          className='bn-warning-outline'
-          style={{ cursor: "pointer", display: 'flex', alignItems: 'center', justifyContent: 'center'}}
-          onClick={(e) => handlePrint(record.qtcode) }
+          icon={<PrinterOutlined />}
+          className="bn-warning-outline"
+          style={{
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          onClick={(e) => handlePrint(record.qtcode)}
           size="small"
-        />       
+        />
       </Space>
     ),
-  }, 
+  },
 ];
 
-export const productColumn = ({handleRemove},optionsItems) => [
+export const productColumn = ({ handleRemove }, optionsItems) => [
   {
     title: "ลำดับ",
     dataIndex: "ind",
     key: "ind",
-    width: 80, 
+    width: 80,
     render: (im, rc, index) => <>{index + 1}</>,
   },
   {
     title: "รหัสสินค้า",
     dataIndex: "stcode",
     key: "stcode",
-    width: 120, 
+    width: 120,
     align: "left",
   },
   {
     title: "ชื่อสินค้า",
     dataIndex: "purdetail",
-    key: "purdetail", 
-    align: "left", 
+    key: "purdetail",
+    align: "left",
     render: (_, rec) => rec.stname,
   },
   {
     title: "ราคาขาย",
     dataIndex: "price",
-    key: "price", 
+    key: "price",
     width: "10%",
     align: "right",
     className: "!pe-3",
     editable: true,
     required: true,
-    type:'number',
-    render: (_, rec) => <>{ comma( Number(rec?.price ||  0),  2, 2 )}</>,
-  },  
+    type: "number",
+    render: (_, rec) => <>{comma(Number(rec?.price || 0), 2, 2)}</>,
+  },
   {
     title: "หน่วยสินค้า",
     dataIndex: "unit",
-    key: "unit", 
-      align: "right", 
-      width: "8%",
-      editable: true,
-      type:'select',    
-      optionsItems,
-      render: (v) => {
-        return optionsItems?.find( f  => f.value === v )?.label
-      },
+    key: "unit",
+    align: "right",
+    width: "8%",
+    editable: true,
+    type: "select",
+    optionsItems,
+    render: (v) => {
+      return optionsItems?.find((f) => f.value === v)?.label;
+    },
   },
   // {
   //   title: "Hightlight ราคา",
@@ -172,34 +190,38 @@ export const productColumn = ({handleRemove},optionsItems) => [
     key: "operation",
     dataIndex: "operation",
     render: (_, record, idx) => handleRemove(record),
-    width: '90px',
-    fixed: 'right',
+    width: "90px",
+    fixed: "right",
   },
 ];
 
-export const columnsParametersEditable = (handleEditCell,optionsItems,{handleRemove} ) =>{
-  const col = productColumn({handleRemove},optionsItems);
+export const columnsParametersEditable = (
+  handleEditCell,
+  optionsItems,
+  { handleRemove }
+) => {
+  const col = productColumn({ handleRemove }, optionsItems);
   return col.map((col, ind) => {
-      if (!col.editable) return col; 
-      
-      return {
-          ...col,
-          onCell: (record) => {
-            // console.log(record);
-            return {
-              record,
-              editable: col.editable,
-              dataIndex: col.dataIndex,
-              title: col.title,
-              // required: !!col?.required,
-              type: col?.type || "input",
-              handleEditCell,
-              optionsItems,
-            }
-          },
-      };
-  }); 
-}
+    if (!col.editable) return col;
+
+    return {
+      ...col,
+      onCell: (record) => {
+        // console.log(record);
+        return {
+          record,
+          editable: col.editable,
+          dataIndex: col.dataIndex,
+          title: col.title,
+          // required: !!col?.required,
+          type: col?.type || "input",
+          handleEditCell,
+          optionsItems,
+        };
+      },
+    };
+  });
+};
 export const quotationForm = {
   qtcode: null,
   qtdate: null,
@@ -213,15 +235,13 @@ export const quotationForm = {
   total_price: 0,
   vat: 7,
   grand_total_price: 0,
-}
+};
 
-export const quotationDetailForm = {  
-  qtcode : null,
-  stcode : null,
-  stname : null,  
-  discount : 0,
-  price : 0,
+export const quotationDetailForm = {
+  qtcode: null,
+  stcode: null,
+  stname: null,
+  discount: 0,
+  price: 0,
   unit: null,
-}
-
-
+};

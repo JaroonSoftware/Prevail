@@ -294,27 +294,6 @@
   border-bottom: 1px dashed;
 }
 
- 
-/* .dnpv-pages .ant-table-wrapper .ant-table.ant-table-small .ant-table-tbody>tr>th, 
-.dnpv-pages .ant-table-wrapper .ant-table.ant-table-small .ant-table-tbody>tr>td
-{
-  background: #fff;
-} */
-
-
-
-/* .dnpv-pages tr.ant-table-row.ant-table-row-level-0.r-sub:first-child::after{
-  content: '';
-  border-bottom: 1px solid #ffffff !important;
-  border-left: 1px solid !important;
-} */
-/* .dnpv-pages tr.ant-table-row.ant-table-row-level-0.r-sub::after {
-  content: ' ';
-  width: 100%;
-  position: absolute;
-  left: 0;
-} */
-
 .dnpv-pages tr.r-sum td.ant-table-cell.text-summary:last-child { 
   border-right: 1px solid ;
   
@@ -355,15 +334,183 @@
   font-family: inherit;
 }
 
-.dnpv-pages .ant-table-wrapper .ant-table-container table>tbody{
-  height: 700px;
+/* --- replaceadd: make tbody scrollable, rows compact, summary sticky --- */
+
+/* make the table container a column flex so body can scroll */
+.dnpv-pages .ant-table-wrapper .ant-table-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
 }
 
-.dnpv-pages .ant-table-wrapper .ant-table-tbody >tr >td {
-  transition: none;
-  border-bottom: 0px solid #f0f0f0;
-  white-space: break-spaces;
-  font-size: 11px;
-  vertical-align: top;
-  max-height: 10px;
+/* tbody becomes the scrollable area (keeps rows compact) */
+.dnpv-pages .ant-table-wrapper .ant-table-body {
+  flex: 1 1 auto;
+  min-height: 0; /* important for overflow to work in flex */
+  overflow: auto;
 }
+
+/* keep header fixed (default) and make summary sticky at bottom */
+.dnpv-pages .ant-table-wrapper .ant-table-summary {
+  flex: 0 0 auto;
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  background: #fff;
+  border-top: 1px dashed #d9d9d9;
+  box-shadow: 0 -4px 10px rgba(0,0,0,0.03);
+}
+
+/* compact row sizing: reduce padding and enforce fixed height */
+.dnpv-pages .ant-table-wrapper .ant-table-tbody > tr > td {
+  padding: 4px 6px;
+  height: 22px;         /* adjust to your desired compact height */
+  line-height: 1;
+  white-space: nowrap;  /* keep single-line; use ellipsis when overflow */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  box-sizing: border-box;
+}
+
+/* header slightly taller for readability */
+.dnpv-pages .ant-table-wrapper .ant-table-thead > tr > th {
+  padding: 6px 6px;
+  height: 26px;
+  line-height: 1;
+  box-sizing: border-box;
+}
+
+/* remove any previous fixed huge tbody height or tiny max-height */
+.dnpv-pages .ant-table-wrapper .ant-table-container table > tbody {
+  height: auto !important;
+}
+.dnpv-pages .ant-table-wrapper .ant-table-tbody > tr > td {
+  max-height: none !important;
+}
+
+/* printing: keep summary at bottom of page (summary becomes static for print) */
+@media print {
+  .dnpv-pages .ant-table-wrapper .ant-table-body { overflow: visible; }
+  .dnpv-pages .ant-table-wrapper .ant-table-summary {
+    position: static;
+    box-shadow: none;
+  }
+}
+
+/* style สำหรับแถว placeholder (empty) */
+.dnpv-pages .ant-table-wrapper .dnpv-empty-row > td {
+  color: transparent;           /* ซ่อนข้อความ */
+  background: transparent;
+  pointer-events: none;
+}
+.dnpv-pages .ant-table-wrapper .dnpv-empty-row > td::after {
+  content: "";                  /* เว้นช่องว่างให้เห็นเส้นเท่านั้น */
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+/* ยืนยันความสูงแถวคงที่ (ปรับถ้าจำเป็น) */
+.dnpv-pages .ant-table-wrapper .ant-table-tbody > tr > td {
+  height: 22px; /* ต้องตรงกับ ROW_HEIGHT ใน JSX */
+  line-height: 1;
+  padding: 4px 6px;
+  box-sizing: border-box;
+}
+
+/* --- add/replace these rules --- */
+
+/* empty rows: keep borders but hide any text and set dynamic height to fill page */
+.dnpv-pages .ant-table-wrapper .dnpv-empty-row > td {
+  color: transparent;            /* hide text if any */
+  background: transparent;
+  padding: 0 6px;                /* keep horizontal padding for borders */
+  box-sizing: border-box;
+  vertical-align: middle;
+  height: var(--dnpv-empty-row-height, 22px) !important; /* dynamic height from JSX */
+}
+
+/* ensure td line-height doesn't force extra height for non-empty rows */
+.dnpv-pages .ant-table-wrapper .ant-table-tbody > tr > td {
+  padding: 4px 6px;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  box-sizing: border-box;
+}
+
+/* keep header slightly taller */
+.dnpv-pages .ant-table-wrapper .ant-table-thead > tr > th {
+  padding: 6px 6px;
+  height: 28px;
+  line-height: 1;
+  box-sizing: border-box;
+}
+
+/* ensure the table body is the scrollingfilling area */
+.dnpv-pages .ant-table-wrapper .ant-table-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* make sure summary stays at bottom */
+.dnpv-pages .ant-table-wrapper .ant-table-summary {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  background: #fff;
+  border-top: 1px dashed #d9d9d9;
+}
+
+/* print behaviour: remove scrolling so printed page shows filled area */
+@media print {
+  .dnpv-pages .ant-table-wrapper .ant-table-body { overflow: visible; }
+  .dnpv-pages .ant-table-wrapper .ant-table-summary { position: static; }
+}
+
+/* ให้เส้นขอบซ้าย/ขวา แสดงทุกแถว (header, body, summary, empty rows) */
+.dnpv-pages .ant-table-wrapper .ant-table {
+  border-collapse: collapse; /* ให้เส้นติดกัน */
+}
+
+/* ขอบซ้ายของแถวแรกในแต่ละ row */
+.dnpv-pages .ant-table-wrapper
+  .ant-table-thead > tr > th:first-child,
+.dnpv-pages .ant-table-wrapper
+  .ant-table-tbody > tr > td:first-child,
+.dnpv-pages .ant-table-wrapper
+  .ant-table-summary > tr > td:first-child {
+  border-left: 1px solid #d9d9d9 !important;
+}
+
+/* ขอบขวาของแถวสุดท้ายในแต่ละ row */
+.dnpv-pages .ant-table-wrapper
+  .ant-table-thead > tr > th:last-child,
+.dnpv-pages .ant-table-wrapper
+  .ant-table-tbody > tr > td:last-child,
+.dnpv-pages .ant-table-wrapper
+  .ant-table-summary > tr > td:last-child {
+  border-right: 1px solid #d9d9d9 !important;
+}
+
+/* ถ้าใช้ placeholder rows ให้แน่ใจว่าขอบยังคงแสดง */
+.dnpv-pages .ant-table-wrapper .dnpv-empty-row > td:first-child {
+  border-left: 1px solid #d9d9d9 !important;
+}
+.dnpv-pages .ant-table-wrapper .dnpv-empty-row > td:last-child {
+  border-right: 1px solid #d9d9d9 !important;
+}
+
+/* ปรับให้เส้นต่อเนื่องเมื่อมี paddingmargins ใน cell */
+.dnpv-pages .ant-table-wrapper .ant-table-tbody > tr > td,
+.dnpv-pages .ant-table-wrapper .ant-table-thead > tr > th,
+.dnpv-pages .ant-table-wrapper .ant-table-summary > tr > td {
+  box-sizing: border-box;
+}
+
+/* ปรับสี/ความหนาตามต้องการ */

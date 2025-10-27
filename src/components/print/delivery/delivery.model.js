@@ -22,8 +22,8 @@ export const column = [
     ),
     align: "center",
     width: "15%",
-    key: "dncode",
-    dataIndex: "dncode",
+    key: "stname",
+    dataIndex: "stname",
   },
   {
     title: (
@@ -44,8 +44,8 @@ export const column = [
       </div>
     ),
     align: "center",
-    key: "redate",
-    dataIndex: "redate",
+    key: "unit",
+    dataIndex: "unit",
     width: "10%",
   },
   {
@@ -54,7 +54,7 @@ export const column = [
        จำนวนเงิน
       </div>
     ),
-    align: "left",
+    align: "center",
     width: "10%",
     key: "price",
     dataIndex: "price",

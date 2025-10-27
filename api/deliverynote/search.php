@@ -23,9 +23,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
         $sql = " 
         select 
         a.*,
-        c.*
+        c.*,        
+        concat(u.firstname, ' ', u.lastname) created_name
         from dnmaster a        
         left join customer c on (a.cuscode = c.cuscode)
+        left join user u on a.created_by = u.code
         where 1 = 1 and a.doc_status != 'ยกเลิก'
         $dncode
         $cuscode

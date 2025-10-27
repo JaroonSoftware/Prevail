@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 // import ReactDOMServer from "react-dom/server";
 import { useReactToPrint } from "react-to-print";
@@ -18,7 +18,7 @@ import DeliveryService from "../../../service/DeliveryNote.service";
 
 const dnservice = DeliveryService();
 
-function DeliveryPrintPreview() {
+export default function DeliveryPrintPreview(props) {
   const { code } = useParams();
   const componentRef = useRef(null);
   const authService = Authenticate();
@@ -295,21 +295,76 @@ function DeliveryPrintPreview() {
     );
   };
 
+  const pageBodyRef = useRef(null);
+  const [rowsPerPage, setRowsPerPage] = useState(0);
+  const [rowPixel, setRowPixel] = useState(22); // pixel per row (dynamic for empty rows)
+  const ROW_HEIGHT = 22; // base px per row (used as fallback)
+
+  useEffect(() => {
+    // คำนวณจำนวนแถวที่แสดงได้จากความสูงของ container
+    const calc = () => {
+      const el = pageBodyRef.current?.querySelector(".ant-table-body");
+      const height = el ? el.clientHeight : pageBodyRef.current?.clientHeight;
+      if (height && ROW_HEIGHT) {
+        const n = Math.floor(height / ROW_HEIGHT) || 1;
+        setRowsPerPage(n);
+        // คำนวณความสูงแถวจริงเพื่อใช้ขยายแถวว่างให้เต็มพื้นที่
+        const pixel = Math.floor(height / n);
+        setRowPixel(pixel > 8 ? pixel : ROW_HEIGHT);
+      }
+    };
+    // รันเมื่อ mount และบน resize และเมื่อ details เปลี่ยน
+    calc();
+    window.addEventListener("resize", calc);
+    return () => window.removeEventListener("resize", calc);
+  }, [details]);
+
+  // เตรียม padded list (ไม่แก้ details ต้นฉบับ)
+  const padded = useMemo(() => {
+    if (!Array.isArray(details)) return [];
+    if (!rowsPerPage || details.length >= rowsPerPage) return details;
+    const out = [...details];
+    for (let i = out.length; i < rowsPerPage; i++) {
+      out.push({ _empty: true, key: `empty-${i}` });
+    }
+    return out;
+  }, [details, rowsPerPage]);
+
+  // map columnDesc เพื่อไม่ให้แสดงข้อมูลและหมายเลขเมื่อเป็นแถวว่าง
+  const renderedColumns = useMemo(() => {
+    return (columnDesc || []).map((col, colIndex) => {
+      const originalRender = col.render;
+      return {
+        ...col,
+        render: (text, record, idx) => {
+          if (record && record._empty) return ""; // blank for empty row
+          return originalRender ? originalRender(text, record, idx) : text;
+        },
+      };
+    });
+  }, [columnDesc]);
+
   const ContentBody = () => {
     return (
-      <div>
+      // ใส่ CSS variable เพื่อกำหนดความสูงแถวว่างแบบไดนามิก
+      <div
+        className="dnpv-table-wrap"
+        ref={pageBodyRef}
+        style={{ ["--dnpv-empty-row-height"]: `${rowPixel}px` }}
+      >
         <Table
+          className="dnpv-table"
           size="small"
-          dataSource={details}
-          columns={columnDesc}
+          dataSource={padded}
+          columns={renderedColumns}
           pagination={false}
-          rowKey="stcode"
+          rowKey={(rec) => rec.key || rec.stcode || Math.random()}
           bordered={false}
           locale={{
             emptyText: <span>No data available, please add some data.</span>,
           }}
           onRow={(record, index) => {
-            return { className: "r-sub" };
+            return { className: record._empty ? "dnpv-empty-row" : "r-sub" };
           }}
           summary={ReceiptSummary}
         />
@@ -371,5 +426,3 @@ function DeliveryPrintPreview() {
     </>
   );
 }
-
-export default DeliveryPrintPreview;
