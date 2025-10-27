@@ -172,9 +172,11 @@ const QuotationAccess = () => {
         const newWindow = window.open('', url, url);
         newWindow.location.href = url;
       }
-    
+    const handleView = (data) => {
+        navigate("view", { state: { config: {...mngConfig, title:"View", code:data?.qtcode} }, replace:true } );
+    };
 
-    const column = accessColumn( {handleEdit, handleDelete, handlePrint });
+    const column = accessColumn( {handleEdit, handleDelete, handlePrint,handleView });
     // const column = accessColumn( {handleEdit, handlePrint });
 
     const getData = (data) => {

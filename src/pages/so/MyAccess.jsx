@@ -132,9 +132,13 @@ const MyAccess = () => {
         const newWindow = window.open('', url, url);
         newWindow.location.href = url;
       }
+
+      const handleView = (data) => {
+        navigate("view", { state: { config: {...mngConfig, title:"View", code:data?.socode} }, replace:true } );
+    };
     
 
-    const column = accessColumn( {handleEdit, handlePrintsData });
+    const column = accessColumn( {handleEdit, handlePrintsData, handleView });
 
     const getData = (data) => {
         soservice.search(data, { ignoreLoading: loading}).then( res => {

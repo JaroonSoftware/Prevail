@@ -1,4 +1,4 @@
-import React from "react";
+
 import { Route } from "react-router-dom";
 
 import {
@@ -6,6 +6,7 @@ import {
   QuotationAccess,
   QuotationManage,
   QuotationOrder,
+  QuotationView,
 } from "../pages/quotation";
 
 import { PurchaseOrder, PurchaseOrderAccess, PurchaseOrderManage,PurchaseOrderView } from "../pages/purchase-order";
@@ -14,9 +15,9 @@ import { GoodsReceipt, GoodsReceiptAccess, GoodsReceiptManage } from "../pages/g
 
 import { PrintWeight, PrintWeightAccess, PrintWeightManage } from "../pages/print-package";
 
-import { SO, SOAccess, SOManage } from "../pages/so";
+import { SO, SOAccess, SOManage,SOView } from "../pages/so";
 
-import { DN, DNAccess, DNManage } from "../pages/delivery-note";
+import { DN, DNAccess, DNManage,DNView } from "../pages/delivery-note";
 
 import { BL, BLAccess, BLManage } from "../pages/billing";
 
@@ -32,6 +33,7 @@ export const WarehouseRouter = (
       <Route index element={<QuotationAccess />} />
       <Route path="manage/:action" element={<QuotationManage />} />
       <Route path="order" element={<QuotationOrder />} />
+      <Route path="view" element={<QuotationView />} />
     </Route>
 
     <Route path="/purchase-order/" exact element={<PurchaseOrder />}>
@@ -53,11 +55,13 @@ export const WarehouseRouter = (
     <Route path="/sales-order/" exact element={<SO />}>
       <Route index element={<SOAccess />} />
       <Route path="manage/:action" element={<SOManage />} />
+      <Route path="view" element={<SOView />} />
     </Route>
 
     <Route path="/delivery-note/" exact element={<DN />}>
       <Route index element={<DNAccess />} />
       <Route path="manage/:action" element={<DNManage />} />
+      <Route path="view" element={<DNView />} />
     </Route>
 
     <Route path="/billing/" exact element={<BL />}>

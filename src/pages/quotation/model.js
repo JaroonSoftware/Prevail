@@ -2,7 +2,7 @@ import { Button, Space } from "antd";
 import "../../assets/styles/banks.css";
 // import { Typography } from "antd";
 // import { Popconfirm, Button } from "antd";
-import { Tooltip } from "antd";
+import { Tooltip,Badge } from "antd";
 // import { EditOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons";
 import {
   EditableRow,
@@ -13,7 +13,7 @@ import { TagsCreateBy } from "../../components/badge-and-tag/";
 // import TagIs from '../../components/badge-and-tag/tags-is/TagIs';
 
 import dayjs from "dayjs";
-import { EditOutlined, PrinterOutlined } from "@ant-design/icons";
+import { EditOutlined, PrinterOutlined,ExclamationCircleOutlined } from "@ant-design/icons";
 // import { EditOutlined, PrinterOutlined } from "@ant-design/icons";
 import { comma } from "../../utils/util";
 
@@ -23,7 +23,7 @@ export const componentsEditable = {
 };
 
 /** get sample column */
-export const accessColumn = ({ handleEdit, handleDelete, handlePrint }) => [
+export const accessColumn = ({ handleEdit, handleDelete, handlePrint,handleView }) => [
   {
     title: "เลขที่ใบเสนอราคา",
     key: "qtcode",
@@ -88,6 +88,20 @@ export const accessColumn = ({ handleEdit, handleDelete, handlePrint }) => [
     width: 100,
     render: (text, record) => (
       <Space>
+        <Badge size="small" offset={[0, 1]}>
+            <Button
+              icon={<ExclamationCircleOutlined />}
+              className="bn-success-outline"
+              style={{
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              onClick={(e) => handleView(record)}
+              size="small"
+            />
+        </Badge>
         <Button
           icon={<EditOutlined />}
           className="bn-primary-outline"
@@ -116,6 +130,7 @@ export const accessColumn = ({ handleEdit, handleDelete, handlePrint }) => [
     ),
   },
 ];
+
 
 export const productColumn = ({ handleRemove }, optionsItems) => [
   {

@@ -248,10 +248,13 @@ try {
         echo json_encode(array("status"=> 1));
     } else  if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $code = $_GET["code"];
-        $sql = "SELECT * ,a.remark,co.county_name";
+        $sql = "SELECT * ,a.remark,co.county_name,a.doc_status, a.issue_status,a.created_date, a.updated_date,
+        concat(IFNULL(u.firstname, ''), ' ', IFNULL(u.lastname, '')) as created_by,concat(IFNULL(u2.firstname, ''), ' ', IFNULL(u2.lastname, '')) as updated_by ";
         $sql .= " FROM `dnmaster` as a ";
         $sql .= " left outer join `customer` as c on (a.cuscode)=(c.cuscode)";
         $sql .= " left outer join `county` as co on (c.county_code)=(co.county_code) ";
+        $sql .= " left join user u on a.created_by = u.code";
+        $sql .= " left join user u2 on a.updated_by = u2.code";
         $sql .= " where a.dncode = :code";
 
         $stmt = $conn->prepare($sql);

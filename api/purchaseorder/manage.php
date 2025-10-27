@@ -279,9 +279,12 @@ try {
     } else  if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $code = $_GET["code"];
         $sql = " SELECT a.pocode,a.podate,a.supcode,c.prename,c.supname,CONCAT(COALESCE(c.idno, '') ,' ', COALESCE(c.road, ''),' ', COALESCE(c.subdistrict, ''),' ', COALESCE(c.district, ''),' ',COALESCE(c.zipcode, '') ) as address
-        ,c.zipcode,c.contact,c.tel,c.fax,a.deldate,a.payment,a.poqua,a.total_price,a.remark,a.doc_status ";
+        ,c.zipcode,c.contact,c.tel,c.fax,a.deldate,a.payment,a.poqua,a.total_price,a.remark,a.doc_status,a.created_date, a.updated_date,
+        concat(IFNULL(u.firstname, ''), ' ', IFNULL(u.lastname, '')) as created_by,concat(IFNULL(u2.firstname, ''), ' ', IFNULL(u2.lastname, '')) as updated_by ";
         $sql .= " FROM `pomaster` as a ";
         $sql .= " left outer join `supplier` as c on (a.supcode)=(c.supcode)";
+        $sql .= " left join user u on a.created_by = u.code";
+        $sql .= " left join user u2 on a.updated_by = u2.code";
         $sql .= " where a.pocode = :code";
 
         $stmt = $conn->prepare($sql);

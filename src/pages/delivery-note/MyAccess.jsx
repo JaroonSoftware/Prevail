@@ -164,6 +164,10 @@ const MyAccess = () => {
     });
   };
 
+   const handleView = (data) => {
+        navigate("view", { state: { config: {...mngConfig, title:"View", code:data?.dncode} }, replace:true } );
+    };
+
   const handleEdit = (data) => {
     navigate("manage/edit", {
       state: {
@@ -204,7 +208,7 @@ const MyAccess = () => {
     
   };
 
-  const column = accessColumn({ handleEdit, handleIssue, handlePrintsData });
+  const column = accessColumn({ handleEdit, handleIssue, handlePrintsData,handleView });
 
   const getData = (data) => {
     dnservice
