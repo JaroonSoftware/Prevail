@@ -1,4 +1,3 @@
-import React from 'react'
 import { Tag } from "antd"
 import { CheckCircleFilled, ClockCircleFilled } from "@ant-design/icons"
 import { CloseCircleFilledIcon } from '../../icon';

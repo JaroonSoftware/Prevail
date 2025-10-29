@@ -2,14 +2,14 @@ import { Button, Space } from "antd";
 import "../../assets/styles/banks.css"
 // import { Typography } from "antd"; 
 // import { Popconfirm, Button } from "antd";
-import { Tooltip } from "antd";
+import { Tooltip,Badge } from "antd";
 // import { EditOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons"; 
 import { EditableRow, EditableCell } from "../../components/table/TableEditAble";
 import { TagInvoiceStatus } from "../../components/badge-and-tag";
 import { TagsCreateBy } from "../../components/badge-and-tag/";
 import dayjs from 'dayjs';
-import {  EditOutlined , PrinterOutlined} from "@ant-design/icons";
-import { comma } from '../../utils/util';
+import {  EditOutlined , PrinterOutlined,ExclamationCircleOutlined} from "@ant-design/icons";
+import { comma,formatMoney } from '../../utils/util';
 
 const calTotalDiscount = (rec) => {
   const total =  Number(rec?.qty ||  0) * Number(rec?.price ||  0);
@@ -84,6 +84,20 @@ export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}
     width: 100,
     render: (text, record) => (
       <Space >
+        <Badge size="small" offset={[0, 1]}>
+            <Button
+              icon={<ExclamationCircleOutlined />}
+              className="bn-success-outline"
+              style={{
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              onClick={(e) => handleView(record)}
+              size="small"
+            />
+        </Badge>
         <Button
           icon={<EditOutlined />} 
           className='bn-primary-outline'
@@ -91,21 +105,6 @@ export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}
           onClick={(e) => handleEdit(record) }
           size="small"
         />
-
-        {/* <Popconfirm 
-          placement="topRight"
-          title="Sure to delete?"  
-          description="Are you sure to delete this packaging?"
-          icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
-          onConfirm={() => handleDelete(record)}
-        >
-          <Button
-            icon={<DeleteOutlined />}
-            danger
-            style={{ cursor: "pointer", display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
-            size="small"
-          />
-        </Popconfirm> */}
         <Button
           icon={<PrinterOutlined />} 
           className='bn-warning-outline'
@@ -118,6 +117,84 @@ export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}
     ),
   }, 
 ];
+
+export const blViewColumns = [
+      {
+        title: "ลำดับ",
+        key: "__no",
+        width: 80,
+        align: "center",
+        render: (_, __, index) => index + 1,
+      },
+      {
+        title: "รหัสสินค้า",
+        dataIndex: "stcode",
+        key: "stcode",
+        width: 140,
+        align: "left",
+      },
+      {
+        title: "ชื่อสินค้า",
+        key: "stname",
+        align: "left",
+        render: (_, rec) => rec?.stname || rec?.purdetail || "-",
+      },
+      {
+        title: "จำนวน",
+        dataIndex: "qty",
+        key: "qty",
+        align: "right",
+        width: 120,
+        className: "!pe-3",
+        render: (v) => formatMoney(Number(v || 0), 2),
+      },
+      {
+        title: "ราคาขาย",
+        dataIndex: "price",
+        key: "price",
+        align: "right",
+        width: 140,
+        className: "!pe-3",
+        render: (v) => formatMoney(Number(v || 0), 2),
+      },
+      {
+        title: "หน่วยสินค้า",
+        dataIndex: "unit",
+        key: "unit",
+        align: "right",
+        width: 120,
+      },
+      {
+        title: "ราคารวม",
+        key: "total",
+        align: "right",
+        width: 140,
+        className: "!pe-3",
+        render: (_, rec) =>
+          formatMoney(Number(rec?.qty || 0) * Number(rec?.price || 0), 2),
+      },
+      {
+        title: "VAT (%)",
+        dataIndex: "vat",
+        key: "vat",
+        align: "right",
+        width: 100,
+        className: "!pe-3",
+        render: (v) => Number(v || 0),
+      },
+      {
+        title: "ราคารวมสุทธิ",
+        key: "totalnet",
+        align: "right",
+        width: 160,
+        className: "!pe-3",
+        render: (_, rec) => {
+          const base = Number(rec?.qty || 0) * Number(rec?.price || 0);
+          const net = base * (1 + Number(rec?.vat || 0) / 100);
+          return formatMoney(net, 2);
+        },
+      },
+    ];
 
 export const productColumn = ({handleRemove,handleSelectChange}) => [
   {

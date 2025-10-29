@@ -202,7 +202,14 @@ const MyAccess = () => {
     newWindow.location.href = url;
   }
 
-  const column = accessColumn({ handleEdit, handleDelete, handlePrint });
+  const handleView = (data) => {
+    navigate("view", {
+      state: { config: { ...mngConfig, title: "View", code: data?.recode } },
+      replace: true,
+    });
+  }
+
+  const column = accessColumn({ handleEdit, handleDelete, handlePrint, handleView });
 
   const getData = (data) => {
     handleSearch();

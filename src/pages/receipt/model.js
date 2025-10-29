@@ -1,15 +1,14 @@
 import { Button, Space } from "antd"; 
-import "../../assets/styles/banks.css"
 // import { Typography } from "antd"; 
 // import { Popconfirm, Button } from "antd";
-import { Tooltip } from "antd";
+import { Tooltip,Badge } from "antd";
 // import { EditOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons"; 
 import { EditableRow, EditableCell } from "../../components/table/TableEditAble";
 import { TagReceiptStatus } from "../../components/badge-and-tag/";
 import { TagsCreateBy } from "../../components/badge-and-tag/";
 import dayjs from 'dayjs';
-import {  EditOutlined, PrinterOutlined } from "@ant-design/icons";
-import { comma } from '../../utils/util';
+import {  EditOutlined, PrinterOutlined,ExclamationCircleOutlined } from "@ant-design/icons";
+import { comma,formatMoney } from '../../utils/util';
 
 const calTotalDiscount = (rec) => {
   const total_price =  Number(rec?.total_price ||  0);
@@ -84,6 +83,20 @@ export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}
     width: 100,
     render: (text, record) => (
       <Space >
+        <Badge size="small" offset={[0, 1]}>
+            <Button
+              icon={<ExclamationCircleOutlined />}
+              className="bn-success-outline"
+              style={{
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              onClick={(e) => handleView(record)}
+              size="small"
+            />
+        </Badge>
         <Button
           icon={<EditOutlined />} 
           className='bn-primary-outline'
@@ -91,21 +104,6 @@ export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}
           onClick={(e) => handleEdit(record) }
           size="small"
         />
-
-        {/* <Popconfirm 
-          placement="topRight"
-          title="Sure to delete?"  
-          description="Are you sure to delete this packaging?"
-          icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
-          onConfirm={() => handleDelete(record)}
-        >
-          <Button
-            icon={<DeleteOutlined />}
-            danger
-            style={{ cursor: "pointer", display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
-            size="small"
-          />
-        </Popconfirm> */}
         <Button
           icon={<PrinterOutlined />} 
           className='bn-warning-outline'
@@ -117,6 +115,97 @@ export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}
       </Space>
     ),
   }, 
+];
+
+export const reViewColumns = [
+  {
+    title: "ลำดับ",
+    key: "__no",
+    width: 80,
+    align: "center",
+    render: (_, __, index) => index + 1,
+  },
+  {
+    title: "เลขที่ใบวางบิล",
+    dataIndex: "blcode",
+    key: "blcode",
+    align: "left",
+    width: 160,
+  },
+  {
+    title: "ราคา",
+    dataIndex: "total_price",
+    key: "total_price",
+    align: "right",
+    width: 140,
+    className: "!pe-3",
+    render: (v) => formatMoney(Number(v || 0), 2),
+  },
+  {
+    title: "ส่วนลด",
+    dataIndex: "discount",
+    key: "discount",
+    align: "right",
+    width: 120,
+    className: "!pe-3",
+    render: (v) => formatMoney(Number(v || 0), 2),
+  },
+  {
+    title: "ราคารวม",
+    dataIndex: "grand_total_price",
+    key: "grand_total_price",
+    align: "right",
+    width: 160,
+    className: "!pe-3",
+    render: (v) => formatMoney(Number(v || 0), 2),
+  },
+];
+
+    // Add: view-only payment columns (inline for now)
+export const rePaymentViewColumns = [
+  {
+    title: "ลำดับ",
+    key: "__no",
+    width: 80,
+    align: "center",
+    render: (_, __, index) => index + 1,
+  },
+  {
+    title: "ธนาคาร",
+    dataIndex: "bank_name_th",
+    key: "bank_name_th",
+    align: "left",
+    // Fallbacks if the API provides a different shape
+    render: (_, rec) => rec?.bank_name_th || rec?.bank_name || rec?.bank || "-",
+  },
+  {
+    title: "เลขที่บัญชี",
+    dataIndex: "acc_no",
+    key: "acc_no",
+    align: "left",
+    width: 160,
+  },
+  {
+    title: "ชื่อบัญชี",
+    dataIndex: "acc_name",
+    key: "acc_name",
+    align: "left",
+  },
+  {
+    title: "จำนวนเงิน",
+    dataIndex: "amount",
+    key: "amount",
+    align: "right",
+    width: 160,
+    className: "!pe-3",
+    render: (v) => formatMoney(Number(v || 0), 2),
+  },
+  {
+    title: "หมายเหตุ",
+    dataIndex: "remark",
+    key: "remark",
+    align: "left",
+  },
 ];
 
 export const productColumn = ({handleRemove}) => [

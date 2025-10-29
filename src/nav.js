@@ -62,15 +62,15 @@ let _nav = [
     icon: <AppstoreAddOutlined className="nav-ico" />,
     to: "/catalog",
   },
-  //  {
-  //   title: "Reports",
-  //   type: "group",
-  // },
-  // {
-  //   title: "รายงานการซื้อของแห้ง",
-  //   icon: <GiGrain  className="nav-ico" />,
-  //   to: "/dry-report",
-  // },
+   {
+    title: "Reports",
+    type: "group",
+  },
+  {
+    title: "รายงานการซื้อของแห้ง",
+    icon: <GiGrain  className="nav-ico" />,
+    to: "/dry-report",
+  },
   {
     title: "BUY",
     type: "group",

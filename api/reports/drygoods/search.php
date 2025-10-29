@@ -1,6 +1,6 @@
 <?php
 ob_start(); 
-include_once(dirname(__FILE__, 2)."/onload.php");
+include_once(dirname(__FILE__, 2)."/../onload.php");
 http_response_code(400);
 $db = new DbConnect;
 $conn = $db->connect();
@@ -10,31 +10,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
     $_POST = json_decode($rest_json, true);
 
     extract($_POST, EXTR_OVERWRITE, "_");  
-    $recode = !empty($recode) ? "and a.recode like '%$recode%'" : "";
+    $socode = !empty($socode) ? "and a.socode like '%$socode%'" : "";
     $cuscode = !empty($cuscode) ? "and c.cuscode like '%$cuscode%'" : "";
     $cusname = !empty($cusname) ? "and c.cusname like '%$cusname%'" : "";
+    // $spcode_cdt = !empty($spcode) ? "and e.spcode like '%$spcode%'" : "";
+    // $spname_cdt = !empty($spname) ? "and e.spname like '%$spname%'" : "";
     $created_by = !empty($created_by) ? "and ( u.firstname like '%$created_by%' or u.lastname like '%$created_by%' )" : "";
-    $redate = "";
-    if( !empty($redate_form) && !empty($redate_to) ) {
-        $redate = "and date_format( a.redate, '%Y-%m-%d' ) >= '$redate_form' and date_format( a.redate, '%Y-%m-%d' ) <= '$redate_to' ";
+    $sodate = "";
+    if( !empty($sodate_form) && !empty($sodate_to) ) {
+        $sodate = "and date_format( a.sodate, '%Y-%m-%d' ) >= '$sodate_form' and date_format( a.sodate, '%Y-%m-%d' ) <= '$sodate_to' ";
     } 
     
     try {   
         $sql = " 
-        select 
-        a.*,a.doc_status,
-        c.*,
-        concat(u.firstname, ' ', u.lastname) created_name
-        from receipt a        
-        left join customer c on a.cuscode = c.cuscode        
-        left join user u on a.created_by = u.code
-        where 1 = 1 
-        $recode
+        SELECT 
+        a.socode,a.sodate,a.cuscode,c.cusname,b.stcode,i.stname,b.qty,b.unit
+        from somaster a        
+        left join sodetail b on a.socode = b.socode
+        left join items as i on b.stcode=i.stcode
+        left join customer c on a.cuscode = c.cuscode  
+        where 1 = 1 and i.typecode='2'
+        $socode
         $cuscode
         $cusname
         $created_by
-        $redate
-        order by a.recode desc ;";
+        $sodate
+        order by a.socode desc ;";
 
 
         $stmt = $conn->prepare($sql); 

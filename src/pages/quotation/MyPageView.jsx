@@ -178,13 +178,12 @@ export default function QuotationView() {
     ];
     setDetailItems(d);
   };
-  
+
   const handlePrint = () => {
     const url = `/quo-print/${qtCode}`;
-    const newWindow = window.open('', url, url);
+    const newWindow = window.open("", url, url);
     newWindow.location.href = url;
   };
-  
 
   const handleClose = () => {
     navigate("/quotation", { replace: true });
@@ -212,7 +211,11 @@ export default function QuotationView() {
       align="center"
       style={{ display: "flex", justifyContent: "end" }}
     >
-      <Button icon={<PrinterOutlined />} onClick={handlePrint} type="primary">
+      <Button
+        icon={<PrinterOutlined />}
+        onClick={handlePrint}
+        className="bn-center bn-primary-outline"
+      >
         Print Quotation
       </Button>
     </Space>

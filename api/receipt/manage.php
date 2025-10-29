@@ -177,8 +177,11 @@ try {
         echo json_encode(array("status" => 1));
     } else  if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $code = $_GET["code"];
-        $sql = "SELECT a.*,c.* ";
+        $sql = "SELECT a.*,c.*,a.created_date, a.updated_date,
+        concat(IFNULL(u.firstname, ''), ' ', IFNULL(u.lastname, '')) as created_by,concat(IFNULL(u2.firstname, ''), ' ', IFNULL(u2.lastname, '')) as updated_by ";
         $sql .= " FROM `receipt` as a left outer join customer as c on (a.cuscode=c.cuscode) ";
+        $sql .= " left join user u on a.created_by = u.code";
+        $sql .= " left join user u2 on a.updated_by = u2.code";
         $sql .= " where a.recode = :code";
 
         $stmt = $conn->prepare($sql);

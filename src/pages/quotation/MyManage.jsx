@@ -224,7 +224,7 @@ function QuotationManage() {
           <RiDeleteBin5Line style={{ fontSize: "1rem", marginTop: "3px" }} />
         }
         onClick={() => handleDelete(record?.stcode)}
-        disabled={!record?.stcode||(config.action!=='create')}
+        disabled={!record?.stcode}
       />
     ) : null;
   };

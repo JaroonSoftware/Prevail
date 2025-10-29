@@ -24,11 +24,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
     try {   
         $sql = " 
         SELECT 
-        a.socode,a.sodate,a.cuscode,cus.cusname,a.print_status,a.doc_status,concat(IFNULL(u.firstname, ''), ' ', IFNULL(u.lastname, '')) created_name  
+        a.socode,a.sodate,a.cuscode,c.cusname,a.print_status,a.doc_status,concat(IFNULL(u.firstname, ''), ' ', IFNULL(u.lastname, '')) created_name  
         from somaster a        
         left join customer c on a.cuscode = c.cuscode  
         left join user u on a.created_by = u.code
-        left join customer cus on a.cuscode = cus.cuscode  
         where 1 = 1 
         $socode
         $cuscode

@@ -136,3 +136,5 @@ export const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const filterOption = (input, option) =>
   (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
+
+export const notEnter = (e) => { (e.key === 'Enter') && e.preventDefault(); }

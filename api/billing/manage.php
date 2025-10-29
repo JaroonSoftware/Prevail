@@ -185,9 +185,12 @@ try {
     } else  if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $code = $_GET["code"];
         $sql = "SELECT a.blcode,a.bldate,a.duedate,a.cuscode,CONCAT(c.prename,' ',c.cusname) as cusname,CONCAT(COALESCE(c.idno, '') ,' ', COALESCE(c.road, ''),' ', COALESCE(c.subdistrict, ''),' ', COALESCE(c.district, ''),' ',COALESCE(c.zipcode, '') ) as address
-        ,c.zipcode,c.contact,c.tel,c.fax,a.payment,a.total_price,a.discount,a.remark ";
+        ,c.zipcode,c.contact,c.tel,c.fax,a.payment,a.total_price,a.discount,a.remark,a.doc_status,a.created_date, a.updated_date,
+        concat(IFNULL(u.firstname, ''), ' ', IFNULL(u.lastname, '')) as created_by,concat(IFNULL(u2.firstname, ''), ' ', IFNULL(u2.lastname, '')) as updated_by ";
         $sql .= " FROM `bl_master` as a ";
         $sql .= " inner join `customer` as c on (a.cuscode)=(c.cuscode)";
+        $sql .= " left join user u on a.created_by = u.code";
+        $sql .= " left join user u2 on a.updated_by = u2.code";
         $sql .= " where a.blcode = :code";
 
         $stmt = $conn->prepare($sql);
