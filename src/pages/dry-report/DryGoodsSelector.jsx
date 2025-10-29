@@ -13,7 +13,7 @@ import { BsUiChecks } from "react-icons/bs";
 import { ShoppingCartOutlined, EditOutlined } from "@ant-design/icons";
 import { GiGrain } from "react-icons/gi";
 
-import { columns as buildColumns } from "./model";
+import { columns } from "./model";
 import DryCheckDrawer from "../../components/drawer/billing-payment/DryCheckDrawer";
 import ReportService from "../../service/Report.service";
 
@@ -51,11 +51,8 @@ const DryGoodsSelector = () => {
   }, []);
 
   const handleOpen = (value) => {
-    let adjustdata = {
-      ...value,
-    };
 
-    setSelected(adjustdata);
+    setSelected(value);
     setShow(true);
   };
 
@@ -92,7 +89,7 @@ const DryGoodsSelector = () => {
         }
         aria-label="ทำรายการสำเร็จ"
         title="ทำรายการสำเร็จ"
-        onClick={() => handleOpen(record?.stcode)}
+        onClick={() => handleOpen(record)}
       />
     );
   };
@@ -100,7 +97,7 @@ const DryGoodsSelector = () => {
 
   // สร้างคอลัมน์จาก model (ต้องส่ง handleCheck ให้ตรงชื่อ)
   const columnDefs = React.useMemo(
-    () => buildColumns({ handleCheck, handleSelectChange }),
+    () => columns({ handleCheck, handleSelectChange }),
     []
   );
 

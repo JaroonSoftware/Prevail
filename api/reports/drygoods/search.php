@@ -24,7 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
     try {   
         $sql = " 
         SELECT 
-        a.socode,a.sodate,a.cuscode,c.cusname,b.stcode,i.stname,b.qty,b.unit
+        a.socode,a.sodate,a.cuscode,c.cusname,b.stcode,i.stname,b.qty,b.unit,a.deldate,a.remark
         from somaster a        
         left join sodetail b on a.socode = b.socode
         left join items as i on b.stcode=i.stcode
