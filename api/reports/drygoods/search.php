@@ -24,17 +24,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
     try {   
         $sql = " 
         SELECT 
-        a.socode,a.sodate,a.cuscode,c.cusname,b.stcode,i.stname,b.qty,b.unit,a.deldate,a.remark
+        a.socode,a.sodate,a.cuscode,c.cusname,b.stcode,i.stname,b.qty,
+        (b.qty - IFNULL(dg.total_qty, 0)) AS qty_result,   -- แสดงจำนวนคงเหลือหลังหัก
+        b.unit,a.deldate,a.remark
         from somaster a        
         left join sodetail b on a.socode = b.socode
         left join items as i on b.stcode=i.stcode
         left join customer c on a.cuscode = c.cuscode  
+        LEFT JOIN (
+            SELECT socode, stcode, SUM(qty) AS total_qty
+            FROM drygoods_record
+            GROUP BY socode, stcode
+        ) dg ON dg.socode = b.socode AND dg.stcode = b.stcode
         where 1 = 1 and i.typecode='2'
         $socode
         $cuscode
         $cusname
         $created_by
         $sodate
+        AND (b.qty - IFNULL(dg.total_qty, 0)) > 0           -- ซ่อนแถวที่เหลือ <= 0
         order by a.socode desc ;";
 
 

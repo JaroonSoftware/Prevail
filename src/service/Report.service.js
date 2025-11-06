@@ -1,7 +1,7 @@
 import { requestService as api } from "./Request.service"  
 const API_URL = { 
   API_GETDRYGOODS: `/reports/drygoods/search.php`,
-  API_SETDRYGOODS: `/reports/drygoods/manage.php`,
+  API_SETDRYGOODS: `/reports/drygoods/issue.php`,
 };
   
 const ReportService = () => { 

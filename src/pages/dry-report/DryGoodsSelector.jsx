@@ -10,8 +10,9 @@ import {
   Drawer,
 } from "antd";
 import { BsUiChecks } from "react-icons/bs";
-import { ShoppingCartOutlined, EditOutlined } from "@ant-design/icons";
+import { ReloadOutlined, EditOutlined } from "@ant-design/icons";
 import { GiGrain } from "react-icons/gi";
+
 
 import { columns } from "./model";
 import DryCheckDrawer from "../../components/drawer/billing-payment/DryCheckDrawer";
@@ -51,12 +52,23 @@ const DryGoodsSelector = () => {
   }, []);
 
   const handleOpen = (value) => {
-
     setSelected(value);
     setShow(true);
   };
 
   const handleConfirmed = (v) => {
+    rpservice
+      .setDryGoods(v, { ignoreLoading: true })
+      .then((res) => {
+        message.success(res.data.message || "บันทึกข้อมูลเรียบร้อย");
+        getData({});
+        setShow(false);
+      })
+      .catch((err) => {
+        console.log(err);
+        message.error("Request error!");
+      });
+
     // if( typeof value === 'function'){
     //     value( v );
     // }
@@ -67,13 +79,28 @@ const DryGoodsSelector = () => {
       <Col span={12} className="p-0">
         <Flex gap={4} justify="start" align="center">
           <Typography.Title className="m-0 !text-zinc-800" level={3}>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-              <GiGrain style={{ fontSize: "1.4rem", verticalAlign: "middle" }} />
+            <span
+              style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
+            >
+              <GiGrain
+                style={{ fontSize: "1.4rem", verticalAlign: "middle" }}
+              />
               <span>รายการของแห้งสำหรับคนซื้อ</span>
             </span>
           </Typography.Title>
         </Flex>
       </Col>
+      <Col span={12} style={{paddingInline:0}}>
+                <Flex gap={4} justify='end'>
+                      <Button  
+                      size='small' 
+                      className='bn-action bn-center bn-primary justify-center'  
+                      icon={<ReloadOutlined  style={{fontSize:'.9rem'}} />} 
+                      onClick={() => getData({})} >
+                          Refresh
+                      </Button>
+                </Flex>
+            </Col>  
     </Flex>
   );
 
@@ -146,7 +173,13 @@ const DryGoodsSelector = () => {
             body: { paddingBlock: 8, paddingLeft: 18, paddingRight: 8 },
           }}
         >
-          {show && <DryCheckDrawer data={selected} submit={handleConfirmed} />}
+          {show && (
+            <DryCheckDrawer
+              data={selected}
+              submit={handleConfirmed}
+              close={() => setShow(false)}
+            />
+          )}
         </Drawer>
       )}
     </div>
