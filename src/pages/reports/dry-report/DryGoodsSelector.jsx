@@ -13,10 +13,9 @@ import { BsUiChecks } from "react-icons/bs";
 import { ReloadOutlined, EditOutlined } from "@ant-design/icons";
 import { GiGrain } from "react-icons/gi";
 
-
 import { columns } from "./model";
-import DryCheckDrawer from "../../components/drawer/billing-payment/DryCheckDrawer";
-import ReportService from "../../service/Report.service";
+import DryCheckDrawer from "../../../components/drawer/dry-check/DryCheckDrawer";
+import ReportService from "../../../service/Report.service";
 
 const rpservice = ReportService();
 
@@ -53,6 +52,7 @@ const DryGoodsSelector = () => {
 
   const handleOpen = (value) => {
     setSelected(value);
+    // console.log(value);
     setShow(true);
   };
 
@@ -90,17 +90,18 @@ const DryGoodsSelector = () => {
           </Typography.Title>
         </Flex>
       </Col>
-      <Col span={12} style={{paddingInline:0}}>
-                <Flex gap={4} justify='end'>
-                      <Button  
-                      size='small' 
-                      className='bn-action bn-center bn-primary justify-center'  
-                      icon={<ReloadOutlined  style={{fontSize:'.9rem'}} />} 
-                      onClick={() => getData({})} >
-                          Refresh
-                      </Button>
-                </Flex>
-            </Col>  
+      <Col span={12} style={{ paddingInline: 0 }}>
+        <Flex gap={4} justify="end">
+          <Button
+            size="small"
+            className="bn-action bn-center bn-primary justify-center"
+            icon={<ReloadOutlined style={{ fontSize: ".9rem" }} />}
+            onClick={() => getData({})}
+          >
+            Refresh
+          </Button>
+        </Flex>
+      </Col>
     </Flex>
   );
 

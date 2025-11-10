@@ -24,47 +24,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
     try {   
         $sql = " 
         SELECT 
-            a.socode,
-            a.sodate,
-            a.cuscode,
-            c.cusname,
-            b.stcode,
-            i.stname,
-            b.qty,
-            dg.book_stock,
-            dg.total_qty,
-            (b.qty - IFNULL(dg.total_qty, 0) - IFNULL(e.qty, 0)+ IFNULL(dg.book_stock, 0)) AS qty_result,   -- จำนวนคงเหลือหลังหัก
-            e.qty as qty_stock,
-            b.unit,
-            a.deldate,
-            a.remark
-        FROM somaster a        
-        LEFT JOIN sodetail b ON a.socode = b.socode
-        LEFT JOIN items i ON b.stcode = i.stcode
-        LEFT JOIN customer c ON a.cuscode = c.cuscode  
+        a.socode,a.sodate,a.cuscode,c.cusname,b.stcode,i.stname,b.qty,
+        (b.qty - IFNULL(dg.total_qty, 0) - IFNULL(e.qty, 0)) AS qty_result,   -- แสดงจำนวนคงเหลือหลังหัก
+        e.qty as qty_stock,
+        b.unit,a.deldate,a.remark
+        from somaster a        
+        left join sodetail b on a.socode = b.socode
+        left join items as i on b.stcode=i.stcode
+        left join customer c on a.cuscode = c.cuscode  
         LEFT JOIN (
-            SELECT
-                socode,
-                stcode,
-                DATE(record_date) AS rdate,          -- ปรับเป็น DATE เผื่อ record_date เป็น datetime
-                SUM(qty) AS total_qty,
-                SUM(book_stock) AS book_stock
+            SELECT socode, stcode, SUM(qty) AS total_qty
             FROM drygoods_record
-            GROUP BY socode, stcode, DATE(record_date)
-        ) dg
-          ON dg.socode = b.socode
-         AND dg.stcode = b.stcode
-         AND dg.rdate = DATE(a.sodate)               -- เปรียบเทียบวันให้ตรงกัน
-        LEFT JOIN items_stock e ON b.stcode = e.stcode
-        WHERE 1 = 1
-          AND i.typecode = '2'
-          $socode
-          $cuscode
-          $cusname
-          $created_by
-          $sodate
-          AND (b.qty - IFNULL(dg.total_qty, 0) - IFNULL(e.qty, 0) ) > 0
-        ORDER BY a.socode DESC;";
+            GROUP BY socode, stcode
+        ) dg ON dg.socode = b.socode AND dg.stcode = b.stcode
+         left join items_stock e on b.stcode = e.stcode
+        where 1 = 1 and i.typecode='2'
+        $socode
+        $cuscode
+        $cusname
+        $created_by
+        $sodate
+        AND (b.qty - IFNULL(dg.total_qty, 0)) > 0           -- ซ่อนแถวที่เหลือ <= 0
+        order by a.socode desc ;";
 
 
         $stmt = $conn->prepare($sql); 

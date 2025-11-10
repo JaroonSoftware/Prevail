@@ -1,7 +1,7 @@
 import React from "react";
 import { Route } from "react-router-dom";
 
-import { DryGoodsSelector } from "../pages/dry-report";
+import { DryGoodsSelector } from "../pages/reports/dry-report";
 
 export const ReportRouter = (
   <>

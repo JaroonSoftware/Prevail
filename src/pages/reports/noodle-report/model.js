@@ -1,7 +1,7 @@
 import { Tag, Typography } from "antd";
 import dayjs from "dayjs";
 import { IoMdTime } from "react-icons/io";
-import { formatMoney } from "../../utils/util";
+import { formatMoney } from "../../../utils/util";
 
 export const columns = ({ handleCheck, handleSelectChange }) => [
   {
@@ -35,15 +35,15 @@ export const columns = ({ handleCheck, handleSelectChange }) => [
   },
   {
     title: "จำนวน",
-    dataIndex: "qty",
-    key: "qty",
+    dataIndex: "qty_result",
+    key: "qty_result",
     width: "8%",
     align: "right",
     className: "!pe-3",
     editable: true,
     required: true,
     type: "number",
-    render: (_, rec) => <>{formatMoney(Number(rec?.qty || 0), 2, 2)}</>,
+    render: (_, rec) => <>{formatMoney(Number(rec?.qty_result || 0), 2, 2)}</>,
   },
   {
     title: "หน่วยสินค้า",

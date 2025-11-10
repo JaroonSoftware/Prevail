@@ -59,8 +59,16 @@ export default function DryCheckDrawer({
       span: { xs: 1, sm: 2, md: 3, lg: 3, xl: 3, xxl: 3 },
     },
     {
-      label: "จำนวน",
+      label: "จำนวนที่ต้องซื้อ",
+      children: data?.qty_result,
+    },
+    {
+      label: "จำนวนที่ลูกค้าสั่ง",
       children: data?.qty,
+    },
+    {
+      label: "จำนวนในสต๊อก",
+      children: data?.qty_stock,
     },
     {
       label: "หน่วยสินค้า",

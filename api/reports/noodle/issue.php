@@ -20,8 +20,8 @@ try {
         // var_dump($_POST);
         $record_date = date("Y-m-d");
         // ดึง seq ล่าสุด
-        $sql = "INSERT INTO drygoods_record (socode,stcode, stname, qty,book_stock, record_date,created_by,created_date) 
-        values (:socode,:stcode,:stname,:qty,:book_stock,:record_date,:action_user,:action_date)";
+        $sql = "INSERT INTO drygoods_record (socode,stcode, stname, qty, record_date,created_by,created_date) 
+        values (:socode,:stcode,:stname,:qty,:record_date,:action_user,:action_date)";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
@@ -30,7 +30,6 @@ try {
         $stmt->bindParam(":stcode", $stcode, PDO::PARAM_STR);
         $stmt->bindParam(":stname", $stname, PDO::PARAM_STR);
         $stmt->bindParam(":qty", $qty_result, PDO::PARAM_STR);
-        $stmt->bindParam(":book_stock", $qty_stock, PDO::PARAM_STR);
         $stmt->bindParam(":record_date", $record_date, PDO::PARAM_STR);
         $stmt->bindParam(":action_date", $action_date, PDO::PARAM_STR);
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_INT);

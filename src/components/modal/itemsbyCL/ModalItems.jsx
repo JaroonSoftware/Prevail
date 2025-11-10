@@ -167,12 +167,12 @@ export default function ModalItems({ show, close, values, selected,cuscode }) {
     <>
       <Modal
         open={show}
-        title="เลือกสินค้า"
+        title="เลือกสินค้า ตามแคตตาล็อก"
         onCancel={() => handleClose()}
         footer={ButtonModal}
         maskClosable={false}
         style={{ top: 20 }}
-        width={800}
+        width={1000}
         className="sample-request-modal-items"
       >
         <Spin spinning={loading}>
