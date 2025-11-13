@@ -11,7 +11,8 @@ import {
 } from "antd";
 import { BsUiChecks } from "react-icons/bs";
 import { ReloadOutlined, EditOutlined } from "@ant-design/icons";
-import { GiGrain } from "react-icons/gi";
+import {MdRamenDining} from "react-icons/md";
+
 
 import { columns } from "./model";
 import DryCheckDrawer from "../../../components/drawer/dry-check/DryCheckDrawer";
@@ -19,14 +20,14 @@ import ReportService from "../../../service/Report.service";
 
 const rpservice = ReportService();
 
-const DryGoodsSelector = () => {
+const NoodleReport = () => {
   const [listDetail, setListDetail] = useState([]);
   const [show, setShow] = useState(false);
   const [selected, setSelected] = useState(null);
 
   const getData = (data) => {
     rpservice
-      .getDryGoods(data, { ignoreLoading: true })
+      .getNoodle(data, { ignoreLoading: true })
       .then((res) => {
         const { data } = res.data;
 
@@ -82,10 +83,10 @@ const DryGoodsSelector = () => {
             <span
               style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
             >
-              <GiGrain
+              <MdRamenDining
                 style={{ fontSize: "1.4rem", verticalAlign: "middle" }}
               />
-              <span>รายการของแห้งสำหรับคนซื้อ</span>
+              <span>รายงานเส้น เต้าหู้ เครื่องแกง</span>
             </span>
           </Typography.Title>
         </Flex>
@@ -187,4 +188,4 @@ const DryGoodsSelector = () => {
   );
 };
 
-export default DryGoodsSelector;
+export default NoodleReport;

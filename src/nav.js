@@ -1,7 +1,7 @@
 import { FileTextFilled, ReconciliationFilled,FileDoneOutlined, AppstoreAddOutlined, BarcodeOutlined } from "@ant-design/icons";
 import { TbReportMoney } from "react-icons/tb";
 import { RiTeamFill } from "react-icons/ri";
-import { MdOutlineDashboard } from "react-icons/md";
+import { MdRamenDining } from "react-icons/md";
 import { TiThLarge } from "react-icons/ti";
 import { GiDatabase,GiGrain } from "react-icons/gi";
 import { FaUserCircle } from "react-icons/fa";
@@ -70,6 +70,11 @@ let _nav = [
     title: "รายงานการซื้อของแห้ง",
     icon: <GiGrain  className="nav-ico" />,
     to: "/dry-report",
+  },
+  {
+    title: "รายงานเส้น เต้าหู้ เครื่องแกง",
+    icon: <MdRamenDining  className="nav-ico" />,
+    to: "/noodle-report",
   },
   {
     title: "BUY",

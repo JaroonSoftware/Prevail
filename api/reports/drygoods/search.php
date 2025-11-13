@@ -31,9 +31,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
             b.stcode,
             i.stname,
             b.qty,
-            dg.book_stock,
             dg.total_qty,
-            (b.qty - IFNULL(dg.total_qty, 0) - IFNULL(e.qty, 0)+ IFNULL(dg.book_stock, 0)) AS qty_result,   -- จำนวนคงเหลือหลังหัก
+            IFNULL(f.qty, 0) AS qty_book,
+            (b.qty + IFNULL(f.qty, 0) - IFNULL(dg.total_qty, 0) - (IFNULL(e.qty, 0) )) AS qty_result,   -- จำนวนคงเหลือหลังหัก
             e.qty as qty_stock,
             b.unit,
             a.deldate,
@@ -46,16 +46,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
             SELECT
                 socode,
                 stcode,
-                DATE(record_date) AS rdate,          -- ปรับเป็น DATE เผื่อ record_date เป็น datetime
-                SUM(qty) AS total_qty,
-                SUM(book_stock) AS book_stock
+                SUM(qty) AS total_qty
             FROM drygoods_record
-            GROUP BY socode, stcode, DATE(record_date)
+            GROUP BY socode, stcode
         ) dg
           ON dg.socode = b.socode
          AND dg.stcode = b.stcode
-         AND dg.rdate = DATE(a.sodate)               -- เปรียบเทียบวันให้ตรงกัน
         LEFT JOIN items_stock e ON b.stcode = e.stcode
+        LEFT JOIN drygoods_book f ON a.sodate = f.book_date AND b.stcode = f.stcode
         WHERE 1 = 1
           AND i.typecode = '2'
           $socode

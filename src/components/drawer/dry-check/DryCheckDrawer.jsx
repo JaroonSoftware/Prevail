@@ -71,9 +71,12 @@ export default function DryCheckDrawer({
       children: data?.qty_stock,
     },
     {
+      label: "จำนวนที่จอง",
+      children: data?.qty_book,
+    },
+    {
       label: "หน่วยสินค้า",
       children: data?.unit || "",
-      span: { xs: 1, sm: 2, md: 2, lg: 2, xl: 2, xxl: 2 },
     },
     { label: "รหัสลูกค้า", children: data?.cuscode || "" },
     {
