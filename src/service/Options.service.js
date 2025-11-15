@@ -23,6 +23,7 @@ const API_URL = {
 
 const OptionService = () => {
   const optionsItems = (parm = {}) => api.get(`${API_URL.OPTION_ITEMS}?${getParmeter(parm)}`, { ignoreLoading : true });
+  const optionsItemsbyCatalog = (parm = {}) => api.post(`${API_URL.OPTION_ITEMS_BYCATALOG}`, parm, { cancle: true, ignoreLoading : true});
   const optionsItemsbytype = (parm = {}, config = {}) => api.post(`${API_URL.OPTION_ITEMS_BYTYPE}`, parm, {...config, cancle: true});
   const optionsCart = (parm = {}) => api.post(`${API_URL.OPTION_CART}`, parm, { cancle: true, ignoreLoading : true});
   const optionsSupplier = () => api.get(`${API_URL.OPTION_SUPPLIER}`, { ignoreLoading : true });
@@ -43,6 +44,7 @@ const OptionService = () => {
 
   return {
     optionsItems,
+    optionsItemsbyCatalog,
     optionsItemsbytype,
     optionsCart,
     optionsSupplier,

@@ -30,8 +30,7 @@ import { ButtonBack } from "../../components/button";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { RiDeleteBin5Line } from "react-icons/ri";
-import { LuPackageSearch } from "react-icons/lu";
-import { LuPrinter } from "react-icons/lu";
+import { LuPrinter, LuPackagePlus } from "react-icons/lu";
 const opservice = OptionService();
 const qtservice = QuotationService();
 
@@ -57,7 +56,8 @@ function QuotationManage() {
 
   const [formDetail, setFormDetail] = useState(quotationForm);
 
-  const [unitOption, setUnitOption] = React.useState([]);
+  const [unitOption, setUnitOption] = useState([]);
+  const [stcodeOption, setStcodeOption] = useState([]);
 
   const cardStyle = {
     backgroundColor: "#f0f0f0",
@@ -75,14 +75,26 @@ function QuotationManage() {
         } = res.data;
         const { qtcode, qtdate } = header;
         setFormDetail(header);
-        setListDetail(detail);
+        setListDetail(detail.map((d, i) => ({ ...d, _rid: i + 1 })));
         // setQuotBanks( bank );
         setQuotCode(qtcode);
         form.setFieldsValue({ ...header, qtdate: dayjs(qtdate) });
-
+        getstcodeList(header?.cuscode);
         // setTimeout( () => {  handleCalculatePrice(head?.valid_price_until, head?.dated_price_until) }, 200);
         // handleChoosedCustomer(head);
       } else {
+        setListDetail([
+          {
+            _rid: 1,
+            stcode: "",
+            stname: "",
+            qty: 1,
+            price: 0,
+            unit: "",
+            discount: 0,
+            vat: 0,
+          },
+        ]);
         const { data: code } = (
           await qtservice.code().catch((e) => {
             message.error("get Quotation code fail.");
@@ -97,6 +109,7 @@ function QuotationManage() {
         };
         setFormDetail(ininteial_value);
         form.setFieldsValue(ininteial_value);
+        getstcodeList("");
       }
       const [unitOprionRes] = await Promise.all([
         opservice.optionsUnit({ p: "unit-option" }),
@@ -108,6 +121,13 @@ function QuotationManage() {
     initial();
     return () => {};
   }, []);
+
+  const getstcodeList = async (cuscode = "") => {
+    const [stcodeOptionRes] = await Promise.all([
+      opservice.optionsItems({ p: "cl", cuscode: cuscode }),
+    ]);
+    setStcodeOption(stcodeOptionRes.data.data); // TO DO get stcode option
+  };
 
   const handleCalculatePrice = (day, date) => {
     const newDateAfterAdding = dayjs(date || new Date()).add(
@@ -154,6 +174,7 @@ function QuotationManage() {
     // console.log(val.contact)
     setFormDetail((state) => ({ ...state, ...customer }));
     form.setFieldsValue({ ...fvalue, ...customer });
+    getstcodeList(val?.cuscode);
   };
 
   const handleItemsChoosed = (value) => {
@@ -161,10 +182,16 @@ function QuotationManage() {
   };
 
   const handleConfirm = () => {
+    let errormessage = "";
+
     form
       .validateFields()
       .then((v) => {
-        if (listDetail.length < 1) throw new Error("กรุณาเพิ่ม รายการขาย");
+        if (listDetail.length < 1)
+          throw (errormessage = "กรุณาเพิ่มรายการสินค้า");
+
+        if (listDetail.some((ld) => !ld.stcode || ld.stcode === ""))
+          throw (errormessage = "กรุณาเลือกสินค้าที่ต้องการขายให้ครบถ้วน");
 
         const header = {
           ...formDetail,
@@ -189,9 +216,11 @@ function QuotationManage() {
           });
       })
       .catch((err) => {
+        if (errormessage === "")
+          errormessage = "กรุณาเลือกลูกค้า ก่อนทำการบันทึกข้อมูล";
         Modal.error({
-          title: "This is an error message",
-          content: "Please enter require data",
+          title: "ข้อผิดพลาด",
+          content: errormessage,
         });
       });
   };
@@ -234,7 +263,7 @@ function QuotationManage() {
       const itemDetail = [...listDetail];
       const newData = [...itemDetail];
 
-      const ind = newData.findIndex((item) => r?.stcode === item?.stcode);
+      const ind = newData.findIndex((item) => item._rid === r._rid);
       if (ind < 0) return itemDetail;
       const item = newData[ind];
       newData.splice(ind, 1, {
@@ -242,15 +271,21 @@ function QuotationManage() {
         ...row,
       });
 
+      // handleSummaryPrice();
       return newData;
     };
     setListDetail([...newData(row)]);
   };
 
   /** setting column table */
-  const prodcolumns = columnsParametersEditable(handleEditCell, unitOption, {
-    handleRemove,
-  });
+  const prodcolumns = columnsParametersEditable(
+    handleEditCell,
+    unitOption,
+    stcodeOption,
+    {
+      handleRemove,
+    }
+  );
 
   const SectionCustomer = (
     <>
@@ -321,15 +356,29 @@ function QuotationManage() {
       </Col>
       <Col span={12} style={{ paddingInline: 0 }}>
         <Flex justify="end">
-          <Button
-            icon={<LuPackageSearch style={{ fontSize: "1.2rem" }} />}
-            className="bn-center justify-center bn-primary-outline"
-            onClick={() => {
-              setOpenProduct(true);
-            }}
-          >
-           เลือกสินค้า
-          </Button>
+          <Flex justify="end">
+            <Button
+              icon={<LuPackagePlus style={{ fontSize: "1.2rem" }} />}
+              className="bn-center justify-center bn-primary-outline"
+              onClick={() => {
+                setListDetail((state) => [
+                  ...state,
+                  {
+                    _rid: state.length + 1,
+                    stcode: "",
+                    stname: "",
+                    qty: 1,
+                    price: 0,
+                    unit: "",
+                    discount: 0,
+                    vat: 0,
+                  },
+                ]);
+              }}
+            >
+              เพิ่มสินค้า
+            </Button>
+          </Flex>
         </Flex>
       </Col>
     </Flex>
@@ -346,7 +395,7 @@ function QuotationManage() {
           dataSource={listDetail}
           columns={prodcolumns}
           pagination={false}
-          rowKey="stcode"
+          rowKey="_rid"
           scroll={{ x: "max-content" }}
           locale={{
             emptyText: <span>No data available, please add some data.</span>,

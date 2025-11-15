@@ -18,14 +18,14 @@ import { SaveFilled, SearchOutlined } from "@ant-design/icons";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
 
 import { soForm, columnsParametersEditable, componentsEditable } from "./model";
-import { ModalItems } from "../../components/modal/itemsbyCL/modal-items";
+// import { ModalItems } from "../../components/modal/itemsbyCL/modal-items";
 import dayjs from "dayjs";
 import { delay, comma } from "../../utils/util";
 import { ButtonBack } from "../../components/button";
 import { useLocation, useNavigate } from "react-router-dom";
 import { TbSquareRoundedX, TbExclamationCircle } from "react-icons/tb";
 import { RiDeleteBin5Line } from "react-icons/ri";
-import { LuPackageSearch } from "react-icons/lu";
+import { LuPackagePlus } from "react-icons/lu";
 
 const opservice = OptionService();
 const soservice = SOService();
@@ -42,7 +42,7 @@ function MyManage() {
 
   /** Modal handle */
   const [openCustomer, setOpenCustomer] = useState(false);
-  const [openProduct, setOpenProduct] = useState(false);
+  // const [openProduct, setOpenProduct] = useState(false);
 
   /** SaleOrder state */
   const [soCode, setSOCode] = useState(null);
@@ -52,7 +52,8 @@ function MyManage() {
 
   const [formDetail, setFormDetail] = useState(soForm);
 
-  const [unitOption, setUnitOption] = React.useState([]);
+  const [unitOption, setUnitOption] = useState([]);
+  const [stcodeOption, setStcodeOption] = useState([]);
 
   const cardStyle = {
     backgroundColor: "#f0f0f0",
@@ -70,13 +71,14 @@ function MyManage() {
         } = res.data;
         const { socode, sodate,deldate } = header;
         setFormDetail(header);
-        setListDetail(detail);
+        setListDetail(detail.map((d,i)=>({...d,_rid:i+1})));
         setSOCode(socode);
         form.setFieldsValue({ ...header, sodate: dayjs(sodate), deldate: dayjs(deldate) });
-
+        getstcodeList(header?.cuscode);
         // setTimeout( () => {  handleCalculatePrice(head?.valid_price_until, head?.dated_price_until) }, 200);
         // handleChoosedCustomer(head);
       } else {
+        setListDetail([{_rid:1,stcode:"",stname:"",qty:1,price:0,unit:"",discount:0,vat:0}]);
         const { data: code } = (
           await soservice.code().catch((e) => {
             message.error("get SaleOrder code fail.");
@@ -92,12 +94,16 @@ function MyManage() {
         };
         setFormDetail(ininteial_value);
         form.setFieldsValue(ininteial_value);
+        getstcodeList("");
+
       }
       const [unitOprionRes] = await Promise.all([
         opservice.optionsUnit({ p: "unit-option" }),
       ]);
       // console.log(unitOprionRes.data.data)
       setUnitOption(unitOprionRes.data.data);
+
+      
     };
 
     initial();
@@ -107,6 +113,14 @@ function MyManage() {
   useEffect(() => {
     if (listDetail) handleSummaryPrice();
   }, [listDetail]);
+
+  const getstcodeList = async (cuscode = "") => {
+    const [stcodeOptionRes] = await Promise.all([
+        opservice
+        .optionsItems({ p: "cl" ,cuscode:cuscode})
+      ]);
+      setStcodeOption(stcodeOptionRes.data.data); // TO DO get stcode option
+  }
 
   const handleSummaryPrice = () => {
     const newData = [...listDetail];
@@ -172,19 +186,25 @@ function MyManage() {
     // console.log(val.contact)
     setFormDetail((state) => ({ ...state, ...customer }));
     form.setFieldsValue({ ...fvalue, ...customer });
+    getstcodeList(val?.cuscode);
   };
 
-  const handleItemsChoosed = (value) => {
-    // console.log(value)
-    setListDetail(value);
-    handleSummaryPrice();
-  };
+  // const handleItemsChoosed = (value) => {
+  //   // console.log(value)
+  //   setListDetail(value);
+  //   handleSummaryPrice();
+  // };
 
   const handleConfirm = () => {
+    
+    let errormessage = '';
+
     form
       .validateFields()
       .then((v) => {
-        if (listDetail.length < 1) throw new Error("กรุณาเพิ่ม รายการขาย");
+        if (listDetail.length < 1) throw errormessage="กรุณาเพิ่มรายการสินค้า";
+
+        if (listDetail.some((ld) => !ld.stcode || ld.stcode === "")) throw errormessage="กรุณาเลือกสินค้าที่ต้องการขายให้ครบถ้วน";
 
         const header = {
           ...formDetail,
@@ -210,9 +230,11 @@ function MyManage() {
           });
       })
       .catch((err) => {
+        if(errormessage==='')
+          errormessage="กรุณาเลือกลูกค้า ก่อนทำการบันทึกข้อมูล";
         Modal.error({
-          title: "This is an error message",
-          content: "Please enter require data",
+          title: "ข้อผิดพลาด",
+          content: errormessage,
         });
       });
   };
@@ -240,7 +262,7 @@ function MyManage() {
           <RiDeleteBin5Line style={{ fontSize: "1rem", marginTop: "3px" }} />
         }
         onClick={() => handleDelete(record?.stcode)}
-        disabled={!record?.stcode || config.action !== "create"}
+        // disabled={!record?.stcode}
       />
     ) : null;
   };
@@ -281,7 +303,7 @@ function MyManage() {
       const itemDetail = [...listDetail];
       const newData = [...itemDetail];
 
-      const ind = newData.findIndex((item) => r?.stcode === item?.stcode);
+      const ind = newData.findIndex((item) => item._rid === r._rid);
       if (ind < 0) return itemDetail;
       const item = newData[ind];
       newData.splice(ind, 1, {
@@ -296,7 +318,7 @@ function MyManage() {
   };
 
   /** setting column table */
-  const prodcolumns = columnsParametersEditable(handleEditCell, unitOption, {
+  const prodcolumns = columnsParametersEditable(handleEditCell, unitOption,stcodeOption, {
     handleRemove,
   });
 
@@ -381,20 +403,13 @@ function MyManage() {
       <Col span={12} style={{ paddingInline: 0 }}>
         <Flex justify="end">
           <Button
-            icon={<LuPackageSearch style={{ fontSize: "1.2rem" }} />}
+            icon={<LuPackagePlus style={{ fontSize: "1.2rem" }} />}
             className="bn-center justify-center bn-primary-outline"
             onClick={() => {
-              form
-                .validateFields()
-                .then(() => {
-                  setOpenProduct(true);
-                })
-                .catch((err) => {
-                  message.error("กรุณาเลือกลูกค้าก่อน");
-                });
+             setListDetail((state) => [...state, {_rid:state.length+1,stcode:"",stname:"",qty:1,price:0,unit:"",discount:0,vat:0}]);
             }}
           >
-            Choose Product
+            เพิ่มสินค้า
           </Button>
         </Flex>
       </Col>
@@ -412,7 +427,7 @@ function MyManage() {
           dataSource={listDetail}
           columns={prodcolumns}
           pagination={false}
-          rowKey="stcode"
+          rowKey="_rid"
           scroll={{ x: "max-content" }}
           locale={{
             emptyText: <span>No data available, please add some data.</span>,
@@ -444,61 +459,6 @@ function MyManage() {
                       </Table.Summary.Cell>
                       <Table.Summary.Cell>Baht</Table.Summary.Cell>
                     </Table.Summary.Row>
-                    {/* <Table.Summary.Row>
-                      <Table.Summary.Cell
-                        index={0}
-                        colSpan={7}
-                      ></Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        index={4}
-                        align="end"
-                        className="!pe-4"
-                      >
-                        ส่วนลด
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        className="!pe-4 border-right-0"
-                        style={{ borderRigth: "0px solid" }}
-                      >
-                        <Form.Item name="discount" className="!m-0">
-                          <InputNumber
-                            className="width-100 input-30"
-                            controls={false}
-                            style={{ textAlignLast: 'right' }} 
-                            min={0}
-                            onFocus={(e) => {
-                              e.target.select();
-                            }}
-                            onChange={() => {
-                              handleSummaryPrice();
-                            }}
-                          />
-                        </Form.Item>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>Baht</Table.Summary.Cell>
-                    </Table.Summary.Row>
-                    <Table.Summary.Row>
-                      <Table.Summary.Cell
-                        index={0}
-                        colSpan={7}
-                      ></Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        index={4}
-                        align="end"
-                        className="!pe-4"
-                      >
-                        Grand Total
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell
-                        className="!pe-4 text-end border-right-0"
-                        style={{ borderRigth: "0px solid" }}
-                      >
-                        <Typography.Text type="danger">
-                          {comma(Number(formDetail?.grand_total_price || 0))}
-                        </Typography.Text>
-                      </Table.Summary.Cell>
-                      <Table.Summary.Cell>Baht</Table.Summary.Cell>
-                    </Table.Summary.Row> */}
                   </>
                 )}
               </>
@@ -687,7 +647,7 @@ function MyManage() {
         ></ModalCustomers>
       )}
 
-      {openProduct && (
+      {/* {openProduct && (
         <ModalItems
           show={openProduct}
           close={() => setOpenProduct(false)}
@@ -697,7 +657,7 @@ function MyManage() {
           cuscode={form.getFieldValue("cuscode")}
           selected={listDetail}
         ></ModalItems>
-      )}
+      )} */}
     </div>
   );
 }

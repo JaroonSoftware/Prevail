@@ -41,75 +41,222 @@ export const EditableCell = ({
   autocompleteOption,
   modalSelect,
   optionsItems,
+  optionsStcode,
   childProps,
   ...restProps
 }) => {
   const [editing, setEditing] = useState(false);
   const inputRef = useRef(null);
+  const tdRef = useRef(null);
+  const lastValueRef = useRef(undefined);
+  const pendingNavRef = useRef(null);
+  const form = useContext(EditableContext);
+
   const filterOption = (input, option) =>
     (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
 
   type = type || "input";
-  // const textAreaRef = useRef(null);
-  const form = useContext(EditableContext);
-  // console.log(restProps);
+
   useEffect(() => {
     if (editing && !readonly) {
       inputRef.current?.focus();
-
-      inputRef.current?.select();
-      // console.log( inputRef.current );
+      inputRef.current?.select?.();
     }
   }, [editing, readonly]);
 
-  const toggleEdit = () => {
-    setEditing(!editing && !readonly);
-    form.setFieldsValue({
-      [dataIndex]: record[dataIndex],
-    });
+  const toggleEdit = (force) => {
+    const next = typeof force === "boolean" ? force : !editing;
+    if (readonly) return;
+    setEditing(next);
+    if (next) {
+      lastValueRef.current = record[dataIndex];
+      form.setFieldsValue({ [dataIndex]: record[dataIndex] });
+    }
   };
 
   const save = async () => {
     try {
       const values = await form.validateFields();
-      toggleEdit();
-
+      setEditing(false);
       handleEditCell({
         ...record,
         ...values,
         key: dataIndex,
       });
-    } catch (errInfo) {
-      // console.log('Save failed:', errInfo);
-    }
+      if (pendingNavRef.current) {
+        const dir = pendingNavRef.current;
+        pendingNavRef.current = null;
+        setTimeout(() => moveToNeighbor(dir), 0);
+      }
+    } catch {}
   };
 
   const select = async () => {
     try {
       const values = await form.validateFields();
-      toggleEdit();
-
+      setEditing(false);
       handleEditCell({
         ...record,
         ...values,
         key: dataIndex,
       });
-    } catch (errInfo) {
-      // console.log('Save failed:', errInfo);
-    }
+      // If navigation not already scheduled by keydown, schedule it
+      if (!pendingNavRef.current) {
+        pendingNavRef.current = "right";
+      }
+      setTimeout(() => {
+        const dir = pendingNavRef.current;
+        pendingNavRef.current = null;
+        moveToNeighbor(dir);
+      }, 0);
+    } catch {}
   };
 
-  const switced = async (e) => {
+  const selectStcode = async (data, v) => {
+    try {
+      setEditing(false);
+      handleEditCell({
+        ...record,
+        _rid: record._rid,
+        stcode: v.stcode,
+        stname: v.stname,
+        price: v.price,
+        unit: v.unit,
+        vat: v.vat,
+        key: dataIndex,
+      });
+      // After updating row data, focus price editor in same row
+      setTimeout(() => {
+        focusColInSameRow("price");
+      }, 0);
+    } catch {}
+  };
+
+  const switced = async () => {
     try {
       const values = await form.validateFields();
-      // toggleEdit(); 
       handleEditCell({
         ...record,
         ...values,
-        key:dataIndex,
+        key: dataIndex,
       });
-    } catch (errInfo) {
-      // console.log('Save failed:', errInfo);
+    } catch {}
+  };
+
+  const findEditableTdByKey = (rowEl, colKey, fallbackIndex) => {
+    if (!rowEl) return null;
+    if (colKey) {
+      const m = Array.from(rowEl.children).find(
+        (c) => c.getAttribute && c.getAttribute("data-col") === colKey
+      );
+      if (m && m.getAttribute("data-editable") === "1") return m;
+    }
+    const td = rowEl.children[fallbackIndex];
+    if (td && td.getAttribute("data-editable") === "1") return td;
+    return Array.from(rowEl.children).find(
+      (c) => c.getAttribute && c.getAttribute("data-editable") === "1"
+    );
+  };
+
+  const findHorizontal = (startTd, stepKey) => {
+    let cur = startTd;
+    while (cur && cur[stepKey]) {
+      cur = cur[stepKey];
+      if (cur.getAttribute && cur.getAttribute("data-editable") === "1") return cur;
+    }
+    return null;
+  };
+  const findFirstEditableInRow = (rowEl) => {
+    if (!rowEl) return null;
+    return Array.from(rowEl.children).find(
+      (c) => c.getAttribute && c.getAttribute("data-editable") === "1"
+    );
+  };
+
+  const moveToNeighbor = (dir) => {
+    const td = tdRef.current;
+    if (!td) return;
+    const tr = td.closest("tr");
+    if (!tr) return;
+    const colKey = td.getAttribute("data-col");
+    const colIndex = Array.from(tr.children).indexOf(td);
+
+    let targetTd = null;
+    if (dir === "down") {
+      const nextTr = tr.nextElementSibling;
+      targetTd = findEditableTdByKey(nextTr, colKey, colIndex);
+    } else if (dir === "right") {
+      // try same row to the right
+      targetTd = findHorizontal(td, "nextElementSibling");
+      // if none, jump to first editable cell of next row
+      if (!targetTd) {
+        const nextTr = tr.nextElementSibling;
+        targetTd = findFirstEditableInRow(nextTr);
+      }
+    }
+
+    if (targetTd) {
+      const clickable = targetTd.querySelector(".editable-cell-value-wrap");
+      if (clickable) {
+        clickable.focus();
+        clickable.click();
+      } else {
+        targetTd.focus();
+        targetTd.click();
+      }
+      setTimeout(() => focusEditor(targetTd), 0);
+    }
+  };
+
+  const handleWrapperKeyDown = (e) => {
+    if (!editable || readonly) return;
+    if (!editing) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        toggleEdit(true);
+        setTimeout(() => focusEditor(tdRef.current), 0);
+        return;
+      }
+      if (e.key === "Tab") {
+        e.preventDefault();
+        moveToNeighbor("right");
+        return;
+      }
+    }
+  };
+
+  const focusColInSameRow = (colKey) => {
+    let attempt = 0;
+    const MAX = 12;
+    const tryFocus = () => {
+      const baseTd = tdRef.current;
+      const tr = baseTd?.closest("tr");
+      const targetTd = tr?.querySelector(`td[data-col='${colKey}']`);
+      if (targetTd && targetTd.getAttribute("data-editable") === "1") {
+        const clickable = targetTd.querySelector(".editable-cell-value-wrap");
+        (clickable || targetTd).click();
+        requestAnimationFrame(() => focusEditor(targetTd));
+      } else if (attempt < MAX) {
+        attempt++;
+        requestAnimationFrame(tryFocus);
+      }
+    };
+    requestAnimationFrame(tryFocus);
+  };
+
+  const handleEditorKeyDown = (e) => {
+    if (!editable || readonly) return;
+    // Treat Enter and Tab identically: move right (or next row first cell)
+    if (e.key === "Enter" || e.key === "Tab") {
+      e.preventDefault();
+      pendingNavRef.current = "right";
+      save();
+      return;
+    }
+    if (e.key === "Escape") {
+      e.preventDefault();
+      form.setFieldsValue({ [dataIndex]: lastValueRef.current });
+      setEditing(false);
     }
   };
 
@@ -121,143 +268,173 @@ export const EditableCell = ({
         name={dataIndex}
         rules={[{ required: !!required, message: `${title} is required.` }]}
       >
-        {type === "input" && (
-          <Input
-            placeholder="Enter value"
-            ref={inputRef}
-            onPressEnter={save}
-            onBlur={save}
-            style={{
-              height: 32,
-              minWidth: "none",
-              textAlign: "end",
-              ...restProps.style,
-            }}
-            className="ant-input"
-            autoComplete="off"
-            readOnly={readonly}
-          />
-        )}
-
-        {type === "textarea" && (
-          <textarea
-            rows={2}
-            ref={inputRef}
-            onBlur={save}
-            style={{ width: "100%", height: 64 }}
-            className="ant-input"
-            readOnly={readonly}
-          ></textarea>
-        )}
-
-        {type === "autocomplete" && (
-          <AutoComplete
-            children={
-              <Input
-                ref={inputRef}
-                style={{ height: 32, ...restProps.style }}
-              />
-            }
-            onBlur={save}
-            onSelect={save}
-            options={autocompleteOption}
-            placeholder="Enter value"
-            filterOption={(inputValue, option) =>
-              option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !==
-              -1
-            }
-          />
-        )}
-
-        {type === "modal-select" && (
-          <Space.Compact
-            style={{ width: "100%", height: 32, minWidth: "none" }}
-            onBlur={select}
-          >
+        <>
+          {type === "input" && (
             <Input
-              readOnly
-              placeholder="Choose value"
-              value={record[dataIndex]}
-              style={{ height: 32, ...restProps.style }}
-            />
-            <Button
-              className="bn-secondary bn-center bn-action"
-              size="small"
-              icon={<SearchOutlined />}
-              onClick={(e) => modalSelect(e, record)}
+              placeholder="Enter value"
+              ref={inputRef}
+              onKeyDown={handleEditorKeyDown}
+              onBlur={save}
               style={{
-                minWidth: 40,
                 height: 32,
-                borderRadius: 6,
-                borderStartStartRadius: 0,
-                borderEndStartRadius: 0,
+                minWidth: "none",
+                textAlign: "end",
+                ...restProps.style,
               }}
-            ></Button>
-          </Space.Compact>
-        )}
-
-        {type === "number" && (
-          <InputNumber
-            placeholder="กรอกข้อมูล"
-            ref={inputRef}
-            onPressEnter={save}
-            onBlur={save}
-            style={{
-              height: 32,
-              minWidth: "none",
-              textAlign: "end",
-              ...restProps.style,
-            }}
-            className="width-100 input-30 !text-end"
-            autoComplete="off"
-            readOnly={readonly}
-            controls={false}
-            {...childProps}
-          />
-        )}
-         {(type === 'switch') && (
-              <Switch 
-                // checked={!!Number(record[dataIndex])}
-                checkedChildren={<CheckOutlined />}
-                unCheckedChildren={<CloseOutlined />}  
-                onChange={switced}
+              className="ant-input"
+              autoComplete="off"
+              readOnly={readonly}
+            />
+          )}
+          {type === "textarea" && (
+            <textarea
+              rows={2}
+              ref={inputRef}
+              onBlur={save}
+              onKeyDown={handleEditorKeyDown}
+              style={{ width: "100%", height: 64 }}
+              className="ant-input"
+              readOnly={readonly}
+            />
+          )}
+          {type === "autocomplete" && (
+            <AutoComplete
+              children={
+                <Input
+                  ref={inputRef}
+                  style={{ height: 32, ...restProps.style }}
+                  onKeyDown={handleEditorKeyDown}
+                />
+              }
+              onBlur={save}
+              onSelect={save}
+              options={autocompleteOption}
+              placeholder="Enter value"
+              filterOption={(inputValue, option) =>
+                option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
+              }
+            />
+          )}
+          {type === "modal-select" && (
+            <Space.Compact style={{ width: "100%", height: 32, minWidth: "none" }}>
+              <Input
+                readOnly
+                placeholder="Choose value"
+                value={record[dataIndex]}
+                style={{ height: 32, ...restProps.style }}
+                onKeyDown={handleEditorKeyDown}
+                onBlur={save}
               />
-            )}
-
-        {type === "select" && (
-          <Select
-            allowClear
-            autoClearSearchValue={false}
-            style={{ width: "100%" }}
-            className="input-30"
-            placeholder="เลือกข้อมูล"
-            options={optionsItems.map((m) => ({
-              label: m.label,
-              value: m.value,
-            }))}
-            filterOption={filterOption}
-            onSelect={select}
-            disabled={readonly}
-          />
-        )}
+              <Button
+                className="bn-secondary bn-center bn-action"
+                size="small"
+                icon={<SearchOutlined />}
+                onClick={(e) => modalSelect(e, record)}
+                style={{
+                  minWidth: 40,
+                  height: 32,
+                  borderRadius: 6,
+                  borderStartStartRadius: 0,
+                  borderEndStartRadius: 0,
+                }}
+              />
+            </Space.Compact>
+          )}
+          {type === "number" && (
+            <InputNumber
+              placeholder="กรอกข้อมูล"
+              ref={inputRef}
+              onKeyDown={(e) => {
+                if (childProps?.onKeyDown) childProps.onKeyDown(e);
+                handleEditorKeyDown(e);
+              }}
+              onBlur={save}
+              style={{
+                height: 32,
+                minWidth: "none",
+                textAlign: "end",
+                ...restProps.style,
+              }}
+              className="width-100 input-30 !text-end"
+              autoComplete="off"
+              readOnly={readonly}
+              controls={false}
+              {...childProps}
+            />
+          )}
+          {type === "switch" && (
+            <Switch
+              checkedChildren={<CheckOutlined />}
+              unCheckedChildren={<CloseOutlined />}
+              onChange={switced}
+              onKeyDown={handleEditorKeyDown}
+            />
+          )}
+          {type === "select" && (
+            <Select
+              allowClear
+              autoClearSearchValue={false}
+              showSearch
+              style={{ width: "100%" }}
+              className="input-30"
+              placeholder="เลือกข้อมูล"
+              options={(optionsItems || []).map((m) => ({ label: m.label, value: m.value }))}
+              filterOption={filterOption}
+              onSelect={select}
+              onBlur={save}
+              onKeyDown={handleEditorKeyDown}
+              onInputKeyDown={handleEditorKeyDown}
+              disabled={readonly}
+            />
+          )}
+          {type === "select-stcode" && (
+            <Select
+              allowClear
+              autoClearSearchValue={false}
+              showSearch
+              style={{ width: "100%" }}
+              className="input-30"
+              placeholder="เลือกข้อมูล"
+              options={(optionsStcode || []).map((m) => ({ label: m.label, value: m.value,stcode:m.value,stname:m.label,price:m.price,unit:m.unit,vat:m.vat }))}
+              filterOption={filterOption}
+              onSelect={(data,value)=>selectStcode(data,value)}
+              onBlur={save}
+              disabled={readonly}
+            />
+          )}
+        </>
       </Form.Item>
     ) : (
       <div
         className="editable-cell-value-wrap"
+        tabIndex={0}
         style={{
           paddingRight: 8,
           height: !!fieldType ? 64 : 32,
           border: "1px solid #eee",
           borderRadius: 6,
           lineHeight: "1.4rem",
+          outline: "none",
         }}
-        onClick={toggleEdit}
+        onClick={() => toggleEdit(true)}
+        onKeyDown={handleWrapperKeyDown}
       >
         {children}
       </div>
     );
   }
-  return <td {...restProps}>{childNode}</td>;
+
+  return (
+    <td
+      {...restProps}
+      ref={tdRef}
+      data-col={dataIndex}
+      data-editable={editable ? "1" : "0"}
+      tabIndex={editable ? 0 : -1}
+    >
+      {childNode}
+    </td>
+  );
 };
 
 export const RowDrag = ({ children, ...props }) => {
@@ -314,4 +491,29 @@ export const RowDrag = ({ children, ...props }) => {
       </EditableContext.Provider>
     </Form>
   );
+};
+
+const focusEditor = (cellEl) => {
+  if (!cellEl) return;
+  const el =
+    cellEl.querySelector("input, textarea") ||
+    cellEl.querySelector(".ant-input-number input") ||
+    cellEl.querySelector(".ant-select-selector input") ||
+    cellEl.querySelector(".ant-select-selection-search-input");
+
+  if (el) {
+    el.focus();
+    try { el.select?.(); } catch {}
+    return;
+  }
+
+  // Fallback: open Select to expose its input, then focus it
+  const sel = cellEl.querySelector(".ant-select");
+  if (sel) {
+    sel.querySelector(".ant-select-selector")?.click();
+    const sInput =
+      sel.querySelector(".ant-select-selector input") ||
+      sel.querySelector(".ant-select-selection-search-input");
+    sInput?.focus();
+  }
 };

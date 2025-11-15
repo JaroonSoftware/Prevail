@@ -60,7 +60,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
             $res = $stmt->fetchAll(PDO::FETCH_ASSOC);         
         }else if ($p === 'cl' ){
             $sql = "
-			select i.stcode,i.stname, d.price, i.unit,i.vat, UUID() `key`, t.typename
+			select i.stcode as value,i.stcode,i.stname as label, d.price, i.unit,i.vat
             from catalog_link as a
             inner join catalog_detail d on (a.catalog_code=d.catalog_code)
             inner join catalog_master m on (a.catalog_code=m.catalog_code)

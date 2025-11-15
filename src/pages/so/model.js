@@ -218,22 +218,12 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
   },
   {
     title: "ชื่อสินค้า",
-    dataIndex: "purdetail",
-    key: "purdetail", 
-    align: "left", 
-    render: (_, rec) => rec.stname,
-  },
-  {
-    title: "จำนวน",
-    dataIndex: "qty",
-    key: "qty", 
-    width: "8%",
-    align: "right",
-    className: "!pe-3",
+    dataIndex: "stname",
+    key: "stname", 
     editable: true,
     required: true,
-    type:'number',
-    render: (_, rec) => <>{ comma( Number(rec?.qty ||  0),  2, 2 )}</>,
+    align: "left", 
+    type:'select-stcode',    
   },
   {
     title: "ราคาขาย",
@@ -248,13 +238,25 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
     render: (_, rec) => <>{ comma( Number(rec?.price ||  0),  2, 2 )}</>,
   },
   {
+    title: "จำนวน",
+    dataIndex: "qty",
+    key: "qty", 
+    width: "8%",
+    align: "right",
+    className: "!pe-3",
+    editable: true,
+    required: true,
+    type:'number',
+    render: (_, rec) => <>{ comma( Number(rec?.qty ||  0),  2, 2 )}</>,
+  },
+  {
     title: "หน่วยสินค้า",
     dataIndex: "unit",
     key: "unit", 
-      align: "right", 
-      width: "8%",
-      editable: true,
-      type:'select',    
+    align: "right", 
+    width: "8%",
+    editable: true,
+    type:'select',    
   },
   {
     title: "ราคารวม",
@@ -296,7 +298,7 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
   },
 ];
 
-export const columnsParametersEditable = (handleEditCell,optionsItems,{handleRemove} ) =>{
+export const columnsParametersEditable = (handleEditCell,optionsItems,optionsStcode,{handleRemove} ) =>{
   const col = productColumn({handleRemove});
   return col.map((col, ind) => {
       if (!col.editable) return col; 
@@ -314,6 +316,7 @@ export const columnsParametersEditable = (handleEditCell,optionsItems,{handleRem
               type: col?.type || "input",
               handleEditCell,
               optionsItems,
+              optionsStcode
             }
           },
       };

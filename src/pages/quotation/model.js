@@ -149,10 +149,12 @@ export const productColumn = ({ handleRemove }, optionsItems) => [
   },
   {
     title: "ชื่อสินค้า",
-    dataIndex: "purdetail",
-    key: "purdetail",
-    align: "left",
-    render: (_, rec) => rec.stname,
+    dataIndex: "stname",
+    key: "stname", 
+    editable: true,
+    required: true,
+    align: "left", 
+    type:'select-stcode',    
   },
   {
     title: "ราคาขาย",
@@ -169,15 +171,11 @@ export const productColumn = ({ handleRemove }, optionsItems) => [
   {
     title: "หน่วยสินค้า",
     dataIndex: "unit",
-    key: "unit",
-    align: "right",
+    key: "unit", 
+    align: "right", 
     width: "8%",
     editable: true,
-    type: "select",
-    optionsItems,
-    render: (v) => {
-      return optionsItems?.find((f) => f.value === v)?.label;
-    },
+    type:'select',    
   },
   // {
   //   title: "Hightlight ราคา",
@@ -213,9 +211,10 @@ export const productColumn = ({ handleRemove }, optionsItems) => [
 export const columnsParametersEditable = (
   handleEditCell,
   optionsItems,
+  optionsStcode,
   { handleRemove }
 ) => {
-  const col = productColumn({ handleRemove }, optionsItems);
+  const col = productColumn({ handleRemove });
   return col.map((col, ind) => {
     if (!col.editable) return col;
 
@@ -232,6 +231,7 @@ export const columnsParametersEditable = (
           type: col?.type || "input",
           handleEditCell,
           optionsItems,
+          optionsStcode
         };
       },
     };
