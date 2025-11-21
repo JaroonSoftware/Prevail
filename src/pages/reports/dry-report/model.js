@@ -27,6 +27,13 @@ export const columns = ({ handleCheck, handleSelectChange }) => [
     align: "left",
   },
   {
+    title: "รหัสลูกค้า",
+    dataIndex: "cuscode",
+    key: "cuscode",
+    width: 90,
+    align: "left",
+  },
+  {
     title: "ชื่อสินค้า",
     dataIndex: "stname",
     key: "stname",

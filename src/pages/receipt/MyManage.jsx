@@ -385,26 +385,26 @@ function ReceiptManage() {
     </>
   );
 
-  const SectionPayment = (
-    <>
-      <Flex className="width-100" vertical gap={4}>
-        <Table
-          title={() => TitleTablePayment}
-          components={componentsEditable}
-          rowClassName={() => "editable-row"}
-          bordered
-          dataSource={listPayment}
-          columns={prodcolumns}
-          pagination={false}
-          rowKey="ivcode"
-          scroll={{ x: "max-content" }}
-          locale={{
-            emptyText: <span>No data available, please add some data.</span>,
-          }}
-        />
-      </Flex>
-    </>
-  );
+  // const SectionPayment = (
+  //   <>
+  //     <Flex className="width-100" vertical gap={4}>
+  //       <Table
+  //         title={() => TitleTablePayment}
+  //         components={componentsEditable}
+  //         rowClassName={() => "editable-row"}
+  //         bordered
+  //         dataSource={listPayment}
+  //         columns={prodcolumns}
+  //         pagination={false}
+  //         rowKey="ivcode"
+  //         scroll={{ x: "max-content" }}
+  //         locale={{
+  //           emptyText: <span>No data available, please add some data.</span>,
+  //         }}
+  //       />
+  //     </Flex>
+  //   </>
+  // );
 
   const TitleTable = (
     <Flex className="width-100" align="center">
@@ -655,7 +655,7 @@ function ReceiptManage() {
                   </Divider>
                   <Card style={cardStyle}>{SectionProduct}</Card>
                 </Col>
-                <Col
+                {/* <Col
                   xs={24}
                   sm={24}
                   md={24}
@@ -673,7 +673,7 @@ function ReceiptManage() {
                     บันทึกการชำระเงิน{" "}
                   </Divider>
                   <Card style={cardStyle}>{SectionPayment}</Card>
-                </Col>
+                </Col> */}
                 <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
                   <Divider orientation="left" className="!mb-3 !mt-1">
                     {" "}
