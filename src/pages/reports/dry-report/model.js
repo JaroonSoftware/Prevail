@@ -8,7 +8,7 @@ export const columns = ({ handleCheck, handleSelectChange }) => [
     title: "ลำดับ",
     dataIndex: "ind",
     key: "ind",
-    width: 60,
+    width: 40,
     render: (im, rc, index) => <>{index + 1}</>,
   },
   {
@@ -18,6 +18,21 @@ export const columns = ({ handleCheck, handleSelectChange }) => [
     width: 90,
     align: "right",
     className: "!pe-3",
+  },
+  {
+    title: "วันที่สั่งขาย",
+    dataIndex: "sodate",
+    key: "sodate",
+    align: "center",
+    width: 100,
+    render: (_, rec) => (
+      <div className="flex items-center gap-1">
+        {/* <IoMdTime /> */}
+        <Typography.Text>
+          {dayjs(rec.sodate).format("DD/MM/YYYY")}
+        </Typography.Text>
+      </div>
+    ),
   },
   {
     title: "รหัสสินค้า",

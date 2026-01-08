@@ -10,7 +10,7 @@ import {
   Typography,
   message,
 } from "antd";
-import { Card, Col, Divider, Flex, Row, Space,  } from "antd";
+import { Card, Col, Divider, Flex, Row, Space } from "antd";
 
 import OptionService from "../../service/Options.service";
 import SOService from "../../service/SO.service";
@@ -69,16 +69,31 @@ function MyManage() {
         const {
           data: { header, detail },
         } = res.data;
-        const { socode, sodate,deldate } = header;
+        const { socode, sodate, deldate } = header;
         setFormDetail(header);
-        setListDetail(detail.map((d,i)=>({...d,_rid:i+1})));
+        setListDetail(detail.map((d, i) => ({ ...d, _rid: i + 1 })));
         setSOCode(socode);
-        form.setFieldsValue({ ...header, sodate: dayjs(sodate), deldate: dayjs(deldate) });
+        form.setFieldsValue({
+          ...header,
+          sodate: dayjs(sodate),
+          deldate: dayjs(deldate),
+        });
         getstcodeList(header?.cuscode);
         // setTimeout( () => {  handleCalculatePrice(head?.valid_price_until, head?.dated_price_until) }, 200);
         // handleChoosedCustomer(head);
       } else {
-        setListDetail([{_rid:1,stcode:"",stname:"",qty:1,price:0,unit:"",discount:0,vat:0}]);
+        setListDetail([
+          {
+            _rid: 1,
+            stcode: "",
+            stname: "",
+            qty: 1,
+            price: 0,
+            unit: "",
+            discount: 0,
+            vat: 0,
+          },
+        ]);
         const { data: code } = (
           await soservice.code().catch((e) => {
             message.error("get SaleOrder code fail.");
@@ -95,15 +110,12 @@ function MyManage() {
         setFormDetail(ininteial_value);
         form.setFieldsValue(ininteial_value);
         getstcodeList("");
-
       }
       const [unitOprionRes] = await Promise.all([
         opservice.optionsUnit({ p: "unit-option" }),
       ]);
       // console.log(unitOprionRes.data.data)
       setUnitOption(unitOprionRes.data.data);
-
-      
     };
 
     initial();
@@ -116,11 +128,10 @@ function MyManage() {
 
   const getstcodeList = async (cuscode = "") => {
     const [stcodeOptionRes] = await Promise.all([
-        opservice
-        .optionsItems({ p: "cl" ,cuscode:cuscode})
-      ]);
-      setStcodeOption(stcodeOptionRes.data.data); // TO DO get stcode option
-  }
+      opservice.optionsItems({ p: "cl", cuscode: cuscode }),
+    ]);
+    setStcodeOption(stcodeOptionRes.data.data); // TO DO get stcode option
+  };
 
   const handleSummaryPrice = () => {
     const newData = [...listDetail];
@@ -128,9 +139,8 @@ function MyManage() {
     const total_price = newData.reduce(
       (a, v) =>
         (a +=
-          Number(v?.qty || 0) *
-          Number(v?.price || 0) + (Number(v?.qty || 0) *
-          Number(v?.price || 0)*(v?.vat/100)) ),
+          Number(v?.qty || 0) * Number(v?.price || 0) +
+          Number(v?.qty || 0) * Number(v?.price || 0) * (v?.vat / 100)),
       0
     );
     // const discount = form.getFieldValue("discount");
@@ -196,15 +206,16 @@ function MyManage() {
   // };
 
   const handleConfirm = () => {
-    
-    let errormessage = '';
+    let errormessage = "";
 
     form
       .validateFields()
       .then((v) => {
-        if (listDetail.length < 1) throw errormessage="กรุณาเพิ่มรายการสินค้า";
+        if (listDetail.length < 1)
+          throw (errormessage = "กรุณาเพิ่มรายการสินค้า");
 
-        if (listDetail.some((ld) => !ld.stcode || ld.stcode === "")) throw errormessage="กรุณาเลือกสินค้าที่ต้องการขายให้ครบถ้วน";
+        if (listDetail.some((ld) => !ld.stcode || ld.stcode === ""))
+          throw (errormessage = "กรุณาเลือกสินค้าที่ต้องการขายให้ครบถ้วน");
 
         const header = {
           ...formDetail,
@@ -230,8 +241,8 @@ function MyManage() {
           });
       })
       .catch((err) => {
-        if(errormessage==='')
-          errormessage="กรุณาเลือกลูกค้า ก่อนทำการบันทึกข้อมูล";
+        if (errormessage === "")
+          errormessage = "กรุณาเลือกลูกค้า ก่อนทำการบันทึกข้อมูล";
         Modal.error({
           title: "ข้อผิดพลาด",
           content: errormessage,
@@ -317,10 +328,33 @@ function MyManage() {
     setListDetail([...newData(row)]);
   };
 
+  const handleAddRow = () => {
+    // alert("เพิ่มสินค้า");
+    setListDetail((state) => [
+      ...state,
+      {
+        _rid: state.length + 1,
+        stcode: "",
+        stname: "",
+        qty: 1,
+        price: 0,
+        unit: "",
+        discount: 0,
+        vat: 0,
+      },
+    ]);
+  };
+
   /** setting column table */
-  const prodcolumns = columnsParametersEditable(handleEditCell, unitOption,stcodeOption, {
-    handleRemove,
-  });
+  const prodcolumns = columnsParametersEditable(
+    handleEditCell,
+    unitOption,
+    stcodeOption,
+    {
+      handleRemove,
+      handleAddRow,
+    }
+  );
 
   const SectionCustomer = (
     <>
@@ -406,7 +440,7 @@ function MyManage() {
             icon={<LuPackagePlus style={{ fontSize: "1.2rem" }} />}
             className="bn-center justify-center bn-primary-outline"
             onClick={() => {
-             setListDetail((state) => [...state, {_rid:state.length+1,stcode:"",stname:"",qty:1,price:0,unit:"",discount:0,vat:0}]);
+              handleAddRow();
             }}
           >
             เพิ่มสินค้า

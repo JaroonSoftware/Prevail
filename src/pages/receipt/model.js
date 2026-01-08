@@ -157,7 +157,7 @@ export const reViewColumns = [
     align: "right",
     width: 160,
     className: "!pe-3",
-    render: (v) => formatMoney(Number(v || 0), 2),
+    render: (_, rec) => <>{ comma( (Number(rec?.total_price ||  0) - Number(rec?.discount ||  0) ),  2, 2 )}</>,
   },
 ];
 
@@ -241,7 +241,7 @@ export const productColumn = ({handleRemove}) => [
     render: (_, rec) => <>{ comma( Number(rec?.total_price ||  0),  2, 2 )}</>,
   },
   {
-    title: "ส่วนลด(%)",
+    title: "ส่วนลด",
     dataIndex: "discount",
     key: "discount",
     width: "10%",
@@ -258,7 +258,7 @@ export const productColumn = ({handleRemove}) => [
     width: "10%",
     align: "right",
     className: "!pe-3",
-    render: (_, rec) => <>{ comma( calTotalDiscount(rec),  2, 2 )}</>,
+    render: (_, rec) => <>{ comma( (Number(rec?.total_price ||  0) - Number(rec?.discount ||  0)),  2, 2 )}</>,
   },
   {
     title: "ตัวเลือก",
@@ -271,7 +271,7 @@ export const productColumn = ({handleRemove}) => [
   },
 ];
 
-export const columnsParametersEditable = (handleEditCell,optionsItems,{handleRemove} ) =>{
+export const columnsParametersEditable = (handleEditCell,{handleRemove} ) =>{
   const col = productColumn({handleRemove});
   return col.map((col, ind) => {
       if (!col.editable) return col; 
@@ -279,16 +279,13 @@ export const columnsParametersEditable = (handleEditCell,optionsItems,{handleRem
       return {
           ...col,
           onCell: (record) => {
-            // console.log(record);
             return {
               record,
               editable: col.editable,
               dataIndex: col.dataIndex,
               title: col.title,
-              // required: !!col?.required,
               type: col?.type || "input",
               handleEditCell,
-              optionsItems,
             }
           },
       };

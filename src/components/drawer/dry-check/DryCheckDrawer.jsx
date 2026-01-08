@@ -13,7 +13,7 @@ import { notEnter } from "../../../utils/util";
 import dayjs from "dayjs";
 import { SaveFilled, ArrowLeftOutlined } from "@ant-design/icons";
 
-export default function DryCheckDrawer({
+export default function PaymentDrawer({
   data,
   submit,
   name = "form-data",

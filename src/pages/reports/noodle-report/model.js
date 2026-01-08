@@ -20,6 +20,21 @@ export const columns = ({ handleCheck, handleSelectChange }) => [
     className: "!pe-3",
   },
   {
+      title: "วันที่สั่งขาย",
+      dataIndex: "sodate",
+      key: "sodate",
+      align: "center",
+      width: 100,
+      render: (_, rec) => (
+        <div className="flex items-center gap-1">
+          {/* <IoMdTime /> */}
+          <Typography.Text>
+            {dayjs(rec.sodate).format("DD/MM/YYYY")}
+          </Typography.Text>
+        </div>
+      ),
+    },
+  {
     title: "รหัสสินค้า",
     dataIndex: "stcode",
     key: "stcode",

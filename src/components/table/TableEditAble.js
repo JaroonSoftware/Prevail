@@ -246,13 +246,52 @@ export const EditableCell = ({
 
   const handleEditorKeyDown = (e) => {
     if (!editable || readonly) return;
-    // Treat Enter and Tab identically: move right (or next row first cell)
+
+    // Enter หรือ Tab: จะบันทึก แล้วขยับไปขวา หรือถ้าเป็นช่องแบบ so-last ในแถวสุดท้าย ให้เพิ่มแถวใหม่
     if (e.key === "Enter" || e.key === "Tab") {
       e.preventDefault();
       pendingNavRef.current = "right";
+
+      const td = tdRef.current;
+      const tr = td?.closest("tr");
+      const isLastRow = !tr?.nextElementSibling; // ถ้าไม่มี tr ถัดไป = แถวสุดท้าย
+
+      // ถ้า column นี้เป็น trigger (so-last) และเป็นแถวสุดท้าย และ parent มี handleAddRow
+      if (type === "so-last" && isLastRow && childProps?.handleAddRow) {
+        // save แล้วเพิ่มแถวใหม่ จากนั้นเลือกเซลล์แรกของแถวใหม่
+        save().then(() => {
+          // ให้เวลา React อัพเดท state แล้วค่อยเพิ่มแถว (เล็กน้อย)
+          setTimeout(() => {
+            try {
+              childProps.handleAddRow();
+            } catch (err) {
+              console.warn("handleAddRow error", err);
+            }
+            // หลังเพิ่มเสร็จ ให้ focus เซลล์แรก editable ของแถวใหม่
+            setTimeout(() => {
+              const table = tr?.closest("table");
+              const newLastTr = table?.querySelector("tbody tr:last-child");
+              if (newLastTr) {
+                const firstEditableTd = Array.from(newLastTr.children).find(
+                  (c) => c.getAttribute?.("data-editable") === "1"
+                );
+                if (firstEditableTd) {
+                  const clickable = firstEditableTd.querySelector(".editable-cell-value-wrap");
+                  (clickable || firstEditableTd).click();
+                  setTimeout(() => focusEditor(firstEditableTd), 50);
+                }
+              }
+            }, 80);
+          }, 40);
+        });
+        return;
+      }
+
+      // ปกติ: บันทึก และให้ behavior เดิม (moveToNeighbor triggered in save)
       save();
       return;
     }
+
     if (e.key === "Escape") {
       e.preventDefault();
       form.setFieldsValue({ [dataIndex]: lastValueRef.current });
@@ -400,6 +439,28 @@ export const EditableCell = ({
               onSelect={(data,value)=>selectStcode(data,value)}
               onBlur={save}
               disabled={readonly}
+            />
+          )}
+          {type === "so-last" && (
+            <InputNumber
+              placeholder="กรอกข้อมูล"
+              ref={inputRef}
+              onKeyDown={(e) => {
+                if (childProps?.onKeyDown) childProps.onKeyDown(e);
+                handleEditorKeyDown(e);
+              }}
+              onBlur={save}
+              style={{
+                height: 32,
+                minWidth: "none",
+                textAlign: "end",
+                ...restProps.style,
+              }}
+              className="width-100 input-30 !text-end"
+              autoComplete="off"
+              readOnly={readonly}
+              controls={false}
+              {...childProps}
             />
           )}
         </>

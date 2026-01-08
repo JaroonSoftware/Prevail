@@ -3,20 +3,37 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
-import { Row, Col, Space, Descriptions, Table, Collapse,Empty } from "antd";
-import { Typography, Button, message } from "antd";
-import { ArrowLeftOutlined, PrinterOutlined } from "@ant-design/icons";
+import {
+  Row,
+  Col,
+  Space,
+  Descriptions,
+  Table,
+  Collapse,
+  Empty,
+  Drawer,
+  Flex,Typography, Button, message } from "antd";
+import {
+  ArrowLeftOutlined,
+  PrinterOutlined,
+  DollarOutlined,
+  EditOutlined
+} from "@ant-design/icons";
 import dayjs from "dayjs";
 
 import ReceiptService from "../../service/Receipt.service";
+import PaymentService from "../../service/Payment.service";
 
 import { TagReceiptStatus } from "../../components/badge-and-tag/";
 import { formatMoney } from "../../utils/util";
 import { reViewColumns, rePaymentViewColumns } from "./model";
 
+import PaymentDrawer from "../../components/drawer/payment/PaymentDrawer.jsx";
+
 import "./MyPage.css";
 
 const reservice = ReceiptService();
+const payservice = PaymentService();
 
 export default function ReceiptView() {
   const navigate = useNavigate();
@@ -28,6 +45,9 @@ export default function ReceiptView() {
   const [detailItems, setDetailItems] = useState([]);
   const [lastItems, setLastItems] = useState([]);
   const [reCode, setReCode] = useState(null);
+
+  const [paymentDrawer, setPaymentDrawer] = useState(false);
+  const [detailData, setDetailData] = useState([]);
 
   // Add: state for payment section
   const [paymentItems, setPaymentItems] = useState([]);
@@ -45,6 +65,7 @@ export default function ReceiptView() {
 
         buildMasterItems(header || {});
         buildDetailItems(detail || []);
+        setDetailData(detail || []);
 
         // Add: build payments from API (or empty list)
         const payments = Array.isArray(header?.payments) ? header.payments : [];
@@ -146,9 +167,7 @@ export default function ReceiptView() {
         size="small"
         summary={(pageData) => {
           const totalNet = (pageData || []).reduce((sum, r) => {
-            const base = Number(r?.qty || 0) * Number(r?.price || 0);
-            const net = base * (1 + Number(r?.vat || 0) / 100);
-            return sum + net;
+            return sum + (Number(r?.total_price || 0) - Number(r?.discount || 0));
           }, 0);
 
           return (
@@ -194,7 +213,16 @@ export default function ReceiptView() {
         scroll={{ x: "max-content" }}
         size="small"
         locale={{
-          emptyText: <Empty style={{margin:"30px"}} description={<Typography.Text type="secondary">รอการชำระเงิน</Typography.Text>} />,
+          emptyText: (
+            <Empty
+              style={{ margin: "30px" }}
+              description={
+                <Typography.Text type="secondary">
+                  รอการชำระเงิน
+                </Typography.Text>
+              }
+            />
+          ),
         }}
         summary={(pageData) => {
           const totalPaid = (pageData || []).reduce(
@@ -233,6 +261,14 @@ export default function ReceiptView() {
     setPaymentItems(d);
   };
 
+  const handlePayment = () => {
+    setPaymentDrawer(true);
+    // if (!reCode) return;
+    // navigate("/receipt/payment", {
+    //   state: { config: { code: reCode } },
+    // });
+  };
+
   const handlePrint = () => {
     if (!reCode) return;
     const url = `/re-print/${reCode}`;
@@ -267,71 +303,141 @@ export default function ReceiptView() {
       style={{ display: "flex", justifyContent: "end" }}
     >
       <Button
+        icon={<DollarOutlined />}
+        onClick={handlePayment}
+        className="bn-center bn-success-outline"
+      >
+        ชำระเงิน
+      </Button>
+      <Button
         icon={<PrinterOutlined />}
         onClick={handlePrint}
-        className="bn-center bn-primary-outline"
+        className="bn-center bn-warning-outline"
       >
         Print Receipt
       </Button>
     </Space>
   );
 
+  const handleConfirmPayment = (res) => {
+
+     setPaymentDrawer(false)
+    // let errormessage = "";
+
+    // form
+    //   .validateFields()
+    //   .then((v) => {
+    //     if (listDetail.length < 1)
+    //       throw (errormessage = "กรุณาเพิ่มรายการสินค้า");
+
+    //     if (listDetail.some((ld) => !ld.stcode || ld.stcode === ""))
+    //       throw (errormessage = "กรุณาเลือกสินค้าที่ต้องการขายให้ครบถ้วน");
+
+    //     const header = {
+    //       ...formDetail,
+    //       sodate: dayjs(form.getFieldValue("sodate")).format("YYYY-MM-DD"),
+    //       deldate: dayjs(form.getFieldValue("deldate")).format("YYYY-MM-DD"),
+    //       remark: form.getFieldValue("remark"),
+    //     };
+    //     const detail = listDetail;
+
+        const parm = { res };
+        console.log(parm);
+        payservice.create(parm)
+          .then((r) => {
+            handleClose().then((r) => {
+              message.success("สร้างใบเสร็จรับเงินสำเร็จ.");
+            });
+          })
+          .catch((err) => {
+            message.error("Error สร้างใบเสร็จรับเงินไม่สำเร็จ.");
+            console.warn(err);
+          });
+  };
+
   return (
-    <Space
-      direction="vertical"
-      size="middle"
-      style={{
-        display: "flex",
-        position: "relative",
-        paddingInline: "1.34rem",
-      }}
-      className="re-view"
-    >
-      <Row
-        gutter={[{ xs: 32, sm: 32, md: 32, lg: 12, xl: 12 }, 8]}
-        className="m-0"
+    <div>
+      <Space
+        direction="vertical"
+        size="middle"
+        style={{
+          display: "flex",
+          position: "relative",
+          paddingInline: "1.34rem",
+        }}
+        className="re-view"
       >
-        <Col span={12} style={{ paddingInline: "0px" }}>
-          {ButtonActionLeft}
-        </Col>
-        <Col span={12} style={{ paddingInline: "0px" }}>
-          {ButtonActionRight}
-        </Col>
-      </Row>
+        <Row
+          gutter={[{ xs: 32, sm: 32, md: 32, lg: 12, xl: 12 }, 8]}
+          className="m-0"
+        >
+          <Col span={12} style={{ paddingInline: "0px" }}>
+            {ButtonActionLeft}
+          </Col>
+          <Col span={12} style={{ paddingInline: "0px" }}>
+            {ButtonActionRight}
+          </Col>
+        </Row>
 
-      <Descriptions
-        bordered
-        column={{ xs: 1, sm: 2, md: 3, lg: 3, xl: 3, xxl: 3 }}
-        items={masterItems}
-      />
+        <Descriptions
+          bordered
+          column={{ xs: 1, sm: 2, md: 3, lg: 3, xl: 3, xxl: 3 }}
+          items={masterItems}
+        />
 
-      {/* Fix: use actual keys so the panel opens */}
-      <Collapse
-        size="large"
-        className="view-collapse-sp"
-        collapsible="disabled"
-        activeKey={detailItems.map((p) => p.key)}
-        bordered={false}
-        style={{ backgroundColor: "transparent" }}
-        items={detailItems}
-      />
+        {/* Fix: use actual keys so the panel opens */}
+        <Collapse
+          size="large"
+          className="view-collapse-sp"
+          collapsible="disabled"
+          activeKey={detailItems.map((p) => p.key)}
+          bordered={false}
+          style={{ backgroundColor: "transparent" }}
+          items={detailItems}
+        />
 
-      {/* Add: Payment records section with empty message */}
-      <Collapse
-        size="large"
-        className="view-collapse-sp"
-        collapsible="disabled"
-        activeKey={paymentItems.map((p) => p.key)}
-        bordered={false}
-        style={{ backgroundColor: "transparent" }}
-        items={paymentItems}
-      />
+        {/* Add: Payment records section with empty message */}
+        <Collapse
+          size="large"
+          className="view-collapse-sp"
+          collapsible="disabled"
+          activeKey={paymentItems.map((p) => p.key)}
+          bordered={false}
+          style={{ backgroundColor: "transparent" }}
+          items={paymentItems}
+        />
 
-      <Descriptions
-        bordered
-        column={{ xs: 1, sm: 2, md: 3, lg: 3, xl: 3, xxl: 3 }}
-        items={lastItems}
-      />
-    </Space>
+        <Descriptions
+          bordered
+          column={{ xs: 1, sm: 2, md: 3, lg: 3, xl: 3, xxl: 3 }}
+          items={lastItems}
+        />
+      </Space>
+      {!!paymentDrawer && (
+        <Drawer
+          title={
+            <Flex align="center" gap={4}>
+              ยืนยันการชำระเงิน <DollarOutlined style={{ fontSize: "1.2rem" }} />
+            </Flex>
+          }
+          onClose={() => setPaymentDrawer(false)}
+          open={paymentDrawer}
+          // footer={adjust_action}
+          width={868}
+          className="responsive-drawer"
+          styles={{
+            body: { paddingBlock: 8, paddingLeft: 18, paddingRight: 8 },
+          }}
+        >
+          {paymentDrawer && (
+            <PaymentDrawer
+              data={detailData}
+              submit={(data) => handleConfirmPayment(data)}
+              close={() => setPaymentDrawer(false)}
+            />
+          )}
+        </Drawer>
+      )}
+    </div>
   );
 }

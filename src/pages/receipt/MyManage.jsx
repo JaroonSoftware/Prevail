@@ -55,17 +55,12 @@ function ReceiptManage() {
   const [openCustomers, setOpenCustomers] = useState(false);
   const [openBilling, setOpenBilling] = useState(false);
   const [openPayment, setOpenPayment] = useState(false);
-  
+
   /** Receipt state */
   const [reCode, setRECode] = useState(null);
 
   /** Detail Data State */
   const [listDetail, setListDetail] = useState([]);
-  const [listPayment,
-    //  setListPayment
-    ] = useState([]);
-  
-  const [unitOption, setUnitOption] = useState([]);
 
   const [formDetail, setFormDetail] = useState(DEFALUT_CHECK_RECEIPT);
 
@@ -110,11 +105,6 @@ function ReceiptManage() {
 
         setFormDetail(ininteial_value);
 
-        const [unitOprionRes] = await Promise.all([
-          opservice.optionsUnit({ p: "unit-option" }),
-        ]);
-        // console.log(unitOprionRes.data.data)
-        setUnitOption(unitOprionRes.data.data);
       }
     };
 
@@ -128,29 +118,25 @@ function ReceiptManage() {
 
   const handleSummaryPrice = () => {
     const newData = [...listDetail];
-    
+
     const total_price = newData.reduce(
-      (a, v) =>
-        a +=
-          Number(v?.total_price || 0) - Number(v?.discount || 0),
+      (a, v) => (a += Number(v?.total_price || 0)),
       0
     );
 
-    const balance = newData.reduce(
-      (a, v) =>
-        a +=
-          Number(v.qty || 0) *
-          Number(v?.price || 0) *
-          (1 - Number(v?.discount || 0) / 100)+(Number(v.qty || 0) *
-          Number(v?.price || 0) *
-          (1 - Number(v?.discount || 0) / 100)*(v.vat/100)),
+
+    const discount = newData.reduce(
+      (a, v) => (a += Number(v?.discount || 0)),
       0
     );
+    const grand_total_price = total_price - discount;
+
 
     setFormDetail(() => ({
       ...formDetail,
       total_price,
-      balance,
+      discount,
+      grand_total_price,
     }));
     // console.log(formDetail)
   };
@@ -203,9 +189,8 @@ function ReceiptManage() {
     form.setFieldsValue({ ...fvalue, ...customers });
     setListDetail([]);
   };
-  
-  const handleChoosedBilling = async (val) => {
 
+  const handleChoosedBilling = async (val) => {
     const res = await blservice.getlist(val);
     const {
       data: { header },
@@ -213,12 +198,11 @@ function ReceiptManage() {
     setListDetail(header);
     handleSummaryPrice();
     // console.log(header.balance)
-    
   };
 
   const handleChoosedPayment = async (val) => {
     handleSummaryPrice();
-    console.log(val)
+    console.log(val);
   };
 
   const handleConfirm = () => {
@@ -230,13 +214,15 @@ function ReceiptManage() {
           recode: reCode,
           redate: dayjs(form.getFieldValue("redate")).format("YYYY-MM-DD"),
           remark: form.getFieldValue("remark"),
-          total_price:formDetail.total_price,
+          total_price: formDetail.total_price,
+          discount: formDetail.discount,
+          grand_total_price: formDetail.grand_total_price,
         };
 
         // console.log(formDetail)
         const detail = listDetail;
 
-        const parm = { header,detail };
+        const parm = { header, detail };
         // console.log(parm)
         const actions =
           config?.action !== "create" ? reservice.update : reservice.create;
@@ -287,7 +273,7 @@ function ReceiptManage() {
           <RiDeleteBin5Line style={{ fontSize: "1rem", marginTop: "3px" }} />
         }
         onClick={() => handleDelete(record?.ivcode)}
-        disabled={!record?.ivcode||(config.action!=='create')}
+        disabled={!record?.ivcode || config.action !== "create"}
       />
     ) : null;
   };
@@ -312,7 +298,7 @@ function ReceiptManage() {
   };
 
   /** setting column table */
-  const prodcolumns = columnsParametersEditable(handleEditCell, unitOption, {
+  const prodcolumns = columnsParametersEditable(handleEditCell,  {
     handleRemove,
   });
 
@@ -369,7 +355,11 @@ function ReceiptManage() {
           >
             <Form.Item
               name="price"
-              label={"( ยอดคงเหลือ " + formatMoney(formDetail.balance, 2, 2) + " บาท)"}
+              label={
+                "( ยอดคงเหลือ " +
+                formatMoney(formDetail.balance, 2, 2) +
+                " บาท)"
+              }
               // className="!mb-1"
             >
               <InputNumber
@@ -487,6 +477,48 @@ function ReceiptManage() {
                         align="end"
                         className="!pe-4"
                       >
+                        Total
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell
+                        className="!pe-4 text-end border-right-0"
+                        style={{ borderRigth: "0px solid" }}
+                      >
+                        <Typography.Text type="danger">
+                          {formatMoney(Number(formDetail?.grand_total_price || 0))}
+                        </Typography.Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>Baht</Table.Summary.Cell>
+                    </Table.Summary.Row>
+                    {/* <Table.Summary.Row>
+                      <Table.Summary.Cell
+                        index={0}
+                        colSpan={4}
+                      ></Table.Summary.Cell>
+                      <Table.Summary.Cell
+                        index={4}
+                        align="end"
+                        className="!pe-4"
+                      >
+                        ส่วนลด
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell
+                        className="!pe-4 text-end"
+                        style={{ borderRigth: "0px solid" }}
+                      >
+                        {formatMoney(Number(formDetail?.discount || 0))}
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>Baht</Table.Summary.Cell>
+                    </Table.Summary.Row>
+                    <Table.Summary.Row>
+                      <Table.Summary.Cell
+                        index={0}
+                        colSpan={4}
+                      ></Table.Summary.Cell>
+                      <Table.Summary.Cell
+                        index={4}
+                        align="end"
+                        className="!pe-4"
+                      >
                         Grand Total
                       </Table.Summary.Cell>
                       <Table.Summary.Cell
@@ -494,13 +526,13 @@ function ReceiptManage() {
                         style={{ borderRigth: "0px solid" }}
                       >
                         <Typography.Text type="danger">
-                          {formatMoney(Number(formDetail?.total_price || 0), 2)}
+                          {formatMoney(Number(formDetail?.grand_total_price || 0), 2)}
                         </Typography.Text>
                       </Table.Summary.Cell>
                       <Table.Summary.Cell className="!pe-4 text-end">
                         Baht
                       </Table.Summary.Cell>
-                    </Table.Summary.Row>
+                    </Table.Summary.Row> */}
                   </>
                 )}
               </>
@@ -709,7 +741,7 @@ function ReceiptManage() {
         ></ModalBilling>
       )}
 
-    {openPayment && (
+      {openPayment && (
         <ModalPayment
           show={openPayment}
           close={() => setOpenPayment(false)}

@@ -276,7 +276,7 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
     className: "!pe-3",
     editable: true,
     required: true,
-    type:'number',
+    type: 'so-last',
   },  
   {
     title: "ราคารวมสุทธิ",
@@ -298,30 +298,31 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
   },
 ];
 
-export const columnsParametersEditable = (handleEditCell,optionsItems,optionsStcode,{handleRemove} ) =>{
-  const col = productColumn({handleRemove});
-  return col.map((col, ind) => {
-      if (!col.editable) return col; 
-      
-      return {
-          ...col,
-          onCell: (record) => {
-            // console.log(record);
-            return {
-              record,
-              editable: col.editable,
-              dataIndex: col.dataIndex,
-              title: col.title,
-              // required: !!col?.required,
-              type: col?.type || "input",
-              handleEditCell,
-              optionsItems,
-              optionsStcode
-            }
+export const columnsParametersEditable = (handleEditCell, optionsItems, optionsStcode, { handleRemove, handleAddRow }) => {
+  const col = productColumn({ handleRemove });
+  return col.map((colItem) => {
+    if (!colItem.editable) return colItem;
+
+    return {
+      ...colItem,
+      onCell: (record) => {
+        return {
+          record,
+          editable: colItem.editable,
+          dataIndex: colItem.dataIndex,
+          title: colItem.title,
+          type: colItem?.type || "input",
+          handleEditCell,
+          optionsItems,
+          optionsStcode,
+          childProps: {
+            handleAddRow, // ส่งไปให้ EditableCell ผ่าน childProps
           },
-      };
-  }); 
-}
+        };
+      },
+    };
+  });
+};
 export const soForm = {
   socode: null,
   sodate: null,
