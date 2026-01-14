@@ -1,4 +1,4 @@
-import { Button, Space } from "antd"; 
+import { Button, Space,Flex,Typography } from "antd"; 
 // import { Typography } from "antd"; 
 // import { Popconfirm, Button } from "antd";
 import { Tooltip,Badge } from "antd";
@@ -172,34 +172,48 @@ export const rePaymentViewColumns = [
   },
   {
     title: "ธนาคาร",
-    dataIndex: "bank_name_th",
-    key: "bank_name_th",
+    dataIndex: "bank_name",
+    key: "bank_name",
     align: "left",
     // Fallbacks if the API provides a different shape
-    render: (_, rec) => rec?.bank_name_th || rec?.bank_name || rec?.bank || "-",
+    render: (_, val) => <>
+      <Flex align='center' gap={8}>
+          <i className={`bank bank-${val.bank_code} shadow huge`} style={{height:30, width:30}}></i>
+          <Flex align='start' gap={1} vertical>
+              {/* <Typography.Text ellipsis style={{ fontSize: 13 }}>{v.thai_name}</Typography.Text>  */}
+              <Typography.Text ellipsis={true} style={{ fontSize: 'clamp(10px, .9vw, 14px)', }}>{val.bank_name}</Typography.Text> 
+          </Flex>
+      </Flex>
+    </>,
   },
   {
-    title: "เลขที่บัญชี",
-    dataIndex: "acc_no",
-    key: "acc_no",
+    title: "วิธีชำระเงิน",
+    dataIndex: "payment_type",
+    key: "payment_type",
+    align: "left",
+  },
+  {
+    title: "เลขอ้างอิง",
+    dataIndex: "reference_no",
+    key: "reference_no",
     align: "left",
     width: 160,
   },
   {
-    title: "ชื่อบัญชี",
-    dataIndex: "acc_name",
-    key: "acc_name",
+    title: "สาขา",
+    dataIndex: "branch",
+    key: "branch",
     align: "left",
   },
   {
     title: "จำนวนเงิน",
-    dataIndex: "amount",
-    key: "amount",
+    dataIndex: "paid_amount",
+    key: "paid_amount",
     align: "right",
     width: 160,
     className: "!pe-3",
     render: (v) => formatMoney(Number(v || 0), 2),
-  },
+  },  
   {
     title: "หมายเหตุ",
     dataIndex: "remark",

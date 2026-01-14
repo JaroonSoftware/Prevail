@@ -206,9 +206,21 @@ try {
         }
         $detail = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        $sql = "SELECT a.paydate,a.recode,a.paid_amount, a.payment_type,a.bank_code,a.bank_name,a.reference_no,a.branch,a.remark ";
+        $sql .= " FROM `receipt_payment` as a   ";
+        $sql .= " where a.recode = :code";
+
+        $stmt = $conn->prepare($sql);
+        if (!$stmt->execute(['code' => $code])) {
+            $error = $conn->errorInfo();
+            http_response_code(404);
+            throw new PDOException("Geting data error => $error");
+        }
+        $payment = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
         $conn->commit();
         http_response_code(200);
-        echo json_encode(array('status' => 1, 'data' => array("header" => $header, "detail" => $detail)));
+        echo json_encode(array('status' => 1, 'data' => array("header" => $header, "detail" => $detail, "payment" => $payment)));
     }
 } catch (PDOException $e) {
     $conn->rollback();

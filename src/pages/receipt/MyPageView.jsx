@@ -48,6 +48,7 @@ export default function ReceiptView() {
 
   const [paymentDrawer, setPaymentDrawer] = useState(false);
   const [detailData, setDetailData] = useState([]);
+  const [paymentData, setPaymentData] = useState([]);
 
   // Add: state for payment section
   const [paymentItems, setPaymentItems] = useState([]);
@@ -58,18 +59,16 @@ export default function ReceiptView() {
       try {
         const res = await reservice.get(config.code);
         // Receipt get() returns { data: { header, detail } }
-        const { header, detail } = res?.data?.data || {};
+        const { header, detail, payment } = res?.data?.data || {};
 
         setMaster(header || {});
         setReCode(header?.recode || "");
 
         buildMasterItems(header || {});
-        buildDetailItems(detail || []);
+        buildDetailItems(detail || {});
+        buildPaymentItems(payment || {});
         setDetailData(detail || []);
-
-        // Add: build payments from API (or empty list)
-        const payments = Array.isArray(header?.payments) ? header.payments : [];
-        buildPaymentItems(payments);
+        setPaymentData(payment || []);
 
         buildLastUpdateInfo(header || {});
       } catch (err) {
@@ -85,7 +84,9 @@ export default function ReceiptView() {
 
   useEffect(() => {
     buildMasterItems(master);
-  }, [master]);
+    buildDetailItems(detailData);
+    buildPaymentItems(paymentData);
+  }, [master,detailData,paymentData]);
 
   const buildMasterItems = (h) => {
     const items = [
@@ -190,7 +191,7 @@ export default function ReceiptView() {
     const d = [
       {
         key: "items",
-        label: "Receipt Items",
+        label: "รายการ",
         children: tableNode,
         disabled: true,
         showArrow: false,
@@ -201,7 +202,7 @@ export default function ReceiptView() {
 
   // Add: Payment records section (view-only) with empty message
   const buildPaymentItems = (payments = []) => {
-    const data = Array.isArray(payments) ? payments : [];
+    const data = Array.isArray(paymentData) ? paymentData : [];
 
     const tableNode = (
       <Table
@@ -226,7 +227,7 @@ export default function ReceiptView() {
         }}
         summary={(pageData) => {
           const totalPaid = (pageData || []).reduce(
-            (sum, r) => sum + Number(r?.amount || 0),
+            (sum, r) => sum + Number(r?.paid_amount || 0),
             0
           );
           // Show summary even when there are no rows? Keep it only when > 0.
@@ -324,25 +325,8 @@ export default function ReceiptView() {
      setPaymentDrawer(false)
     // let errormessage = "";
 
-    // form
-    //   .validateFields()
-    //   .then((v) => {
-    //     if (listDetail.length < 1)
-    //       throw (errormessage = "กรุณาเพิ่มรายการสินค้า");
-
-    //     if (listDetail.some((ld) => !ld.stcode || ld.stcode === ""))
-    //       throw (errormessage = "กรุณาเลือกสินค้าที่ต้องการขายให้ครบถ้วน");
-
-    //     const header = {
-    //       ...formDetail,
-    //       sodate: dayjs(form.getFieldValue("sodate")).format("YYYY-MM-DD"),
-    //       deldate: dayjs(form.getFieldValue("deldate")).format("YYYY-MM-DD"),
-    //       remark: form.getFieldValue("remark"),
-    //     };
-    //     const detail = listDetail;
-
         const parm = { res };
-        console.log(parm);
+        // console.log(parm);
         payservice.create(parm)
           .then((r) => {
             handleClose().then((r) => {
