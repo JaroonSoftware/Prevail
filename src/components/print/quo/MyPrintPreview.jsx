@@ -47,85 +47,47 @@ function POPrintPreview() {
   };
 
   const handleCheckMultiPages = async () => {
-    const limitPage = 920;
+    // Target 100 rows per page across both columns (50 each)
+    const ROWS_PER_PAGE_TOTAL = 100;
+    const ROWS_PER_COLUMN = Math.ceil(ROWS_PER_PAGE_TOTAL / 2);
     return new Promise((r) => {
       const data = document.querySelector("#raw .in-data");
 
-      const table = document.querySelector("#raw .in-data #tb-data");
-      const mtbody = table?.querySelector("tbody");
-      const row = mtbody?.querySelectorAll("tr");
+      const tableLeft = document.querySelector("#raw .in-data #tb-data");
+      const tbodyLeft = tableLeft?.querySelector("tbody");
+      const rowsLeft = Array.from(tbodyLeft?.querySelectorAll("tr") || []);
 
-      const table2 = document.querySelector("#raw .in-data #tb-data2");
-      const mtbody2 = table2?.querySelector("tbody");
-      const row2 = mtbody2?.querySelectorAll("tr");
+      const tableRight = document.querySelector("#raw .in-data #tb-data2");
+      const tbodyRight = tableRight?.querySelector("tbody");
+      const rowsRight = Array.from(tbodyRight?.querySelectorAll("tr") || []);
 
-      const samplesPage = [];
-
-      let hPageCheck = 0;
-      let emlContent = [];
-      const samplesPage2 = [];
-      let hPageCheck2 = 0;
-      let emlContent2 = [];
-      for (let elm of row) {
-        const h = Number(
-          window
-            .getComputedStyle(elm)
-            .getPropertyValue("height")
-            ?.replace("px", "")
-        );
-        if (hPageCheck + h > limitPage) {
-          // console.log( { hPageCheck } );
-          samplesPage.push([...emlContent, elm]);
-          emlContent = [];
-          hPageCheck = 0;
-        } else {
-          hPageCheck += h;
-          emlContent = [...emlContent, elm];
+      const chunk = (arr, size) => {
+        const chunks = [];
+        for (let i = 0; i < arr.length; i += size) {
+          chunks.push(arr.slice(i, i + size));
         }
+        return chunks;
+      };
 
-        // console.log( h, hPageCheck );
-      }
-      if (emlContent.length > 0) samplesPage.push(emlContent);
-      for (let elm2 of row2) {
-        const h = Number(
-          window
-            .getComputedStyle(elm2)
-            .getPropertyValue("height")
-            ?.replace("px", "")
-        );
-        if (hPageCheck2 + h > limitPage) {
-          // console.log( { hPageCheck } );
-          samplesPage2.push([...emlContent2, elm2]);
-          emlContent2 = [];
-          hPageCheck2 = 0;
-        } else {
-          hPageCheck2 += h;
-          emlContent2 = [...emlContent2, elm2];
-        }
+      const pagesLeft = chunk(rowsLeft, ROWS_PER_COLUMN);
+      const pagesRight = chunk(rowsRight, ROWS_PER_COLUMN);
 
-        // console.log( h, hPageCheck );
-      }
-      if (emlContent2.length > 0) samplesPage2.push(emlContent2);
-      console.log(samplesPage);
-      console.log(samplesPage2);
+      const pageCount = Math.max(pagesLeft.length, pagesRight.length);
       const pages = [];
 
-      for (let rind in samplesPage) {
+      for (let i = 0; i < pageCount; i++) {
         const cdata = data.cloneNode(true);
-
         const table = cdata.querySelector("#tb-data");
         const table2 = cdata.querySelector("#tb-data2");
         const tbody = table?.querySelector("tbody");
         const tbody2 = table2?.querySelector("tbody");
-        tbody.innerHTML = `${samplesPage[rind]
-          .map((m) => m.outerHTML)
-          .join("")}`;
 
-        tbody2.innerHTML = `${samplesPage2[rind]
-          .map((m) => m.outerHTML)
-          .join("")}`;
-        console.log(tbody);
-        console.log(tbody2);
+        const leftContent = (pagesLeft[i] || []).map((m) => m.outerHTML).join("");
+        const rightContent = (pagesRight[i] || []).map((m) => m.outerHTML).join("");
+
+        if (tbody) tbody.innerHTML = leftContent;
+        if (tbody2) tbody2.innerHTML = rightContent;
+
         const temp = document.createElement("div");
         temp.appendChild(cdata);
         temp.classList.add("on-page");

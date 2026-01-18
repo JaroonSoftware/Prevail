@@ -39,6 +39,24 @@
   .page-break {
     page-break-before: always; 
   }
+
+  /* Compact table for 100 rows per page (50/column) */
+  .quopv-pages .ant-table.ant-table-small .ant-table-title,
+  .quopv-pages .ant-table.ant-table-small .ant-table-footer,
+  .quopv-pages .ant-table.ant-table-small .ant-table-cell,
+  .quopv-pages .ant-table.ant-table-small .ant-table-thead>tr>th,
+  .quopv-pages .ant-table.ant-table-small tfoot>tr>th,
+  .quopv-pages .ant-table.ant-table-small tfoot>tr>td {
+    padding: 0px 3px !important;
+    font-size: 10px !important;
+    line-height: 1 !important;
+  }
+  .quopv-pages .ant-table-wrapper .ant-table-tbody >tr >td {
+    padding: 0px 3px !important;
+    font-size: 10px !important;
+    line-height: 1 !important;
+    vertical-align: middle !important;
+  }
 }
  
   #quo.page-show {
@@ -186,7 +204,7 @@
     border: 0px solid ;
     white-space: break-spaces;
     font-size: 14px;
-    vertical-align: top;
+    vertical-align: middle;
 
   }
   .quopv-pages .ant-table-wrapper .ant-table-tbody tr:last-child td {
