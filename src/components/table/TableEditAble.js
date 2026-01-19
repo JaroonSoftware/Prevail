@@ -162,14 +162,22 @@ export const EditableCell = ({
     let cur = startTd;
     while (cur && cur[stepKey]) {
       cur = cur[stepKey];
-      if (cur.getAttribute && cur.getAttribute("data-editable") === "1") return cur;
+      if (
+        cur.getAttribute &&
+        cur.getAttribute("data-editable") === "1" &&
+        !(cur.getAttribute && cur.getAttribute("data-type") === "select-stcode-skip")
+      )
+        return cur;
     }
     return null;
   };
   const findFirstEditableInRow = (rowEl) => {
     if (!rowEl) return null;
     return Array.from(rowEl.children).find(
-      (c) => c.getAttribute && c.getAttribute("data-editable") === "1"
+      (c) =>
+        c.getAttribute &&
+        c.getAttribute("data-editable") === "1" &&
+        !(c.getAttribute && c.getAttribute("data-type") === "select-stcode-skip")
     );
   };
 
@@ -441,6 +449,23 @@ export const EditableCell = ({
               disabled={readonly}
             />
           )}
+          {type === "select-stcode-skip" && (
+            <Select
+              allowClear
+              autoClearSearchValue={false}
+              showSearch
+              style={{ width: "100%" }}
+              className="input-30"
+              placeholder="เลือกข้อมูล"
+              options={(optionsStcode || []).map((m) => ({ label: m.label, value: m.value,stcode:m.value,stname:m.label,price:m.price,unit:m.unit,vat:m.vat }))}
+              filterOption={filterOption}
+              onSelect={(data,value)=>selectStcode(data,value)}
+              onBlur={save}
+              onKeyDown={handleEditorKeyDown}
+              onInputKeyDown={handleEditorKeyDown}
+              disabled={readonly}
+            />
+          )}
           {type === "so-last" && (
             <InputNumber
               placeholder="กรอกข้อมูล"
@@ -490,6 +515,7 @@ export const EditableCell = ({
       {...restProps}
       ref={tdRef}
       data-col={dataIndex}
+      data-type={type}
       data-editable={editable ? "1" : "0"}
       tabIndex={editable ? 0 : -1}
     >

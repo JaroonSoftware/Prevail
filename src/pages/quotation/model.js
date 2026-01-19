@@ -154,7 +154,7 @@ export const productColumn = ({ handleRemove }, optionsItems) => [
     editable: true,
     required: true,
     align: "left", 
-    type:'select-stcode',    
+    type:'select-stcode-skip',    
   },
   {
     title: "ราคาขาย",
@@ -174,29 +174,9 @@ export const productColumn = ({ handleRemove }, optionsItems) => [
     key: "unit", 
     align: "right", 
     width: "8%",
-    editable: true,
-    type:'select',    
+    // editable: true,
+    // type:'select',    
   },
-  // {
-  //   title: "Hightlight ราคา",
-  //   dataIndex: "hightlight",
-  //   key: "hightlight",
-  //   align: "left",
-  //   width: "5%",
-  //   editable: true,
-  //   type:'switch',
-  //   formProp: { valuePropName:"checked" },
-  //   render: (v) => <TagIs result={Number(v)} />
-  // },
-  // {
-  //     title: "รหัส VAT",
-  //     dataIndex: "stcode_vat_show",
-  //     key: "stcode_vat_show",
-  //     width: 120,
-  //     className: 'field-edit',
-  //     align: "left",
-  //     render: onCodeVat
-  //   },
   {
     title: "ตัวเลือก",
     align: "center",
