@@ -15,15 +15,18 @@ import { Card, Col, Divider, Flex, Row, Space } from "antd";
 import OptionService from "../../service/Options.service";
 import QuotationService from "../../service/Quotation.service";
 import { SaveFilled, SearchOutlined } from "@ant-design/icons";
-import ModalCustomers from "../../components/modal/customers/ModalCustomers";
 
 import {
   quotationForm,
   columnsParametersEditable,
   componentsEditable,
+  DEFALUT_CHECK_STEP_FORM
 } from "./model";
 
-import { ModalItems } from "../../components/modal/itemsbyCL/modal-items";
+import MyManageForm from "./MyManageForm";
+import StepPanel from "../../components/step/StepPanel";
+import FormCustomer from "../../components/form/customer/FormCustomer";
+
 import dayjs from "dayjs";
 import { delay } from "../../utils/util";
 import { ButtonBack } from "../../components/button";
@@ -31,18 +34,28 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { LuPrinter, LuPackagePlus } from "react-icons/lu";
+import { SolutionOutlined, FileAddOutlined } from "@ant-design/icons";
+
 const opservice = OptionService();
 const qtservice = QuotationService();
 
 const gotoFrom = "/quotation";
 const dateFormat = "DD/MM/YYYY";
 
+const formName = "quo";
+
 function QuotationManage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { config } = location.state || { config: null };
+   const {
+    config: { mode, config},
+  } = location.state || { config: null };
+
   const [form] = Form.useForm();
+
+  const [formValue, setformValue] = useState(quotationForm);
+  const [checkStep, setCheckStep] = useState(DEFALUT_CHECK_STEP_FORM);
 
   /** Modal handle */
   const [openCustomer, setOpenCustomer] = useState(false);
@@ -122,6 +135,13 @@ function QuotationManage() {
     return () => {};
   }, []);
 
+  const handleNextStep = (values) => {
+    // console.log(values);
+
+    // console.log(checkStep);
+    setCheckStep((prev) => ({ ...prev, ...values }));
+  };
+
   const getstcodeList = async (cuscode = "") => {
     const [stcodeOptionRes] = await Promise.all([
       opservice.optionsItems({ p: "cl", cuscode: cuscode }),
@@ -132,7 +152,7 @@ function QuotationManage() {
   const handleCalculatePrice = (day, date) => {
     const newDateAfterAdding = dayjs(date || new Date()).add(
       Number(day),
-      "day"
+      "day",
     );
     const nDateFormet = newDateAfterAdding.format("YYYY-MM-DD");
 
@@ -284,7 +304,7 @@ function QuotationManage() {
     stcodeOption,
     {
       handleRemove,
-    }
+    },
   );
 
   const SectionCustomer = (
@@ -492,97 +512,42 @@ function QuotationManage() {
     </Row>
   );
 
+  const steps = [
+    {
+      step: 1,
+      title: "เลือกลูกค้า",
+      icon: <SolutionOutlined />,
+      content: <FormCustomer onChooseCustomer={handleNextStep} />,
+    },
+    {
+      step: 2,
+      icon: <FileAddOutlined />,
+      title: "สร้างใบเสนอราคา",
+      content: <MyManageForm
+          formName={formName}
+          submit={handleConfirm}
+          initeial={formValue}
+          mode={mode}
+        />,
+    },
+  ];
+
   return (
     <div className="quotation-manage">
-      <div id="quotation-manage" className="px-0 sm:px-0 md:px-8 lg:px-8">
-        <Space direction="vertical" className="flex gap-4">
-          {SectionTop}
-          <Form
-            form={form}
-            layout="vertical"
-            className="width-100"
-            autoComplete="off"
-          >
-            <Card
-              title={
-                <>
-                  <Row className="m-0 py-3 sm:py-0" gutter={[12, 12]}>
-                    <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
-                      <Typography.Title level={3} className="m-0">
-                        เลขที่ใบเสนอราคา : {quotCode}
-                      </Typography.Title>
-                    </Col>
-                    <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
-                      <Flex
-                        gap={10}
-                        align="center"
-                        className="justify-start sm:justify-end"
-                      >
-                        <Typography.Title level={3} className="m-0">
-                          วันที่ใบเสนอราคา :{" "}
-                        </Typography.Title>
-                        <Form.Item name="qtdate" className="!m-0">
-                          <DatePicker
-                            className="input-40"
-                            allowClear={false}
-                            onChange={handleQuotDate}
-                            format={dateFormat}
-                          />
-                        </Form.Item>
-                      </Flex>
-                    </Col>
-                  </Row>
-                </>
-              }
-            >
-              <Row className="m-0" gutter={[12, 12]}>
-                <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-                  <Divider orientation="left" className="!mb-3 !mt-1">
-                    ลูกค้า
-                  </Divider>
-                  <Card style={cardStyle}>{SectionCustomer}</Card>
-                </Col>
-                <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-                  <Divider orientation="left" className="!my-0">
-                    รายการสินค้าใบเสนอราคา
-                  </Divider>
-                  <Card style={{ backgroundColor: "#f0f0f0" }}>
-                    {SectionProduct}
-                  </Card>
-                </Col>
-                <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-                  <Divider orientation="left" className="!mb-3 !mt-1">
-                    ข้อมูลเพิ่มเติม
-                  </Divider>
-                  <Card style={cardStyle}>{SectionOther}</Card>
-                </Col>
-              </Row>
-            </Card>
-          </Form>
-          {SectionBottom}
-        </Space>
-      </div>
-
-      {openCustomer && (
-        <ModalCustomers
-          show={openCustomer}
-          close={() => setOpenCustomer(false)}
-          values={(v) => {
-            handleChoosedCustomer(v);
-          }}
-        ></ModalCustomers>
-      )}
-
-      {openProduct && (
-        <ModalItems
-          show={openProduct}
-          close={() => setOpenProduct(false)}
-          values={(v) => {
-            handleItemsChoosed(v);
-          }}
-          cuscode={form.getFieldValue("cuscode")}
-          selected={listDetail}
-        ></ModalItems>
+      {mode === "edit" ? (
+        <MyManageForm
+          formName={formName}
+          submit={handleConfirm}
+          initeial={formValue}
+          mode={mode}
+        />
+      ) : (
+        <StepPanel
+          dataStep={checkStep}
+          steps={steps}
+          formName={formName}
+          submit={handleConfirm}
+        />
       )}
     </div>
   );

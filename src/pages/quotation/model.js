@@ -240,3 +240,10 @@ export const quotationDetailForm = {
   price: 0,
   unit: null,
 };
+
+export const DEFALUT_CHECK_STEP_FORM = {  
+  typecode : null,
+  typename : null,
+  categorycode : null,
+  categoryname : null,
+}

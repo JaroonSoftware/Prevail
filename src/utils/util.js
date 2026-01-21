@@ -138,3 +138,25 @@ export const filterOption = (input, option) =>
   (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
 
 export const notEnter = (e) => { (e.key === 'Enter') && e.preventDefault(); }
+
+export function nocomma(num, dmax = 6, dmin = 0, nanReturn = null) {
+  const n = Number(num);
+  if (!Number.isFinite(n)) return nanReturn;
+
+  let [i, d = ""] = n.toString().split(".");
+
+  // ตัดทศนิยมไม่เกิน dmax
+  d = d.slice(0, dmax);
+
+  // บังคับขั้นต่ำ dmin
+  if (dmin > 0) {
+    d = d.padEnd(dmin, "0");
+  }
+
+  // ไม่มีทศนิยมเลย → ไม่ต้องใส่จุด
+  if (d.length === 0) {
+    return i;
+  }
+
+  return `${i}.${d}`;
+}
