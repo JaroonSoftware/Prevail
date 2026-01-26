@@ -242,8 +242,9 @@ export const quotationDetailForm = {
 };
 
 export const DEFALUT_CHECK_STEP_FORM = {  
-  typecode : null,
-  typename : null,
-  categorycode : null,
-  categoryname : null,
+  cuscode : null,
+  cusname : null,
+  contact: null,
+  county_code : null,
+  county_name : null,
 }

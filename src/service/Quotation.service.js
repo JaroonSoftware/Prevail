@@ -4,6 +4,7 @@ const API_URL = {
   API_GETMASTER: `/quotations/search.php`, 
 
   API_GETCODE: `/quotations/get-quotcode.php`, 
+  API_CATALOG: `/quotations/get-catalog.php`,
 };
   
 const QuotationService = () => { 
@@ -16,6 +17,7 @@ const QuotationService = () => {
   const code = () => api.get(`${API_URL.API_GETCODE}`);
 
   const search = (parm = {}) => api.post(`${API_URL.API_GETMASTER}`, parm);
+  const getcatalog = (code) => api.get(`${API_URL.API_CATALOG}?code=${code}`);
   
 
   return {
@@ -23,10 +25,9 @@ const QuotationService = () => {
     update,
     deleted,
     get, 
-
     code,
-
     search,
+    getcatalog
   };
 };
 

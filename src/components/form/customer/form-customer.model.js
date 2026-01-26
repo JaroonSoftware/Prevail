@@ -2,26 +2,26 @@
 import { Typography } from "antd";
 const Link = Typography.Link;
 
-export const itemtypesColumn = [
+export const CustomerColumn = [
   {
-    title: "ตัวอย่างรหัสสินค้า",
-    dataIndex: "stcode",
+    title: "รหัสลูกค้า",
+    dataIndex: "cuscode",
     // width: "20%",
-    key: "stcode",
+    key: "cuscode",
     render: (v) => <Link className="text-select" >{v}</Link>
   },
   {
-    title: "ชื่อประเภทสินค้า",
-    dataIndex: "typename",
+    title: "ชื่อลูกค้า",
+    dataIndex: "cusname",
     width: "55%",
-    key: "typename",
+    key: "cusname",
     render: (v) => <Link className="text-select"> {v}</Link>,
   },
   {
-    title: "หมวดหมู่สินค้า",
-    dataIndex: "categoryname",
+    title: "เขตขนส่ง",
+    dataIndex: "county_name",
     width: "25%",
-    key: "categoryname",
+    key: "county_name",
     render: (v) => <Link className="text-select"> {v}</Link>,
   },
 ];

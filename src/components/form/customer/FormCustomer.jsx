@@ -11,14 +11,14 @@ import {
   Typography,
 } from "antd";
 
-import { itemtypesColumn } from "./form-customer.model.js";
+import { CustomerColumn } from "./form-customer.model.js";
 import OptionService from "../../../service/Options.service.js";
 
 const opservice = OptionService();
 
 export default function FormCustomer({ onChooseCustomer }) {
-  const [itemtypesData, setItemtypesData] = useState([]);
-  const [itemtypesDataWrap, setItemtypesDataWrap] = useState([]);
+  const [itemtypesData, setCustomerData] = useState([]);
+  const [itemtypesDataWrap, setCustomerDataWrap] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [itemDetail, setItemDetail] = useState({});
@@ -31,6 +31,7 @@ export default function FormCustomer({ onChooseCustomer }) {
   
   /** handle logic component */
   const handleChoose = (selectedItem) => {
+    // console.log("selectedItem", selectedItem);
     setItemDetail(selectedItem);
     onChooseCustomer(selectedItem);
   };
@@ -38,24 +39,24 @@ export default function FormCustomer({ onChooseCustomer }) {
   /** setting initial component */
   const search = () => {
     setLoading(true);
-    // opservice
-    //   .optionsItemstypeandStcode()
-    //   .then((res) => {
-    //     let { data } = res.data;
-    //     setItemtypesData(data);
-    //     setItemtypesDataWrap(data);
-    //   })
-    //   .catch((err) => {
-    //     console.warn(err);
-    //     const data = err?.response?.data;
-    //     message.error(data?.message || "error request");
-    //     // setLoading(false);
-    //   })
-    //   .finally(() =>
-    //     setTimeout(() => {
-    //       setLoading(false);
-    //     }, 400)
-    //   );
+    opservice
+      .optionsCustomer()
+      .then((res) => {
+        let { data } = res.data;
+        setCustomerData(data);
+        setCustomerDataWrap(data);
+      })
+      .catch((err) => {
+        console.warn(err);
+        const data = err?.response?.data;
+        message.error(data?.message || "error request");
+        // setLoading(false);
+      })
+      .finally(() =>
+        setTimeout(() => {
+          setLoading(false);
+        }, 400)
+      );
   };
 
   return (
@@ -67,17 +68,17 @@ export default function FormCustomer({ onChooseCustomer }) {
               <Row className="m-0" gutter={[8, 8]}>
                 <Col xs={24} sm={24} md={6} lg={6}>
                   <Typography.Title level={3} className="m-0" style={{fontSize: 'clamp(12px, 1vw, 24px)'}}>
-                  รหัสสินค้า :{itemDetail?.stcode}
+                  รหัสลูกค้า :{itemDetail?.cuscode}
                   </Typography.Title>
                 </Col>
                 <Col xs={24} sm={24} md={10} lg={10}>
                   <Typography.Title level={3} className="m-0" style={{fontSize: 'clamp(12px, 1vw, 24px)'}}>
-                    ชื่อประเภทสินค้า : {itemDetail?.typename}
+                    ชื่อลูกค้า : {itemDetail?.cusname}
                   </Typography.Title>
                 </Col>
                 <Col xs={24} sm={24} md={8} lg={8}>
                   <Typography.Title level={3} className="m-0" style={{fontSize: 'clamp(12px, 1vw, 24px)'}}>
-                    หมวดหมู่สินค้า : {itemDetail?.categoryname}
+                    เขตขนส่ง : {itemDetail?.county_name}
                   </Typography.Title>
                 </Col>
               </Row>
@@ -86,7 +87,7 @@ export default function FormCustomer({ onChooseCustomer }) {
             <Table
               bordered
               dataSource={itemtypesDataWrap}
-              columns={itemtypesColumn}
+              columns={CustomerColumn}
               rowKey="typecode"
               onRow={(record, rowIndex) => {
                 return {

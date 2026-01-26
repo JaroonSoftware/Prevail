@@ -9,7 +9,11 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
     try { 
         $res = null;
         
-        $sql = "SELECT cuscode, cusname, prename, idno, road, subdistrict, district, province, zipcode, tel, contact, fax, taxnumber FROM `customer` where active_status = 'Y'";
+        $sql = "SELECT a.cuscode, a.cusname, a.prename,b.county_name, a.idno, a.road, a.subdistrict, a.district, a.province, a.zipcode, a.tel, a.contact, a.fax, a.taxnumber 
+        ,CONCAT(a.idno ,' ', a.road,' ', a.subdistrict,' ', a.district,' ', a.zipcode) as address
+        FROM `customer` as a
+        left outer join  county as b on a.county_code = b.county_code
+        where a.active_status = 'Y'";
             // $type_code
             $stmt = $conn->prepare($sql); 
             $stmt->execute();

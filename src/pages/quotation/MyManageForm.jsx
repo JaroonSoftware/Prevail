@@ -12,6 +12,10 @@ import {
   Flex,
   Modal,
   message,
+  Card,
+  DatePicker,
+  Typography,
+  Table
 } from "antd";
 import { useState, useEffect } from "react";
 import OptionService from "../../service/Options.service";
@@ -20,82 +24,116 @@ import dayjs from "dayjs";
 
 // import { columnsdetail } from "./model";
 import { LuPrinter, LuPackagePlus } from "react-icons/lu";
-import { quotationForm } from "./model";
+import { quotationForm,columnsParametersEditable,componentsEditable } from "./model";
 import { ButtonBack } from "../../components/button";
 
-import { nocomma, delay } from "../../utils/util";
-import { SaveFilled, SearchOutlined } from "@ant-design/icons";
-import { useLocation, useNavigate } from "react-router-dom";
-
-import { ModalItems } from "../../components/modal/itemsbyCL/modal-items";
-import ModalCustomers from "../../components/modal/customers/ModalCustomers";
+import { delay } from "../../utils/util";
+import { SaveFilled } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
+import { RiDeleteBin5Line } from "react-icons/ri";
 
 const opService = OptionService();
 const qtservice = QuotationService();
+
+const dateFormat = "DD/MM/YYYY";
+
+const cardStyle = {
+    backgroundColor: "#f0f0f0",
+    height: "calc(100% - (25.4px + 1rem))",
+  };
 
 export default function ItemsManageForm({
   formName = "form-name",
   submit,
   initeial,
-  mode,
+  step_number,
+  config,
+  formData,
+  listData
 }) {
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [form] = Form.useForm();
   const formRole = { required: true, message: "กรุณากรอกข้อมูลให้ครบถ้วน!" };
   const [optionType, setOptionType] = useState([]);
-  // const [optionCategory, setOptionCategory] = useState([]);
+
+  // const [openCustomer, setOpenCustomer] = useState(false);
+
+  /** Quotation state */
+    const [quotCode, setQuotCode] = useState(null);
 
   /** Detail Data State */
   const [listDetail, setListDetail] = useState([]);
   const [formDetail, setFormDetail] = useState(quotationForm);
 
+  const [unitOption, setUnitOption] = useState([]);
+  const [stcodeOption, setStcodeOption] = useState([]);
+
   const gotoFrom = "/quotation";
 
+
   useEffect(() => {
-    GetItemsType();
-    // GetItemsCategory();
-    if (mode !== "create") {
-      const newIniteial = {
-        ...initeial,
-        price: nocomma(initeial?.price),
-        price_A: nocomma(initeial?.price_A),
-        price_B: nocomma(initeial?.price_B),
-        price_online: nocomma(initeial?.price_online),
-      };
+    const initial = async () => {
+          if (config?.action !== "create") {
+            const res = await qtservice
+              .get(config?.code)
+              .catch((error) => message.error("get Quotation data fail."));
+            const {
+              data: { header, detail },
+            } = res.data;
+            const { qtcode, qtdate } = header;
+            setFormDetail(header);
+            setListDetail(detail.map((d, i) => ({ ...d, _rid: i + 1 })));
+            // setQuotBanks( bank );
+            setQuotCode(qtcode);
+            form.setFieldsValue({ ...header, qtdate: dayjs(qtdate) });
+            // setTimeout( () => {  handleCalculatePrice(head?.valid_price_until, head?.dated_price_until) }, 200);
+            // handleChoosedCustomer(head);
+          } else {
+            const { data: code } = (
+              await qtservice.code().catch((e) => {
+                message.error("get Quotation code fail.");
+              })
+            ).data;
+            // console.log("code", initeial);
+            setQuotCode(code);
+            form.setFieldValue("vat", 7);
+            const ininteial_value = {
+              ...initeial,
+              qtcode: code,
+              qtdate: dayjs(new Date()),
+            };
+            setFormDetail(ininteial_value);
+            form.setFieldsValue(ininteial_value);
+          }
+          const [unitOprionRes] = await Promise.all([
+            opService.optionsUnit({ p: "unit-option" }),
+          ]);
+          // console.log(unitOprionRes.data.data)
+          setUnitOption(unitOprionRes.data.data);
+        };
+    
+        initial();
+        return () => {};
+  }, [initeial, config, form]);
 
-      form.setFieldsValue(newIniteial);
-    } else {
-      form.setFieldsValue({
-        typecode: "1",
+  useEffect(() => {
+    // alert(step_number);
+    if(step_number === 1){
+      qtservice.getcatalog(form.getFieldValue("cuscode")).then((res) => {
+        let { data } = res.data;
+        setListDetail(data.map((d, i) => ({ ...d, _rid: i + 1 })));
       });
-      // itemService
-      //   .getcode("1")
-      //   .then((res) => {
-      //     let { data } = res;
-      //     form.setFieldsValue({
-      //       stcode: data,
-      //     });
-      //   })
-      //   .catch((err) => {});
     }
-  }, [initeial, mode, form]);
+    else{
+      setListDetail([]);
+    }
+  }, [step_number]);
 
-  const filterOption = (input, option) =>
-    (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
-  const dividerProp = {
-    orientation: "left",
-    style: { marginBlock: 10 },
-    className: "!border-black",
-  };
-
-  const GetItemsType = () => {
-    opService.optionsItemstype().then((res) => {
-      let { data } = res.data;
-      setOptionType(data);
-    });
-  };
+  useEffect(() => {
+    listData(listDetail);
+    formData(formDetail);
+  }, [listDetail, formDetail]);
 
   const handleConfirm = () => {
     let errormessage = "";
@@ -118,7 +156,7 @@ export default function ItemsManageForm({
 
         const parm = { header, detail };
         // console.log(parm)
-        const actions = mode !== "create" ? qtservice.update : qtservice.create;
+        const actions = config?.action !== "create" ? qtservice.update : qtservice.create;
         actions(parm)
           .then((r) => {
             handleClose().then((r) => {
@@ -140,17 +178,53 @@ export default function ItemsManageForm({
       });
   };
 
-  const Getstcode = () => {
-    // itemService
-    //   .getcode(form.getFieldValue("typecode"))
-    //   .then((res) => {
-    //     let { data } = res;
-    //     form.setFieldsValue({
-    //       stcode: data,
-    //     });
-    //   })
-    //   .catch((err) => {});
-  };
+  const handleQuotDate = (e) => {
+      const { valid_price_until } = form.getFieldsValue();
+      if (!!valid_price_until && !!e) {
+        handleCalculatePrice(valid_price_until || 0, e || new Date());
+      }
+    };
+  
+    const handleDelete = (code) => {
+      const itemDetail = [...listDetail];
+      const newData = itemDetail.filter((item) => item?._rid !== code);
+      setListDetail([...newData]);
+    };
+  
+    const handleRemove = (record) => {
+      const itemDetail = [...listDetail];
+      return itemDetail.length >= 1 ? (
+        <Button
+          className="bt-icon"
+          size="small"
+          danger
+          icon={
+            <RiDeleteBin5Line style={{ fontSize: "1rem", marginTop: "3px" }} />
+          }
+          onClick={() => handleDelete(record?._rid)}
+          disabled={!record?._rid}
+        />
+      ) : null;
+    };
+  
+    const handleEditCell = (row) => {
+      const newData = (r) => {
+        const itemDetail = [...listDetail];
+        const newData = [...itemDetail];
+  
+        const ind = newData.findIndex((item) => item._rid === r._rid);
+        if (ind < 0) return itemDetail;
+        const item = newData[ind];
+        newData.splice(ind, 1, {
+          ...item,
+          ...row,
+        });
+  
+        // handleSummaryPrice();
+        return newData;
+      };
+      setListDetail([...newData(row)]);
+    };
 
   const onFinish = (values) => {
     const itype = optionType?.find((f) => f.typecode === values?.typecode);
@@ -171,6 +245,137 @@ export default function ItemsManageForm({
     const newWindow = window.open("", "_blank");
     newWindow.location.href = `/quo-print/${formDetail.quotcode}`;
   };
+
+  const handleCalculatePrice = (day, date) => {
+    const newDateAfterAdding = dayjs(date || new Date()).add(
+      Number(day),
+      "day",
+    );
+    const nDateFormet = newDateAfterAdding.format("YYYY-MM-DD");
+
+    setFormDetail((state) => ({ ...state, dated_price_until: nDateFormet }));
+    form.setFieldValue("dated_price_until", nDateFormet);
+  };
+
+  
+    /** setting column table */
+  const prodcolumns = columnsParametersEditable(
+    handleEditCell,
+    unitOption,
+    stcodeOption,
+    {
+      handleRemove,
+    },
+  );
+
+  const SectionProduct = (
+      <>
+        <Flex className="width-100" vertical gap={4}>
+          <Table
+            title={() => TitleTable}
+            components={componentsEditable}
+            rowClassName={() => "editable-row"}
+            bordered
+            dataSource={listDetail}
+            columns={prodcolumns}
+            pagination={false}
+            rowKey="_rid"
+            scroll={{ x: "max-content" }}
+            locale={{
+              emptyText: <span>No data available, please add some data.</span>,
+            }}
+          />
+        </Flex>
+      </>
+    );
+  
+    const SectionOther = (
+      <>
+        <Space size="small" direction="vertical" className="flex gap-2">
+          <Row gutter={[8, 8]} className="m-0">
+            <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+              <Form.Item className="" name="remark" label="หมายเหตุ">
+                <Input.TextArea placeholder="กรอกข้อมูลเพิ่มเติม" rows={4} />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Space>
+      </>
+    );
+
+  const SectionCustomer = (
+    <>
+      <Space size="small" direction="vertical" className="flex gap-2">
+        <Row gutter={[8, 8]} className="m-0">
+          <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
+            <Form.Item name="cuscode" label="ชื่อลูกค้า" className="!mb-1">
+              <Input placeholder="ชื่อลูกค้า" readOnly />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
+            <Form.Item name="cusname" label="ชื่อลูกค้า" className="!mb-1">
+              <Input placeholder="ชื่อลูกค้า" readOnly />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+            <Form.Item name="address" label="ที่อยู่" className="!mb-1">
+              <Input placeholder="ที่อยู่ลูกค้า" readOnly />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
+            <Form.Item name="contact" label="ผู้ติดต่อ" className="!mb-1">
+              <Input placeholder="ช่องทางการติดต่อลูกค้า" readOnly />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
+            <Form.Item name="tel" label="เบอร์โทรลุกค้า" className="!mb-1">
+              <Input placeholder="เบอร์โทรลุกค้า" readOnly />
+            </Form.Item>
+          </Col>
+        </Row>
+      </Space>
+    </>
+  );
+
+  const TitleTable = (
+    <Flex className="width-100" align="center">
+      <Col span={12} className="p-0">
+        <Flex gap={4} justify="start" align="center">
+          <Typography.Title className="m-0 !text-zinc-800" level={3}>
+            รายการสินค้า
+          </Typography.Title>
+        </Flex>
+      </Col>
+      <Col span={12} style={{ paddingInline: 0 }}>
+        <Flex justify="end">
+          <Flex justify="end">
+            <Button
+              icon={<LuPackagePlus style={{ fontSize: "1.2rem" }} />}
+              className="bn-center justify-center bn-primary-outline"
+              onClick={() => {
+                setListDetail((state) => [
+                  ...state,
+                  {
+                    _rid: state.length + 1,
+                    stcode: "",
+                    stname: "",
+                    qty: 1,
+                    price: 0,
+                    unit: "",
+                    discount: 0,
+                    vat: 0,
+                  },
+                ]);
+              }}
+            >
+              เพิ่มสินค้า
+            </Button>
+          </Flex>
+        </Flex>
+      </Col>
+    </Flex>
+  );
+
   const SectionTop = (
     <Row
       gutter={[{ xs: 32, sm: 32, md: 32, lg: 12, xl: 12 }, 8]}
@@ -213,341 +418,38 @@ export default function ItemsManageForm({
       </Col>
     </Row>
   );
-  const info = (
-    <>
-      <Divider {...dividerProp}>ข้อมูลสินค้า</Divider>
-      <Row className="!mx-0" gutter={[8, 8]}>
-        <Col xs={24} sm={12} lg={6}>
-          <Form.Item label="ประเภทสินค้า" name="typecode">
-            <Select
-              size="large"
-              showSearch
-              filterOption={filterOption}
-              placeholder="เลือกประเภทสินค้า"
-              onChange={Getstcode}
-              className="!bg-white"
-              disabled
-              options={optionType.map((item) => ({
-                value: item.typecode,
-                label: item.typename,
-              }))}
-            ></Select>
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Form.Item label="รหัสสินค้า" name="stcode">
-            <Input placeholder="กรอกรหัสสินค้า" readOnly />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} lg={12}>
-          <Form.Item label="ชื่อสินค้า" name="stname" rules={[formRole]}>
-            <Input placeholder="กรอกชื่อสินค้า" />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} lg={12}>
-          <Form.Item name="material_code" label="Material code">
-            <Input />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Form.Item name="stcode_vat" label="รหัสสินค้าคลัง VAT">
-            <Input />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={24} md={12} lg={12} xl={6}>
-          <Form.Item name="categorycode">
-            <Input type="hidden" />
-          </Form.Item>
-        </Col>
-      </Row>
-    </>
+
+  const SectionBottom = (
+    <Row
+      gutter={[{ xs: 32, sm: 32, md: 32, lg: 12, xl: 12 }, 8]}
+      className="m-0"
+    >
+      <Col span={12} className="p-0">
+        <Flex gap={4} justify="start">
+          <ButtonBack target={gotoFrom} />
+        </Flex>
+      </Col>
+      <Col span={12} style={{ paddingInline: 0 }}>
+        <Flex gap={4} justify="end">
+          <Button
+            className="bn-center justify-center"
+            icon={<SaveFilled style={{ fontSize: "1rem" }} />}
+            type="primary"
+            style={{ width: "9.5rem" }}
+            onClick={() => {
+              handleConfirm();
+            }}
+          >
+            Save
+          </Button>
+        </Flex>
+      </Col>
+    </Row>
   );
-  const details_tab1 = (
-    <>
-      <Divider {...dividerProp}>รายละเอียดสินค้า</Divider>
-      <Row className="!mx-0" gutter={[8, 8]}>
-        <Col xs={24} sm={12} lg={6}>
-          <Form.Item name="stname_vat" label="ชื่อเปิดบิล VAT">
-            <Input />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Form.Item name="brand" label="ยี่ห้อ">
-            <Input />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Form.Item name="stname_per" label="ชื่อสินค้า/ดอก">
-            <Input />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Form.Item name="stfront" label="รุ่น1/หน้า">
-            <Input />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Form.Item name="stseries" label="รุ่น2/ซี่รี่ย์">
-            <Input />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Form.Item name="stborder" label="รุ่น3/ขอบ">
-            <Input />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Form.Item name="stload" label="รุ่น4/โหลด">
-            <Input />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Form.Item name="stspeed" label="รุ่น5/สปีด">
-            <Input />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Form.Item name="sttw" label="รุ่น6/TW">
-            <Input />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Form.Item name="stweight" label="รุ่น7/น้ำหนัก">
-            <Input />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Form.Item name="stwidth" label="รุ่น8/กว้าง">
-            <Input />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Form.Item name="stlong" label="รุ่น9/ยาว">
-            <Input />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Form.Item name="sthigh" label="รุ่น10/สูง">
-            <Input />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Form.Item name="stchange_round" label="รอบการเปลี่ยน">
-            <Input />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Form.Item name="stchange_time" label="เวลาในการเปลี่ยน">
-            <Input />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Form.Item name="stcar_brand" label="ยี่ห้อรถ">
-            <Input />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} lg={12}>
-          <Form.Item name="stcar_model" label="รุ่นรถ">
-            <Input />
-          </Form.Item>
-        </Col>
-      </Row>
-    </>
-  );
-  const other = (
-    <>
-      <Divider {...dividerProp}>เพิ่มเติม</Divider>
-      <Row className="!mx-0" gutter={[8, 8]}>
-        <Col xs={24} sm={12} lg={12}>
-          <Form.Item label="หมายเหตุ" name="remark">
-            <Input.TextArea placeholder="กรอกข้อมูลเพิ่มเติม" rows={4} />
-          </Form.Item>
-        </Col>
-        <Col
-          xs={24}
-          sm={12}
-          lg={6}
-          style={mode === "edit" ? { display: "inline" } : { display: "none" }}
-        >
-          <Form.Item label="สถานการใช้งาน" name="active_status">
-            <Select
-              size="large"
-              options={[
-                {
-                  value: "Y",
-                  label: <Badge status="success" text="เปิดการใช้งาน" />,
-                },
-                {
-                  value: "N",
-                  label: <Badge status="error" text="ปิดการใช้งาน" />,
-                },
-              ]}
-            />
-          </Form.Item>
-        </Col>
-      </Row>
-    </>
-  );
-  const price = (
-    <>
-      <Divider {...dividerProp}>ราคา</Divider>
-      <Row className="!mx-0" gutter={[8, 8]}>
-        <Col xs={24} sm={12} lg={6}>
-          <Form.Item name="price" label="ราคาขายปลีก">
-            <Input />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Form.Item name="price_A" label="Promotion">
-            <Input />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Form.Item name="price_B" label="ราคาส่ง">
-            <Input />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Form.Item name="price_online" label="ราคา Online">
-            <Input />
-          </Form.Item>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Form.Item name="min" label="สต๊อกขั้นต่ำ (ชิ้น)">
-            <Input />
-          </Form.Item>
-        </Col>
-      </Row>
-    </>
-  );
-  const stock = (
-    <>
-      <Divider {...dividerProp}>สต๊อก</Divider>
-      <Row className="!mx-0" gutter={[8, 8]}>
-        <Col xs={24} sm={24} lg={24}>
-          {/* { Number( initeial?.cat_stock_by_product || 0 ) === 0 && <FormStock selected={initeial}  /> }
-          { Number( initeial?.cat_stock_by_product || 0 ) === 1 && <FormTireStock selected={initeial}  /> } */}
-        </Col>
-      </Row>
-    </>
-  );
-  const tabdata = [
-    {
-      key: "ข้อมูลพิ้นฐาน",
-      label: "ข้อมูลพิ้นฐาน",
-      children: (
-        <div>
-          {info}
-          {details_tab1}
-          {other}
-        </div>
-      ),
-    },
-    {
-      key: "ราคา",
-      label: "ราคา",
-      children: <div>{price}</div>,
-    },
-    {
-      key: "สต๊อก",
-      label: "สต๊อก",
-      children: <div>{stock}</div>,
-    },
-  ];
 
   return (
-    // <div id="quotation-manage" className="px-0 sm:px-0 md:px-8 lg:px-8">
-    //     <Space direction="vertical" className="flex gap-4">
-    //       {SectionTop}
-    //       <Form
-    //         form={form}
-    //         layout="vertical"
-    //         className="width-100"
-    //         autoComplete="off"
-    //       >
-    //         <Card
-    //           title={
-    //             <>
-    //               <Row className="m-0 py-3 sm:py-0" gutter={[12, 12]}>
-    //                 <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
-    //                   <Typography.Title level={3} className="m-0">
-    //                     เลขที่ใบเสนอราคา : {quotCode}
-    //                   </Typography.Title>
-    //                 </Col>
-    //                 <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
-    //                   <Flex
-    //                     gap={10}
-    //                     align="center"
-    //                     className="justify-start sm:justify-end"
-    //                   >
-    //                     <Typography.Title level={3} className="m-0">
-    //                       วันที่ใบเสนอราคา :{" "}
-    //                     </Typography.Title>
-    //                     <Form.Item name="qtdate" className="!m-0">
-    //                       <DatePicker
-    //                         className="input-40"
-    //                         allowClear={false}
-    //                         onChange={handleQuotDate}
-    //                         format={dateFormat}
-    //                       />
-    //                     </Form.Item>
-    //                   </Flex>
-    //                 </Col>
-    //               </Row>
-    //             </>
-    //           }
-    //         >
-    //           <Row className="m-0" gutter={[12, 12]}>
-    //             <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-    //               <Divider orientation="left" className="!mb-3 !mt-1">
-    //                 ลูกค้า
-    //               </Divider>
-    //               <Card style={cardStyle}>{SectionCustomer}</Card>
-    //             </Col>
-    //             <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-    //               <Divider orientation="left" className="!my-0">
-    //                 รายการสินค้าใบเสนอราคา
-    //               </Divider>
-    //               <Card style={{ backgroundColor: "#f0f0f0" }}>
-    //                 {SectionProduct}
-    //               </Card>
-    //             </Col>
-    //             <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-    //               <Divider orientation="left" className="!mb-3 !mt-1">
-    //                 ข้อมูลเพิ่มเติม
-    //               </Divider>
-    //               <Card style={cardStyle}>{SectionOther}</Card>
-    //             </Col>
-    //           </Row>
-    //         </Card>
-    //       </Form>
-    //       {SectionBottom}
-    //     </Space>
-    //   </div>
-
-    //   {openCustomer && (
-    //     <ModalCustomers
-    //       show={openCustomer}
-    //       close={() => setOpenCustomer(false)}
-    //       values={(v) => {
-    //         handleChoosedCustomer(v);
-    //       }}
-    //     ></ModalCustomers>
-    //   )}
-
-    //   {openProduct && (
-    //     <ModalItems
-    //       show={openProduct}
-    //       close={() => setOpenProduct(false)}
-    //       values={(v) => {
-    //         handleItemsChoosed(v);
-    //       }}
-    //       cuscode={form.getFieldValue("cuscode")}
-    //       selected={listDetail}
-    //     ></ModalItems>
-    //   )}
     <Space direction="vertical" className="w-full">
-      {SectionTop}
+      {/* {SectionTop} */}
       <Form
         form={form}
         layout="vertical"
@@ -557,7 +459,74 @@ export default function ItemsManageForm({
         // onValuesChange={(_, value)=> setFormValue(value)}
         onFinish={onFinish}
       >
-        <Tabs type="card" defaultActiveKey="ข้อมูลพิ้นฐาน" items={tabdata} />
+        <div id="quotation-manage" className="px-0 sm:px-0 md:px-8 lg:px-8">
+        <Space direction="vertical" className="flex gap-4">
+          {config.action === "edit" && SectionTop}
+          <Form
+            form={form}
+            layout="vertical"
+            className="width-100"
+            autoComplete="off"
+          >
+            <Card
+              title={
+                <>
+                  <Row className="m-0 py-3 sm:py-0" gutter={[12, 12]}>
+                    <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
+                      <Typography.Title level={3} className="m-0">
+                        เลขที่ใบเสนอราคา : {quotCode}
+                      </Typography.Title>
+                    </Col>
+                    <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
+                      <Flex
+                        gap={10}
+                        align="center"
+                        className="justify-start sm:justify-end"
+                      >
+                        <Typography.Title level={3} className="m-0">
+                          วันที่ใบเสนอราคา :{" "}
+                        </Typography.Title>
+                        <Form.Item name="qtdate" className="!m-0">
+                          <DatePicker
+                            className="input-40"
+                            allowClear={false}
+                            onChange={handleQuotDate}
+                            format={dateFormat}
+                          />
+                        </Form.Item>
+                      </Flex>
+                    </Col>
+                  </Row>
+                </>
+              }
+            >
+              <Row className="m-0" gutter={[12, 12]}>
+                <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+                  <Divider orientation="left" className="!mb-3 !mt-1">
+                    ลูกค้า
+                  </Divider>
+                  <Card style={cardStyle}>{SectionCustomer}</Card>
+                </Col>
+                <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+                  <Divider orientation="left" className="!my-0">
+                    รายการสินค้าใบเสนอราคา
+                  </Divider>
+                  <Card style={{ backgroundColor: "#f0f0f0" }}>
+                    {SectionProduct}
+                  </Card>
+                </Col>
+                <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+                  <Divider orientation="left" className="!mb-3 !mt-1">
+                    ข้อมูลเพิ่มเติม
+                  </Divider>
+                  <Card style={cardStyle}>{SectionOther}</Card>
+                </Col>
+              </Row>
+            </Card>
+          </Form>
+          {config.action === "edit" && SectionBottom}
+        </Space>
+      </div>
       </Form>
     </Space>
   );
