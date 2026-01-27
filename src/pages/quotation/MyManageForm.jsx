@@ -124,6 +124,8 @@ export default function ItemsManageForm({
         let { data } = res.data;
         setListDetail(data.map((d, i) => ({ ...d, _rid: i + 1 })));
       });
+
+      getstcodeList(form.getFieldValue("cuscode"));
     }
     else{
       setListDetail([]);
@@ -134,6 +136,13 @@ export default function ItemsManageForm({
     listData(listDetail);
     formData(formDetail);
   }, [listDetail, formDetail]);
+
+  const getstcodeList = async (cuscode) => {
+    const [stcodeOptionRes] = await Promise.all([
+      opService.optionsItems({ p: "cl", cuscode: cuscode }),
+    ]);
+    setStcodeOption(stcodeOptionRes.data.data); // TO DO get stcode option
+  };
 
   const handleConfirm = () => {
     let errormessage = "";

@@ -167,11 +167,6 @@ function QuotationManage() {
     console.clear();
   };
 
-  const handlePrint = () => {
-    const newWindow = window.open("", "_blank");
-    newWindow.location.href = `/quo-print/${formDetail.quotcode}`;
-  };
-
 
   const steps = [
     {
