@@ -74,7 +74,7 @@ export default function DeliveryPrintPreview(props) {
   }, []);
   const ContentHead = ({ page }) => {
     return (
-      <div className="content-head in-sample flex flex-col">
+      <div className="content-head in-sample flex flex-col dnpv-header">
         <div className="print-title flex pb-2">
           <div className="flex ps-3 grow-0" style={{ width: "80%" }}>
             <Flex className="mb-1.5" vertical>
@@ -115,7 +115,7 @@ export default function DeliveryPrintPreview(props) {
 
   const ContentHead2 = () => {
     return (
-      <div className="content-head in-sample flex flex-col">
+      <div className="content-head in-sample flex flex-col dnpv-header">
         <div className="print-title flex pb-2">
           <Flex className="flex ps-3 grow-0" style={{ width: "60%" }}>
             <Flex vertical>
@@ -180,7 +180,7 @@ export default function DeliveryPrintPreview(props) {
   const ReceiptSummary = (rec) => {
     return (
       <>
-        <Table.Summary.Row style={{}}>
+        <Table.Summary.Row className="dnpv-footer" style={{}}>
           <Table.Summary.Cell
             colSpan={3}
             className="!align-top !ps-0   !pe-0"
@@ -235,7 +235,7 @@ export default function DeliveryPrintPreview(props) {
             </Flex>
           </Table.Summary.Cell>
         </Table.Summary.Row>
-        <Table.Summary.Row>
+        <Table.Summary.Row className="dnpv-footer">
           <Table.Summary.Cell colSpan={8} className="!align-top !ps-0   !pe-0">
             <Flex
               style={{
@@ -393,7 +393,7 @@ export default function DeliveryPrintPreview(props) {
   return (
     <>
       {/* <Spin spinning={loading} indicator={<LoadingOutlined style={{ fontSize: 24, }} spin />} fullscreen /> */}
-      <div className="page-show" id="quo">
+      <div className="page-show" id="dnpv">
         {loading && <Spin fullscreen indicator={<LoadingOutlined />} />}
         <div className="title-preview">
           <Button

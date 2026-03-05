@@ -1,21 +1,34 @@
 @media print {
   @page {
     size: A4;
-    font-family: open sans, Helvetica, Arial, sans-serif; 
+    margin: 0;
   }
-  #dnpv.page-show {
+
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    color: #000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Support both legacy id (#dnpv) and current id (#quo) */
+  #dnpv.page-show,
+  #quo.page-show {
     visibility: visible;
     margin: 0px !important;
     padding: 0px !important;
     display: block;
   }
   .dnpv-pages { 
-    letter-spacing: .48px;
-    width: 21cm; /* A4 width */
-    height: 29.7cm; /* A4 height */
+    letter-spacing: 0;
+    width: 210mm; /* A4 width */
+    height: 297mm; /* A4 height */
     /* margin: 0px !important; */
     /* padding: 0px !important; */
-    padding-inline: 0.15in;
+    padding-inline: 4mm;
     padding-block: 8mm;
     /* margin: 1cm; Margins */
     /* padding: 1cm; */
@@ -26,13 +39,31 @@
     box-shadow: none !important;
     border-radius: 0px !important;
     font-family: open sans, Helvetica, Arial, sans-serif; 
+    color: #000;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   } 
+
+  .dnpv-pages,
+  .dnpv-pages * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    text-shadow: none !important;
+    filter: none !important;
+  }
 
   
   .dnpv-pages .ant-table-wrapper .ant-table-thead >tr>th, 
   .dnpv-pages .ant-table-wrapper .ant-table-thead >tr>td { 
     background-color: #ffffff;
     color: #000000;
+    border-color: #000 !important;
+  }
+
+  .dnpv-pages .ant-table-wrapper .ant-table-tbody >tr >td,
+  .dnpv-pages .ant-table-wrapper .ant-table-summary >tr >td {
+    color: #000 !important;
+    border-color: #000 !important;
   }
 
   .page-break {
@@ -233,7 +264,7 @@
     border-bottom: 1px solid;
     padding: 5px;
     border-top: 1px solid;
-    font-size: 11px;
+    font-size: 14px;
   }
 
   /* .dnpv-pages .ant-table-wrapper .ant-table-thead>tr>th:nth-child(7){
@@ -248,7 +279,7 @@
     transition: none;
     border-bottom: 0px solid #f0f0f0;
     white-space: break-spaces;
-    font-size: 11px;
+    font-size: 14px;
     vertical-align: top;
   }
   .dnpv-pages .ant-table-wrapper .ant-table-tbody tr:last-child td {
@@ -324,9 +355,46 @@
 }
 
 .dnpv-pages .tx-info {
-  font-size: 12px;
+  font-size: 14px;
   font-family: inherit;
 }
+
+  /* Make header/footer text sharper & darker (requested red-box areas) */
+  .dnpv-pages .dnpv-header,
+  .dnpv-pages .dnpv-footer {
+    color: #000;
+    text-rendering: geometricPrecision;
+  }
+
+  .dnpv-pages .dnpv-header .tx-title {
+    color: #000 !important;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
+  .dnpv-pages .dnpv-header .tx-info {
+    color: #000 !important;
+    font-weight: 500;
+    font-size: 13px;
+    line-height: 1.25;
+    letter-spacing: 0;
+  }
+
+  .dnpv-pages .dnpv-footer .tx-info {
+    color: #000 !important;
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+
+  .dnpv-pages .dnpv-footer p {
+    margin: 0 0 2px 0;
+  }
+
+  @media print {
+    .dnpv-pages .dnpv-header .tx-info {
+      font-size: 14px;
+    }
+  }
 
 .dnpv-pages .tx-sub {
   font-size: 11px;

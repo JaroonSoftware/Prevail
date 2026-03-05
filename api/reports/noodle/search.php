@@ -32,13 +32,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
         left join items as i on b.stcode=i.stcode
         left join customer c on a.cuscode = c.cuscode  
         left join items_stock e on b.stcode = e.stcode
-        where 1 = 1 and i.typecode='3' AND a.sodate = CURDATE()
+        where 1 = 1 and i.typecode='3' 
         $socode
         $cuscode
         $cusname
         $created_by
         $sodate        
         order by a.socode desc ;";
+        
+        // AND a.sodate = CURDATE()
 
 
         $stmt = $conn->prepare($sql); 

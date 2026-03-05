@@ -20,7 +20,7 @@ export const column = [
         รายละเอียด
       </div>
     ),
-    align: "center",
+    align: "left",
     width: "15%",
     key: "stname",
     dataIndex: "stname",
