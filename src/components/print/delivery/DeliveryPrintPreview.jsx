@@ -150,7 +150,7 @@ export default function DeliveryPrintPreview(props) {
             <Flex vertical>
               <Typography.Text className="tx-info">
                 เลขที่
-                <span style={{ paddingLeft: 22 }}>{hData?.dncode}</span>
+                <span style={{ paddingLeft: 65 }}>{hData?.dncode}</span>
               </Typography.Text>
               <Typography.Text className="tx-info" style={{ height: 21 }}>
                 วันที่
@@ -160,11 +160,11 @@ export default function DeliveryPrintPreview(props) {
               </Typography.Text>
               <Typography.Text className="tx-info" style={{ height: 21 }}>
                 อ้างอิง
-                <span style={{ paddingLeft: 20 }}>{hData?.payment}</span>
+                <span style={{ paddingLeft: 60 }}>{hData?.remark}</span>
               </Typography.Text>
               <Typography.Text className="tx-info" style={{ height: 21 }}>
                 เครดิต
-                <span style={{ paddingLeft: 20 }}>{hData?.payment}</span>
+                <span style={{ paddingLeft: 60 }}>{hData?.payment}</span>
               </Typography.Text>
               <Typography.Text className="tx-info" style={{ height: 21 }}>
                 เขตการขาย
@@ -295,97 +295,120 @@ export default function DeliveryPrintPreview(props) {
     );
   };
 
-  const pageBodyRef = useRef(null);
-  const [rowsPerPage, setRowsPerPage] = useState(0);
-  const [rowPixel, setRowPixel] = useState(22); // pixel per row (dynamic for empty rows)
-  const ROW_HEIGHT = 22; // base px per row (used as fallback)
+  // จำกัดรายการ 16/หน้า (ให้เหมาะกับแบบฟอร์ม)
+  const ROWS_PER_PAGE = 16;
+  const ROW_HEIGHT = 17;
 
-  useEffect(() => {
-    // คำนวณจำนวนแถวที่แสดงได้จากความสูงของ container
-    const calc = () => {
-      const el = pageBodyRef.current?.querySelector(".ant-table-body");
-      const height = el ? el.clientHeight : pageBodyRef.current?.clientHeight;
-      if (height && ROW_HEIGHT) {
-        const n = Math.floor(height / ROW_HEIGHT) || 1;
-        setRowsPerPage(n);
-        // คำนวณความสูงแถวจริงเพื่อใช้ขยายแถวว่างให้เต็มพื้นที่
-        const pixel = Math.floor(height / n);
-        setRowPixel(pixel > 8 ? pixel : ROW_HEIGHT);
-      }
-    };
-    // รันเมื่อ mount และบน resize และเมื่อ details เปลี่ยน
-    calc();
-    window.addEventListener("resize", calc);
-    return () => window.removeEventListener("resize", calc);
-  }, [details]);
+  const pages = useMemo(() => {
+    const list = Array.isArray(details) ? details : [];
+    const out = [];
+    if (list.length === 0) {
+      out.push({ rows: [], pageIndex: 0 });
+      return out;
+    }
 
-  // เตรียม padded list (ไม่แก้ details ต้นฉบับ)
-  const padded = useMemo(() => {
-    if (!Array.isArray(details)) return [];
-    if (!rowsPerPage || details.length >= rowsPerPage) return details;
-    const out = [...details];
-    for (let i = out.length; i < rowsPerPage; i++) {
-      out.push({ _empty: true, key: `empty-${i}` });
+    for (let start = 0; start < list.length; start += ROWS_PER_PAGE) {
+      const slice = list.slice(start, start + ROWS_PER_PAGE);
+      // ใส่เลขลำดับแบบต่อเนื่องทั้งเอกสาร
+      const withRowNo = slice.map((row, idx) => ({
+        ...row,
+        __rowNo: start + idx + 1,
+      }));
+      out.push({ rows: withRowNo, pageIndex: out.length });
     }
     return out;
-  }, [details, rowsPerPage]);
+  }, [details]);
+
+  const totalPages = pages.length || 1;
+
+  const padRows = (rows, pageIndex) => {
+    const out = Array.isArray(rows) ? [...rows] : [];
+    for (let i = out.length; i < ROWS_PER_PAGE; i++) {
+      out.push({ _empty: true, key: `empty-${pageIndex}-${i}` });
+    }
+    return out;
+  };
 
   // map columnDesc เพื่อไม่ให้แสดงข้อมูลและหมายเลขเมื่อเป็นแถวว่าง
   const renderedColumns = useMemo(() => {
-    return (columnDesc || []).map((col, colIndex) => {
+    return (columnDesc || []).map((col) => {
       const originalRender = col.render;
       return {
         ...col,
         render: (text, record, idx) => {
           if (record && record._empty) return ""; // blank for empty row
+          // ทำให้เลขลำดับ No. ต่อเนื่องข้ามหน้า
+          if (col.key === "index" && typeof originalRender === "function") {
+            const rowNo = Number(record?.__rowNo);
+            if (Number.isFinite(rowNo)) {
+              return originalRender(text, record, rowNo - 1);
+            }
+          }
           return originalRender ? originalRender(text, record, idx) : text;
         },
       };
     });
   }, [columnDesc]);
 
-  const ContentBody = () => {
+  const ContentBody = ({ rows, showSummary, pageIndex }) => {
+    const paddedRows = padRows(rows, pageIndex);
     return (
-      // ใส่ CSS variable เพื่อกำหนดความสูงแถวว่างแบบไดนามิก
       <div
         className="dnpv-table-wrap"
-        ref={pageBodyRef}
-        style={{ ["--dnpv-empty-row-height"]: `${rowPixel}px` }}
+        style={{
+          "--dnpv-empty-row-height": `${ROW_HEIGHT}px`,
+          "--dnpv-row-height": `${ROW_HEIGHT}px`,
+        }}
       >
         <Table
           className="dnpv-table"
           size="small"
-          dataSource={padded}
+          dataSource={paddedRows}
           columns={renderedColumns}
           pagination={false}
-          rowKey={(rec) => rec.key || rec.stcode || Math.random()}
+          rowKey={(rec) => {
+            if (rec?._empty) return rec.key;
+            const base = rec?.id || rec?.rowid || rec?.stcode || "row";
+            const rowNo = rec?.__rowNo ? `-${rec.__rowNo}` : "";
+            return `${base}${rowNo}`;
+          }}
           bordered={false}
           locale={{
             emptyText: <span>No data available, please add some data.</span>,
           }}
-          onRow={(record, index) => {
+          onRow={(record) => {
             return { className: record._empty ? "dnpv-empty-row" : "r-sub" };
           }}
-          summary={ReceiptSummary}
+          summary={showSummary ? ReceiptSummary : undefined}
         />
       </div>
     );
   };
 
-  const Pages = ({ pageNum = 1, total = 1 }) => (
-    <div ref={componentRef}>
-      <ContentData>
-        <ContentHead page={`${pageNum} of ${total}`} />
-        <ContentHead2 />
-        <ContentBody />
-      </ContentData>
-    </div>
-  );
-
   const ContentData = ({ children, pageNum = 1, total = 1 }) => {
     return (
       <div className="dnpv-pages flex flex-col">
         <div className="print-content">{children}</div>
+      </div>
+    );
+  };
+
+  const PrintablePages = () => {
+    return (
+      <div ref={componentRef}>
+        {pages.map((p, idx) => {
+          const isLast = idx === totalPages - 1;
+          return (
+            <React.Fragment key={`page-${idx}`}>
+              <ContentData pageNum={idx + 1} total={totalPages}>
+                <ContentHead page={`${idx + 1} of ${totalPages}`} />
+                <ContentHead2 />
+                <ContentBody rows={p.rows} showSummary={isLast} pageIndex={idx} />
+              </ContentData>
+              {idx < totalPages - 1 && <div className="page-break" />}
+            </React.Fragment>
+          );
+        })}
       </div>
     );
   };
@@ -408,7 +431,7 @@ export default function DeliveryPrintPreview(props) {
           </Button>
         </div>
         <div className="layout-preview">
-          <Pages />
+          <PrintablePages />
         </div>
         {/* <div className='hidden'>
                     <div ref={printRef}>

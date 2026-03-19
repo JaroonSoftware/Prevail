@@ -364,7 +364,7 @@ function DeliveryNoteManage() {
         </Row>
         <Row gutter={[8, 8]} className="m-0">
           <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-            <Form.Item name="remark" label="หมายเหตุ">
+            <Form.Item name="remark" label="อ้างอิง">
               <Input.TextArea placeholder="Enter Remark" rows={4} />
             </Form.Item>
           </Col>

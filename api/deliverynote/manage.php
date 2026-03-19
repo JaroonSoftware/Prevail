@@ -155,10 +155,10 @@ try {
         $header = (object)$header;
 
         $stmt->bindParam(":cuscode", $header->cuscode, PDO::PARAM_STR);
+        $stmt->bindParam(":dndate", $header->dndate, PDO::PARAM_STR);
         $stmt->bindParam(":remark", $header->remark, PDO::PARAM_STR);
         $stmt->bindParam(":total_price", $header->total_price, PDO::PARAM_STR);
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_INT);
-        $stmt->bindParam(":dndate", $header->dndate, PDO::PARAM_STR);
         $stmt->bindParam(":dncode", $header->dncode, PDO::PARAM_STR);
 
         if (!$stmt->execute()) {
@@ -185,6 +185,7 @@ try {
             $stmt->bindParam(":dncode", $header->dncode, PDO::PARAM_STR);
             $stmt->bindParam(":socode", $val->socode, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
+            $stmt->bindParam(":qty", $val->qty, PDO::PARAM_INT);
             $stmt->bindParam(":price", $val->price, PDO::PARAM_STR);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
         

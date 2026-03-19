@@ -23,13 +23,17 @@
     display: block;
   }
   .dnpv-pages { 
+    --dnpv-table-border-color: #000;
     letter-spacing: 0;
     width: 210mm; /* A4 width */
     height: 297mm; /* A4 height */
+    box-sizing: border-box; /* include padding within A4 size */
     /* margin: 0px !important; */
     /* padding: 0px !important; */
     padding-inline: 4mm;
     padding-block: 8mm;
+    margin: 0 !important;
+    overflow: hidden;
     /* margin: 1cm; Margins */
     /* padding: 1cm; */
     /* page-break-after: always;    */
@@ -43,6 +47,22 @@
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   } 
+
+  /* Ensure consistent page starts (avoid flex fragmentation quirks) */
+  .dnpv-pages {
+    display: block !important;
+    break-after: page;
+    page-break-after: always;
+  }
+  .dnpv-pages:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+
+  /* Divider is only for screen preview */
+  .page-break {
+    display: none !important;
+  }
 
   .dnpv-pages,
   .dnpv-pages * {
@@ -67,8 +87,14 @@
   }
 
   .page-break {
-    page-break-before: always; 
+    page-break-before: always;
+    height: 0;
   }
+}
+
+/* Screen preview: show each A4 page as a separate sheet */
+.page-break {
+  height: 12px;
 }
  
   #dnpv.page-show {
@@ -100,9 +126,9 @@
     height: auto; 
     /* min-height: 29.7cm; */
     box-sizing: border-box;
-    box-shadow: 1px 1px 2px 1px #c5c7c5;
-    border-radius: 4px;
-    background-color: #fff;
+    box-shadow: none;
+    border-radius: 0;
+    background-color: transparent;
     letter-spacing: 0px; 
     color: #000;
     position: relative;
@@ -110,9 +136,13 @@
 
   .dnpv-pages {
     ---color--1 : #508ecc;
+    --dnpv-table-border-color: #d9d9d9;
     position: relative;
     width: 21cm;
     min-height: 29.7cm;
+    background-color: #fff;
+    box-shadow: 1px 1px 2px 1px #c5c7c5;
+    border-radius: 4px;
   }
 
   .dnpv-pages .print-logo {
@@ -152,8 +182,8 @@
     width: 100%;
     position: relative;
     height: 28mm; 
-    padding-block: 1.4mm;
-    padding-inline: 1.4mm;
+    padding-block: 0.4mm;
+    padding-inline: 0.4mm;
     border-bottom: 0px solid #000; 
     display: inline-flex;
     flex-direction: column;
@@ -283,7 +313,8 @@
     vertical-align: top;
   }
   .dnpv-pages .ant-table-wrapper .ant-table-tbody tr:last-child td {
-    border-bottom: 0.5px solid ;
+    border-bottom: 1px dashed var(--dnpv-table-border-color) !important; /* close table at page end */
+    border-bottom-color: var(--dnpv-table-border-color) !important;
   }
 
   .dnpv-pages .ant-table-wrapper .ant-table-container table>thead>tr:first-child >*:first-child {
@@ -363,7 +394,7 @@
   .dnpv-pages .dnpv-header,
   .dnpv-pages .dnpv-footer {
     color: #000;
-    text-rendering: geometricPrecision;
+    /* text-rendering: geometricPrecision; */
   }
 
   .dnpv-pages .dnpv-header .tx-title {
@@ -432,9 +463,9 @@
 
 /* compact row sizing: reduce padding and enforce fixed height */
 .dnpv-pages .ant-table-wrapper .ant-table-tbody > tr > td {
-  padding: 4px 6px;
-  height: 22px;         /* adjust to your desired compact height */
-  line-height: 1;
+  padding: 0 6px;
+  height: var(--dnpv-row-height, 22px);
+  line-height: 1.1;
   white-space: nowrap;  /* keep single-line; use ellipsis when overflow */
   overflow: hidden;
   text-overflow: ellipsis;
@@ -482,7 +513,7 @@
 
 /* ยืนยันความสูงแถวคงที่ (ปรับถ้าจำเป็น) */
 .dnpv-pages .ant-table-wrapper .ant-table-tbody > tr > td {
-  height: 22px; /* ต้องตรงกับ ROW_HEIGHT ใน JSX */
+  height: var(--dnpv-row-height, 22px); /* sync with JSX */
   line-height: 1;
   padding: 4px 6px;
   box-sizing: border-box;
@@ -498,12 +529,14 @@
   box-sizing: border-box;
   vertical-align: middle;
   height: var(--dnpv-empty-row-height, 22px) !important; /* dynamic height from JSX */
+  border-color: var(--dnpv-table-border-color) !important; /* keep borders visible even when text is transparent */
+  border-bottom-color: var(--dnpv-table-border-color) !important;
 }
 
 /* ensure td line-height doesn't force extra height for non-empty rows */
 .dnpv-pages .ant-table-wrapper .ant-table-tbody > tr > td {
-  padding: 4px 6px;
-  line-height: 1;
+  padding: 0 6px;
+  line-height: 1.1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -553,7 +586,7 @@
   .ant-table-tbody > tr > td:first-child,
 .dnpv-pages .ant-table-wrapper
   .ant-table-summary > tr > td:first-child {
-  border-left: 1px solid #d9d9d9 !important;
+  border-left: 1px dashed var(--dnpv-table-border-color) !important;
 }
 
 /* ขอบขวาของแถวสุดท้ายในแต่ละ row */
@@ -563,15 +596,15 @@
   .ant-table-tbody > tr > td:last-child,
 .dnpv-pages .ant-table-wrapper
   .ant-table-summary > tr > td:last-child {
-  border-right: 1px solid #d9d9d9 !important;
+  border-right: 1px dashed var(--dnpv-table-border-color) !important;
 }
 
 /* ถ้าใช้ placeholder rows ให้แน่ใจว่าขอบยังคงแสดง */
 .dnpv-pages .ant-table-wrapper .dnpv-empty-row > td:first-child {
-  border-left: 1px solid #d9d9d9 !important;
+  border-left: 1px dashed var(--dnpv-table-border-color) !important;
 }
 .dnpv-pages .ant-table-wrapper .dnpv-empty-row > td:last-child {
-  border-right: 1px solid #d9d9d9 !important;
+  border-right: 1px dashed var(--dnpv-table-border-color) !important;
 }
 
 /* ปรับให้เส้นต่อเนื่องเมื่อมี paddingmargins ใน cell */
