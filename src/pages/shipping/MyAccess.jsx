@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import {
   Form,
@@ -32,6 +32,13 @@ const barcodeservice = BarcodeService();
 // const dateFormat = "DD/MM/YYYY";
 const ShippingAccess = () => {
   const [form] = Form.useForm();
+  const isFirstLoadRef = useRef(true);
+  const getIgnoreLoading = () => {
+    const ignoreLoading = !isFirstLoadRef.current;
+    isFirstLoadRef.current = false;
+    return ignoreLoading;
+  };
+
   const [isModalOpenDN, setIsModalDNOpen] = useState(false);
   const [openDN, setOpenDN] = useState(false);
   const [selected, setSelected] = useState("");
@@ -44,7 +51,7 @@ const ShippingAccess = () => {
     const initial = async () => {
       const data = {};
       dnservice
-        .search({ ignoreLoading: Object.keys(data).length !== 0 })
+        .search({ ignoreLoading: getIgnoreLoading() })
         .then((res) => {
           const { data } = res.data;
         })

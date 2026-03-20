@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
@@ -14,6 +14,11 @@ import { accessColumn } from "./model";
 
 import dayjs from "dayjs";
 import ReceiptService from "../../service/Receipt.service";
+import {
+  saveMyAccessSearchCookie,
+  loadMyAccessSearchCookie,
+  clearMyAccessSearchCookie,
+} from "../../utils/myaccessSearchCookie";
 
 const reService = ReceiptService();
 const mngConfig = {
@@ -26,9 +31,17 @@ const mngConfig = {
 
 const RangePicker = DatePicker.RangePicker;
 const MyAccess = () => {
+  const PAGE_COOKIE_KEY = "receipt";
   const navigate = useNavigate();
 
   const [form] = Form.useForm();
+  const isFirstLoadRef = useRef(true);
+
+  const getIgnoreLoading = () => {
+    const ignoreLoading = !isFirstLoadRef.current;
+    isFirstLoadRef.current = false;
+    return ignoreLoading;
+  };
 
   const [accessData, setAccessData] = useState([]);
   const [activeSearch, setActiveSearch] = useState([]);
@@ -120,36 +133,43 @@ const MyAccess = () => {
     />
   );
 
-  const handleSearch = () => {
-    form.validateFields().then((v) => {
-      const data = { ...v };
-      // console.log(data)
-      if (!!data?.redate) {
-        const arr = data?.redate.map((m)   => dayjs(m).format("YYYY-MM-DD"));
-        const [redate_form, redate_to] = arr;
-        
-        //data.created_date = arr
-        Object.assign(data, { redate_form, redate_to });
-      }
-      setTimeout(
-        () =>
-          reService
-            .search(data, { ignoreLoading: Object.keys(data).length !== 0 })
-            .then((res) => {
-              const { data } = res.data;
+  const buildSearchPayload = (values = {}) => {
+    const data = { ...values };
+    if (!!data?.redate) {
+      const arr = data?.redate.map((m) => dayjs(m).format("YYYY-MM-DD"));
+      const [redate_form, redate_to] = arr;
+      Object.assign(data, { redate_form, redate_to });
+    }
+    return data;
+  };
 
-              setAccessData(data);
-            })
-            .catch((err) => {
-              console.log(err);
-              message.error("Request error!");
-            }),
-        80
-      );
-    });
+  const requestSearch = (payload) => {
+    setTimeout(
+      () =>
+        reService
+          .search(payload, { ignoreLoading: getIgnoreLoading() })
+          .then((res) => {
+            const { data } = res.data;
+
+            setAccessData(data);
+          })
+          .catch((err) => {
+            console.log(err);
+            message.error("Request error!");
+          }),
+      80
+    );
+  };
+
+  const handleSearch = (forcedValues = null) => {
+    const v = forcedValues ?? form.getFieldsValue(true);
+    saveMyAccessSearchCookie(PAGE_COOKIE_KEY, v, 7);
+    const payload = buildSearchPayload(v);
+    requestSearch(payload);
   };
 
   const handleClear = () => {
+    clearMyAccessSearchCookie(PAGE_COOKIE_KEY);
     form.resetFields();
 
     handleSearch();
@@ -211,16 +231,19 @@ const MyAccess = () => {
 
   const column = accessColumn({ handleEdit, handleDelete, handlePrint, handleView });
 
-  const getData = (data) => {
-    handleSearch();
-  };
-
   const init = async () => {
-    getData({});
+    const restored = loadMyAccessSearchCookie(PAGE_COOKIE_KEY);
+    if (restored) {
+      form.setFieldsValue(restored);
+    }
+    return restored;
   };
 
   useEffect(() => {
-    init();
+    (async () => {
+      const restored = await init();
+      handleSearch(restored ?? null);
+    })();
 
     return async () => {
       //console.clear();
@@ -258,7 +281,7 @@ const MyAccess = () => {
         size="middle"
         style={{ display: "flex", position: "relative" }}
       >
-        <Form form={form} layout="vertical" autoComplete="off" onValuesChange={()=>{ handleSearch(true)}}>
+        <Form form={form} layout="vertical" autoComplete="off" onValuesChange={()=>{ handleSearch()}}>
           {FormSearch}
         </Form>
         <Card>

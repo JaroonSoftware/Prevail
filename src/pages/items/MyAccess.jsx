@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, message } from "antd";
 import { Collapse, Form, Flex, Row, Col, Space, Select } from "antd";
@@ -10,6 +10,11 @@ import { accessColumn } from "./model";
 import OptionService from "../../service/Options.service";
 // import dayjs from 'dayjs';
 import Itemservice from "../../service/Items.Service";
+import {
+  saveMyAccessSearchCookie,
+  loadMyAccessSearchCookie,
+  clearMyAccessSearchCookie,
+} from "../../utils/myaccessSearchCookie";
 const opService = OptionService();
 const itemservice = Itemservice();
 const mngConfig = {
@@ -20,30 +25,40 @@ const mngConfig = {
   code: null,
 };
 const ItemsAccess = () => {
+  const PAGE_COOKIE_KEY = "items";
   const navigate = useNavigate();
   const [form] = Form.useForm();
+  const isFirstLoadRef = useRef(true);
+  const getIgnoreLoading = () => {
+    const ignoreLoading = !isFirstLoadRef.current;
+    isFirstLoadRef.current = false;
+    return ignoreLoading;
+  };
+
   const [accessData, setAccessData] = useState([]);
   const [activeSearch, setActiveSearch] = useState([]);
   const [optionType, setOptionType] = useState([]);
-  const handleSearch = () => {
-    form.validateFields().then((v) => {
-      const data = { ...v };
-      itemservice
-        .search(data, { ignoreLoading: Object.keys(data).length !== 0 })
-        .then((res) => {
-          const { data } = res.data;
+  const handleSearch = (forcedValues = null) => {
+    const v = forcedValues ?? form.getFieldsValue(true);
+    saveMyAccessSearchCookie(PAGE_COOKIE_KEY, v, 7);
+    const data = { ...v };
+    itemservice
+      .search(data, { ignoreLoading: getIgnoreLoading() })
+      .then((res) => {
+        const { data } = res.data;
 
-          setAccessData(data);
-        })
-        .catch((err) => {
-          console.log(err);
-          message.error("Request error!");
-        });
-    });
+        setAccessData(data);
+      })
+      .catch((err) => {
+        console.log(err);
+        message.error("Request error!");
+      });
   };
 
   const handleClear = () => {
+    clearMyAccessSearchCookie(PAGE_COOKIE_KEY);
     form.resetFields();
+    form.setFieldValue("active_status", "Y");
 
     handleSearch();
   };
@@ -106,19 +121,28 @@ const ItemsAccess = () => {
     // });
   };
 
+  const init = async () => {
+    const restored = loadMyAccessSearchCookie(PAGE_COOKIE_KEY);
+    if (restored) {
+      form.setFieldsValue(restored);
+    } else {
+      form.setFieldValue('active_status','Y');
+    }
+    return restored ?? form.getFieldsValue(true);
+  };
+
   useEffect(() => {
-    form.setFieldValue('active_status','Y');
-    GetItemsType();
-    getData();
+    (async () => {
+      const restored = await init();
+      GetItemsType();
+      handleSearch(restored ?? null);
+    })();
   }, []);
   const GetItemsType = () => {
     opService.optionsItemstype().then((res) => {
       let { data } = res.data;
       setOptionType(data);
     });
-  };
-  const getData = () => {
-    handleSearch();
   };
   const FormSearch = (
     <Collapse
@@ -145,7 +169,7 @@ const ItemsAccess = () => {
                     <Form.Item
                       label="รหัสสินค้า"
                       name="stcode"
-                      onChange={handleSearch}
+                      onChange={() => handleSearch()}
                     >
                       <Input placeholder="กรอกรหัสสินค้า" />
                     </Form.Item>
@@ -154,7 +178,7 @@ const ItemsAccess = () => {
                     <Form.Item
                       label="ชื่อสินค้า"
                       name="stname"
-                      onChange={handleSearch}
+                      onChange={() => handleSearch()}
                     >
                       <Input placeholder="กรอกชื่อสินค้า" />
                     </Form.Item>
@@ -163,13 +187,13 @@ const ItemsAccess = () => {
                     <Form.Item
                       label="ประเภทสินค้า"
                       name="typecode"
-                      onChange={handleSearch}
+                      onChange={() => handleSearch()}
                     >
                       <Select
                         size="large"
                         showSearch
                         placeholder="เลือกประเภทสินค้า"
-                        onChange={handleSearch}
+                        onChange={() => handleSearch()}
                         options={optionType.map((item) => ({
                           value: item.typecode,
                           label: item.typename,
@@ -181,13 +205,13 @@ const ItemsAccess = () => {
                     <Form.Item
                       label="สถานะการใช้งาน"
                       name="active_status"
-                      onChange={handleSearch}
+                      onChange={() => handleSearch()}
                     >
                       <Select
                         size="large"
                         showSearch
                         placeholder="เลือกประเภทสินค้า"
-                        onChange={handleSearch}
+                        onChange={() => handleSearch()}
                         // defaultValue="Y"
                         options={[
                           { value: "Y", label: "เปิดการใช้งาน" },

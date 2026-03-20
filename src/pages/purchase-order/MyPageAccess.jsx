@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Card } from 'antd';
@@ -10,6 +10,7 @@ import { accessColumn } from "./model";
 
 import dayjs from 'dayjs';
 import PurchaseOrderService from '../../service/PurchaseOrder.service';
+import { setCookieWithPrefix, getCookieWithPrefix } from '../../utils/util';
 
 
 const quotService = PurchaseOrderService(); 
@@ -20,6 +21,13 @@ const PurchaseOrderAccess = () => {
     const navigate = useNavigate();
     
     const [form] = Form.useForm();
+    const isFirstLoadRef = useRef(true);
+    const getIgnoreLoading = () => {
+        const ignoreLoading = !isFirstLoadRef.current;
+        isFirstLoadRef.current = false;
+        return ignoreLoading;
+    };
+
 
     const [accessData, setAccessData] = useState([]);
     const [activeSearch, setActiveSearch] = useState([]);
@@ -29,7 +37,9 @@ const PurchaseOrderAccess = () => {
         <Row gutter={[8,8]}> 
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
                 <Form.Item label='รหัสใบสั่งซื้อ' name='pocode'>
-                    <Input placeholder='Enter PurchaseOrder Code.' />
+                    <Input placeholder='Enter PurchaseOrder Code.' onChange={(e) => {
+                        setCookieWithPrefix("purchase-order", "pocode", e.target.value, 7);
+                    }} />
                 </Form.Item>                            
             </Col>
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
@@ -104,7 +114,7 @@ const PurchaseOrderAccess = () => {
                 Object.assign(data, {podate_form, podate_to});
             }
             setTimeout( () => 
-                quotService.search(data, { ignoreLoading: Object.keys(data).length !== 0}).then( res => {
+                quotService.search(data, { ignoreLoading: getIgnoreLoading()}).then( res => {
                     const {data} = res.data;
         
                     setAccessData(data);
@@ -161,7 +171,13 @@ const PurchaseOrderAccess = () => {
     }
 
     const init = async () => {
-        getData({});
+        const cookieValue = getCookieWithPrefix("purchase-order", "pocode");
+        if (cookieValue) {
+            form.setFieldValue("pocode", cookieValue);
+            setTimeout(() => getData({}), 50);
+        } else {
+            getData({});
+        }
     }
             
     useEffect( () => {

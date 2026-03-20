@@ -8,18 +8,20 @@ const API_URL = {
 };
 
 const SystemService = {
-  signIn: (reqData) => {
+  signIn: (reqData, config = {}) => {
     return axios({
       method: MEDTHOD.POST,
       url: API_URL.SIGN_IN,
       data: reqData,
+      ...config,
     });
   },
 
-  getUnit: () => {
+  getUnit: (config = {}) => {
     return axios({
       medthod: MEDTHOD.GET,
       url: API_URL.GET_UNIT,
+      ...config,
     });
   },
 };

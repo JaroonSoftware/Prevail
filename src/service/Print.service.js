@@ -7,7 +7,7 @@ const API_URL = {
 const PrintService = () => {
   //quotation
   // const quotation = (parm = {}) => api.get(`${API_URL.PRINT_QUOTATION}?${getParmeter(parm)}`, { ignoreLoading : true });
-  const quotation = (code) => api.get(`${API_URL.PRINT_QUOTATION}?code=${code}`);
+  const quotation = (code, config = {}) => api.get(`${API_URL.PRINT_QUOTATION}?code=${code}`, config);
   return {    
     quotation
   };

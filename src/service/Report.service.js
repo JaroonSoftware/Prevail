@@ -7,9 +7,9 @@ const API_URL = {
   
 const ReportService = () => { 
   
-  const getDryGoods = (parm = {}) => api.post(`${API_URL.API_GETDRYGOODS}`, parm);
-  const setDryGoods = (parm = {}) => api.post(`${API_URL.API_SETDRYGOODS}`, parm);
-  const getNoodle = (parm = {}) => api.post(`${API_URL.API_GETNOODLE}`, parm);
+  const getDryGoods = (parm = {}, config = {}) => api.post(`${API_URL.API_GETDRYGOODS}`, parm, config);
+  const setDryGoods = (parm = {}, config = {}) => api.post(`${API_URL.API_SETDRYGOODS}`, parm, config);
+  const getNoodle = (parm = {}, config = {}) => api.post(`${API_URL.API_GETNOODLE}`, parm, config);
  
 
   return {

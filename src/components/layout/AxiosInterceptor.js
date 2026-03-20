@@ -31,7 +31,7 @@ const AxiosInterceptor = ({ children }) => {
                     config.headers.Authorization = `Bearer ${t}`;
                     // config.headers['Content-Type'] = "application/x-www-form-urlencoded";
                 }
-                if( !!config?.cancel ) {
+                if( !!(config?.cancel || config?.cancle) ) {
                     const cancelTokenSource = axios.CancelToken.source();
                     config.cancelToken = cancelTokenSource?.token;
                 }

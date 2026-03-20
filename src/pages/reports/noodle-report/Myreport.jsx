@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Card,
   Table,
@@ -24,10 +24,17 @@ const NoodleReport = () => {
   const [listDetail, setListDetail] = useState([]);
   const [show, setShow] = useState(false);
   const [selected, setSelected] = useState(null);
+  const isFirstLoadRef = useRef(true);
+
+  const getIgnoreLoading = () => {
+    const ignoreLoading = !isFirstLoadRef.current;
+    isFirstLoadRef.current = false;
+    return ignoreLoading;
+  };
 
   const getData = (data) => {
     rpservice
-      .getNoodle(data, { ignoreLoading: true })
+      .getNoodle(data, { ignoreLoading: getIgnoreLoading() })
       .then((res) => {
         const { data } = res.data;
 
@@ -59,7 +66,7 @@ const NoodleReport = () => {
 
   const handleConfirmed = (v) => {
     rpservice
-      .setDryGoods(v, { ignoreLoading: true })
+      .setDryGoods(v, { ignoreLoading: getIgnoreLoading() })
       .then((res) => {
         message.success(res.data.message || "บันทึกข้อมูลเรียบร้อย");
         getData({});

@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "antd";
 import { Collapse, Form, Flex, Row, Col, Space } from "antd";
@@ -11,6 +11,11 @@ import {
 } from "@ant-design/icons";
 import { accessColumn } from "./model";
 import CatalogService from "../../service/Catalog.Service";
+import {
+  saveMyAccessSearchCookie,
+  loadMyAccessSearchCookie,
+  clearMyAccessSearchCookie,
+} from "../../utils/myaccessSearchCookie";
 const clService = CatalogService();
 const mngConfig = {
   title: "",
@@ -20,8 +25,16 @@ const mngConfig = {
   code: null,
 };
 const CatalogAccess = () => {
+  const PAGE_COOKIE_KEY = "catalog";
   const navigate = useNavigate();
   const [form] = Form.useForm();
+  const isFirstLoadRef = useRef(true);
+  const getIgnoreLoading = () => {
+    const ignoreLoading = !isFirstLoadRef.current;
+    isFirstLoadRef.current = false;
+    return ignoreLoading;
+  };
+
   const [accessData, setAccessData] = useState([]);
   const [activeSearch, setActiveSearch] = useState([]);
   const CollapseCatalogSearch = (
@@ -91,27 +104,31 @@ const CatalogAccess = () => {
       // bordered={false}
     />
   );
-  const handleSearch = () => {
-    form.validateFields().then((v) => {
-      const data = { ...v };
-      setTimeout(
-        () =>
-          clService
-            .search(data, { ignoreLoading: Object.keys(data).length !== 0 })
-            .then((res) => {
-              const { data } = res.data;
+  const requestSearch = (payload) => {
+    setTimeout(
+      () =>
+        clService
+          .search(payload, { ignoreLoading: getIgnoreLoading() })
+          .then((res) => {
+            const { data } = res.data;
 
-              setAccessData(data);
-            })
-            .catch((err) => {
-              console.log(err);
-              message.error("Request error!");
-            }),
-        80
-      );
-    });
+            setAccessData(data);
+          })
+          .catch((err) => {
+            console.log(err);
+            message.error("Request error!");
+          }),
+      80
+    );
+  };
+
+  const handleSearch = (forcedValues = null) => {
+    const v = forcedValues ?? form.getFieldsValue(true);
+    saveMyAccessSearchCookie(PAGE_COOKIE_KEY, v, 7);
+    requestSearch({ ...v });
   };
   const handleClear = () => {
+    clearMyAccessSearchCookie(PAGE_COOKIE_KEY);
     form.resetFields();
     handleSearch();
   };
@@ -154,16 +171,19 @@ const CatalogAccess = () => {
   };
   const column = accessColumn({ handleEdit, handleDelete });
 
-  const getData = (data) => {
-    handleSearch();
-  };
-
   const init = async () => {
-    getData({});
+    const restored = loadMyAccessSearchCookie(PAGE_COOKIE_KEY);
+    if (restored) {
+      form.setFieldsValue(restored);
+    }
+    return restored;
   };
 
   useEffect(() => {
-    init();
+    (async () => {
+      const restored = await init();
+      handleSearch(restored ?? null);
+    })();
 
     return async () => {
       //console.clear();
@@ -206,7 +226,7 @@ const CatalogAccess = () => {
           layout="vertical"
           autoComplete="off"
           onValuesChange={() => {
-            handleSearch(true);
+            handleSearch();
           }}
         >
           {FormSearch}

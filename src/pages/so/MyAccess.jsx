@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Card } from 'antd';
@@ -10,6 +10,11 @@ import { accessColumn } from "./model";
 
 import dayjs from 'dayjs';
 import SOService from '../../service/SO.service';
+import {
+    saveMyAccessSearchCookie,
+    loadMyAccessSearchCookie,
+    clearMyAccessSearchCookie,
+} from '../../utils/myaccessSearchCookie';
 
 
 const soservice = SOService(); 
@@ -17,14 +22,20 @@ const mngConfig = {title:"", textOk:null, textCancel:null, action:"create", code
 
 const RangePicker = DatePicker.RangePicker;
 const MyAccess = () => {
+    const PAGE_COOKIE_KEY = 'so';
     const navigate = useNavigate();
     
     const [form] = Form.useForm();
+    const isFirstLoadRef = useRef(true);
 
     const [accessData, setAccessData] = useState([]);
     const [activeSearch, setActiveSearch] = useState([]);
  
-    let loading = false;
+    const getIgnoreLoading = () => {
+        const ignoreLoading = !isFirstLoadRef.current;
+        isFirstLoadRef.current = false;
+        return ignoreLoading;
+    };
     
     const CollapseItemSearch = (
         <>  
@@ -95,24 +106,25 @@ const MyAccess = () => {
         />         
     );
 
-    const handleSearch = (load = false) => {
-        loading = load;
-        form.validateFields().then( v => {
-            const data = {...v}; 
-            if( !!data?.sodate ) {
-                const arr = data?.quotdate.map( m => dayjs(m).format("YYYY-MM-DD") )
-                const [sodate_form, sodate_to] = arr; 
-                //data.created_date = arr
-                Object.assign(data, {sodate_form, sodate_to});
-            }
+    const buildSearchPayload = (values = {}) => {
+        const data = {...values}; 
+        if( !!data?.sodate ) {
+            const arr = data?.sodate.map( m => dayjs(m).format("YYYY-MM-DD") )
+            const [sodate_form, sodate_to] = arr; 
+            Object.assign(data, {sodate_form, sodate_to});
+        }
+        return data;
+    };
 
-            setTimeout( () => getData(data), 80);
-        }).catch( err => {
-            console.warn(err);
-        })
+    const handleSearch = (forcedValues = null) => {
+        const values = forcedValues ?? form.getFieldsValue(true);
+        saveMyAccessSearchCookie(PAGE_COOKIE_KEY, values, 7);
+        const payload = buildSearchPayload(values);
+        setTimeout( () => getData(payload), 80);
     }
 
     const handleClear = () => {
+        clearMyAccessSearchCookie(PAGE_COOKIE_KEY);
         form.resetFields();
         
         handleSearch()
@@ -141,7 +153,7 @@ const MyAccess = () => {
     const column = accessColumn( {handleEdit, handlePrintsData, handleView });
 
     const getData = (data) => {
-        soservice.search(data, { ignoreLoading: loading}).then( res => {
+        soservice.search(data, { ignoreLoading: getIgnoreLoading()}).then( res => {
             const {data} = res.data;
 
             setAccessData(data);
@@ -152,11 +164,18 @@ const MyAccess = () => {
     }
 
     const init = async () => {
-        getData({});  
+        const restored = loadMyAccessSearchCookie(PAGE_COOKIE_KEY);
+        if (restored) {
+            form.setFieldsValue(restored);
+        }
+        return restored;
     }
             
     useEffect( () => {
-        init();
+        (async () => {
+            const restored = await init();
+            handleSearch(restored ?? null);
+        })();
 
         return  async () => { 
             //console.clear();
@@ -185,7 +204,7 @@ const MyAccess = () => {
     return (
     <div className='so-access' id="area">
         <Space direction="vertical" size="middle" style={{ display: 'flex', position: 'relative' }} >
-            <Form form={form} layout="vertical" autoComplete="off" onValuesChange={()=>{ handleSearch(true)}}>
+            <Form form={form} layout="vertical" autoComplete="off" onValuesChange={()=>{ handleSearch()}}>
                 {FormSearch}
             </Form> 
             <Card>
@@ -194,7 +213,7 @@ const MyAccess = () => {
                         <Table 
                         title={()=>TitleTable} 
                         size='small' 
-                        rowKey="qtcode" 
+                        rowKey="socode" 
                         columns={column} 
                         dataSource={accessData} 
                         scroll={{ x: 'max-content' }} 

@@ -30,27 +30,27 @@ const getHeader = () => {
 
 
 const SamplePreparationService = () => { 
-  const create = (parm={}) => api.post(API_URL.API_MANAGE, parm); 
-  const update = (parm={}) => api.put(API_URL.API_MANAGE, parm);
-  const del = (code=null) => api.delete(API_URL.API_MANAGE+`?code=${code}`);
-  const get = (code=null) => api.get(API_URL.API_MANAGE+`?code=${code}`);
-  const spcode = () => api.get(API_URL.API_SPCODE);
+  const create = (parm={}, config={}) => api.post(API_URL.API_MANAGE, parm, config); 
+  const update = (parm={}, config={}) => api.put(API_URL.API_MANAGE, parm, config);
+  const del = (code=null, config={}) => api.delete(API_URL.API_MANAGE+`?code=${code}`, config);
+  const get = (code=null, config={}) => api.get(API_URL.API_MANAGE+`?code=${code}`, config);
+  const spcode = (config={}) => api.get(API_URL.API_SPCODE, config);
   const search = ( parm={}, config={}) => api.post(API_URL.API_SEARCH, parm, {...config, cancel:true});
-  const get_sptags = (code=null) => api.get(API_URL.API_TAGS+`?code=${code || ""}`, { ignoreLoading : true });
+  const get_sptags = (code=null, config={}) => api.get(API_URL.API_TAGS+`?code=${code || ""}`, { ignoreLoading : true, ...config });
   
-  const sptags_create = (parm={}) => api.post(API_URL.API_SPTAGS_MANAGE, parm, { ignoreLoading : true });
-  const sptags_delete = (code=null) => api.delete(API_URL.API_SPTAGS_MANAGE+`?code=${code}`, { ignoreLoading : true });
+  const sptags_create = (parm={}, config={}) => api.post(API_URL.API_SPTAGS_MANAGE, parm, { ignoreLoading : true, ...config });
+  const sptags_delete = (code=null, config={}) => api.delete(API_URL.API_SPTAGS_MANAGE+`?code=${code}`, { ignoreLoading : true, ...config });
   
-  const approved = (parm={}) => api.put(API_URL.API_SPAPPROVE, parm);
-  const cancel_approved = (parm={}) => api.put(API_URL.API_SPAPPROVE_CANCEL, parm);
+  const approved = (parm={}, config={}) => api.put(API_URL.API_SPAPPROVE, parm, config);
+  const cancel_approved = (parm={}, config={}) => api.put(API_URL.API_SPAPPROVE_CANCEL, parm, config);
   
-  const cancel_sample_preparation = (parm={}) => api.put(API_URL.API_SPSTATUS, { ...parm, status: 'cancel' });
-  const spduplicate = (parm={}) => api.post(API_URL.API_SPDUPLICATE, { ...parm } );
+  const cancel_sample_preparation = (parm={}, config={}) => api.put(API_URL.API_SPSTATUS, { ...parm, status: 'cancel' }, config);
+  const spduplicate = (parm={}, config={}) => api.post(API_URL.API_SPDUPLICATE, { ...parm }, config );
   // const waiting_approved = () => api.get(API_URL.API_APPROVES_RESULT + '?r=waiting_approve');
-  const coa = (code) => api.get(`${API_URL.API_COA}?code=${code}`);
-  const lot = (code) => api.get(`${API_URL.API_LOT}?code=${code}`);
+  const coa = (code, config={}) => api.get(`${API_URL.API_COA}?code=${code}`, config);
+  const lot = (code, config={}) => api.get(`${API_URL.API_LOT}?code=${code}`, config);
 
-  const customer_approved = (parm) => api.put(API_URL.API_CUSTOMER_APPROVED_STATUS, parm);
+  const customer_approved = (parm, config={}) => api.put(API_URL.API_CUSTOMER_APPROVED_STATUS, parm, config);
 
   const waiting_approved = () => api({
     method: 'GET',      

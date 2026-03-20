@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Card } from 'antd';
@@ -20,6 +20,13 @@ const GoodsReceiptAccess = () => {
     const navigate = useNavigate();
     
     const [form] = Form.useForm();
+    const isFirstLoadRef = useRef(true);
+    const getIgnoreLoading = () => {
+        const ignoreLoading = !isFirstLoadRef.current;
+        isFirstLoadRef.current = false;
+        return ignoreLoading;
+    };
+
 
     const [accessData, setAccessData] = useState([]);
     const [activeSearch, setActiveSearch] = useState([]);
@@ -99,7 +106,7 @@ const GoodsReceiptAccess = () => {
                 Object.assign(data, {grdate_form, grdate_to});
             }
             setTimeout( () => 
-                quotService.search(data, { ignoreLoading: Object.keys(data).length !== 0}).then( res => {
+                quotService.search(data, { ignoreLoading: getIgnoreLoading()}).then( res => {
                     const {data} = res.data;
         
                     setAccessData(data);

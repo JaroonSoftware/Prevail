@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, message } from "antd";
 import { Collapse, Form, Flex, Row, Col, Space } from "antd";
@@ -8,6 +8,11 @@ import { SearchOutlined, ClearOutlined } from "@ant-design/icons";
 import { MdGroupAdd } from "react-icons/md";
 import { accessColumn } from "./model";
 import UserService from "../../service/User.service";
+import {
+  saveMyAccessSearchCookie,
+  loadMyAccessSearchCookie,
+  clearMyAccessSearchCookie,
+} from "../../utils/myaccessSearchCookie";
 
 const userService = UserService();
 const mngConfig = {
@@ -18,29 +23,38 @@ const mngConfig = {
   code: null,
 };
 const UsersAccess = () => {
+  const PAGE_COOKIE_KEY = "users";
   const navigate = useNavigate();
   const [form] = Form.useForm();
+  const isFirstLoadRef = useRef(true);
+  const getIgnoreLoading = () => {
+    const ignoreLoading = !isFirstLoadRef.current;
+    isFirstLoadRef.current = false;
+    return ignoreLoading;
+  };
+
   const [accessData, setAccessData] = useState([]);
   const [activeSearch, setActiveSearch] = useState([]);
 
-  const handleSearch = () => {
-    form.validateFields().then((v) => {
-      const data = { ...v };
-      userService
-      .search(data, { ignoreLoading: Object.keys(data).length !== 0 })
-      .then((res) => {
-        const { data } = res.data;
+  const handleSearch = (forcedValues = null) => {
+    const v = forcedValues ?? form.getFieldsValue(true);
+    saveMyAccessSearchCookie(PAGE_COOKIE_KEY, v, 7);
+    const data = { ...v };
+    userService
+    .search(data, { ignoreLoading: getIgnoreLoading() })
+    .then((res) => {
+      const { data } = res.data;
 
-        setAccessData(data);
-      })
-      .catch((err) => {
-        console.log(err);
-        message.error("Request error!");
-      });
+      setAccessData(data);
+    })
+    .catch((err) => {
+      console.log(err);
+      message.error("Request error!");
     });
   };
 
   const handleClear = () => {
+    clearMyAccessSearchCookie(PAGE_COOKIE_KEY);
     form.resetFields();
 
     handleSearch();
@@ -92,23 +106,20 @@ const UsersAccess = () => {
     // });
   };
 
-  useEffect(() => {
-    getData({});
-  }, []);
-
-  const getData = (data) => {
-    userService
-      .search(data)
-      .then((res) => {
-        const { data } = res.data;
-
-        setAccessData(data);
-      })
-      .catch((err) => {
-        console.log(err);
-        message.error("Request error!");
-      });
+  const init = async () => {
+    const restored = loadMyAccessSearchCookie(PAGE_COOKIE_KEY);
+    if (restored) {
+      form.setFieldsValue(restored);
+    }
+    return restored;
   };
+
+  useEffect(() => {
+    (async () => {
+      const restored = await init();
+      handleSearch(restored ?? null);
+    })();
+  }, []);
   const FormSearch = (
     <Collapse
       size="small"
@@ -129,7 +140,7 @@ const UsersAccess = () => {
                     <Form.Item
                       label="Username"
                       name="username"
-                      onChange={handleSearch}
+                      onChange={() => handleSearch()}
                     >
                       <Input placeholder="ใส่ Username" />
                     </Form.Item>
@@ -138,7 +149,7 @@ const UsersAccess = () => {
                     <Form.Item
                       label="ชื่อ"
                       name="firstname"
-                      onChange={handleSearch}
+                      onChange={() => handleSearch()}
                     >
                       <Input placeholder="ใส่ชื่อจริง" />
                     </Form.Item>
@@ -147,7 +158,7 @@ const UsersAccess = () => {
                     <Form.Item
                       label="นามสกุล"
                       name="lastname"
-                      onChange={handleSearch}
+                      onChange={() => handleSearch()}
                     >
                       <Input placeholder="ใส่นามสกุล" />
                     </Form.Item>
@@ -156,7 +167,7 @@ const UsersAccess = () => {
                     <Form.Item
                       label="เบอร์โทร"
                       name="tel"
-                      onChange={handleSearch}
+                      onChange={() => handleSearch()}
                     >
                       <Input placeholder="ใส่เบอร์โทร" />
                     </Form.Item>

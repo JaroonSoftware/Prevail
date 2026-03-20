@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, message } from "antd";
 import { Collapse, Form, Flex, Row, Col, Space } from "antd";
@@ -20,14 +20,21 @@ const mngConfig = {
 const ItemsAccess = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
+  const isFirstLoadRef = useRef(true);
   const [accessData, setAccessData] = useState([]);
   const [activeSearch, setActiveSearch] = useState([]);
+
+  const getIgnoreLoading = () => {
+    const ignoreLoading = !isFirstLoadRef.current;
+    isFirstLoadRef.current = false;
+    return ignoreLoading;
+  };
 
   const handleSearch = () => {
     form.validateFields().then((v) => {
       const data = { ...v };
       itemtypeservice
-        .search(data, { ignoreLoading: Object.keys(data).length !== 0 })
+        .search(data, { ignoreLoading: getIgnoreLoading() })
         .then((res) => {
           const { data } = res.data;
 
@@ -97,7 +104,7 @@ const ItemsAccess = () => {
 
   const getData = (data) => {
     itemtypeservice
-      .search(data)
+      .search(data, { ignoreLoading: getIgnoreLoading() })
       .then((res) => {
         const { data } = res.data;
 

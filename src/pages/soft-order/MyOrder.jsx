@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Row, Col, Card, Space, Button, Typography, message } from "antd";
 import {
   AppstoreOutlined,
@@ -19,11 +19,18 @@ export default function ItemsOrder({ source }) {
 
   const [dataSource, setDataSource] = useState([]);
   const [viewMode, setViewMode] = useState("grid2"); // 'grid' or 'list'
+  const isFirstLoadRef = useRef(true);
+
+  const getIgnoreLoading = () => {
+    const ignoreLoading = !isFirstLoadRef.current;
+    isFirstLoadRef.current = false;
+    return ignoreLoading;
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await itemservice.search({}, { ignoreLoading: true });
+        const res = await itemservice.search({}, { ignoreLoading: getIgnoreLoading() });
         const data = res?.data?.data || [];
         const mapped = data.map((item, idx) => ({
           ...item,

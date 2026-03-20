@@ -160,3 +160,44 @@ export function nocomma(num, dmax = 6, dmin = 0, nanReturn = null) {
 
   return `${i}.${d}`;
 }
+
+// ========================================
+// Cookie Management with Page Prefix
+// ========================================
+/**
+ * Set cookie with page prefix to avoid conflicts between pages
+ * @param {string} pageName - Page identifier (e.g., 'delivery-note', 'so', 'receipt')
+ * @param {string} fieldName - Field name (e.g., 'dncode', 'socode')
+ * @param {string} value - Cookie value
+ * @param {number} days - Expiration days (default: 7)
+ */
+export const setCookieWithPrefix = (pageName, fieldName, value, days = 7) => {
+  const cookieName = `${pageName}_${fieldName}`;
+  const expires = new Date();
+  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+  document.cookie = `${cookieName}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/`;
+};
+
+/**
+ * Get cookie with page prefix
+ * @param {string} pageName - Page identifier (e.g., 'delivery-note', 'so', 'receipt')
+ * @param {string} fieldName - Field name (e.g., 'dncode', 'socode')
+ * @returns {string|null} - Cookie value or null if not found
+ */
+export const getCookieWithPrefix = (pageName, fieldName) => {
+  const cookieName = `${pageName}_${fieldName}`;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${cookieName}=`);
+  if (parts.length === 2) return decodeURIComponent(parts.pop().split(';').shift());
+  return null;
+};
+
+/**
+ * Delete cookie with page prefix
+ * @param {string} pageName - Page identifier (e.g., 'delivery-note', 'so', 'receipt')
+ * @param {string} fieldName - Field name (e.g., 'dncode', 'socode')
+ */
+export const deleteCookieWithPrefix = (pageName, fieldName) => {
+  const cookieName = `${pageName}_${fieldName}`;
+  document.cookie = `${cookieName}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+};

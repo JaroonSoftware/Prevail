@@ -10,19 +10,21 @@ const API_URL = {
  
 
 const FileService = () => {
-  const fileUpload = (formData) => api.post(API_URL.FILES_UPLOAD, formData, {
-    headers: { "Content-Type": "multipart/form-data" },
+  const fileUpload = (formData, config = {}) => api.post(API_URL.FILES_UPLOAD, formData, {
+    ...config,
+    headers: { "Content-Type": "multipart/form-data", ...(config.headers || {}) },
   });
 
-  const fileGetData = (parm) => api.post(API_URL.FILES_GETDATA, parm, { ignoreLoading : true } );
-  const fileGetList = (id) => api.get(`${API_URL.FILES_GET_FILELIST}?id=${id}`, { ignoreLoading : true });
+  const fileGetData = (parm, config = {}) => api.post(API_URL.FILES_GETDATA, parm, { ignoreLoading : true, ...config } );
+  const fileGetList = (id, config = {}) => api.get(`${API_URL.FILES_GET_FILELIST}?id=${id}`, { ignoreLoading : true, ...config });
 
-  const fileDelete = (id) => api.delete(`${API_URL.FILES_DELETE}?id=${id}`, { ignoreLoading : true });
+  const fileDelete = (id, config = {}) => api.delete(`${API_URL.FILES_DELETE}?id=${id}`, { ignoreLoading : true, ...config });
 
-  const fileDownload = (id) => api({
+  const fileDownload = (id, config = {}) => api({
     method: 'get',
     url: `${API_URL.FILES_DOWNLOAD}?id=${id}`,
     responseType: 'blob', // Set responseType to 'blob' to handle binary data (like files)
+    ...config,
   }).then(response => {  
     const blob = new Blob([response.data], { type: response.headers['content-type'] }); 
     const link = document.createElement('a');
@@ -49,7 +51,7 @@ const FileService = () => {
     document.body.removeChild(link);
   });
 
-  const uploadTypeOption = () => api.get(`${API_URL.UPLOAD_TYPE_OPTION}?p=title`, { ignoreLoading : true });
+  const uploadTypeOption = (config = {}) => api.get(`${API_URL.UPLOAD_TYPE_OPTION}?p=title`, { ignoreLoading : true, ...config });
 
   return {
     fileUpload,

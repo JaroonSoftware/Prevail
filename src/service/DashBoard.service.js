@@ -8,12 +8,17 @@ const API_URL = {
 };
   
 const DashBoardService = () => { 
+  const resolveConfig = (configOrLoad = false) => (
+    typeof configOrLoad === "boolean"
+      ? { ignoreLoading: configOrLoad }
+      : configOrLoad
+  );
   
-  const samplelist = (parm = {}, load = false) => api.post(`${API_URL.API_SAMPLELIST}`, parm, { ignoreLoading : load });
-  const sample_requestlist = (parm = {}, load = false) => api.post(`${API_URL.API_SAMPLEREQUEST_LIST}`, parm, { ignoreLoading : load });
-  const sample_requestdetail = (parm = {}, load = false) => api.post(`${API_URL.API_SAMPLEREQUEST_DETAIL}`, parm, { ignoreLoading : load });
-  const filesexpire = (parm = {}, load = false) => api.post(`${API_URL.API_FILEEXPIRE}`, parm, { ignoreLoading : load });
-  const statistics = (load = false) => api.post(`${API_URL.API_STATISTICS}`, null, { ignoreLoading : load });
+  const samplelist = (parm = {}, configOrLoad = false) => api.post(`${API_URL.API_SAMPLELIST}`, parm, resolveConfig(configOrLoad));
+  const sample_requestlist = (parm = {}, configOrLoad = false) => api.post(`${API_URL.API_SAMPLEREQUEST_LIST}`, parm, resolveConfig(configOrLoad));
+  const sample_requestdetail = (parm = {}, configOrLoad = false) => api.post(`${API_URL.API_SAMPLEREQUEST_DETAIL}`, parm, resolveConfig(configOrLoad));
+  const filesexpire = (parm = {}, configOrLoad = false) => api.post(`${API_URL.API_FILEEXPIRE}`, parm, resolveConfig(configOrLoad));
+  const statistics = (configOrLoad = false) => api.post(`${API_URL.API_STATISTICS}`, null, resolveConfig(configOrLoad));
 
   return {
     samplelist,

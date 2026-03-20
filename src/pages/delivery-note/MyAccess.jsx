@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
@@ -15,6 +15,11 @@ import { accessColumn } from "./model";
 import dayjs from "dayjs";
 import DNService from "../../service/DeliveryNote.service";
 import useConfirm from '../../store/hook/use-confirm.hook';
+import {
+  saveMyAccessSearchCookie,
+  loadMyAccessSearchCookie,
+  clearMyAccessSearchCookie,
+} from "../../utils/myaccessSearchCookie";
 
 const dnservice = DNService();
 const mngConfig = {
@@ -27,6 +32,7 @@ const mngConfig = {
 
 const RangePicker = DatePicker.RangePicker;
 const MyAccess = () => {
+  const PAGE_COOKIE_KEY = "delivery-note";
   const navigate = useNavigate();
 
   const [form] = Form.useForm();
@@ -34,7 +40,13 @@ const MyAccess = () => {
   const [accessData, setAccessData] = useState([]);
   const [activeSearch, setActiveSearch] = useState([]);
 
-  let loading = false;
+  const isFirstLoadRef = useRef(true);
+
+  const getIgnoreLoading = () => {
+    const ignoreLoading = !isFirstLoadRef.current;
+    isFirstLoadRef.current = false;
+    return ignoreLoading;
+  };
 
   const confirm = useConfirm();
 
@@ -42,7 +54,7 @@ const MyAccess = () => {
     <>
       <Row gutter={[8, 8]}>
         <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-          <Form.Item label="Sale Order Code" name="dncode">
+          <Form.Item label="Sale Order Code" name="dncode" >
             <Input placeholder="Enter Sale Order Code." />
           </Form.Item>
         </Col>
@@ -130,27 +142,27 @@ const MyAccess = () => {
     />
   );
 
-  const handleSearch = (load = false) => {
-    loading = load;
-    form
-      .validateFields()
-      .then((v) => {
-        const data = { ...v };
-        if (!!data?.sodate) {
-          const arr = data?.sodate.map((m) => dayjs(m).format("YYYY-MM-DD"));
-          const [sodate_form, sodate_to] = arr;
-          //data.created_date = arr
-          Object.assign(data, { sodate_form, sodate_to });
-        }
+  const buildSearchPayload = (values = {}) => {
+    const data = { ...values };
+    if (!!data?.sodate) {
+      const arr = data?.sodate.map((m) => dayjs(m).format("YYYY-MM-DD"));
+      const [sodate_form, sodate_to] = arr;
+      Object.assign(data, { sodate_form, sodate_to });
+    }
+    return data;
+  };
 
-        setTimeout(() => getData(data), 80);
-      })
-      .catch((err) => {
-        console.warn(err);
-      });
+  const handleSearch = (forcedValues = null) => {
+    const values = forcedValues ?? form.getFieldsValue(true);
+
+    saveMyAccessSearchCookie(PAGE_COOKIE_KEY, values, 7);
+
+    const payload = buildSearchPayload(values);
+    setTimeout(() => getData(payload), 80);
   };
 
   const handleClear = () => {
+    clearMyAccessSearchCookie(PAGE_COOKIE_KEY);
     form.resetFields();
 
     handleSearch();
@@ -212,7 +224,7 @@ const MyAccess = () => {
 
   const getData = (data) => {
     dnservice
-      .search(data, { ignoreLoading: loading })
+      .search(data, { ignoreLoading: getIgnoreLoading() })
       .then((res) => {
         const { data } = res.data;
 
@@ -225,15 +237,18 @@ const MyAccess = () => {
   };
 
   const init = async () => {
-    getData({});
+    const restored = loadMyAccessSearchCookie(PAGE_COOKIE_KEY);
+    if (restored) {
+      form.setFieldsValue(restored);
+    }
+    return restored;
   };
 
   useEffect(() => {
-    init();
-
-    return async () => {
-      //console.clear();
-    };
+    (async () => {
+      const restored = await init();
+      handleSearch(restored ?? null);
+    })();
   }, []);
   const TitleTable = (
     <Flex className="width-100" align="center">
@@ -272,7 +287,7 @@ const MyAccess = () => {
           layout="vertical"
           autoComplete="off"
           onValuesChange={() => {
-            handleSearch(true);
+            handleSearch();
           }}
         >
           {FormSearch}

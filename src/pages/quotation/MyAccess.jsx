@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Card } from 'antd';
@@ -11,6 +11,11 @@ import { accessColumn } from "./model";
 
 import dayjs from 'dayjs';
 import QuotationService from '../../service/Quotation.service';
+import {
+    saveMyAccessSearchCookie,
+    loadMyAccessSearchCookie,
+    clearMyAccessSearchCookie,
+} from '../../utils/myaccessSearchCookie';
 
 
 const quotService = QuotationService(); 
@@ -18,12 +23,22 @@ const mngConfig = {title:"", textOk:null, textCancel:null, action:"create", code
 
 const RangePicker = DatePicker.RangePicker;
 const QuotationAccess = () => {
+    const PAGE_COOKIE_KEY = 'quotation';
     const navigate = useNavigate();
     
     const [form] = Form.useForm();
+    const isFirstLoadRef = useRef(true);
+    const getIgnoreLoading = () => {
+        const ignoreLoading = !isFirstLoadRef.current;
+        isFirstLoadRef.current = false;
+        return ignoreLoading;
+    };
+
 
     const [accessData, setAccessData] = useState([]);
     const [activeSearch, setActiveSearch] = useState([]);
+
+    const getQuotationCode = (data = {}) => data?.qtcode ?? data?.quotcode;
      
     const CollapseItemSearch = (
         <>  
@@ -102,31 +117,38 @@ const QuotationAccess = () => {
         />         
     );
 
-    const handleSearch = () => {
-        
-        form.validateFields().then((v) => {
-            const data = { ...v };
-            if( !!data?.qtdate ) {
-                const arr = data?.qtdate.map( m => dayjs(m).format("YYYY-MM-DD") )
-                const [qtdate_form, qtdate_to] = arr; 
-                //data.created_date = arr
-                Object.assign(data, {qtdate_form, qtdate_to});
-            }
-            setTimeout( () => 
-                quotService.search(data, { ignoreLoading: Object.keys(data).length !== 0}).then( res => {
-                    const {data} = res.data;
-        
-                    setAccessData(data);
-                }).catch( err => {
-                    console.log(err);
-                    message.error("Request error!");
-                })
-                , 80);
-      
-          });
+    const buildSearchPayload = (values = {}) => {
+        const data = { ...values };
+        if( !!data?.qtdate ) {
+            const arr = data?.qtdate.map( m => dayjs(m).format("YYYY-MM-DD") )
+            const [qtdate_form, qtdate_to] = arr; 
+            Object.assign(data, {qtdate_form, qtdate_to});
+        }
+        return data;
+    };
+
+    const requestSearch = (payload) => {
+        setTimeout( () => 
+            quotService.search(payload, { ignoreLoading: getIgnoreLoading()}).then( res => {
+                const {data} = res.data;
+
+                setAccessData(data);
+            }).catch( err => {
+                console.log(err);
+                message.error("Request error!");
+            })
+            , 80);
+    };
+
+    const handleSearch = (forcedValues = null) => {
+        const v = forcedValues ?? form.getFieldsValue(true);
+        saveMyAccessSearchCookie(PAGE_COOKIE_KEY, v, 7);
+        const payload = buildSearchPayload(v);
+        requestSearch(payload);
     }
 
     const handleClear = () => {
+        clearMyAccessSearchCookie(PAGE_COOKIE_KEY);
         form.resetFields();
         
         handleSearch()
@@ -155,9 +177,10 @@ const QuotationAccess = () => {
     }; 
 
     const handleDelete = (data) => { 
-        // startLoading();
-        quotService.deleted(data?.quotcode).then( _ => {
-            const tmp = accessData.filter( d => d.quotcode !== data?.quotcode );
+        const deleteCode = getQuotationCode(data);
+
+        quotService.deleted(deleteCode).then( _ => {
+            const tmp = accessData.filter((d) => getQuotationCode(d) !== deleteCode);
 
             setAccessData([...tmp]); 
         })
@@ -179,16 +202,19 @@ const QuotationAccess = () => {
     const column = accessColumn( {handleEdit, handleDelete, handlePrint,handleView });
     // const column = accessColumn( {handleEdit, handlePrint });
 
-    const getData = (data) => {
-        handleSearch()
-    }
-
     const init = async () => {
-        getData({});
+        const restored = loadMyAccessSearchCookie(PAGE_COOKIE_KEY);
+        if (restored) {
+            form.setFieldsValue(restored);
+        }
+        return restored;
     }
             
     useEffect( () => {
-        init();
+        (async () => {
+            const restored = await init();
+            handleSearch(restored ?? null);
+        })();
 
           
 
@@ -229,7 +255,7 @@ const QuotationAccess = () => {
     return (
     <div className='quotation-access' id="area">
         <Space direction="vertical" size="middle" style={{ display: 'flex', position: 'relative' }} >
-            <Form form={form} layout="vertical" autoComplete="off" onValuesChange={()=>{ handleSearch(true)}}>
+            <Form form={form} layout="vertical" autoComplete="off" onValuesChange={()=>{ handleSearch()}}>
                 {FormSearch}
             </Form> 
             <Card>
