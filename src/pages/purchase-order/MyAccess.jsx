@@ -10,7 +10,11 @@ import { accessColumn } from "./model";
 
 import dayjs from 'dayjs';
 import PurchaseOrderService from '../../service/PurchaseOrder.service';
-import { setCookieWithPrefix, getCookieWithPrefix } from '../../utils/util';
+import {
+    saveMyAccessSearchCookie,
+    loadMyAccessSearchCookie,
+    clearMyAccessSearchCookie,
+} from '../../utils/myaccessSearchCookie';
 
 
 const quotService = PurchaseOrderService(); 
@@ -18,7 +22,9 @@ const mngConfig = {title:"", textOk:null, textCancel:null, action:"create", code
 
 const RangePicker = DatePicker.RangePicker;
 const PurchaseOrderAccess = () => {
+    const PAGE_COOKIE_KEY = 'purchase-order';
     const navigate = useNavigate();
+    const defaultTablePagination = { current: 1, pageSize: 10 };
     
     const [form] = Form.useForm();
     const isFirstLoadRef = useRef(true);
@@ -31,15 +37,14 @@ const PurchaseOrderAccess = () => {
 
     const [accessData, setAccessData] = useState([]);
     const [activeSearch, setActiveSearch] = useState([]);
+    const [tablePagination, setTablePagination] = useState(defaultTablePagination);
      
     const CollapseItemSearch = (
         <>  
         <Row gutter={[8,8]}> 
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
                 <Form.Item label='รหัสใบสั่งซื้อ' name='pocode'>
-                    <Input placeholder='Enter PurchaseOrder Code.' onChange={(e) => {
-                        setCookieWithPrefix("purchase-order", "pocode", e.target.value, 7);
-                    }} />
+                    <Input placeholder='Enter PurchaseOrder Code.' />
                 </Form.Item>                            
             </Col>
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
@@ -103,34 +108,50 @@ const PurchaseOrderAccess = () => {
         />         
     );
 
-    const handleSearch = () => {
-        
-        form.validateFields().then((v) => {
-            const data = { ...v };
-            if( !!data?.podate ) {
-                const arr = data?.podate.map( m => dayjs(m).format("YYYY-MM-DD") )
-                const [podate_form, podate_to] = arr; 
-                //data.created_date = arr
-                Object.assign(data, {podate_form, podate_to});
-            }
-            setTimeout( () => 
-                quotService.search(data, { ignoreLoading: getIgnoreLoading()}).then( res => {
-                    const {data} = res.data;
-        
-                    setAccessData(data);
-                }).catch( err => {
-                    console.log(err);
-                    message.error("Request error!");
-                })
-                , 80);
-      
-          });
+    const buildSearchPayload = (values = {}) => {
+        const data = { ...values };
+        if( !!data?.podate ) {
+            const arr = data?.podate.map( m => dayjs(m).format("YYYY-MM-DD") )
+            const [podate_form, podate_to] = arr; 
+            Object.assign(data, {podate_form, podate_to});
+        }
+        return data;
+    };
+
+    const savePageState = (searchValues, pagination = tablePagination) => {
+        saveMyAccessSearchCookie(PAGE_COOKIE_KEY, {
+            searchValues,
+            tablePagination: {
+                current: pagination?.current ?? defaultTablePagination.current,
+                pageSize: pagination?.pageSize ?? defaultTablePagination.pageSize,
+            },
+        }, 7);
+    };
+
+    const handleSearch = (forcedValues = null, paginationOverride = null) => {
+        const values = forcedValues ?? form.getFieldsValue(true);
+        const nextPagination = paginationOverride ?? tablePagination;
+        savePageState(values, nextPagination);
+        const data = buildSearchPayload(values);
+
+        setTimeout( () => 
+            quotService.search(data, { ignoreLoading: getIgnoreLoading()}).then( res => {
+                const {data} = res.data;
+    
+                setAccessData(data);
+            }).catch( err => {
+                console.log(err);
+                message.error("Request error!");
+            })
+            , 80);
     }
 
     const handleClear = () => {
+        clearMyAccessSearchCookie(PAGE_COOKIE_KEY);
         form.resetFields();
+        setTablePagination(defaultTablePagination);
         
-        handleSearch()
+        handleSearch({}, defaultTablePagination)
     }
     // console.log(form);
     const hangleAdd = () => {  
@@ -166,22 +187,51 @@ const PurchaseOrderAccess = () => {
 
     const column = accessColumn( {handleEdit,handleView, handleDelete, handlePrint });
 
-    const getData = (data) => {
-        handleSearch()
-    }
+    const handleTableChange = (pagination) => {
+        const nextPagination = {
+            current: pagination?.current ?? defaultTablePagination.current,
+            pageSize: pagination?.pageSize ?? defaultTablePagination.pageSize,
+        };
+
+        setTablePagination(nextPagination);
+        savePageState(form.getFieldsValue(true), nextPagination);
+    };
 
     const init = async () => {
-        const cookieValue = getCookieWithPrefix("purchase-order", "pocode");
-        if (cookieValue) {
-            form.setFieldValue("pocode", cookieValue);
-            setTimeout(() => getData({}), 50);
-        } else {
-            getData({});
+        const restored = loadMyAccessSearchCookie(PAGE_COOKIE_KEY);
+        if (restored?.searchValues || restored?.tablePagination) {
+            if (restored?.searchValues) {
+                form.setFieldsValue(restored.searchValues);
+            }
+
+            if (restored?.tablePagination) {
+                setTablePagination({
+                    current: restored.tablePagination.current ?? defaultTablePagination.current,
+                    pageSize: restored.tablePagination.pageSize ?? defaultTablePagination.pageSize,
+                });
+            }
+
+            return {
+                searchValues: restored.searchValues ?? null,
+                tablePagination: restored.tablePagination ?? defaultTablePagination,
+            };
         }
+
+        if (restored) {
+            form.setFieldsValue(restored);
+        }
+
+        return {
+            searchValues: restored,
+            tablePagination: defaultTablePagination,
+        };
     }
             
     useEffect( () => {
-        init();
+        (async () => {
+            const restored = await init();
+            handleSearch(restored?.searchValues ?? null, restored?.tablePagination ?? defaultTablePagination);
+        })();
 
           
 
@@ -212,7 +262,15 @@ const PurchaseOrderAccess = () => {
     return (
     <div className='purchaseorder-access' id="area">
         <Space direction="vertical" size="middle" style={{ display: 'flex', position: 'relative' }} >
-            <Form form={form} layout="vertical" autoComplete="off" onValuesChange={()=>{ handleSearch(true)}}>
+            <Form form={form} layout="vertical" autoComplete="off" onValuesChange={()=>{
+                const nextPagination = {
+                    ...tablePagination,
+                    current: defaultTablePagination.current,
+                };
+
+                setTablePagination(nextPagination);
+                handleSearch(null, nextPagination)
+            }}>
                 {FormSearch}
             </Form> 
             <Card>
@@ -224,6 +282,8 @@ const PurchaseOrderAccess = () => {
                         rowKey="pocode" 
                         columns={column} 
                         dataSource={accessData} 
+                        pagination={tablePagination}
+                        onChange={handleTableChange}
                         scroll={{ x: 'max-content' }} 
                         />
                     </Col>

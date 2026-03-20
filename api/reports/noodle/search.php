@@ -38,7 +38,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
         $cusname
         $created_by
         $sodate        
-        order by a.socode desc ;";
+        order by i.stname desc ;";
         
         // AND a.sodate = CURDATE()
 

@@ -1,6 +1,6 @@
 import PurchaseOrder from "./MyPage";
-import PurchaseOrderAccess from "./MyPageAccess";
-import PurchaseOrderManage from "./MyPageManage";
+import PurchaseOrderAccess from "./MyAccess";
+import PurchaseOrderManage from "./MyManage";
 import PurchaseOrderView from "./MyPageView";
 
 export { 

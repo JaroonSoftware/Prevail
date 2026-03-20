@@ -29,11 +29,13 @@ const RangePicker = DatePicker.RangePicker;
 const MyAccess = () => {
   const PAGE_COOKIE_KEY = "print-package";
   const navigate = useNavigate();
+  const defaultTablePagination = { current: 1, pageSize: 10 };
 
   const [form] = Form.useForm();
 
   const [accessData, setAccessData] = useState([]);
   const [activeSearch, setActiveSearch] = useState([]);
+  const [tablePagination, setTablePagination] = useState(defaultTablePagination);
 
   const isFirstLoadRef = useRef(true);
 
@@ -145,9 +147,24 @@ const MyAccess = () => {
     return data;
   };
 
-  const handleSearch = (forcedValues = null) => {
+  const savePageState = (searchValues, pagination = tablePagination) => {
+    saveMyAccessSearchCookie(
+      PAGE_COOKIE_KEY,
+      {
+        searchValues,
+        tablePagination: {
+          current: pagination?.current ?? defaultTablePagination.current,
+          pageSize: pagination?.pageSize ?? defaultTablePagination.pageSize,
+        },
+      },
+      7
+    );
+  };
+
+  const handleSearch = (forcedValues = null, paginationOverride = null) => {
     const values = forcedValues ?? form.getFieldsValue(true);
-    saveMyAccessSearchCookie(PAGE_COOKIE_KEY, values, 7);
+    const nextPagination = paginationOverride ?? tablePagination;
+    savePageState(values, nextPagination);
     const payload = buildSearchPayload(values);
     setTimeout(() => getData(payload), 80);
   };
@@ -155,8 +172,9 @@ const MyAccess = () => {
   const handleClear = () => {
     clearMyAccessSearchCookie(PAGE_COOKIE_KEY);
     form.resetFields();
+    setTablePagination(defaultTablePagination);
 
-    handleSearch();
+    handleSearch({}, defaultTablePagination);
   };
 
   const handleEdit = (data) => {
@@ -181,6 +199,16 @@ const MyAccess = () => {
 
   const column = accessColumn({ handleEdit, handlePrintsData });
 
+  const handleTableChange = (pagination) => {
+    const nextPagination = {
+      current: pagination?.current ?? defaultTablePagination.current,
+      pageSize: pagination?.pageSize ?? defaultTablePagination.pageSize,
+    };
+
+    setTablePagination(nextPagination);
+    savePageState(form.getFieldsValue(true), nextPagination);
+  };
+
   const getData = (data) => {
     pkservice
       .search(data, { ignoreLoading: getIgnoreLoading() })
@@ -197,16 +225,43 @@ const MyAccess = () => {
 
   const init = async () => {
     const restored = loadMyAccessSearchCookie(PAGE_COOKIE_KEY);
+    if (restored?.searchValues || restored?.tablePagination) {
+      if (restored?.searchValues) {
+        form.setFieldsValue(restored.searchValues);
+      }
+
+      if (restored?.tablePagination) {
+        setTablePagination({
+          current:
+            restored.tablePagination.current ?? defaultTablePagination.current,
+          pageSize:
+            restored.tablePagination.pageSize ?? defaultTablePagination.pageSize,
+        });
+      }
+
+      return {
+        searchValues: restored.searchValues ?? null,
+        tablePagination: restored.tablePagination ?? defaultTablePagination,
+      };
+    }
+
     if (restored) {
       form.setFieldsValue(restored);
     }
-    return restored;
+
+    return {
+      searchValues: restored,
+      tablePagination: defaultTablePagination,
+    };
   };
 
   useEffect(() => {
     (async () => {
       const restored = await init();
-      handleSearch(restored ?? null);
+      handleSearch(
+        restored?.searchValues ?? null,
+        restored?.tablePagination ?? defaultTablePagination
+      );
     })();
 
     return async () => {
@@ -236,7 +291,13 @@ const MyAccess = () => {
           layout="vertical"
           autoComplete="off"
           onValuesChange={() => {
-            handleSearch();
+            const nextPagination = {
+              ...tablePagination,
+              current: defaultTablePagination.current,
+            };
+
+            setTablePagination(nextPagination);
+            handleSearch(null, nextPagination);
           }}
         >
           {FormSearch}
@@ -250,6 +311,8 @@ const MyAccess = () => {
                 rowKey="qtcode"
                 columns={column}
                 dataSource={accessData}
+                pagination={tablePagination}
+                onChange={handleTableChange}
                 scroll={{ x: "max-content" }}
               />
             </Col>

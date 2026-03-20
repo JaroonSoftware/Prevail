@@ -10,6 +10,11 @@ import { accessColumn } from "./model";
 
 import dayjs from 'dayjs';
 import GoodsReceiptService from '../../service/GoodsReceipt.service';
+import {
+    saveMyAccessSearchCookie,
+    loadMyAccessSearchCookie,
+    clearMyAccessSearchCookie,
+} from '../../utils/myaccessSearchCookie';
 
 
 const quotService = GoodsReceiptService(); 
@@ -17,7 +22,9 @@ const mngConfig = {title:"", textOk:null, textCancel:null, action:"create", code
 
 const RangePicker = DatePicker.RangePicker;
 const GoodsReceiptAccess = () => {
+    const PAGE_COOKIE_KEY = 'goods-receipt';
     const navigate = useNavigate();
+    const defaultTablePagination = { current: 1, pageSize: 10 };
     
     const [form] = Form.useForm();
     const isFirstLoadRef = useRef(true);
@@ -30,6 +37,7 @@ const GoodsReceiptAccess = () => {
 
     const [accessData, setAccessData] = useState([]);
     const [activeSearch, setActiveSearch] = useState([]);
+    const [tablePagination, setTablePagination] = useState(defaultTablePagination);
      
     const CollapseItemSearch = (
         <>  
@@ -95,34 +103,50 @@ const GoodsReceiptAccess = () => {
         />         
     );
 
-    const handleSearch = () => {
-        
-        form.validateFields().then((v) => {
-            const data = { ...v };
-            if( !!data?.grdate ) {
-                const arr = data?.grdate.map( m => dayjs(m).format("YYYY-MM-DD") )
-                const [grdate_form, grdate_to] = arr; 
-                //data.created_date = arr
-                Object.assign(data, {grdate_form, grdate_to});
-            }
-            setTimeout( () => 
-                quotService.search(data, { ignoreLoading: getIgnoreLoading()}).then( res => {
-                    const {data} = res.data;
-        
-                    setAccessData(data);
-                }).catch( err => {
-                    console.log(err);
-                    message.error("Request error!");
-                })
-                , 80);
-      
-          });
+    const buildSearchPayload = (values = {}) => {
+        const data = { ...values };
+        if( !!data?.grdate ) {
+            const arr = data?.grdate.map( m => dayjs(m).format("YYYY-MM-DD") )
+            const [grdate_form, grdate_to] = arr; 
+            Object.assign(data, {grdate_form, grdate_to});
+        }
+        return data;
+    };
+
+    const savePageState = (searchValues, pagination = tablePagination) => {
+        saveMyAccessSearchCookie(PAGE_COOKIE_KEY, {
+            searchValues,
+            tablePagination: {
+                current: pagination?.current ?? defaultTablePagination.current,
+                pageSize: pagination?.pageSize ?? defaultTablePagination.pageSize,
+            },
+        }, 7);
+    };
+
+    const handleSearch = (forcedValues = null, paginationOverride = null) => {
+        const values = forcedValues ?? form.getFieldsValue(true);
+        const nextPagination = paginationOverride ?? tablePagination;
+        savePageState(values, nextPagination);
+        const data = buildSearchPayload(values);
+
+        setTimeout( () => 
+            quotService.search(data, { ignoreLoading: getIgnoreLoading()}).then( res => {
+                const {data} = res.data;
+    
+                setAccessData(data);
+            }).catch( err => {
+                console.log(err);
+                message.error("Request error!");
+            })
+            , 80);
     }
 
     const handleClear = () => {
+        clearMyAccessSearchCookie(PAGE_COOKIE_KEY);
         form.resetFields();
+        setTablePagination(defaultTablePagination);
         
-        handleSearch()
+        handleSearch({}, defaultTablePagination)
     }
     // console.log(form);
     const hangleAdd = () => {  
@@ -155,16 +179,51 @@ const GoodsReceiptAccess = () => {
 
     const column = accessColumn( {handleEdit, handleDelete, handlePrint });
 
-    const getData = (data) => {
-        handleSearch()
-    }
+    const handleTableChange = (pagination) => {
+        const nextPagination = {
+            current: pagination?.current ?? defaultTablePagination.current,
+            pageSize: pagination?.pageSize ?? defaultTablePagination.pageSize,
+        };
+
+        setTablePagination(nextPagination);
+        savePageState(form.getFieldsValue(true), nextPagination);
+    };
 
     const init = async () => {
-        getData({});
+        const restored = loadMyAccessSearchCookie(PAGE_COOKIE_KEY);
+        if (restored?.searchValues || restored?.tablePagination) {
+            if (restored?.searchValues) {
+                form.setFieldsValue(restored.searchValues);
+            }
+
+            if (restored?.tablePagination) {
+                setTablePagination({
+                    current: restored.tablePagination.current ?? defaultTablePagination.current,
+                    pageSize: restored.tablePagination.pageSize ?? defaultTablePagination.pageSize,
+                });
+            }
+
+            return {
+                searchValues: restored.searchValues ?? null,
+                tablePagination: restored.tablePagination ?? defaultTablePagination,
+            };
+        }
+
+        if (restored) {
+            form.setFieldsValue(restored);
+        }
+
+        return {
+            searchValues: restored,
+            tablePagination: defaultTablePagination,
+        };
     }
             
     useEffect( () => {
-        init();
+        (async () => {
+            const restored = await init();
+            handleSearch(restored?.searchValues ?? null, restored?.tablePagination ?? defaultTablePagination);
+        })();
 
           
 
@@ -195,7 +254,15 @@ const GoodsReceiptAccess = () => {
     return (
     <div className='goodsreceipt-access' id="area">
         <Space direction="vertical" size="middle" style={{ display: 'flex', position: 'relative' }} >
-            <Form form={form} layout="vertical" autoComplete="off" onValuesChange={()=>{ handleSearch(true)}}>
+            <Form form={form} layout="vertical" autoComplete="off" onValuesChange={()=>{
+                const nextPagination = {
+                    ...tablePagination,
+                    current: defaultTablePagination.current,
+                };
+
+                setTablePagination(nextPagination);
+                handleSearch(null, nextPagination)
+            }}>
                 {FormSearch}
             </Form> 
             <Card>
@@ -207,6 +274,8 @@ const GoodsReceiptAccess = () => {
                         rowKey="grcode" 
                         columns={column} 
                         dataSource={accessData} 
+                        pagination={tablePagination}
+                        onChange={handleTableChange}
                         scroll={{ x: 'max-content' }} 
                         />
                     </Col>

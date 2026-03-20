@@ -25,6 +25,7 @@ const mngConfig = {
 const ItemsAccess = () => {
   const PAGE_COOKIE_KEY = "supplier";
   const navigate = useNavigate();
+  const defaultTablePagination = { current: 1, pageSize: 10 };
   const [form] = Form.useForm();
   const isFirstLoadRef = useRef(true);
   const getIgnoreLoading = () => {
@@ -35,11 +36,26 @@ const ItemsAccess = () => {
 
   const [accessData, setAccessData] = useState([]);
   const [activeSearch, setActiveSearch] = useState([]);
+  const [tablePagination, setTablePagination] = useState(defaultTablePagination);
   const filterOption = (input, option) =>
     (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
-  const handleSearch = (forcedValues = null) => {
+  const savePageState = (searchValues, pagination = tablePagination) => {
+    saveMyAccessSearchCookie(
+      PAGE_COOKIE_KEY,
+      {
+        searchValues,
+        tablePagination: {
+          current: pagination?.current ?? defaultTablePagination.current,
+          pageSize: pagination?.pageSize ?? defaultTablePagination.pageSize,
+        },
+      },
+      7
+    );
+  };
+  const handleSearch = (forcedValues = null, paginationOverride = null) => {
     const v = forcedValues ?? form.getFieldsValue(true);
-    saveMyAccessSearchCookie(PAGE_COOKIE_KEY, v, 7);
+    const nextPagination = paginationOverride ?? tablePagination;
+    savePageState(v, nextPagination);
     const data = { ...v };
     supplierservice
       .search(data, { ignoreLoading: getIgnoreLoading() })
@@ -54,11 +70,22 @@ const ItemsAccess = () => {
       });
   };
 
+  const triggerSearch = () => {
+    const nextPagination = {
+      ...tablePagination,
+      current: defaultTablePagination.current,
+    };
+
+    setTablePagination(nextPagination);
+    handleSearch(null, nextPagination);
+  };
+
   const handleClear = () => {
     clearMyAccessSearchCookie(PAGE_COOKIE_KEY);
     form.resetFields();
+    setTablePagination(defaultTablePagination);
 
-    handleSearch();
+    handleSearch({}, defaultTablePagination);
   };
 
   const hangleAdd = () => {
@@ -94,18 +121,55 @@ const ItemsAccess = () => {
     newWindow.location.href = `/dln-print/${data.dncode}`;
   };
 
+  const handleTableChange = (pagination) => {
+    const nextPagination = {
+      current: pagination?.current ?? defaultTablePagination.current,
+      pageSize: pagination?.pageSize ?? defaultTablePagination.pageSize,
+    };
+
+    setTablePagination(nextPagination);
+    savePageState(form.getFieldsValue(true), nextPagination);
+  };
+
   const init = async () => {
     const restored = loadMyAccessSearchCookie(PAGE_COOKIE_KEY);
+    if (restored?.searchValues || restored?.tablePagination) {
+      if (restored?.searchValues) {
+        form.setFieldsValue(restored.searchValues);
+      }
+
+      if (restored?.tablePagination) {
+        setTablePagination({
+          current:
+            restored.tablePagination.current ?? defaultTablePagination.current,
+          pageSize:
+            restored.tablePagination.pageSize ?? defaultTablePagination.pageSize,
+        });
+      }
+
+      return {
+        searchValues: restored.searchValues ?? null,
+        tablePagination: restored.tablePagination ?? defaultTablePagination,
+      };
+    }
+
     if (restored) {
       form.setFieldsValue(restored);
     }
-    return restored;
+
+    return {
+      searchValues: restored,
+      tablePagination: defaultTablePagination,
+    };
   };
 
   useEffect(() => {
     (async () => {
       const restored = await init();
-      handleSearch(restored ?? null);
+      handleSearch(
+        restored?.searchValues ?? null,
+        restored?.tablePagination ?? defaultTablePagination
+      );
     })();
   }, []);
   const FormSearch = (
@@ -128,7 +192,7 @@ const ItemsAccess = () => {
                     <Form.Item
                       label="รหัสผู้ขาย"
                       name="supcode"
-                      onChange={() => handleSearch()}
+                      onChange={() => triggerSearch()}
                     >
                       <Input placeholder="กรอกรหัสผู้ขาย" />
                     </Form.Item>
@@ -137,7 +201,7 @@ const ItemsAccess = () => {
                     <Form.Item
                       label="ชื่อผู้ขาย"
                       name="supname"
-                      onChange={() => handleSearch()}
+                      onChange={() => triggerSearch()}
                     >
                       <Input placeholder="กรอกชื่อผู้ขาย" />
                     </Form.Item>
@@ -146,14 +210,14 @@ const ItemsAccess = () => {
                     <Form.Item
                       label="จังหวัด"
                       name="province"
-                      onChange={() => handleSearch()}
+                      onChange={() => triggerSearch()}
                     >
                       <Select
                         size="large"
                         showSearch
                         filterOption={filterOption}
                         placeholder="เลือกจังหวัด"
-                        onChange={() => handleSearch()}
+                        onChange={() => triggerSearch()}
                         options={PROVINCE_OPTIONS}
                       />
                     </Form.Item>
@@ -162,7 +226,7 @@ const ItemsAccess = () => {
                     <Form.Item
                       label="เบอร์โทร"
                       name="tel"
-                      onChange={() => handleSearch()}
+                      onChange={() => triggerSearch()}
                     >
                       <Input placeholder="กรอกเบอร์โทรลูกค้า" />
                     </Form.Item>
@@ -249,6 +313,8 @@ const ItemsAccess = () => {
                 rowKey="supcode"
                 columns={column}
                 dataSource={accessData}
+                pagination={tablePagination}
+                onChange={handleTableChange}
               />
             </Col>
           </Row>

@@ -1,6 +1,6 @@
 import GoodsReceipt from "./MyPage";
-import GoodsReceiptAccess from "./MyPageAccess";
-import GoodsReceiptManage from "./MyPageManage";
+import GoodsReceiptAccess from "./MyAccess";
+import GoodsReceiptManage from "./MyManage";
 
 export { 
     GoodsReceipt,

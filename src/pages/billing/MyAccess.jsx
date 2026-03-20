@@ -24,6 +24,7 @@ const RangePicker = DatePicker.RangePicker;
 const MyAccess = () => {
     const PAGE_COOKIE_KEY = 'billing';
     const navigate = useNavigate();
+    const defaultTablePagination = { current: 1, pageSize: 10 };
     
     const [form] = Form.useForm();
     const isFirstLoadRef = useRef(true);
@@ -36,6 +37,7 @@ const MyAccess = () => {
 
     const [accessData, setAccessData] = useState([]);
     const [activeSearch, setActiveSearch] = useState([]);
+    const [tablePagination, setTablePagination] = useState(defaultTablePagination);
 
     
     const CollapseItemSearch = (
@@ -138,9 +140,20 @@ const MyAccess = () => {
             , 80);
     };
 
-    const handleSearch = (forcedValues = null) => {
+    const savePageState = (searchValues, pagination = tablePagination) => {
+        saveMyAccessSearchCookie(PAGE_COOKIE_KEY, {
+            searchValues,
+            tablePagination: {
+                current: pagination?.current ?? defaultTablePagination.current,
+                pageSize: pagination?.pageSize ?? defaultTablePagination.pageSize,
+            },
+        }, 7);
+    };
+
+    const handleSearch = (forcedValues = null, paginationOverride = null) => {
         const v = forcedValues ?? form.getFieldsValue(true);
-        saveMyAccessSearchCookie(PAGE_COOKIE_KEY, v, 7);
+        const nextPagination = paginationOverride ?? tablePagination;
+        savePageState(v, nextPagination);
         const payload = buildSearchPayload(v);
         requestSearch(payload);
     }
@@ -148,8 +161,9 @@ const MyAccess = () => {
     const handleClear = () => {
         clearMyAccessSearchCookie(PAGE_COOKIE_KEY);
         form.resetFields();
+        setTablePagination(defaultTablePagination);
         
-        handleSearch()
+        handleSearch({}, defaultTablePagination)
     }
     // console.log(form);
     const hangleAdd = () => {  
@@ -186,18 +200,50 @@ const MyAccess = () => {
 
     const column = accessColumn( {handleEdit, handleDelete, handlePrint, handleView });
 
+    const handleTableChange = (pagination) => {
+        const nextPagination = {
+            current: pagination?.current ?? defaultTablePagination.current,
+            pageSize: pagination?.pageSize ?? defaultTablePagination.pageSize,
+        };
+
+        setTablePagination(nextPagination);
+        savePageState(form.getFieldsValue(true), nextPagination);
+    };
+
     const init = async () => {
         const restored = loadMyAccessSearchCookie(PAGE_COOKIE_KEY);
+        if (restored?.searchValues || restored?.tablePagination) {
+            if (restored?.searchValues) {
+                form.setFieldsValue(restored.searchValues);
+            }
+
+            if (restored?.tablePagination) {
+                setTablePagination({
+                    current: restored.tablePagination.current ?? defaultTablePagination.current,
+                    pageSize: restored.tablePagination.pageSize ?? defaultTablePagination.pageSize,
+                });
+            }
+
+            return {
+                searchValues: restored.searchValues ?? null,
+                tablePagination: restored.tablePagination ?? defaultTablePagination,
+            };
+        }
+
         if (restored) {
             form.setFieldsValue(restored);
         }
-        return restored;
+
+        return {
+            searchValues: restored,
+            tablePagination: defaultTablePagination,
+        };
     }
             
     useEffect( () => {
         (async () => {
             const restored = await init();
-            handleSearch(restored ?? null);
+            handleSearch(restored?.searchValues ?? null, restored?.tablePagination ?? defaultTablePagination);
         })();
 
         return  async () => { 
@@ -227,7 +273,15 @@ const MyAccess = () => {
     return (
     <div className='so-access' id="area">
         <Space direction="vertical" size="middle" style={{ display: 'flex', position: 'relative' }} >
-            <Form form={form} layout="vertical" autoComplete="off" onValuesChange={()=>{ handleSearch()}}>
+            <Form form={form} layout="vertical" autoComplete="off" onValuesChange={()=>{
+                const nextPagination = {
+                    ...tablePagination,
+                    current: defaultTablePagination.current,
+                };
+
+                setTablePagination(nextPagination);
+                handleSearch(null, nextPagination)
+            }}>
                 {FormSearch}
             </Form> 
             <Card>
@@ -239,6 +293,8 @@ const MyAccess = () => {
                         rowKey="blcode" 
                         columns={column} 
                         dataSource={accessData} 
+                        pagination={tablePagination}
+                        onChange={handleTableChange}
                         scroll={{ x: 'max-content' }} 
                         />
                     </Col>

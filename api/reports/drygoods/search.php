@@ -62,7 +62,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
           $created_by
           $sodate
           AND (b.qty - IFNULL(dg.total_qty, 0) - IFNULL(e.qty, 0) ) > 0
-        ORDER BY a.socode DESC;";
+        ORDER BY i.stname DESC;";
 
 
         $stmt = $conn->prepare($sql); 

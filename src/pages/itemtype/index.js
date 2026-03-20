@@ -1,5 +1,5 @@
-import Itemtype from "./ItemsType";
-import ItemtypeAccess from "./ItemsTypeAccess";
-import ItemtypeManage from "./ItemsTypeManage";
+import Itemtype from "./MyPage";
+import ItemtypeAccess from "./MyAccess";
+import ItemtypeManage from "./MyManage";
 
 export { Itemtype, ItemtypeAccess, ItemtypeManage };

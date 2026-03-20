@@ -6,9 +6,14 @@ import { Collapse, Form, Flex, Row, Col, Space, Select } from "antd";
 import { Input, Button, Table, Typography } from "antd";
 import { SearchOutlined, ClearOutlined } from "@ant-design/icons";
 import { MdOutlineLibraryAdd } from "react-icons/md";
-import { accessColumn } from "./customer.model";
+import { accessColumn } from "./model";
 import Customerservice from "../../service/Customer.Service";
 import { PROVINCE_OPTIONS } from "../../utils/util";
+import {
+  saveMyAccessSearchCookie,
+  loadMyAccessSearchCookie,
+  clearMyAccessSearchCookie,
+} from "../../utils/myaccessSearchCookie";
 const customerservice = Customerservice();
 const mngConfig = {
   title: "",
@@ -18,11 +23,14 @@ const mngConfig = {
   code: null,
 };
 const ItemsAccess = () => {
+  const PAGE_COOKIE_KEY = "customers";
   const navigate = useNavigate();
+  const defaultTablePagination = { current: 1, pageSize: 10 };
   const [form] = Form.useForm();
   const isFirstLoadRef = useRef(true);
   const [accessData, setAccessData] = useState([]);
   const [activeSearch, setActiveSearch] = useState([]);
+  const [tablePagination, setTablePagination] = useState(defaultTablePagination);
 
   const getIgnoreLoading = () => {
     const ignoreLoading = !isFirstLoadRef.current;
@@ -32,27 +40,53 @@ const ItemsAccess = () => {
 
   const filterOption = (input, option) =>
     (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
-  const handleSearch = () => {
-    form.validateFields().then((v) => {
-      const data = { ...v };
-      customerservice
-        .search(data, { ignoreLoading: getIgnoreLoading() })
-        .then((res) => {
-          const { data } = res.data;
+  const savePageState = (searchValues, pagination = tablePagination) => {
+    saveMyAccessSearchCookie(
+      PAGE_COOKIE_KEY,
+      {
+        searchValues,
+        tablePagination: {
+          current: pagination?.current ?? defaultTablePagination.current,
+          pageSize: pagination?.pageSize ?? defaultTablePagination.pageSize,
+        },
+      },
+      7
+    );
+  };
+  const handleSearch = (forcedValues = null, paginationOverride = null) => {
+    const values = forcedValues ?? form.getFieldsValue(true);
+    const nextPagination = paginationOverride ?? tablePagination;
+    savePageState(values, nextPagination);
+    const data = { ...values };
+    customerservice
+      .search(data, { ignoreLoading: getIgnoreLoading() })
+      .then((res) => {
+        const { data } = res.data;
 
-          setAccessData(data);
-        })
-        .catch((err) => {
-          console.log(err);
-          message.error("Request error!");
-        });
-    });
+        setAccessData(data);
+      })
+      .catch((err) => {
+        console.log(err);
+        message.error("Request error!");
+      });
+  };
+
+  const triggerSearch = () => {
+    const nextPagination = {
+      ...tablePagination,
+      current: defaultTablePagination.current,
+    };
+
+    setTablePagination(nextPagination);
+    handleSearch(null, nextPagination);
   };
 
   const handleClear = () => {
+    clearMyAccessSearchCookie(PAGE_COOKIE_KEY);
     form.resetFields();
+    setTablePagination(defaultTablePagination);
 
-    handleSearch();
+    handleSearch({}, defaultTablePagination);
   };
 
   const hangleAdd = () => {
@@ -88,22 +122,56 @@ const ItemsAccess = () => {
     newWindow.location.href = `/dln-print/${data.dncode}`;
   };
 
+  const handleTableChange = (pagination) => {
+    const nextPagination = {
+      current: pagination?.current ?? defaultTablePagination.current,
+      pageSize: pagination?.pageSize ?? defaultTablePagination.pageSize,
+    };
+
+    setTablePagination(nextPagination);
+    savePageState(form.getFieldsValue(true), nextPagination);
+  };
+
   useEffect(() => {
-    getData({});
+    (async () => {
+      const restored = await init();
+      handleSearch(
+        restored?.searchValues ?? null,
+        restored?.tablePagination ?? defaultTablePagination
+      );
+    })();
   }, []);
 
-  const getData = (data) => {
-    customerservice
-      .search(data, { ignoreLoading: getIgnoreLoading() })
-      .then((res) => {
-        const { data } = res.data;
+  const init = async () => {
+    const restored = loadMyAccessSearchCookie(PAGE_COOKIE_KEY);
+    if (restored?.searchValues || restored?.tablePagination) {
+      if (restored?.searchValues) {
+        form.setFieldsValue(restored.searchValues);
+      }
 
-        setAccessData(data);
-      })
-      .catch((err) => {
-        console.log(err);
-        message.error("Request error!");
-      });
+      if (restored?.tablePagination) {
+        setTablePagination({
+          current:
+            restored.tablePagination.current ?? defaultTablePagination.current,
+          pageSize:
+            restored.tablePagination.pageSize ?? defaultTablePagination.pageSize,
+        });
+      }
+
+      return {
+        searchValues: restored.searchValues ?? null,
+        tablePagination: restored.tablePagination ?? defaultTablePagination,
+      };
+    }
+
+    if (restored) {
+      form.setFieldsValue(restored);
+    }
+
+    return {
+      searchValues: restored,
+      tablePagination: defaultTablePagination,
+    };
   };
   const FormSearch = (
     <Collapse
@@ -125,7 +193,7 @@ const ItemsAccess = () => {
                     <Form.Item
                       label="รหัสลูกค้า"
                       name="cuscode"
-                      onChange={handleSearch}
+                      onChange={triggerSearch}
                     >
                       <Input placeholder="กรอกรหัสลูกค้า" />
                     </Form.Item>
@@ -134,7 +202,7 @@ const ItemsAccess = () => {
                     <Form.Item
                       label="ชื่อลูกค้า"
                       name="cusname"
-                      onChange={handleSearch}
+                      onChange={triggerSearch}
                     >
                       <Input placeholder="กรอกชื่อลูกค้า" />
                     </Form.Item>
@@ -143,14 +211,14 @@ const ItemsAccess = () => {
                     <Form.Item
                       label="จังหวัด"
                       name="province"
-                      onChange={handleSearch}
+                      onChange={triggerSearch}
                     >
                       <Select
                         size="large"
                         showSearch
                         filterOption={filterOption}
                         placeholder="เลือกจังหวัด"
-                        onChange={handleSearch}
+                        onChange={triggerSearch}
                         options={PROVINCE_OPTIONS}
                       />
                     </Form.Item>
@@ -159,7 +227,7 @@ const ItemsAccess = () => {
                     <Form.Item
                       label="เบอร์โทร"
                       name="tel"
-                      onChange={handleSearch}
+                      onChange={triggerSearch}
                     >
                       <Input placeholder="กรอกเบอร์โทรลูกค้า" />
                     </Form.Item>
@@ -246,6 +314,8 @@ const ItemsAccess = () => {
                 rowKey="cuscode"
                 columns={column}
                 dataSource={accessData}
+                pagination={tablePagination}
+                onChange={handleTableChange}
               />
             </Col>
           </Row>

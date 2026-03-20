@@ -27,6 +27,7 @@ const mngConfig = {
 const ItemsAccess = () => {
   const PAGE_COOKIE_KEY = "items";
   const navigate = useNavigate();
+  const defaultTablePagination = { current: 1, pageSize: 10 };
   const [form] = Form.useForm();
   const isFirstLoadRef = useRef(true);
   const getIgnoreLoading = () => {
@@ -38,9 +39,24 @@ const ItemsAccess = () => {
   const [accessData, setAccessData] = useState([]);
   const [activeSearch, setActiveSearch] = useState([]);
   const [optionType, setOptionType] = useState([]);
-  const handleSearch = (forcedValues = null) => {
+  const [tablePagination, setTablePagination] = useState(defaultTablePagination);
+  const savePageState = (searchValues, pagination = tablePagination) => {
+    saveMyAccessSearchCookie(
+      PAGE_COOKIE_KEY,
+      {
+        searchValues,
+        tablePagination: {
+          current: pagination?.current ?? defaultTablePagination.current,
+          pageSize: pagination?.pageSize ?? defaultTablePagination.pageSize,
+        },
+      },
+      7
+    );
+  };
+  const handleSearch = (forcedValues = null, paginationOverride = null) => {
     const v = forcedValues ?? form.getFieldsValue(true);
-    saveMyAccessSearchCookie(PAGE_COOKIE_KEY, v, 7);
+    const nextPagination = paginationOverride ?? tablePagination;
+    savePageState(v, nextPagination);
     const data = { ...v };
     itemservice
       .search(data, { ignoreLoading: getIgnoreLoading() })
@@ -55,12 +71,23 @@ const ItemsAccess = () => {
       });
   };
 
+  const triggerSearch = () => {
+    const nextPagination = {
+      ...tablePagination,
+      current: defaultTablePagination.current,
+    };
+
+    setTablePagination(nextPagination);
+    handleSearch(null, nextPagination);
+  };
+
   const handleClear = () => {
     clearMyAccessSearchCookie(PAGE_COOKIE_KEY);
     form.resetFields();
     form.setFieldValue("active_status", "Y");
+    setTablePagination(defaultTablePagination);
 
-    handleSearch();
+    handleSearch({ active_status: "Y" }, defaultTablePagination);
   };
 
   const handleAdd = () => {
@@ -121,21 +148,60 @@ const ItemsAccess = () => {
     // });
   };
 
+  const handleTableChange = (pagination) => {
+    const nextPagination = {
+      current: pagination?.current ?? defaultTablePagination.current,
+      pageSize: pagination?.pageSize ?? defaultTablePagination.pageSize,
+    };
+
+    setTablePagination(nextPagination);
+    savePageState(form.getFieldsValue(true), nextPagination);
+  };
+
   const init = async () => {
     const restored = loadMyAccessSearchCookie(PAGE_COOKIE_KEY);
+    if (restored?.searchValues || restored?.tablePagination) {
+      const searchValues = restored.searchValues ?? null;
+
+      if (searchValues) {
+        form.setFieldsValue(searchValues);
+      } else {
+        form.setFieldValue('active_status','Y');
+      }
+
+      if (restored?.tablePagination) {
+        setTablePagination({
+          current: restored.tablePagination.current ?? defaultTablePagination.current,
+          pageSize: restored.tablePagination.pageSize ?? defaultTablePagination.pageSize,
+        });
+      }
+
+      return {
+        searchValues: searchValues ?? form.getFieldsValue(true),
+        tablePagination: restored.tablePagination ?? defaultTablePagination,
+      };
+    }
+
     if (restored) {
       form.setFieldsValue(restored);
     } else {
       form.setFieldValue('active_status','Y');
     }
-    return restored ?? form.getFieldsValue(true);
+
+    return {
+      searchValues: restored ?? form.getFieldsValue(true),
+      tablePagination: defaultTablePagination,
+    };
   };
 
   useEffect(() => {
     (async () => {
       const restored = await init();
       GetItemsType();
-      handleSearch(restored ?? null);
+      handleSearch(
+        restored?.searchValues ?? null,
+        restored?.tablePagination ?? defaultTablePagination
+      );
     })();
   }, []);
   const GetItemsType = () => {
@@ -169,7 +235,7 @@ const ItemsAccess = () => {
                     <Form.Item
                       label="รหัสสินค้า"
                       name="stcode"
-                      onChange={() => handleSearch()}
+                      onChange={() => triggerSearch()}
                     >
                       <Input placeholder="กรอกรหัสสินค้า" />
                     </Form.Item>
@@ -178,7 +244,7 @@ const ItemsAccess = () => {
                     <Form.Item
                       label="ชื่อสินค้า"
                       name="stname"
-                      onChange={() => handleSearch()}
+                      onChange={() => triggerSearch()}
                     >
                       <Input placeholder="กรอกชื่อสินค้า" />
                     </Form.Item>
@@ -187,13 +253,13 @@ const ItemsAccess = () => {
                     <Form.Item
                       label="ประเภทสินค้า"
                       name="typecode"
-                      onChange={() => handleSearch()}
+                      onChange={() => triggerSearch()}
                     >
                       <Select
                         size="large"
                         showSearch
                         placeholder="เลือกประเภทสินค้า"
-                        onChange={() => handleSearch()}
+                        onChange={() => triggerSearch()}
                         options={optionType.map((item) => ({
                           value: item.typecode,
                           label: item.typename,
@@ -205,13 +271,13 @@ const ItemsAccess = () => {
                     <Form.Item
                       label="สถานะการใช้งาน"
                       name="active_status"
-                      onChange={() => handleSearch()}
+                      onChange={() => triggerSearch()}
                     >
                       <Select
                         size="large"
                         showSearch
                         placeholder="เลือกประเภทสินค้า"
-                        onChange={() => handleSearch()}
+                        onChange={() => triggerSearch()}
                         // defaultValue="Y"
                         options={[
                           { value: "Y", label: "เปิดการใช้งาน" },
@@ -312,6 +378,8 @@ const ItemsAccess = () => {
                 rowKey="stcode"
                 columns={column}
                 dataSource={accessData}
+                pagination={tablePagination}
+                onChange={handleTableChange}
               />
             </Col>
           </Row>

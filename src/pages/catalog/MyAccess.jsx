@@ -27,6 +27,7 @@ const mngConfig = {
 const CatalogAccess = () => {
   const PAGE_COOKIE_KEY = "catalog";
   const navigate = useNavigate();
+  const defaultTablePagination = { current: 1, pageSize: 10 };
   const [form] = Form.useForm();
   const isFirstLoadRef = useRef(true);
   const getIgnoreLoading = () => {
@@ -37,6 +38,7 @@ const CatalogAccess = () => {
 
   const [accessData, setAccessData] = useState([]);
   const [activeSearch, setActiveSearch] = useState([]);
+  const [tablePagination, setTablePagination] = useState(defaultTablePagination);
   const CollapseCatalogSearch = (
     <>
       <Row gutter={[8, 8]}>
@@ -122,15 +124,31 @@ const CatalogAccess = () => {
     );
   };
 
-  const handleSearch = (forcedValues = null) => {
+  const savePageState = (searchValues, pagination = tablePagination) => {
+    saveMyAccessSearchCookie(
+      PAGE_COOKIE_KEY,
+      {
+        searchValues,
+        tablePagination: {
+          current: pagination?.current ?? defaultTablePagination.current,
+          pageSize: pagination?.pageSize ?? defaultTablePagination.pageSize,
+        },
+      },
+      7
+    );
+  };
+
+  const handleSearch = (forcedValues = null, paginationOverride = null) => {
     const v = forcedValues ?? form.getFieldsValue(true);
-    saveMyAccessSearchCookie(PAGE_COOKIE_KEY, v, 7);
+    const nextPagination = paginationOverride ?? tablePagination;
+    savePageState(v, nextPagination);
     requestSearch({ ...v });
   };
   const handleClear = () => {
     clearMyAccessSearchCookie(PAGE_COOKIE_KEY);
     form.resetFields();
-    handleSearch();
+    setTablePagination(defaultTablePagination);
+    handleSearch({}, defaultTablePagination);
   };
   // console.log(form);
   const hangleAdd = () => {
@@ -171,18 +189,55 @@ const CatalogAccess = () => {
   };
   const column = accessColumn({ handleEdit, handleDelete });
 
+  const handleTableChange = (pagination) => {
+    const nextPagination = {
+      current: pagination?.current ?? defaultTablePagination.current,
+      pageSize: pagination?.pageSize ?? defaultTablePagination.pageSize,
+    };
+
+    setTablePagination(nextPagination);
+    savePageState(form.getFieldsValue(true), nextPagination);
+  };
+
   const init = async () => {
     const restored = loadMyAccessSearchCookie(PAGE_COOKIE_KEY);
+    if (restored?.searchValues || restored?.tablePagination) {
+      if (restored?.searchValues) {
+        form.setFieldsValue(restored.searchValues);
+      }
+
+      if (restored?.tablePagination) {
+        setTablePagination({
+          current:
+            restored.tablePagination.current ?? defaultTablePagination.current,
+          pageSize:
+            restored.tablePagination.pageSize ?? defaultTablePagination.pageSize,
+        });
+      }
+
+      return {
+        searchValues: restored.searchValues ?? null,
+        tablePagination: restored.tablePagination ?? defaultTablePagination,
+      };
+    }
+
     if (restored) {
       form.setFieldsValue(restored);
     }
-    return restored;
+
+    return {
+      searchValues: restored,
+      tablePagination: defaultTablePagination,
+    };
   };
 
   useEffect(() => {
     (async () => {
       const restored = await init();
-      handleSearch(restored ?? null);
+      handleSearch(
+        restored?.searchValues ?? null,
+        restored?.tablePagination ?? defaultTablePagination
+      );
     })();
 
     return async () => {
@@ -226,7 +281,13 @@ const CatalogAccess = () => {
           layout="vertical"
           autoComplete="off"
           onValuesChange={() => {
-            handleSearch();
+            const nextPagination = {
+              ...tablePagination,
+              current: defaultTablePagination.current,
+            };
+
+            setTablePagination(nextPagination);
+            handleSearch(null, nextPagination);
           }}
         >
           {FormSearch}
@@ -240,6 +301,8 @@ const CatalogAccess = () => {
                 rowKey="catalog_code"
                 columns={column}
                 dataSource={accessData}
+                pagination={tablePagination}
+                onChange={handleTableChange}
                 scroll={{ x: "max-content" }}
               />
             </Col>
