@@ -1,9 +1,9 @@
-import { FileTextFilled, ReconciliationFilled,FileDoneOutlined, AppstoreAddOutlined, BarcodeOutlined } from "@ant-design/icons";
+import { FileTextFilled, ReconciliationFilled, AppstoreAddOutlined, BarcodeOutlined } from "@ant-design/icons";
 import { TbReportMoney } from "react-icons/tb";
 import { RiTeamFill } from "react-icons/ri";
 import { MdRamenDining } from "react-icons/md";
 import { TiThLarge } from "react-icons/ti";
-import { GiDatabase,GiGrain } from "react-icons/gi";
+import { GiDatabase,GiFruitBowl,GiGrain } from "react-icons/gi";
 import { FaUserCircle } from "react-icons/fa";
 import { RiBox3Fill } from "react-icons/ri";
 import { TfiTruck } from "react-icons/tfi";
@@ -75,6 +75,11 @@ let _nav = [
     title: "รายงานเส้น เต้าหู้ เครื่องแกง",
     icon: <MdRamenDining  className="nav-ico" />,
     to: "/noodle-report",
+  },
+  {
+    title: "รายงานผลไม้",
+    icon: <GiFruitBowl className="nav-ico" />,
+    to: "/fruit-report",
   },
   {
     title: "BUY",
