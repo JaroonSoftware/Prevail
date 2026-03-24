@@ -8,21 +8,42 @@ import {
   Button,
   message,
   Drawer,
+  Collapse,
+  Form,
+  Row,
+  Space,
+  Input,
+  DatePicker,
 } from "antd";
 import { BsUiChecks } from "react-icons/bs";
-import { ReloadOutlined, EditOutlined } from "@ant-design/icons";
+import {
+  ReloadOutlined,
+  EditOutlined,
+  SearchOutlined,
+  ClearOutlined,
+} from "@ant-design/icons";
 import { GiGrain } from "react-icons/gi";
+import dayjs from "dayjs";
 
 import { columns } from "./model";
 import DryCheckDrawer from "../../../components/drawer/dry-check/DryCheckDrawer";
 import ReportService from "../../../service/Report.service";
+import {
+  saveMyAccessSearchCookie,
+  loadMyAccessSearchCookie,
+  clearMyAccessSearchCookie,
+} from "../../../utils/myaccessSearchCookie";
 
 const rpservice = ReportService();
+const RangePicker = DatePicker.RangePicker;
 
 const DryGoodsSelector = () => {
+  const PAGE_COOKIE_KEY = "dry-report";
+  const [form] = Form.useForm();
   const [listDetail, setListDetail] = useState([]);
   const [show, setShow] = useState(false);
   const [selected, setSelected] = useState(null);
+  const [activeSearch, setActiveSearch] = useState([]);
   const isFirstLoadRef = useRef(true);
 
   const getIgnoreLoading = () => {
@@ -45,17 +66,157 @@ const DryGoodsSelector = () => {
       });
   };
 
+  const buildSearchPayload = (values = {}) => {
+    const data = { ...values };
+    if (!!data?.sodate) {
+      const arr = data?.sodate.map((m) => dayjs(m).format("YYYY-MM-DD"));
+      const [sodate_form, sodate_to] = arr;
+      Object.assign(data, { sodate_form, sodate_to });
+    }
+    delete data.sodate;
+    return data;
+  };
+
+  const savePageState = (searchValues) => {
+    saveMyAccessSearchCookie(
+      PAGE_COOKIE_KEY,
+      {
+        searchValues,
+      },
+      7
+    );
+  };
+
+  const handleSearch = (forcedValues = null) => {
+    const values = forcedValues ?? form.getFieldsValue(true);
+    savePageState(values);
+    const payload = buildSearchPayload(values);
+
+    getData(payload);
+  };
+
+  const handleClear = () => {
+    clearMyAccessSearchCookie(PAGE_COOKIE_KEY);
+    form.resetFields();
+    handleSearch({});
+  };
+
   const init = async () => {
-    getData({});
+    const restored = loadMyAccessSearchCookie(PAGE_COOKIE_KEY);
+
+    if (restored?.searchValues) {
+      form.setFieldsValue(restored.searchValues);
+      return restored.searchValues;
+    }
+
+    return {};
   };
 
   useEffect(() => {
-    init();
+    (async () => {
+      const restoredSearchValues = await init();
+      handleSearch(restoredSearchValues);
+    })();
 
     return async () => {
       //console.clear();
     };
   }, []);
+
+  const FormSearch = (
+    <Collapse
+      size="small"
+      bordered={false}
+      activeKey={activeSearch}
+      onChange={(keys) => setActiveSearch(keys)}
+      items={[
+        {
+          key: "1",
+          label: (
+            <>
+              <SearchOutlined />
+              <span> ค้นหา</span>
+            </>
+          ),
+          showArrow: false,
+          children: (
+            <>
+              <br />
+              <Form
+                form={form}
+                layout="vertical"
+                autoComplete="off"
+                onValuesChange={(changedValues) => {
+                  if (Object.prototype.hasOwnProperty.call(changedValues, "sodate")) {
+                    handleSearch();
+                  }
+                }}
+              >
+                <Row gutter={[8, 8]}>
+                  {/* <Col xs={24} sm={12} md={12} lg={12} xl={12}>
+                    <Form.Item label="เลขที่ SO" name="socode">
+                      <Input placeholder="Enter SO Code" />
+                    </Form.Item>
+                  </Col> */}
+                  <Col xs={24} sm={12} md={12} lg={12} xl={12}>
+                    <Form.Item label="วันที่เอกสาร" name="sodate">
+                      <RangePicker
+                        placeholder={["From Date", "To Date"]}
+                        style={{ width: "100%", height: 40 }}
+                      />
+                    </Form.Item>
+                  </Col>
+                  {/* <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+                    <Form.Item label="รหัสลูกค้า" name="cuscode">
+                      <Input placeholder="Enter Customer Code" />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+                    <Form.Item label="ชื่อลูกค้า" name="cusname">
+                      <Input placeholder="Enter Customer Name" />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+                    <Form.Item label="ผู้จัดทำ" name="created_by">
+                      <Input placeholder="Enter Creator Name" />
+                    </Form.Item>
+                  </Col> */}
+                </Row>
+                <Row gutter={[8, 8]}>
+                  <Col xs={24} sm={12} md={12} lg={12} xl={12}>
+                    {/* Ignore */}
+                  </Col>
+                  <Col xs={24} sm={12} md={12} lg={12} xl={12}>
+                    <Flex justify="flex-end" gap={8}>
+                      <Button
+                        type="primary"
+                        size="small"
+                        className="bn-action"
+                        icon={<SearchOutlined />}
+                        onClick={() => handleSearch()}
+                      >
+                        ค้นหา
+                      </Button>
+                      <Button
+                        type="primary"
+                        size="small"
+                        className="bn-action"
+                        danger
+                        icon={<ClearOutlined />}
+                        onClick={() => handleClear()}
+                      >
+                        ล้าง
+                      </Button>
+                    </Flex>
+                  </Col>
+                </Row>
+              </Form>
+            </>
+          ),
+        },
+      ]}
+    />
+  );
 
   const handleOpen = (value) => {
     setSelected(value);
@@ -103,7 +264,7 @@ const DryGoodsSelector = () => {
             size="small"
             className="bn-action bn-center bn-primary justify-center"
             icon={<ReloadOutlined style={{ fontSize: ".9rem" }} />}
-            onClick={() => getData({})}
+            onClick={() => handleSearch()}
           >
             Refresh
           </Button>
@@ -146,25 +307,31 @@ const DryGoodsSelector = () => {
         boxSizing: "border-box",
       }}
     >
-      <Card
-        title={TitleTable}
-        style={{
-          width: "100%",
-          maxWidth: 1024, // ความกว้างเหมาะกับ tablet
-          borderRadius: 12,
-        }}
-        bodyStyle={{ padding: 12 }}
+      <Space
+        direction="vertical"
+        size="middle"
+        style={{ display: "flex", width: "100%", maxWidth: 1024 }}
       >
-        <Table
-          size="small"
-          rowKey="key"
-          columns={columnDefs}
-          dataSource={listDetail}
-          pagination={false}
-          scroll={{ x: "max-content" }}
-          locale={{ emptyText: "ไม่มีรายการ" }}
-        />
-      </Card>
+        {FormSearch}
+        <Card
+          title={TitleTable}
+          style={{
+            width: "100%",
+            borderRadius: 12,
+          }}
+          bodyStyle={{ padding: 12 }}
+        >
+          <Table
+            size="small"
+            rowKey="key"
+            columns={columnDefs}
+            dataSource={listDetail}
+            pagination={false}
+            scroll={{ x: "max-content" }}
+            locale={{ emptyText: "ไม่มีรายการ" }}
+          />
+        </Card>
+      </Space>
       {!!show && (
         <Drawer
           title={
