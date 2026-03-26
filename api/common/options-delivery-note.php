@@ -5,16 +5,16 @@ $conn = $db->connect();
 
 if ($_SERVER["REQUEST_METHOD"] == "GET"){
     extract($_GET, EXTR_OVERWRITE, "_"); 
-    // $type_code = !empty($type) ? "and i.typecode = '$type'" : "";
     try { 
         $res = null;
+        $cuscode_filter = !empty($cuscode) ? " and d.cuscode = '$cuscode'" : "";
         
         $sql = "SELECT distinct d.socode,d.sodate,c.cuscode, c.cusname,c.prename, d.doc_status
             FROM somaster as d 
             inner join `customer` as c on (d.cuscode=c.cuscode) 
             where d.doc_status = 'รอออกใบวางบิล' 
+            $cuscode_filter
             order by d.socode desc ";
-            // $type_code
             $stmt = $conn->prepare($sql); 
             $stmt->execute();
             $res = $stmt->fetchAll(PDO::FETCH_ASSOC); 

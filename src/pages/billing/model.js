@@ -127,6 +127,20 @@ export const blViewColumns = [
         render: (_, __, index) => index + 1,
       },
       {
+        title: "เลขที่ใบขายสินค้า",
+        dataIndex: "socode",
+        key: "socode",
+        width: 140,
+        align: "left",
+      },
+    {
+        title: "เลขที่ใบส่งของ",
+        dataIndex: "dncode",
+        key: "dncode",
+        width: 140,
+        align: "left",
+      },
+      {
         title: "รหัสสินค้า",
         dataIndex: "stcode",
         key: "stcode",

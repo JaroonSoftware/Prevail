@@ -5,16 +5,37 @@ $conn = $db->connect();
 
 if ($_SERVER["REQUEST_METHOD"] == "GET"){
     extract($_GET, EXTR_OVERWRITE, "_"); 
-    // $type_code = !empty($type) ? "and i.typecode = '$type'" : "";
     try { 
         $res = null;
+
+        $join_detail = "";
+        $cuscode_filter = !empty($cuscode) ? " and s.cuscode = '$cuscode'" : "";
+        $status_filter = " and (s.doc_status = 'รอจัดเตรียมสินค้า' or s.doc_status = 'จัดเตรียมสินค้ายังไม่ครบ')";
+        $socode_filter = "";
+
+        if (!empty($socode)) {
+            $tmp_array = array_filter(array_map('trim', explode(',', $socode)));
+
+            if (!empty($tmp_array)) {
+                $tmp_array = array_map(function ($value) {
+                    return "'" . str_replace("'", "''", $value) . "'";
+                }, $tmp_array);
+
+                $join_detail = " inner join `dndetail` as d on (s.dncode=d.dncode) ";
+                $socode_filter = " and d.socode in (" . implode(',', $tmp_array) . ")";
+                $status_filter = " and s.doc_status != 'ยกเลิก'";
+            }
+        }
         
-        $sql = "SELECT distinct s.dncode,s.dncode,c.cuscode, c.cusname,c.prename, s.doc_status
+        $sql = "SELECT distinct s.dncode,c.cuscode, c.cusname,c.prename, s.doc_status
             FROM dnmaster as s 
+            $join_detail
             inner join `customer` as c on (s.cuscode=c.cuscode) 
-            where s.doc_status = 'รอจัดเตรียมสินค้า' || s.doc_status = 'จัดเตรียมสินค้ายังไม่ครบ'
+            where 1 = 1
+            $cuscode_filter
+            $socode_filter
+            $status_filter
             order by s.dncode desc ";
-            // $type_code
             $stmt = $conn->prepare($sql); 
             $stmt->execute();
             $res = $stmt->fetchAll(PDO::FETCH_ASSOC); 

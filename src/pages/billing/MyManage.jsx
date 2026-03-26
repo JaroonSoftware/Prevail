@@ -14,10 +14,9 @@ import { Card, Col, Divider, Flex, Row, Space, Select,InputNumber } from "antd";
 
 import OptionService from "../../service/Options.service";
 import BillingNoteService from "../../service/BillingNote.Service";
-import SOService from "../../service/SO.service";
 import { SaveFilled, SearchOutlined } from "@ant-design/icons";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
-import { ModalDeliverynote } from "../../components/modal/delivery-note";
+import { ModalDeliverynoteBilling } from "../../components/modal/delivery-note-for-billing";
 
 import {
   DEFALUT_CHECK_INVOICE,
@@ -35,7 +34,6 @@ import { LuPackageSearch } from "react-icons/lu";
 import { LuPrinter } from "react-icons/lu";
 const opservice = OptionService();
 const blservice = BillingNoteService();
-const soservice = SOService();
 
 const gotoFrom = "/billing";
 const dateFormat = "DD/MM/YYYY";
@@ -196,15 +194,8 @@ function BillingnoteManage() {
   };
 
   const handleItemsChoosed = async (val) => {
-    // console.log(val)
-    const res = await soservice.getlist(val);
-    const {
-      data: { detail },
-    } = res.data;
-    console.log(detail)
-    setListDetail(detail);
+    setListDetail(val || []);
     handleSummaryPrice();
-    // console.log(header.balance)
   };
 
   const handleConfirm = () => {
@@ -257,9 +248,9 @@ function BillingnoteManage() {
     newWindow.location.href = `/quo-print/${formDetail.quotcode}`;
   };
 
-  const handleDelete = (dncode) => {
+  const handleDelete = (code) => {
     const itemDetail = [...listDetail];
-    const newData = itemDetail.filter((item) => item?.dncode !== dncode);
+    const newData = itemDetail.filter((item) => item?.code !== code);
     setListDetail([...newData]);
   };
 
@@ -273,8 +264,8 @@ function BillingnoteManage() {
         icon={
           <RiDeleteBin5Line style={{ fontSize: "1rem", marginTop: "3px" }} />
         }
-        onClick={() => handleDelete(record?.dncode)}
-        disabled={!record?.dncode || config.action !== "create"}
+        onClick={() => handleDelete(record?.code)}
+        disabled={!record?.code || config.action !== "create"}
       />
     ) : null;
   };
@@ -284,7 +275,7 @@ function BillingnoteManage() {
       const itemDetail = [...listDetail];
       const newData = [...itemDetail];
 
-      const ind = newData.findIndex((item) => r?.dncode === item?.dncode);
+      const ind = newData.findIndex((item) => r?.code === item?.code);
       if (ind < 0) return itemDetail;
       const item = newData[ind];
       newData.splice(ind, 1, {
@@ -687,7 +678,7 @@ function BillingnoteManage() {
       )}
 
       {openProduct && (
-        <ModalDeliverynote
+        <ModalDeliverynoteBilling
           show={openProduct}
           close={() => setOpenProduct(false)}
           values={(v) => {
@@ -695,7 +686,7 @@ function BillingnoteManage() {
           }}
           cuscode={form.getFieldValue("cuscode")}
           selected={listDetail}
-        ></ModalDeliverynote>
+        ></ModalDeliverynoteBilling>
       )}
     </div>
   );

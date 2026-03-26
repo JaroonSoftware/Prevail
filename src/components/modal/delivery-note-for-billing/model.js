@@ -42,3 +42,53 @@ export const columns = ()=>{
     },
   ]
 };
+
+export const shippingColumns = () => {
+  return [
+    {
+      title: "เลขที่ใบส่งของ",
+      key: "dncode",
+      width: "14%",
+      dataIndex: "dncode",
+    },
+    {
+      title: "เลขที่ใบขายสินค้า",
+      key: "socode",
+      width: "14%",
+      dataIndex: "socode",
+    },
+    {
+      title: "รหัสสินค้า",
+      key: "stcode",
+      width: "14%",
+      dataIndex: "stcode",
+    },
+    {
+      title: "ชื่อสินค้า",
+      dataIndex: "stname",
+      width: "30%",
+      key: "stname",
+    },
+    {
+      title: "จำนวน",
+      dataIndex: "qty",
+      width: "10%",
+      key: "qty",
+      align: "right",
+    },
+    {
+      title: "หน่วย",
+      dataIndex: "unit",
+      width: "8%",
+      key: "unit",
+      align: "center",
+    },
+    {
+      title: "ราคาขาย",
+      dataIndex: "price",
+      width: "10%",
+      key: "price",
+      align: "right",
+    },
+  ];
+};
