@@ -164,20 +164,13 @@ try {
         echo json_encode(array("data" => array("code" => $code)));
     } else  if ($_SERVER["REQUEST_METHOD"] == "DELETE") {
         // $code = $_DELETE["code"];
-        $code = $_GET["code"];
+        $blcode = $_GET["code"];
 
-        $sql = "delete from packingset where code = :code";
+        $sql = "update bl_master set active_status = 'N',doc_status = 'ยกเลิก' where blcode = :blcode";
         $stmt = $conn->prepare($sql);
-        if (!$stmt->execute(['code' => $code])) {
+        if (!$stmt->execute(['blcode' => $blcode])) {
             $error = $conn->errorInfo();
-            throw new PDOException("Remove data error => $error");
-        }
-
-        $sql = "delete from packingset_detail where packingsetcode = :code";
-        $stmt = $conn->prepare($sql);
-        if (!$stmt->execute(['code' => $code])) {
-            $error = $conn->errorInfo();
-            throw new PDOException("Remove data error => $error");
+            throw new PDOException("Remove master data error => $error");
         }
 
         $conn->commit();

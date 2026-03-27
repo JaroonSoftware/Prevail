@@ -10,7 +10,16 @@ import {
   Typography,
   message,
 } from "antd";
-import { Card, Col, Divider, Flex, Row, Space, Select,InputNumber } from "antd";
+import {
+  Card,
+  Col,
+  Divider,
+  Flex,
+  Row,
+  Space,
+  Select,
+  InputNumber,
+} from "antd";
 
 import OptionService from "../../service/Options.service";
 import BillingNoteService from "../../service/BillingNote.Service";
@@ -28,7 +37,7 @@ import dayjs from "dayjs";
 import { delay, formatMoney } from "../../utils/util";
 import { ButtonBack } from "../../components/button";
 import { useLocation, useNavigate } from "react-router-dom";
-
+import {TbSquareRoundedX} from "react-icons/tb";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { LuPackageSearch } from "react-icons/lu";
 import { LuPrinter } from "react-icons/lu";
@@ -78,7 +87,7 @@ function BillingnoteManage() {
         setFormDetail(header);
         setListDetail(detail);
         setBLCode(blcode);
-       
+
         form.setFieldsValue({
           ...header,
           bldate: dayjs(bldate),
@@ -126,15 +135,11 @@ function BillingnoteManage() {
     const newData = [...listDetail];
 
     const total_price = newData.reduce(
-      (a, v) =>
-        (a +=
-          Number(v?.qty || 0) *
-          Number(v?.price || 0)),
-      0
+      (a, v) => (a += Number(v?.qty || 0) * Number(v?.price || 0)),
+      0,
     );
     const discount = form.getFieldValue("discount");
-    const grand_total_price =
-      total_price - form.getFieldValue("discount");
+    const grand_total_price = total_price - form.getFieldValue("discount");
 
     setFormDetail(() => ({
       ...formDetail,
@@ -148,7 +153,7 @@ function BillingnoteManage() {
   const handleCalculatePrice = (day, date) => {
     const newDateAfterAdding = dayjs(date || new Date()).add(
       Number(day),
-      "day"
+      "day",
     );
     const nDateFormet = newDateAfterAdding.format("YYYY-MM-DD");
 
@@ -196,16 +201,16 @@ function BillingnoteManage() {
   const handleItemsChoosed = async (val) => {
     let newData = [...listDetail];
     val.map((item) => {
-        newData.push({
-          code: item?.code,
-          stcode: item?.stcode,
-          stname: item?.stname,
-          unit: item?.unit,
-          price: item?.price,
-          dncode: item?.dncode,
-          socode: item?.socode,
-          qty: 1,
-        });
+      newData.push({
+        code: item?.code,
+        stcode: item?.stcode,
+        stname: item?.stname,
+        unit: item?.unit,
+        price: item?.price,
+        dncode: item?.dncode,
+        socode: item?.socode,
+        qty: 1,
+      });
     });
     setListDetail(newData);
     handleSummaryPrice();
@@ -223,30 +228,30 @@ function BillingnoteManage() {
           remark: form.getFieldValue("remark"),
           duedate: dayjs(form.getFieldValue("duedate")).format("YYYY-MM-DD"),
           payment: form.getFieldValue("payment"),
-          discount: form.getFieldValue("discount")
+          discount: form.getFieldValue("discount"),
         };
         const detail = listDetail;
 
         const parm = { header, detail };
         // console.log(detail);
         const actions =
-              config?.action !== "create" ? blservice.update : blservice.create;
-            actions(parm)
-              .then((r) => {
-                handleClose().then((r) => {
-                  message.success("Request Billing Note success.");
-                });
-              })
-              .catch((err) => {
-                message.error("Request Billing Note fail.");
-                console.warn(err);
-              });
+          config?.action !== "create" ? blservice.update : blservice.create;
+        actions(parm)
+          .then((r) => {
+            handleClose().then((r) => {
+              message.success("Request Billing Note success.");
+            });
           })
           .catch((err) => {
-            Modal.error({
-              title: "This is an error message",
-              content: "คุณกรอกข้อมูล ไม่ครบถ้วน",
-            });
+            message.error("Request Billing Note fail.");
+            console.warn(err);
+          });
+      })
+      .catch((err) => {
+        Modal.error({
+          title: "This is an error message",
+          content: "คุณกรอกข้อมูล ไม่ครบถ้วน",
+        });
       });
   };
 
@@ -267,11 +272,12 @@ function BillingnoteManage() {
     setListDetail([...newData]);
   };
 
+  const isLockedStatus = ["ออกใบเสร็จแล้ว", "ยกเลิก"].includes(
+    formDetail?.doc_status,
+  );
+
   const handleRemove = (record) => {
     const itemDetail = [...listDetail];
-    const isLockedStatus = ["ออกใบเสร็จแล้ว", "ยกเลิก"].includes(
-      formDetail?.doc_status
-    );
     return itemDetail.length >= 1 ? (
       <Button
         className="bt-icon"
@@ -288,6 +294,29 @@ function BillingnoteManage() {
         // disabled={!record?.code || config.action !== "create"}
       />
     ) : null;
+  };
+
+  const handleCancelBilling = () => {
+    Modal.confirm({
+      title: "ยืนยันที่จะยกเลิกใบแจ้งหนี้",
+      content: "ต้องการยกเลิกใบแจ้งหนี้ ใช่หรือไม่",
+      okText: "ยืนยัน",
+      okType: "danger",
+      cancelText: "ยกเลิก",
+      onOk() {
+        return blservice
+          .deleted(formDetail?.blcode || config?.code)
+          .then(() => {
+            return handleClose().then(() => {
+              message.success("ยกเลิกใบแจ้งหนี้สำเร็จ");
+            });
+          })
+          .catch((err) => {
+            message.error("Request Billing Note fail.");
+            console.warn(err);
+          });
+      },
+    });
   };
 
   const handleEditCell = (row) => {
@@ -482,7 +511,7 @@ function BillingnoteManage() {
                           <InputNumber
                             className="width-100 input-30"
                             controls={false}
-                            style={{ textAlignLast: 'right' }} 
+                            style={{ textAlignLast: "right" }}
                             min={0}
                             onFocus={(e) => {
                               e.target.select();
@@ -512,7 +541,9 @@ function BillingnoteManage() {
                         style={{ borderRigth: "0px solid" }}
                       >
                         <Typography.Text type="danger">
-                          {formatMoney(Number(formDetail?.grand_total_price || 0))}
+                          {formatMoney(
+                            Number(formDetail?.grand_total_price || 0),
+                          )}
                         </Typography.Text>
                       </Table.Summary.Cell>
                       <Table.Summary.Cell>Baht</Table.Summary.Cell>
@@ -555,6 +586,22 @@ function BillingnoteManage() {
       </Col>
       <Col span={12} style={{ paddingInline: 0 }}>
         <Flex gap={4} justify="end">
+          {config?.action !== "create" && (
+            <Button
+              icon={<TbSquareRoundedX style={{ fontSize: "1.4rem" }} />}
+              type="primary"
+              className="bn-center justify-center"
+              style={{ width: "9.5rem" }}
+              danger
+              onClick={() => {
+                if (isLockedStatus) return;
+                handleCancelBilling();
+              }}
+              disabled={isLockedStatus}
+            >
+              ยกเลิกใบแจ้งหนี้
+            </Button>
+          )}
           <Button
             className="bn-center justify-center"
             icon={<SaveFilled style={{ fontSize: "1rem" }} />}
