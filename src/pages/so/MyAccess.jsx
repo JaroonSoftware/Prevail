@@ -51,7 +51,12 @@ const MyAccess = () => {
                 <Form.Item label='Sale Order Date.' name='sodate'>
                     <RangePicker placeholder={['From Date', 'To date']} style={{width:'100%', height:40}}  />
                 </Form.Item>
-            </Col> 
+            </Col>             
+            <Col xs={24} sm={8} md={8} lg={8} xl={8}>
+                <Form.Item label='Customer PO' name='customer_po'>
+                    <Input placeholder='Enter Customer PO.' />
+                </Form.Item>                            
+            </Col>
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
                 <Form.Item label='Request By.' name='created_by'>
                     <Input placeholder='Enter First Name or Last Name.' />

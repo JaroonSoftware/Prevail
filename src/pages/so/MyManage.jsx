@@ -221,6 +221,8 @@ function MyManage() {
           ...formDetail,
           sodate: dayjs(form.getFieldValue("sodate")).format("YYYY-MM-DD"),
           deldate: dayjs(form.getFieldValue("deldate")).format("YYYY-MM-DD"),
+          customer_po: form.getFieldValue("customer_po"),
+          del_room: form.getFieldValue("del_room"),
           remark: form.getFieldValue("remark"),
         };
         const detail = listDetail;
@@ -405,21 +407,31 @@ function MyManage() {
               />
             </Form.Item>
           </Col>
-          <Col xs={24} sm={24} md={24} lg={24} xl={18} xxl={18}>
-            <Form.Item name="address" label="ที่อยู่" className="!mb-1">
-              <Input placeholder="Customer Address." readOnly />
+          <Col xs={24} sm={24} md={6} lg={6}>
+            <Form.Item name="customer_po" label="PO ลูกค้า" className="!mb-1">
+              <Input placeholder="Customer PO." />
             </Form.Item>
           </Col>
-          <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
-            <Form.Item name="contact" label="ผู้ติดต่อ" className="!mb-1">
-              <Input placeholder="Customer Contact." readOnly />
+          <Col xs={24} sm={24} md={6} lg={6}>
+            <Form.Item name="del_room" label="ห้องครัว" className="!mb-1">
+              <Input placeholder="Kitchen Room." />
             </Form.Item>
           </Col>
-          <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
+          <Col xs={24} sm={24} md={6} lg={6}>
             <Form.Item name="tel" label="เบอร์โทรลูกค้า" className="!mb-1">
               <Input placeholder="Customer Tel." readOnly />
             </Form.Item>
           </Col>
+          <Col xs={24} sm={24} md={6} lg={6}>
+            <Form.Item name="contact" label="ผู้ติดต่อ" className="!mb-1">
+              <Input placeholder="Customer Contact." readOnly />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={24} md={24} lg={24} xl={12} xxl={12}>
+            <Form.Item name="address" label="ที่อยู่" className="!mb-1">
+              <Input placeholder="Customer Address." readOnly />
+            </Form.Item>
+          </Col>          
         </Row>
       </Space>
     </>

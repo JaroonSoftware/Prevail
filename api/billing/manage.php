@@ -138,8 +138,8 @@ try {
             throw new PDOException("Remove data error => $error");
         }
 
-        $sql = "insert into bl_detail (blcode,socode,stcode,unit,price)
-        values (:blcode,:socode,:stcode,:unit,:price)";
+        $sql = "insert into bl_detail (blcode,socode,dncode,stcode,unit,price)
+        values (:blcode,:socode,:dncode,:stcode,:unit,:price)";
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
@@ -148,6 +148,7 @@ try {
             $val = (object)$val;
             $stmt->bindParam(":blcode", $header->blcode, PDO::PARAM_STR);
             $stmt->bindParam(":socode", $val->socode, PDO::PARAM_STR);
+            $stmt->bindParam(":dncode", $val->dncode, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
          
@@ -201,7 +202,7 @@ try {
         }
         $header = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT a.blcode,a.socode,a.dncode,a.qty,a.stcode, a.price,a.unit,i.stname ";
+        $sql = "SELECT a.code,a.blcode,a.socode,a.dncode,a.qty,a.stcode, a.price,a.unit,i.stname ";
         $sql .= " FROM `bl_detail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
         $sql .= " where a.blcode = :code";
         $sql .= " order by i.seq";

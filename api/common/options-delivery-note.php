@@ -9,7 +9,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
         $res = null;
         $cuscode_filter = !empty($cuscode) ? " and d.cuscode = '$cuscode'" : "";
         
-        $sql = "SELECT distinct d.socode,d.sodate,c.cuscode, c.cusname,c.prename, d.doc_status
+        $sql = "SELECT distinct d.socode,d.sodate,d.customer_po,c.cuscode, c.cusname,c.prename, d.doc_status
             FROM somaster as d 
             inner join `customer` as c on (d.cuscode=c.cuscode) 
             where d.doc_status = 'รอออกใบวางบิล' 

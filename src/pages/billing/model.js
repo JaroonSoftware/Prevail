@@ -254,6 +254,7 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
     width: "8%",
     align: "right",
     className: "!pe-3",
+    editable: true,
     required: true,
     type:'number',
     render: (_, rec) => <>{ comma( Number(rec?.qty ||  0),  2, 0 )}</>,

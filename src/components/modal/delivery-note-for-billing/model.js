@@ -21,6 +21,12 @@ export const columns = ()=>{
       dataIndex: "sodate", 
     },
     {
+      title: "PO ลูกค้า",
+      key: "customer_po",
+      width: "15%",
+      dataIndex: "customer_po", 
+    },
+    {
       title: "รหัสลูกค้า",
       key: "cuscode",
       width: "15%",

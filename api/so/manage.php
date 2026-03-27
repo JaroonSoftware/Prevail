@@ -17,9 +17,9 @@ try {
         $socode = request_socode($conn);
         $sql = " 
         insert somaster ( 
-            socode, cuscode, sodate, total_price,deldate, remark, active_status, doc_status, created_date, created_by
+            socode, cuscode, sodate,customer_po, del_room, total_price,deldate, remark, active_status, doc_status, created_date, created_by
         ) 
-        values (:socode, :cuscode, :sodate, :total_price,:deldate, :remark, 'Y', 'รอออกใบส่งของ', :action_datetime,:action_user)";
+        values (:socode, :cuscode, :sodate, :customer_po, :del_room, :total_price,:deldate, :remark, 'Y', 'รอออกใบส่งของ', :action_datetime,:action_user)";
 
 
         $stmt = $conn->prepare($sql);
@@ -29,6 +29,8 @@ try {
         $stmt->bindParam(":socode", $socode, PDO::PARAM_STR);
         $stmt->bindParam(":sodate", $header->sodate, PDO::PARAM_STR);
         $stmt->bindParam(":cuscode", $header->cuscode, PDO::PARAM_STR);
+        $stmt->bindParam(":customer_po", $header->customer_po, PDO::PARAM_STR);
+        $stmt->bindParam(":del_room", $header->del_room, PDO::PARAM_STR);
         $stmt->bindParam(":total_price", $header->total_price, PDO::PARAM_STR);
         $stmt->bindParam(":deldate", $header->deldate, PDO::PARAM_STR);
         $stmt->bindParam(":remark", $header->remark, PDO::PARAM_STR);
@@ -82,6 +84,8 @@ try {
         set
         cuscode = :cuscode,
         sodate = :sodate,
+        customer_po = :customer_po,
+        del_room = :del_room,
         total_price = :total_price,
         deldate = :deldate,
         remark = :remark, 
@@ -100,6 +104,8 @@ try {
         $stmt->bindValue(":total_price", $header->total_price, PDO::PARAM_STR);
         $stmt->bindValue(":deldate", $header->deldate, PDO::PARAM_STR);
         $stmt->bindValue(":remark", $header->remark, PDO::PARAM_STR);
+        $stmt->bindValue(":customer_po", $header->customer_po, PDO::PARAM_STR);
+        $stmt->bindValue(":del_room", $header->del_room, PDO::PARAM_STR);
         $stmt->bindParam(":action_datetime", $action_datetime, PDO::PARAM_STR);
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_STR);
         $stmt->bindParam(":socode", $header->socode, PDO::PARAM_STR);
@@ -158,9 +164,11 @@ try {
         echo json_encode(array("status" => 1));
     } else  if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $code = $_GET["code"];
-        $sql = "SELECT a.socode,a.sodate,a.deldate,a.cuscode,CONCAT(c.prename,' ',c.cusname) as cusname,CONCAT(COALESCE(c.idno, '') ,' ', COALESCE(c.road, ''),' ', COALESCE(c.subdistrict, ''),' ', COALESCE(c.district, ''),' ', COALESCE(c.province, ''),' ',COALESCE(c.zipcode, '') ) as address
-        ,c.zipcode,c.contact,c.tel,c.fax,a.total_price,a.remark,a.active_status,a.doc_status, a.print_status,a.created_date, a.updated_date,
-        concat(IFNULL(u.firstname, ''), ' ', IFNULL(u.lastname, '')) as created_by,concat(IFNULL(u2.firstname, ''), ' ', IFNULL(u2.lastname, '')) as updated_by ";
+        $sql = "SELECT a.socode,a.sodate,a.deldate,a.customer_po,a.del_room,a.cuscode,
+        CONCAT(c.prename,' ',c.cusname) as cusname,CONCAT(COALESCE(c.idno, '') ,' ', COALESCE(c.road, ''),' ', COALESCE(c.subdistrict, ''),' ', COALESCE(c.district, ''),' ', COALESCE(c.province, ''),' ',COALESCE(c.zipcode, '') ) as address
+        ,c.zipcode,c.contact,c.tel,c.fax,a.total_price,a.remark,a.active_status,a.doc_status, a.print_status,a.created_date,a.updated_date,
+        concat(IFNULL(u.firstname, ''), ' ', IFNULL(u.lastname, '')) as created_by,
+        concat(IFNULL(u2.firstname, ''), ' ', IFNULL(u2.lastname, '')) as updated_by ";
         $sql .= " FROM `somaster` as a ";
         $sql .= " left outer join `customer` as c on (a.cuscode)=(c.cuscode)";
         $sql .= " left join user u on a.created_by = u.code";

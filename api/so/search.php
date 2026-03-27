@@ -13,6 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
     $socode = !empty($socode) ? "and a.socode like '%$socode%'" : "";
     $cuscode = !empty($cuscode) ? "and c.cuscode like '%$cuscode%'" : "";
     $cusname = !empty($cusname) ? "and c.cusname like '%$cusname%'" : "";
+    $customer_po = !empty($customer_po) ? "and a.customer_po like '%$customer_po%'" : "";
     // $spcode_cdt = !empty($spcode) ? "and e.spcode like '%$spcode%'" : "";
     // $spname_cdt = !empty($spname) ? "and e.spname like '%$spname%'" : "";
     $created_by = !empty($created_by) ? "and ( u.firstname like '%$created_by%' or u.lastname like '%$created_by%' )" : "";
@@ -24,7 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
     try {   
         $sql = " 
         SELECT 
-        a.socode,a.sodate,a.cuscode,c.cusname,a.print_status,a.doc_status,concat(IFNULL(u.firstname, ''), ' ', IFNULL(u.lastname, '')) created_name  
+        a.socode,a.sodate,a.customer_po,a.cuscode,c.cusname,a.print_status,a.doc_status,concat(IFNULL(u.firstname, ''), ' ', IFNULL(u.lastname, '')) created_name  
         from somaster a        
         left join customer c on a.cuscode = c.cuscode  
         left join user u on a.created_by = u.code
@@ -32,6 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
         $socode
         $cuscode
         $cusname
+        $customer_po
         $created_by
         $sodate
         order by a.socode desc ;";

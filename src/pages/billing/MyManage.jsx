@@ -194,7 +194,20 @@ function BillingnoteManage() {
   };
 
   const handleItemsChoosed = async (val) => {
-    setListDetail(val || []);
+    let newData = [...listDetail];
+    val.map((item) => {
+        newData.push({
+          code: item?.code,
+          stcode: item?.stcode,
+          stname: item?.stname,
+          unit: item?.unit,
+          price: item?.price,
+          dncode: item?.dncode,
+          socode: item?.socode,
+          qty: 1,
+        });
+    });
+    setListDetail(newData);
     handleSummaryPrice();
   };
 
@@ -256,6 +269,9 @@ function BillingnoteManage() {
 
   const handleRemove = (record) => {
     const itemDetail = [...listDetail];
+    const isLockedStatus = ["ออกใบเสร็จแล้ว", "ยกเลิก"].includes(
+      formDetail?.doc_status
+    );
     return itemDetail.length >= 1 ? (
       <Button
         className="bt-icon"
@@ -264,8 +280,12 @@ function BillingnoteManage() {
         icon={
           <RiDeleteBin5Line style={{ fontSize: "1rem", marginTop: "3px" }} />
         }
-        onClick={() => handleDelete(record?.code)}
-        disabled={!record?.code || config.action !== "create"}
+        onClick={() => {
+          if (isLockedStatus) return;
+          handleDelete(record?.code);
+        }}
+        disabled={!record?.code || isLockedStatus}
+        // disabled={!record?.code || config.action !== "create"}
       />
     ) : null;
   };
