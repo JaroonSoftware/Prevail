@@ -173,6 +173,19 @@ const CatalogAccess = () => {
     });
   };
 
+  const handleDuplicate = (data) => {
+    navigate("manage/duplicate", {
+      state: {
+        config: {
+          ...mngConfig,
+          title: "ทำสำเนาแคตตาล๊อก",
+          action: "duplicate",
+          code: data?.catalog_code,
+        },
+      },
+    });
+  };
+
   const handleDelete = (data) => {
     // startLoading();
     clService
@@ -187,7 +200,7 @@ const CatalogAccess = () => {
         message.error("Request error!");
       });
   };
-  const column = accessColumn({ handleEdit, handleDelete });
+  const column = accessColumn({ handleEdit, handleDuplicate, handleDelete });
 
   const handleTableChange = (pagination) => {
     const nextPagination = {

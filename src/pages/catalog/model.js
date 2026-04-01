@@ -5,7 +5,7 @@ import {
   EditableRow,
   EditableCell,
 } from "../../components/table/TableEditAble";
-import { EditOutlined } from "@ant-design/icons";
+import { CopyOutlined, EditOutlined } from "@ant-design/icons";
 import { comma } from '../../utils/util';
 
 /** export component for edit table */
@@ -16,6 +16,7 @@ export const componentsEditable = {
 /** get sample column */
 export const accessColumn = ({
   handleEdit,
+  handleDuplicate,
   handleDelete,
   handleView,
   handlePrint,
@@ -75,6 +76,18 @@ export const accessColumn = ({
             justifyContent: "center",
           }}
           onClick={(e) => handleEdit(record)}
+          size="small"
+        />
+        <Button
+          icon={<CopyOutlined />}
+          className="bn-primary-outline"
+          style={{
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          onClick={() => handleDuplicate(record)}
           size="small"
         />
       </Space>

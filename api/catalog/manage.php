@@ -20,7 +20,7 @@ try {
         // var_dump($_POST);
 
         $sql = " insert catalog_master (catalog_code,catalog_name,start_date,stop_date,remark, active_status,created_date,created_by) 
-        values (:catalog_code,:catalog_name,:start_date,:stop_date,:remark,'Y',:action_datetime,:action_user)";
+        values (:catalog_code,:catalog_name,:start_date,:stop_date,:remark,'N',:action_datetime,:action_user)";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");

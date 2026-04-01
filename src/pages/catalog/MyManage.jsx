@@ -15,7 +15,11 @@ import {
   Collapse,
 } from "antd";
 import CatalogService from "../../service/Catalog.Service";
-import { SaveFilled, CaretRightOutlined } from "@ant-design/icons";
+import {
+  SaveFilled,
+  CaretRightOutlined,
+  CopyOutlined,
+} from "@ant-design/icons";
 import {
   columnsParametersEditable,
   componentsEditable,
@@ -42,6 +46,7 @@ function CatalogManage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { config } = location.state || { config: null };
+  const isEditMode = config?.action === "edit";
   const [form] = Form.useForm();
   /** Modal handle */
   const [openCustomerCL, setOpenCustomerCL] = useState(false);
@@ -54,44 +59,60 @@ function CatalogManage() {
   const [formDetail, setFormDetail] = useState([]);
   useEffect(() => {
     const initial = async () => {
-      if (config?.action !== "create") {
-        const res = await clservice
-          .get(config?.code)
-          .catch((error) => message.error("get Catalog data fail."));
-        const {
-          data: { header, detail, customer },
-        } = res.data;
-        const { catalog_code, catalog_name, start_date, stop_date, remark } =
-          header;
-        setFormDetail(header);
-        setListDetail(detail);
-        setCusDetail(customer);
-        setCLCode(catalog_code);
-
-        let tmpdate = [];
-        if (!!start_date) tmpdate = [dayjs(start_date), dayjs(stop_date)];
-        form.setFieldsValue({
-          ...header,
-          catalog_name: catalog_name,
-          catalog_date: tmpdate,
-          remark: remark,
+      if (config?.action === "create") {
+        const codeResponse = await clservice.getcode().catch((e) => {
+          message.error("get Catalog code fail.");
         });
-      } else {
-        const { data: code } = (
-          await clservice.getcode().catch((e) => {
-            message.error("get Catalog code fail.");
-          })
-        ).data;
-        // alert()
+        const code = codeResponse?.data?.data;
+        if (!code) return;
+
         setCLCode(code);
-        const ininteial_value = {
+        const initialValue = {
           ...formDetail,
           catalog_code: code,
         };
 
-        setFormDetail(ininteial_value);
-        form.setFieldsValue(ininteial_value);
+        setFormDetail(initialValue);
+        form.setFieldsValue(initialValue);
+        return;
       }
+
+      const res = await clservice
+        .get(config?.code)
+        .catch((error) => message.error("get Catalog data fail."));
+      if (!res?.data?.data) return;
+
+      const {
+        data: { header, detail, customer },
+      } = res.data;
+      const nextHeader = { ...header };
+
+      if (!isEditMode) {
+        const codeResponse = await clservice.getcode().catch((e) => {
+          message.error("get Catalog code fail.");
+        });
+        const nextCode = codeResponse?.data?.data;
+        if (!nextCode) return;
+
+        nextHeader.catalog_code = nextCode;
+        setCLCode(nextCode);
+      } else {
+        setCLCode(header.catalog_code);
+      }
+
+      const { catalog_name, start_date, stop_date, remark } = nextHeader;
+      setFormDetail(nextHeader);
+      setListDetail(detail || []);
+      setCusDetail(customer || []);
+
+      let tmpdate = [];
+      if (!!start_date) tmpdate = [dayjs(start_date), dayjs(stop_date)];
+      form.setFieldsValue({
+        ...nextHeader,
+        catalog_name,
+        catalog_date: tmpdate,
+        remark,
+      });
       // console.log(unitOprionRes.data.data)
     };
 
@@ -146,12 +167,11 @@ function CatalogManage() {
         const customer = listCustomer;
         const parm = { header, detail, customer, };
         // console.log(parm);
-        const actions =
-          config?.action !== "create" ? clservice.update : clservice.create;
+        const actions = isEditMode ? clservice.update : clservice.create;
         actions(parm)
           .then((r) => {
             handleClose().then((r) => {
-              config?.action !== "create" ? message.success("แก้ไข Catalog สำเร็จ") : message.success("สร้าง Catalog สำเร็จ");
+              isEditMode ? message.success("แก้ไข Catalog สำเร็จ") : message.success("สร้าง Catalog สำเร็จ");
             });
           })
           .catch((err) => {
@@ -168,6 +188,20 @@ function CatalogManage() {
     navigate(gotoFrom, { replace: true });
     await delay(300);
     console.clear();
+  };
+
+  const handleDuplicate = () => {
+    if (!config?.code) return;
+
+    navigate(`${gotoFrom}/manage/duplicate`, {
+      state: {
+        config: {
+          action: "duplicate",
+          code: config.code,
+          title: "ทำสำเนาแคตตาล๊อก",
+        },
+      },
+    });
   };
 
   const handleDelete = (code) => {
@@ -331,11 +365,7 @@ function CatalogManage() {
             md={6}
             lg={6}
             xl={6}
-            style={
-              config.action === "edit"
-                ? { display: "inline" }
-                : { display: "none" }
-            }
+            style={isEditMode ? { display: "inline" } : { display: "none" }}
           >
             <Form.Item label="สถานะการใช้งาน" name="active_status">
               <Select
@@ -417,6 +447,16 @@ function CatalogManage() {
       </Col>
       <Col span={12} style={{ paddingInline: 0 }}>
         <Flex gap={4} justify="end">
+          {isEditMode && (
+            <Button
+              className="bn-center justify-center bn-primary-outline"
+              icon={<CopyOutlined style={{ fontSize: "1rem" }} />}
+              style={{ width: "9.5rem" }}
+              onClick={handleDuplicate}
+            >
+              Copy
+            </Button>
+          )}
           <Button
             className="bn-center justify-center"
             icon={<SaveFilled style={{ fontSize: "1rem" }} />}
@@ -445,6 +485,16 @@ function CatalogManage() {
       </Col>
       <Col span={12} style={{ paddingInline: 0 }}>
         <Flex gap={4} justify="end">
+          {isEditMode && (
+            <Button
+              className="bn-center justify-center bn-primary-outline"
+              icon={<CopyOutlined style={{ fontSize: "1rem" }} />}
+              style={{ width: "9.5rem" }}
+              onClick={handleDuplicate}
+            >
+              Copy
+            </Button>
+          )}
           <Button
             className="bn-center justify-center"
             icon={<SaveFilled style={{ fontSize: "1rem" }} />}
