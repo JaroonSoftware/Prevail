@@ -14,7 +14,7 @@ import { Card, Col, Divider, Flex, Row, Space } from "antd";
 
 import OptionService from "../../service/Options.service";
 import SOService from "../../service/SO.service";
-import { SaveFilled, SearchOutlined } from "@ant-design/icons";
+import { PrinterOutlined, SaveFilled, SearchOutlined } from "@ant-design/icons";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
 
 import { soForm, columnsParametersEditable, componentsEditable } from "./model";
@@ -256,6 +256,13 @@ function MyManage() {
     navigate(gotoFrom, { replace: true });
     await delay(300);
     console.clear();
+  };
+
+  const handlePrint = () => {
+    if (!soCode) return;
+    const url = `/so-print/${soCode}`;
+    const newWindow = window.open("", url, url);
+    newWindow.location.href = url;
   };
 
   const handleDelete = (code) => {
@@ -557,6 +564,18 @@ function MyManage() {
           ) : (
             <></>
           )}
+          {config?.action !== "create" && soCode ? (
+            <Button
+              icon={<PrinterOutlined />}
+              className="bn-center justify-center bn-primary-outline"
+              style={{ width: "9.5rem" }}
+              onClick={handlePrint}
+            >
+              Print SO
+            </Button>
+          ) : (
+            <></>
+          )}
           {formDetail.active_status === "Y" || config.action === "create" ? (
             <Button
               className="bn-center justify-center"
@@ -589,6 +608,18 @@ function MyManage() {
       </Col>
       <Col span={12} style={{ paddingInline: 0 }}>
         <Flex gap={4} justify="end">
+          {config?.action !== "create" && soCode ? (
+            <Button
+              className="bn-center justify-center bn-primary-outline"
+              icon={<PrinterOutlined />}
+              style={{ width: "9.5rem" }}
+              onClick={handlePrint}
+            >
+              Print SO
+            </Button>
+          ) : (
+            <></>
+          )}
           {formDetail.active_status === "Y" || config.action === "create" ? (
             <Button
               className="bn-center justify-center"
