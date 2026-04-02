@@ -143,6 +143,8 @@
     background-color: #fff;
     box-shadow: 1px 1px 2px 1px #c5c7c5;
     border-radius: 4px;
+    display: flex;
+    flex-direction: column;
   }
 
   .dnpv-pages .print-logo {
@@ -203,9 +205,10 @@
   .dnpv-pages .print-content {
     width: 100%;
     position: relative;
-    /* height: 211.34mm;  */
     display: flex;
     flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
     padding-block: 1.4mm;
     padding-inline: 1.4mm;
     border-bottom: 0px solid #000;  
@@ -433,32 +436,9 @@
   font-family: inherit;
 }
 
-/* --- replaceadd: make tbody scrollable, rows compact, summary sticky --- */
-
-/* make the table container a column flex so body can scroll */
-.dnpv-pages .ant-table-wrapper .ant-table-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 0;
-}
-
-/* tbody becomes the scrollable area (keeps rows compact) */
-.dnpv-pages .ant-table-wrapper .ant-table-body {
+.dnpv-table-wrap {
   flex: 1 1 auto;
-  min-height: 0; /* important for overflow to work in flex */
-  overflow: auto;
-}
-
-/* keep header fixed (default) and make summary sticky at bottom */
-.dnpv-pages .ant-table-wrapper .ant-table-summary {
-  flex: 0 0 auto;
-  position: sticky;
-  bottom: 0;
-  z-index: 5;
-  background: #fff;
-  border-top: 1px dashed #d9d9d9;
-  box-shadow: 0 -4px 10px rgba(0,0,0,0.03);
+  min-height: 0;
 }
 
 /* compact row sizing: reduce padding and enforce fixed height */
@@ -481,21 +461,11 @@
   box-sizing: border-box;
 }
 
-/* remove any previous fixed huge tbody height or tiny max-height */
 .dnpv-pages .ant-table-wrapper .ant-table-container table > tbody {
   height: auto !important;
 }
 .dnpv-pages .ant-table-wrapper .ant-table-tbody > tr > td {
   max-height: none !important;
-}
-
-/* printing: keep summary at bottom of page (summary becomes static for print) */
-@media print {
-  .dnpv-pages .ant-table-wrapper .ant-table-body { overflow: visible; }
-  .dnpv-pages .ant-table-wrapper .ant-table-summary {
-    position: static;
-    box-shadow: none;
-  }
 }
 
 /* style สำหรับแถว placeholder (empty) */
@@ -552,26 +522,16 @@
   box-sizing: border-box;
 }
 
-/* ensure the table body is the scrollingfilling area */
-.dnpv-pages .ant-table-wrapper .ant-table-body {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: auto;
+.dnpv-pages .dnpv-group-summary .tx-info,
+.dnpv-pages .dnpv-footer .tx-info {
+  display: inline-block;
+  width: 100%;
 }
 
-/* make sure summary stays at bottom */
-.dnpv-pages .ant-table-wrapper .ant-table-summary {
-  position: sticky;
-  bottom: 0;
-  z-index: 5;
-  background: #fff;
-  border-top: 1px dashed #d9d9d9;
-}
-
-/* print behaviour: remove scrolling so printed page shows filled area */
-@media print {
-  .dnpv-pages .ant-table-wrapper .ant-table-body { overflow: visible; }
-  .dnpv-pages .ant-table-wrapper .ant-table-summary { position: static; }
+.dnpv-pages .dnpv-group-summary > td:last-child .tx-info,
+.dnpv-pages .dnpv-footer > td:last-child .tx-info {
+  text-align: left;
+  padding-right: 10px;
 }
 
 /* ให้เส้นขอบซ้าย/ขวา แสดงทุกแถว (header, body, summary, empty rows) */

@@ -1,7 +1,7 @@
 import React from 'react'
 import { Route } from 'react-router-dom'
 
-import { QuoPrintPreview,PrintWeightListPrint,BLPrintPreview,ReceiptPrintPreview,DeliveryPrintPreview } from '../components/print'
+import { QuoPrintPreview,PrintWeightListPrint,BLPrintPreview,ReceiptPrintPreview,DeliveryPrintPreview,SOPrintPreview } from '../components/print'
 
 
 export const PrintRouter = (<>
@@ -10,4 +10,5 @@ export const PrintRouter = (<>
   <Route path="/bl-print/:code" element={<BLPrintPreview />} />
   <Route path="/re-print/:code" element={<ReceiptPrintPreview />} />
   <Route path="/dn-print/:code" element={<DeliveryPrintPreview />} />
+  <Route path="/so-print/:code" element={<SOPrintPreview />} />
 </>)

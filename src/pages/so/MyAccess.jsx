@@ -159,7 +159,7 @@ const MyAccess = () => {
     }; 
 
     const handlePrintsData = (code) => { 
-        const url = `/pickup-list-print/${code}`;
+        const url = `/so-print/${code}`;
         const newWindow = window.open('', url, url);
         newWindow.location.href = url;
       }

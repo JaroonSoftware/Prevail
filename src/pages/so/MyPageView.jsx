@@ -162,7 +162,6 @@ export default function SOView() {
   };
 
   const handlePrint = () => {
-    // ยังไม่ระบุเส้นทาง print SO ในโปรเจค จึงเว้นปุ่มไว้ (เปิดใช้งานเมื่อพร้อม)
     const url = `/so-print/${soCode}`;
     const newWindow = window.open("", url, url);
     newWindow.location.href = url;
@@ -218,9 +217,9 @@ export default function SOView() {
         <Col span={12} style={{ paddingInline: "0px" }}>
           {ButtonActionLeft}
         </Col>
-        {/* <Col span={12} style={{ paddingInline: "0px" }}>
+        <Col span={12} style={{ paddingInline: "0px" }}>
           {ButtonActionRight}
-        </Col> */}
+        </Col>
       </Row>
 
       <Descriptions

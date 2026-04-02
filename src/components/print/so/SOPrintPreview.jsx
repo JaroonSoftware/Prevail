@@ -1,30 +1,27 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-// import ReactDOMServer from "react-dom/server";
 import { useReactToPrint } from "react-to-print";
-import "./delivery.css";
+import "../delivery/delivery.css";
 import { Authenticate } from "../../../service/Authenticate.service";
-// import logo from "../../../assets/images/QRCODEDN.jpg";
 import { Button, Flex, Table, Typography, message } from "antd";
-import { column } from "./delivery.model";
+import { column } from "../delivery/delivery.model";
 import thaiBahtText from "thai-baht-text";
 import dayjs from "dayjs";
-import { comma } from "../../../utils/util";
 import { PiPrinterFill } from "react-icons/pi";
 import { LoadingOutlined } from "@ant-design/icons";
 import { Spin } from "antd";
-import DeliveryService from "../../../service/DeliveryNote.service";
+import SOService from "../../../service/SO.service";
 
-const dnservice = DeliveryService();
+const soservice = SOService();
 
-export default function DeliveryPrintPreview(props) {
+export default function SOPrintPreview() {
   const { code } = useParams();
   const componentRef = useRef(null);
   const authService = Authenticate();
   const [userInfo, setUserInfo] = useState(null);
   const handlePrint = useReactToPrint({
-    documentTitle: "Print This Document",
+    documentTitle: "Print Sales Order",
     onBeforePrint: () => handleBeforePrint(),
     onAfterPrint: () => handleAfterPrint(),
     removeAfterPrint: true,
@@ -37,42 +34,31 @@ export default function DeliveryPrintPreview(props) {
 
   const [loading] = useState(false);
 
-  const handleAfterPrint = () => {
-    // setNewPageContent([]);
-  };
-  const handleBeforePrint = (e) => {
-    // console.log("before printing...")
-  };
+  const handleAfterPrint = () => {};
+  const handleBeforePrint = () => {};
 
   useEffect(() => {
     const init = () => {
-      dnservice
-        .getPrint(code)
+      soservice
+        .get(code)
         .then(async (res) => {
-          const payload =
-            res?.data?.header || res?.data?.detail
-              ? res?.data
-              : res?.data?.data || res?.data || res;
-          const header = payload?.header || {};
-          const detail = Array.isArray(payload?.detail) ? payload.detail : [];
+          const {
+            data: { header, detail },
+          } = res.data;
 
-          setHData({
-            ...header,
-            ivdate: header?.ivdate || header?.dndate || null,
-            payment: header?.payment || "-",
-            county_name: header?.county_name || "-",
-          });
-          setDetails(detail);
+          setHData(header || {});
+          setDetails(detail || []);
         })
         .catch((err) => {
           console.log(err);
-          message.error("Error getting infomation Estimation.");
+          message.error("Error getting infomation Sales Order.");
         });
     };
 
     init();
     return () => {};
   }, []);
+
   useEffect(() => {
     const users = authService.getUserInfo();
     setUserInfo(users);
@@ -80,9 +66,7 @@ export default function DeliveryPrintPreview(props) {
     return () => {};
   }, []);
 
-  const printDate = hData?.ivdate || hData?.dndate;
-
-  const ContentHead = ({ page }) => {
+  const ContentHead = () => {
     return (
       <div className="content-head in-sample flex flex-col dnpv-header">
         <div className="print-title flex pb-2">
@@ -114,7 +98,7 @@ export default function DeliveryPrintPreview(props) {
                 style={{ textAlign: "right", fontSize: 17 }}
                 strong
               >
-                ใบส่งสินค้า/ใบแจ้งหนี้
+                ใบขายสินค้า
               </Typography.Text>
             </Flex>
           </div>
@@ -147,12 +131,12 @@ export default function DeliveryPrintPreview(props) {
                 </span>
               </Typography.Text>
               <Typography.Text className="tx-info" style={{ height: 21 }}>
-                เลขประตัวผู้เสียภาษี
-                <span style={{ paddingLeft: 20 }}>{hData?.remark}</span>
+                เลขประจำตัวผู้เสียภาษี
+                <span style={{ paddingLeft: 20 }}>{hData?.idno || "-"}</span>
               </Typography.Text>
               <Typography.Text className="tx-info" style={{ height: 21 }}>
-                ขนส่งโดย ส่งให้ลูกค้า
-                {/* <span style={{ paddingLeft: 20 }}>{hData?.remark}</span> */}
+                ผู้ติดต่อ
+                <span style={{ paddingLeft: 41 }}>{hData?.contact || "-"}</span>
               </Typography.Text>
             </Flex>
           </Flex>
@@ -160,25 +144,27 @@ export default function DeliveryPrintPreview(props) {
             <Flex vertical>
               <Typography.Text className="tx-info">
                 เลขที่
-                <span style={{ paddingLeft: 65 }}>{hData?.dncode}</span>
+                <span style={{ paddingLeft: 65 }}>{hData?.socode}</span>
               </Typography.Text>
               <Typography.Text className="tx-info" style={{ height: 21 }}>
                 วันที่
                 <span style={{ paddingLeft: 70 }}>
-                  {printDate ? dayjs(printDate).format("DD/MM/YYYY") : "-"}
+                  {hData?.sodate ? dayjs(hData.sodate).format("DD/MM/YYYY") : "-"}
                 </span>
               </Typography.Text>
               <Typography.Text className="tx-info" style={{ height: 21 }}>
-                อ้างอิง
-                <span style={{ paddingLeft: 60 }}>{hData?.remark}</span>
+                PO ลูกค้า
+                <span style={{ paddingLeft: 33 }}>{hData?.customer_po || "-"}</span>
               </Typography.Text>
               <Typography.Text className="tx-info" style={{ height: 21 }}>
-                เครดิต
-                <span style={{ paddingLeft: 60 }}>{hData?.payment}</span>
+                วันที่นัดส่ง
+                <span style={{ paddingLeft: 25 }}>
+                  {hData?.deldate ? dayjs(hData.deldate).format("DD/MM/YYYY") : "-"}
+                </span>
               </Typography.Text>
               <Typography.Text className="tx-info" style={{ height: 21 }}>
-                เขตการขาย
-                <span style={{ paddingLeft: 20 }}>{hData?.county_name}</span>
+                ห้องครัว
+                <span style={{ paddingLeft: 35 }}>{hData?.del_room || "-"}</span>
               </Typography.Text>
             </Flex>
           </Flex>
@@ -187,12 +173,12 @@ export default function DeliveryPrintPreview(props) {
     );
   };
 
-  const ReceiptFooter = () => {
+  const ReceiptSummary = () => {
     return (
       <>
-        <Table.Summary.Row className="dnpv-footer" style={{}}>
+        <Table.Summary.Row className="dnpv-footer">
           <Table.Summary.Cell
-            colSpan={4}
+            colSpan={3}
             className="!align-top !ps-0 !pe-0"
             style={{ height: 20 }}
           >
@@ -242,7 +228,7 @@ export default function DeliveryPrintPreview(props) {
           </Table.Summary.Cell>
         </Table.Summary.Row>
         <Table.Summary.Row className="dnpv-footer">
-          <Table.Summary.Cell colSpan={6} className="!align-top !ps-0 !pe-0">
+          <Table.Summary.Cell colSpan={8} className="!align-top !ps-0 !pe-0">
             <Flex
               style={{
                 borderTop: "1px dashed",
@@ -259,17 +245,13 @@ export default function DeliveryPrintPreview(props) {
                   paddingTop: 7,
                 }}
               >
-                <p>ได้รับสินค้าตามรายการข้างบนนี้ไว้ถูกต้อง</p>
+                <p>ยืนยันรายการใบขายสินค้าตามรายละเอียดข้างต้น</p>
                 <p>
-                  Received by/ผู้รับสินค้า _____________________ วันที่
+                  Confirmed by/ผู้ยืนยัน _____________________ วันที่
                   ____/____/____
                 </p>
               </Typography.Text>
             </Flex>
-          </Table.Summary.Cell>
-        </Table.Summary.Row>
-        <Table.Summary.Row className="dnpv-footer">
-          <Table.Summary.Cell colSpan={6} className="!align-top !ps-0 !pe-0">
             <Flex
               style={{
                 borderTop: "1px dashed",
@@ -290,13 +272,13 @@ export default function DeliveryPrintPreview(props) {
                   พิมพ์โดย
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                   วันที่ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                  {printDate
-                    ? dayjs(printDate).format("DD/MM/YYYY  HH:mm:ss")
+                  {hData?.sodate
+                    ? dayjs(hData.sodate).format("DD/MM/YYYY  HH:mm:ss")
                     : dayjs().format("DD/MM/YYYY  HH:mm:ss")}
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; บันทึกโดย{" "}
-                  {userInfo?.firstname} {userInfo?.lastname}
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; บันทึกโดย {userInfo?.firstname}{" "}
+                  {userInfo?.lastname}
                 </p>
               </Typography.Text>
             </Flex>
@@ -306,7 +288,6 @@ export default function DeliveryPrintPreview(props) {
     );
   };
 
-  // จำกัดรายการ 16/หน้า (ให้เหมาะกับแบบฟอร์ม)
   const ROWS_PER_PAGE = 16;
   const ROW_HEIGHT = 17;
 
@@ -318,93 +299,34 @@ export default function DeliveryPrintPreview(props) {
       return out;
     }
 
-    const groups = [];
-    let currentGroup = null;
-
-    list.forEach((row, index) => {
-      const soCode = row?.socode || `__ungrouped__-${index}`;
-      if (!currentGroup || currentGroup.soCode !== soCode) {
-        currentGroup = { soCode, rows: [] };
-        groups.push(currentGroup);
-      }
-      currentGroup.rows.push(row);
-    });
-
-    let currentPageRows = [];
-    let pageIndex = 0;
-    let rowNo = 1;
-
-    const pushPage = () => {
-      if (currentPageRows.length === 0) return;
-      out.push({ rows: currentPageRows, pageIndex });
-      pageIndex += 1;
-      currentPageRows = [];
-    };
-
-    groups.forEach((group) => {
-      const groupRows = group.rows;
-      const groupTotal = groupRows.reduce(
-        (sum, row) => sum + Number(row?.qty || 0) * Number(row?.price || 0),
-        0,
-      );
-
-      pushPage();
-
-      let remainingRows = [...groupRows];
-      while (remainingRows.length > 0) {
-        const isSummaryPage = remainingRows.length <= ROWS_PER_PAGE - 1;
-        const chunkSize = isSummaryPage
-          ? remainingRows.length
-          : remainingRows.length === ROWS_PER_PAGE
-            ? 1
-            : ROWS_PER_PAGE;
-        const chunk = remainingRows.slice(0, chunkSize);
-        remainingRows = remainingRows.slice(chunkSize);
-        const withRowNo = [];
-        for (const row of chunk) {
-          withRowNo.push({
-            ...row,
-            __rowNo: rowNo,
-          });
-          rowNo += 1;
-        }
-        out.push({
-          rows: withRowNo,
-          pageIndex,
-          showGroupSummary: isSummaryPage,
-          groupTotal,
-          socode: group.soCode,
-        });
-        pageIndex += 1;
-      }
-    });
-
-    if (out.length === 0) {
-      out.push({ rows: [], pageIndex: 0 });
+    for (let start = 0; start < list.length; start += ROWS_PER_PAGE) {
+      const slice = list.slice(start, start + ROWS_PER_PAGE);
+      const withRowNo = slice.map((row, idx) => ({
+        ...row,
+        __rowNo: start + idx + 1,
+      }));
+      out.push({ rows: withRowNo, pageIndex: out.length });
     }
-
     return out;
   }, [details]);
 
   const totalPages = pages.length || 1;
 
-  const padRows = (rows, pageIndex, reserveRows = 0) => {
+  const padRows = (rows, pageIndex) => {
     const out = Array.isArray(rows) ? [...rows] : [];
-    for (let i = out.length; i < ROWS_PER_PAGE - reserveRows; i++) {
+    for (let i = out.length; i < ROWS_PER_PAGE; i++) {
       out.push({ _empty: true, key: `empty-${pageIndex}-${i}` });
     }
     return out;
   };
 
-  // map columnDesc เพื่อไม่ให้แสดงข้อมูลและหมายเลขเมื่อเป็นแถวว่าง
   const renderedColumns = useMemo(() => {
     return (columnDesc || []).map((col) => {
       const originalRender = col.render;
       return {
         ...col,
         render: (text, record, idx) => {
-          if (record && record._empty) return ""; // blank for empty row
-          // ทำให้เลขลำดับ No. ต่อเนื่องข้ามหน้า
+          if (record && record._empty) return "";
           if (col.key === "index" && typeof originalRender === "function") {
             const rowNo = Number(record?.__rowNo);
             if (Number.isFinite(rowNo)) {
@@ -417,15 +339,8 @@ export default function DeliveryPrintPreview(props) {
     });
   }, [columnDesc]);
 
-  const ContentBody = ({
-    rows,
-    pageIndex,
-    showGroupSummary,
-    groupTotal,
-    socode,
-    showReceiptFooter,
-  }) => {
-    const paddedRows = padRows(rows, pageIndex, showGroupSummary ? 1 : 0);
+  const ContentBody = ({ rows, showSummary, pageIndex }) => {
+    const paddedRows = padRows(rows, pageIndex);
     return (
       <div
         className="dnpv-table-wrap"
@@ -453,13 +368,13 @@ export default function DeliveryPrintPreview(props) {
           onRow={(record) => {
             return { className: record._empty ? "dnpv-empty-row" : "r-sub" };
           }}
-          summary={() => <>{showReceiptFooter && <ReceiptFooter />}</>}
+          summary={showSummary ? ReceiptSummary : undefined}
         />
       </div>
     );
   };
 
-  const ContentData = ({ children, pageNum = 1, total = 1 }) => {
+  const ContentData = ({ children }) => {
     return (
       <div className="dnpv-pages flex flex-col">
         <div className="print-content">{children}</div>
@@ -474,17 +389,10 @@ export default function DeliveryPrintPreview(props) {
           const isLast = idx === totalPages - 1;
           return (
             <React.Fragment key={`page-${idx}`}>
-              <ContentData pageNum={idx + 1} total={totalPages}>
-                <ContentHead page={`${idx + 1} of ${totalPages}`} />
+              <ContentData>
+                <ContentHead />
                 <ContentHead2 />
-                <ContentBody
-                  rows={p.rows}
-                  pageIndex={idx}
-                  showGroupSummary={p.showGroupSummary}
-                  groupTotal={p.groupTotal}
-                  socode={p.socode}
-                  showReceiptFooter={isLast}
-                />
+                <ContentBody rows={p.rows} showSummary={isLast} pageIndex={idx} />
               </ContentData>
               {idx < totalPages - 1 && <div className="page-break" />}
             </React.Fragment>
@@ -496,13 +404,11 @@ export default function DeliveryPrintPreview(props) {
 
   return (
     <>
-      {/* <Spin spinning={loading} indicator={<LoadingOutlined style={{ fontSize: 24, }} spin />} fullscreen /> */}
       <div className="page-show" id="dnpv">
         {loading && <Spin fullscreen indicator={<LoadingOutlined />} />}
         <div className="title-preview">
           <Button
             className="bn-center bg-blue-400"
-            // onClick={() => { handleCheckMultiPages() }}
             onClick={() => {
               handlePrint(null, () => componentRef.current);
             }}
@@ -514,18 +420,6 @@ export default function DeliveryPrintPreview(props) {
         <div className="layout-preview">
           <PrintablePages />
         </div>
-        {/* <div className='hidden'>
-                    <div ref={printRef}>
-                        {newPageContent?.map( (page, i) => ( 
-                        <div key={i}>
-                            <ContentData pageNum={i+1} total={(newPageContent.length)} > 
-                                {page?.map( (eml, ind) => (<div key={ind} dangerouslySetInnerHTML={{ __html: eml.outerHTML }} ></div>) )}
-                            </ContentData>
-                            {i < (newPageContent.length-1) && <div className='page-break'></div>}
-                        </div> 
-                        ))}
-                    </div>
-                </div> */}
       </div>
     </>
   );

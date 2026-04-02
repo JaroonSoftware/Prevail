@@ -15,6 +15,13 @@ export const column = [
     ),
   },
   {
+    title: "socode",
+    dataIndex: "socode",
+    key: "socode",
+    width: "15%",
+    align: "center",
+  },
+  {
     title: (
       <div style={{ textAlign: "center" }}>
         รายละเอียด

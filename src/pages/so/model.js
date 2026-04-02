@@ -3,7 +3,7 @@ import { Button,Space,Badge,Tooltip } from "antd";
 // import { EditOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons"; 
 import { EditableRow, EditableCell } from "../../components/table/TableEditAble";
 import dayjs from 'dayjs';
-import { EditOutlined,ExclamationCircleOutlined } from "@ant-design/icons";
+import { EditOutlined,ExclamationCircleOutlined,PrinterOutlined } from "@ant-design/icons";
 import { comma,formatMoney } from '../../utils/util';
 import { TagsCreateBy } from "../../components/badge-and-tag/";
 import { TagSalesOrderStatus } from "../../components/badge-and-tag";
@@ -111,13 +111,13 @@ export const accessColumn = ({handleEdit, handleView, handlePrintsData}) => [
           size="small"
         />
 
-        {/* <Button
+        <Button
           icon={<PrinterOutlined />} 
           className='bn-warning-outline'
           style={{ cursor: "pointer", display: 'flex', alignItems: 'center', justifyContent: 'center'}}
           onClick={(e) => handlePrintsData(record.socode) }
           size="small"
-        />         */}
+        />
       </Space>
     ),
   }, 
