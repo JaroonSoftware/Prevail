@@ -15,7 +15,7 @@ export const column = [
     ),
   },
   {
-    title: "socode",
+    title: "ใบขายสินค้า",
     dataIndex: "socode",
     key: "socode",
     width: "15%",

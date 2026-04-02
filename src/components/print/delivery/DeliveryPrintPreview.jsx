@@ -423,7 +423,6 @@ export default function DeliveryPrintPreview(props) {
     showGroupSummary,
     groupTotal,
     socode,
-    showReceiptFooter,
   }) => {
     const paddedRows = padRows(rows, pageIndex, showGroupSummary ? 1 : 0);
     return (
@@ -453,7 +452,7 @@ export default function DeliveryPrintPreview(props) {
           onRow={(record) => {
             return { className: record._empty ? "dnpv-empty-row" : "r-sub" };
           }}
-          summary={() => <>{showReceiptFooter && <ReceiptFooter />}</>}
+          summary={() => <ReceiptFooter />}
         />
       </div>
     );
@@ -471,7 +470,6 @@ export default function DeliveryPrintPreview(props) {
     return (
       <div ref={componentRef}>
         {pages.map((p, idx) => {
-          const isLast = idx === totalPages - 1;
           return (
             <React.Fragment key={`page-${idx}`}>
               <ContentData pageNum={idx + 1} total={totalPages}>
@@ -483,7 +481,6 @@ export default function DeliveryPrintPreview(props) {
                   showGroupSummary={p.showGroupSummary}
                   groupTotal={p.groupTotal}
                   socode={p.socode}
-                  showReceiptFooter={isLast}
                 />
               </ContentData>
               {idx < totalPages - 1 && <div className="page-break" />}
