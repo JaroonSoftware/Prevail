@@ -10,7 +10,7 @@ import { Button, Flex, Table, Typography, message } from "antd";
 import { column } from "./delivery.model";
 import thaiBahtText from "thai-baht-text";
 import dayjs from "dayjs";
-import { comma } from "../../../utils/util";
+import { comma,formatMoney } from "../../../utils/util";
 import { PiPrinterFill } from "react-icons/pi";
 import { LoadingOutlined } from "@ant-design/icons";
 import { Spin } from "antd";
@@ -187,7 +187,7 @@ export default function DeliveryPrintPreview(props) {
     );
   };
 
-  const ReceiptFooter = () => {
+  const ReceiptFooter = ({ totalAmount = 0 }) => {
     return (
       <>
         <Table.Summary.Row className="dnpv-footer" style={{}}>
@@ -206,7 +206,7 @@ export default function DeliveryPrintPreview(props) {
                 style={{ fontSize: 18, marginLeft: 10 }}
                 strong
               >
-                ({thaiBahtText(hData?.total_price || 0, 2, 2)}).
+                ({thaiBahtText(totalAmount || 0, 2, 2)}).
               </Typography.Text>
             </Flex>
           </Table.Summary.Cell>
@@ -218,7 +218,7 @@ export default function DeliveryPrintPreview(props) {
             >
               <Typography.Text
                 className="tx-info"
-                style={{ fontSize: 15, marginLeft: 10, marginTop: 4 }}
+                style={{ fontSize: 15, marginLeft: 10, marginTop: 4 ,textAlign:"right", paddingRight: 20}}
                 strong
               >
                 รวมเป็นเงิน
@@ -233,10 +233,10 @@ export default function DeliveryPrintPreview(props) {
             >
               <Typography.Text
                 className="tx-info"
-                style={{ fontSize: 15, marginLeft: 10, marginTop: 4 }}
+                style={{ fontSize: 15, marginLeft: 10, marginTop: 4 ,textAlign:"right", paddingRight: 30}}
                 strong
               >
-                {hData?.total_price}
+                {formatMoney(totalAmount || 0, 2, 2)}
               </Typography.Text>
             </Flex>
           </Table.Summary.Cell>
@@ -424,6 +424,7 @@ export default function DeliveryPrintPreview(props) {
     groupTotal,
     socode,
   }) => {
+    const pageTotal = Number(groupTotal || 0);
     const paddedRows = padRows(rows, pageIndex, showGroupSummary ? 1 : 0);
     return (
       <div
@@ -452,7 +453,7 @@ export default function DeliveryPrintPreview(props) {
           onRow={(record) => {
             return { className: record._empty ? "dnpv-empty-row" : "r-sub" };
           }}
-          summary={() => <ReceiptFooter />}
+          summary={() => <ReceiptFooter totalAmount={pageTotal} />}
         />
       </div>
     );
