@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import {
   Card,
   Table,
-  Tabs,
   Typography,
   Flex,
   Col,
@@ -13,6 +12,7 @@ import {
   Form,
   Row,
   Space,
+  Input,
   DatePicker,
 } from "antd";
 import { BsUiChecks } from "react-icons/bs";
@@ -22,14 +22,12 @@ import {
   SearchOutlined,
   ClearOutlined,
 } from "@ant-design/icons";
-import { MdRamenDining } from "react-icons/md";
+import { GiFruitBowl } from "react-icons/gi";
 import dayjs from "dayjs";
-
 
 import { columns } from "./model";
 import DryCheckDrawer from "../../../components/drawer/dry-check/DryCheckDrawer";
 import ReportService from "../../../service/Report.service";
-import { formatMoney } from "../../../utils/util";
 import {
   saveMyAccessSearchCookie,
   loadMyAccessSearchCookie,
@@ -39,8 +37,8 @@ import {
 const rpservice = ReportService();
 const RangePicker = DatePicker.RangePicker;
 
-const NoodleReport = () => {
-  const PAGE_COOKIE_KEY = "noodle-report";
+const FruitReport = () => {
+  const PAGE_COOKIE_KEY = "fruit-report";
   const [form] = Form.useForm();
   const [listDetail, setListDetail] = useState([]);
   const [show, setShow] = useState(false);
@@ -56,7 +54,7 @@ const NoodleReport = () => {
 
   const getData = useCallback((data) => {
     rpservice
-      .getNoodle(data, { ignoreLoading: getIgnoreLoading() })
+      .getFruit(data, { ignoreLoading: getIgnoreLoading() })
       .then((res) => {
         const { data } = res.data;
 
@@ -68,7 +66,7 @@ const NoodleReport = () => {
       });
   }, [getIgnoreLoading]);
 
-  const buildSearchPayload = useCallback((values = {}) => {
+  const buildSearchPayload = (values = {}) => {
     const data = { ...values };
     if (!!data?.sodate) {
       const arr = data?.sodate.map((m) => dayjs(m).format("YYYY-MM-DD"));
@@ -77,9 +75,9 @@ const NoodleReport = () => {
     }
     delete data.sodate;
     return data;
-  }, []);
+  };
 
-  const savePageState = useCallback((searchValues) => {
+  const savePageState = (searchValues) => {
     saveMyAccessSearchCookie(
       PAGE_COOKIE_KEY,
       {
@@ -87,21 +85,24 @@ const NoodleReport = () => {
       },
       7
     );
-  }, [PAGE_COOKIE_KEY]);
+  };
 
-  const handleSearch = useCallback((forcedValues = null) => {
-    const values = forcedValues ?? form.getFieldsValue(true);
-    savePageState(values);
-    const payload = buildSearchPayload(values);
+  const handleSearch = useCallback(
+    (forcedValues = null) => {
+      const values = forcedValues ?? form.getFieldsValue(true);
+      savePageState(values);
+      const payload = buildSearchPayload(values);
 
-    getData(payload);
-  }, [buildSearchPayload, form, getData, savePageState]);
+      getData(payload);
+    },
+    [form, getData]
+  );
 
   const handleClear = useCallback(() => {
     clearMyAccessSearchCookie(PAGE_COOKIE_KEY);
     form.resetFields();
     handleSearch({});
-  }, [PAGE_COOKIE_KEY, form, handleSearch]);
+  }, [form, handleSearch]);
 
   const init = useCallback(async () => {
     const restored = loadMyAccessSearchCookie(PAGE_COOKIE_KEY);
@@ -112,7 +113,7 @@ const NoodleReport = () => {
     }
 
     return {};
-  }, [PAGE_COOKIE_KEY, form]);
+  }, [form]);
 
   useEffect(() => {
     (async () => {
@@ -207,13 +208,12 @@ const NoodleReport = () => {
 
   const handleOpen = useCallback((value) => {
     setSelected(value);
-    // console.log(value);
     setShow(true);
   }, []);
 
-  const handleConfirmed = useCallback((v) => {
+  const handleConfirmed = (value) => {
     rpservice
-      .setDryGoods(v, { ignoreLoading: getIgnoreLoading() })
+      .setDryGoods(value, { ignoreLoading: getIgnoreLoading() })
       .then((res) => {
         message.success(res.data.message || "บันทึกข้อมูลเรียบร้อย");
         getData({});
@@ -223,11 +223,7 @@ const NoodleReport = () => {
         console.log(err);
         message.error("Request error!");
       });
-
-    // if( typeof value === 'function'){
-    //     value( v );
-    // }
-  }, [getData, getIgnoreLoading]);
+  };
 
   const TitleTable = (
     <Flex className="width-100" align="center">
@@ -237,10 +233,10 @@ const NoodleReport = () => {
             <span
               style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
             >
-              <MdRamenDining
+              <GiFruitBowl
                 style={{ fontSize: "1.4rem", verticalAlign: "middle" }}
               />
-              <span>รายงานเส้น เต้าหู้ เครื่องแกง</span>
+              <span>รายงานผลไม้</span>
             </span>
           </Typography.Title>
         </Flex>
@@ -260,7 +256,6 @@ const NoodleReport = () => {
     </Flex>
   );
 
-  // ปุ่มเช็คลิสต์สำเร็จ ในคอลัมน์ "ตัวเลือก"
   const handleCheck = useCallback((record) => {
     return (
       <Button
@@ -276,114 +271,13 @@ const NoodleReport = () => {
       />
     );
   }, [handleOpen]);
+
   const handleSelectChange = useCallback(() => {}, []);
 
-  // สร้างคอลัมน์จาก model (ต้องส่ง handleCheck ให้ตรงชื่อ)
   const columnDefs = useMemo(
     () => columns({ handleCheck, handleSelectChange }),
     [handleCheck, handleSelectChange]
   );
-
-  const productSummaryData = useMemo(() => {
-    const groupedData = listDetail.reduce((accumulator, item) => {
-      const productKey = [item?.stcode || "", item?.stname || "", item?.unit || ""].join("__");
-
-      if (!accumulator[productKey]) {
-        accumulator[productKey] = {
-          key: productKey,
-          stcode: item?.stcode || "-",
-          stname: item?.stname || "-",
-          unit: item?.unit || "-",
-          totalQty: 0,
-          orderCount: 0,
-        };
-      }
-
-      accumulator[productKey].totalQty += Number(item?.qty || 0);
-      accumulator[productKey].orderCount += 1;
-
-      return accumulator;
-    }, {});
-
-    return Object.values(groupedData);
-  }, [listDetail]);
-
-  const productSummaryColumns = useMemo(() => [
-    {
-      title: "ลำดับ",
-      key: "index",
-      width: 60,
-      align: "center",
-      render: (_, __, index) => index + 1,
-    },
-    {
-      title: "รหัสสินค้า",
-      dataIndex: "stcode",
-      key: "stcode",
-      width: 120,
-    },
-    {
-      title: "ชื่อสินค้า",
-      dataIndex: "stname",
-      key: "stname",
-    },
-    {
-      title: "หน่วยสินค้า",
-      dataIndex: "unit",
-      key: "unit",
-      width: 120,
-      align: "center",
-    },
-    {
-      title: "จำนวนรายการ",
-      dataIndex: "orderCount",
-      key: "orderCount",
-      width: 120,
-      align: "right",
-      render: (value) => formatMoney(Number(value || 0), 0),
-    },
-    {
-      title: "ผลรวมจำนวนสั่ง",
-      dataIndex: "totalQty",
-      key: "totalQty",
-      width: 160,
-      align: "right",
-      render: (value) => formatMoney(Number(value || 0), 2, 2),
-    },
-  ], []);
-
-  const tabItems = useMemo(() => [
-    {
-      key: "main-report",
-      label: "ข้อมูลหลัก",
-      children: (
-        <Table
-          size="small"
-          rowKey="key"
-          columns={columnDefs}
-          dataSource={listDetail}
-          pagination={false}
-          scroll={{ x: "max-content" }}
-          locale={{ emptyText: "ไม่มีรายการ" }}
-        />
-      ),
-    },
-    {
-      key: "product-summary",
-      label: "ผลรวมของแต่ละสินค้า",
-      children: (
-        <Table
-          size="small"
-          rowKey="key"
-          columns={productSummaryColumns}
-          dataSource={productSummaryData}
-          pagination={false}
-          scroll={{ x: "max-content" }}
-          locale={{ emptyText: "ไม่มีข้อมูลสรุปสินค้า" }}
-        />
-      ),
-    },
-  ], [columnDefs, listDetail, productSummaryColumns, productSummaryData]);
 
   return (
     <div
@@ -409,9 +303,14 @@ const NoodleReport = () => {
           }}
           bodyStyle={{ padding: 12 }}
         >
-          <Tabs
-            defaultActiveKey="main-report"
-            items={tabItems}
+          <Table
+            size="small"
+            rowKey="key"
+            columns={columnDefs}
+            dataSource={listDetail}
+            pagination={false}
+            scroll={{ x: "max-content" }}
+            locale={{ emptyText: "ไม่มีรายการ" }}
           />
         </Card>
       </Space>
@@ -424,7 +323,6 @@ const NoodleReport = () => {
           }
           onClose={() => setShow(false)}
           open={show}
-          // footer={adjust_action}
           width={868}
           className="responsive-drawer"
           styles={{
@@ -444,4 +342,4 @@ const NoodleReport = () => {
   );
 };
 
-export default NoodleReport;
+export default FruitReport;

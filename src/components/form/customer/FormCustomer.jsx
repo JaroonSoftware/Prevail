@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 
+import { SearchOutlined } from "@ant-design/icons";
+
 import {
   Card,
+  Input,
   message,
   Row,
   Col,
@@ -20,6 +23,7 @@ export default function FormCustomer({ onChooseCustomer }) {
   const [itemtypesData, setCustomerData] = useState([]);
   const [itemtypesDataWrap, setCustomerDataWrap] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchValue, setSearchValue] = useState("");
 
   const [itemDetail, setItemDetail] = useState({});
 
@@ -36,6 +40,22 @@ export default function FormCustomer({ onChooseCustomer }) {
     onChooseCustomer(selectedItem);
   };
 
+  const handleSearch = (value) => {
+    setSearchValue(value);
+
+    if (!value?.trim()) {
+      setCustomerDataWrap(itemtypesData);
+      return;
+    }
+
+    const keyword = value.trim().toLowerCase();
+    const filteredData = itemtypesData.filter((customer) =>
+      customer?.cusname?.toLowerCase().includes(keyword)
+    );
+
+    setCustomerDataWrap(filteredData);
+  };
+
   /** setting initial component */
   const search = () => {
     setLoading(true);
@@ -44,7 +64,15 @@ export default function FormCustomer({ onChooseCustomer }) {
       .then((res) => {
         let { data } = res.data;
         setCustomerData(data);
-        setCustomerDataWrap(data);
+        setCustomerDataWrap(
+          searchValue?.trim()
+            ? data.filter((customer) =>
+                customer?.cusname
+                  ?.toLowerCase()
+                  .includes(searchValue.trim().toLowerCase())
+              )
+            : data
+        );
       })
       .catch((err) => {
         console.warn(err);
@@ -80,9 +108,24 @@ export default function FormCustomer({ onChooseCustomer }) {
                   <Typography.Title level={3} className="m-0" style={{fontSize: 'clamp(12px, 1vw, 24px)'}}>
                     เขตขนส่ง : {itemDetail?.county_name}
                   </Typography.Title>
-                </Col>
+                </Col>               
               </Row>
             </Card>
+            <Row className="m-0 w-full" justify="center" gutter={[8, 8]}>
+             <Col xs={24}>
+                  <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+                  <Input
+                    allowClear
+                    size="large"
+                    style={{ width: "100%", maxWidth: 480 }}
+                    value={searchValue}
+                    prefix={<SearchOutlined />}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    placeholder="ค้นหาชื่อลูกค้า"
+                  />
+                  </div>
+                </Col>
+            </Row>
             {/* <Divider></Divider> */}
             <Table
               bordered
