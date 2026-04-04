@@ -24,8 +24,8 @@ export const column = [
     ),
     align: "center",
     width: "15%",
-    key: "blcode",
-    dataIndex: "blcode",
+    key: "dncode",
+    dataIndex: "dncode",
   },
   {
     title: (
@@ -58,11 +58,11 @@ export const column = [
       </div>
     ),
     align: "right",
-    key: "price",
-    dataIndex: "price",
+    key: "total_price",
+    dataIndex: "total_price",
     width: "10%",
-    render: (v) => (
-      <Typography.Text className="tx-info" style={{paddingRight: "20px"}}>{comma(Number(v))}</Typography.Text>
+    render: (v,t) => (
+      <Typography.Text className="tx-info" style={{paddingRight: "20px"}}>{comma(Number(t.qty*t.price), 2)}</Typography.Text>
     ),
     onCell: () => ({
       style: {

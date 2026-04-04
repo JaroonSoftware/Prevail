@@ -127,7 +127,7 @@ export const EditableCell = ({
       });
       // After updating row data, focus price editor in same row
       setTimeout(() => {
-        focusColInSameRow("price");
+        focusColInSameRow("qty");
       }, 0);
     } catch {}
   };

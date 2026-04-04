@@ -47,6 +47,17 @@ const blservice = BillingNoteService();
 const gotoFrom = "/billing";
 const dateFormat = "DD/MM/YYYY";
 
+const getBillingRowKey = (item) => (
+  item?._rowKey || [item?.dncode, item?.socode, item?.code].filter(Boolean).join("::")
+);
+
+const normalizeBillingDetail = (items = []) => (
+  items.map((item) => ({
+    ...item,
+    _rowKey: getBillingRowKey(item),
+  }))
+);
+
 function BillingnoteManage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -85,7 +96,7 @@ function BillingnoteManage() {
         const { blcode, bldate, duedate } = header;
         // console.log(header)
         setFormDetail(header);
-        setListDetail(detail);
+        setListDetail(normalizeBillingDetail(detail));
         setBLCode(blcode);
 
         form.setFieldsValue({
@@ -199,21 +210,13 @@ function BillingnoteManage() {
   };
 
   const handleItemsChoosed = async (val) => {
-    let newData = [...listDetail];
-    val.map((item) => {
-      newData.push({
-        code: item?.code,
-        stcode: item?.stcode,
-        stname: item?.stname,
-        unit: item?.unit,
-        price: item?.price,
-        dncode: item?.dncode,
-        socode: item?.socode,
-        qty: 1,
-      });
-    });
+    const newData = normalizeBillingDetail(val).map((item) => ({
+      ...item,
+      qty: Number(item?.qty || 0),
+      price: Number(item?.price || 0),
+    }));
+
     setListDetail(newData);
-    handleSummaryPrice();
   };
 
   const handleConfirm = () => {
@@ -266,9 +269,9 @@ function BillingnoteManage() {
     newWindow.location.href = `/quo-print/${formDetail.quotcode}`;
   };
 
-  const handleDelete = (code) => {
+  const handleDelete = (rowKey) => {
     const itemDetail = [...listDetail];
-    const newData = itemDetail.filter((item) => item?.code !== code);
+    const newData = itemDetail.filter((item) => item?._rowKey !== rowKey);
     setListDetail([...newData]);
   };
 
@@ -288,9 +291,9 @@ function BillingnoteManage() {
         }
         onClick={() => {
           if (isLockedStatus) return;
-          handleDelete(record?.code);
+          handleDelete(record?._rowKey);
         }}
-        disabled={!record?.code || isLockedStatus}
+        disabled={!record?._rowKey || isLockedStatus}
         // disabled={!record?.code || config.action !== "create"}
       />
     ) : null;
@@ -324,7 +327,7 @@ function BillingnoteManage() {
       const itemDetail = [...listDetail];
       const newData = [...itemDetail];
 
-      const ind = newData.findIndex((item) => r?.code === item?.code);
+      const ind = newData.findIndex((item) => r?._rowKey === item?._rowKey);
       if (ind < 0) return itemDetail;
       const item = newData[ind];
       newData.splice(ind, 1, {
@@ -459,7 +462,7 @@ function BillingnoteManage() {
           dataSource={listDetail}
           columns={prodcolumns}
           pagination={false}
-          rowKey="code"
+          rowKey="_rowKey"
           scroll={{ x: "max-content" }}
           locale={{
             emptyText: <span>No data available, please add some data.</span>,

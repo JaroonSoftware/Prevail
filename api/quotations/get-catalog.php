@@ -19,7 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
         $sql .= " left join catalog_master as b on a.catalog_code = b.catalog_code ";
         $sql .= " left join catalog_detail as c on a.catalog_code = c.catalog_code ";
         $sql .= " left join items as d on c.stcode = d.stcode ";
-        $sql .= " where a.cuscode = :code and b.start_date <= CURDATE() and b.stop_date >= CURDATE() ";
+        $sql .= " where a.cuscode = :code and b.start_date <= CURDATE() and b.stop_date >= CURDATE() and b.active_status = 'Y' ";
         $sql .= " order by d.seq asc ";
         
         $stmt = $conn->prepare($sql); 

@@ -29,7 +29,7 @@ const RangePicker = DatePicker.RangePicker;
 const MyAccess = () => {
   const PAGE_COOKIE_KEY = "print-package";
   const navigate = useNavigate();
-  const defaultTablePagination = { current: 1, pageSize: 10 };
+  const defaultTablePagination = { current: 1, pageSize: 25, pageSizeOptions: [10,25,35,50,100,200], showSizeChanger: true };
 
   const [form] = Form.useForm();
 
@@ -201,6 +201,7 @@ const MyAccess = () => {
 
   const handleTableChange = (pagination) => {
     const nextPagination = {
+      ...defaultTablePagination,
       current: pagination?.current ?? defaultTablePagination.current,
       pageSize: pagination?.pageSize ?? defaultTablePagination.pageSize,
     };
@@ -232,6 +233,7 @@ const MyAccess = () => {
 
       if (restored?.tablePagination) {
         setTablePagination({
+          ...defaultTablePagination,
           current:
             restored.tablePagination.current ?? defaultTablePagination.current,
           pageSize:

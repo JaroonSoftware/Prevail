@@ -66,7 +66,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
             inner join catalog_master m on (a.catalog_code=m.catalog_code)
             inner join items i on (d.stcode=i.stcode)
             left outer join `itemtype` t on i.typecode = t.typecode
-            where a.cuscode= '$cuscode' and (CURDATE() BETWEEN m.start_date AND m.stop_date)
+            where a.cuscode= '$cuscode' and (CURDATE() BETWEEN m.start_date AND m.stop_date) and m.active_status = 'Y'
             $type_code";
             $sql .= " order by i.seq";
 

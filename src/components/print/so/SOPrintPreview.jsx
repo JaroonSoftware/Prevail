@@ -178,7 +178,7 @@ export default function SOPrintPreview() {
       <>
         <Table.Summary.Row className="dnpv-footer">
           <Table.Summary.Cell
-            colSpan={3}
+            colSpan={4}
             className="!align-top !ps-0 !pe-0"
             style={{ height: 20 }}
           >

@@ -20,7 +20,7 @@ export default function ModalDeliverynoteBilling({show, close,cuscode, values, s
 
     const [itemsRowKeySelect, setItemsRowKeySelect] = useState([]);
     const [loading,  setLoading] = useState(true);
-    const [shippingLoading, setShippingLoading] = useState(false);
+    const [requestingShipping, setRequestingShipping] = useState(false);
     const [openShippingModal, setOpenShippingModal] = useState(false);
 
     /** handle logic component */
@@ -85,7 +85,7 @@ export default function ModalDeliverynoteBilling({show, close,cuscode, values, s
     const loadShippingOptions = (salesOrders) => {
         const selectedSalesOrders = salesOrders.map((item) => item.socode).filter(Boolean).join(",");
 
-        setShippingLoading(true);
+        setRequestingShipping(true);
         opnService.optionsShipping({ cuscode, socode: selectedSalesOrders }).then((res) => {
             let { status, data } = res;
             if (status === 200) {
@@ -103,7 +103,9 @@ export default function ModalDeliverynoteBilling({show, close,cuscode, values, s
         .catch(() => {
             message.error("Request error!");
         })
-        .finally(() => setTimeout(() => { setShippingLoading(false) }, 400));
+        .finally(() => {
+            setRequestingShipping(false);
+        });
     };
 
     const handleConfirm = () => { 
@@ -114,6 +116,10 @@ export default function ModalDeliverynoteBilling({show, close,cuscode, values, s
 
         if (itemsChoose.length < 1) {
             message.warning("กรุณาเลือกใบขายสินค้า");
+            return;
+        }
+
+        if (requestingShipping) {
             return;
         }
 
@@ -153,7 +159,7 @@ export default function ModalDeliverynoteBilling({show, close,cuscode, values, s
     useEffect( () => {
         const onload = () =>{            
             setLoading(true);
-            opnService.optionsDeliverynote({cuscode:cuscode}).then((res) => {
+            opnService.optionsDeliverynote({cuscode:cuscode,ignoreLoading:true}).then((res) => {
                 let { status, data } = res;
                 if (status === 200) {
                     setItemsData(data.data);
@@ -180,7 +186,7 @@ export default function ModalDeliverynoteBilling({show, close,cuscode, values, s
         <Space direction="horizontal" size="middle" >
             
             <Button onClick={() => handleClose() }>ปิด</Button>
-            <Button type='primary' onClick={() => handleConfirm() }>ถัดไปเลือกใบส่งของ</Button>
+            <Button type='primary' onClick={() => handleConfirm() } disabled={requestingShipping}>ถัดไปเลือกใบส่งของ</Button>
         </Space>
     );
 
@@ -188,12 +194,13 @@ export default function ModalDeliverynoteBilling({show, close,cuscode, values, s
     return (
         <>
         <Modal
-            open={show && !openShippingModal}
+            open={show}
             title="เลือกใบขายสินค้า"
             onCancel={() => handleClose() } 
             footer={ButtonModal}
             maskClosable={false}
-            style={{ top: 20 }}
+            mask={!openShippingModal}
+            style={{ top: 20, visibility: openShippingModal ? 'hidden' : 'visible' }}
             width={1000}
             className='sample-request-modal-items'
         >
@@ -251,7 +258,7 @@ export default function ModalDeliverynoteBilling({show, close,cuscode, values, s
             }}
             selected={selected}
             shippingData={shippingData}
-            loading={shippingLoading}
+            loading={false}
         />
         </>
     )

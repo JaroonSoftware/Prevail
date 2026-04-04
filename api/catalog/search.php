@@ -19,7 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         where 1 = 1
         $catalog_code
         $catalog_name
-        order by a.created_date desc";
+        order by a.catalog_code desc";
 
         $stmt = $conn->prepare($sql);
         $stmt->execute();

@@ -13,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
         ,CONCAT(a.idno ,' ', a.road,' ', a.subdistrict,' ', a.district,' ', a.zipcode) as address
         FROM `customer` as a
         left outer join  county as b on a.county_code = b.county_code
-        where a.active_status = 'Y'";
+        where a.active_status = 'Y' order by a.cuscode ";
             // $type_code
             $stmt = $conn->prepare($sql); 
             $stmt->execute();

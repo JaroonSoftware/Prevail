@@ -10,6 +10,10 @@ import DeliveryNoteService from "../../../service/DeliveryNote.service";
 
 const dnService = DeliveryNoteService();
 
+const getShippingRowKey = (item) => (
+    item?._rowKey || [item?.dncode, item?.socode, item?.code].filter(Boolean).join("::")
+);
+
 export default function ShippingModal({ show, close, values, selected, shippingData, loading }) {
     const [form] = Form.useForm();
     const tableWrapRef = useRef(null);
@@ -89,7 +93,7 @@ export default function ShippingModal({ show, close, values, selected, shippingD
         }
     };
 
-    const handleCheckDuplicate = (itemCode) => !!selected.find((item) => item?.code === itemCode);
+    const handleCheckDuplicate = (rowKey) => !!selected.find((item) => getShippingRowKey(item) === rowKey);
 
     const loadShippingItems = async () => {
         if (!show || shippingData.length < 1) {
@@ -102,12 +106,12 @@ export default function ShippingModal({ show, close, values, selected, shippingD
         setDetailLoading(true);
         try {
             const payload = shippingData.map((item) => ({ dncode: item.dncode }));
-            const res = await dnService.getlist(payload);
-            const detail = res?.data?.data?.detail || [];
-            const selectedCodes = [...new Set(selected.map((item) => item?.code).filter(Boolean))];
-            const selectedKeys = detail
-                .filter((item) => selectedCodes.includes(item.code))
-                .map((item) => item.code);
+            const res = await dnService.getlist(payload, { ignoreLoading: true });
+            const detail = (res?.data?.data?.detail || []).map((item) => ({
+                ...item,
+                _rowKey: getShippingRowKey(item),
+            }));
+            const selectedKeys = [...new Set(selected.map((item) => getShippingRowKey(item)).filter(Boolean))];
 
             setShippingItems(detail);
             setShippingDataWrap(detail);
@@ -122,11 +126,11 @@ export default function ShippingModal({ show, close, values, selected, shippingD
     const handleConfirm = () => {
         const choosed = [...selected];
         const itemsChoose = shippingItems.filter(
-            (item) => shippingRowKeySelect.includes(item.code) && !choosed.some((row) => row.code === item.code)
+            (item) => shippingRowKeySelect.includes(item._rowKey) && !choosed.some((row) => getShippingRowKey(row) === item._rowKey)
         );
 
         const merged = [...choosed, ...itemsChoose]
-            .filter((item, index, array) => array.findIndex((row) => row.code === item.code) === index);
+            .filter((item, index, array) => array.findIndex((row) => getShippingRowKey(row) === getShippingRowKey(item)) === index);
 
         if (merged.length < 1) {
             message.warning("กรุณาเลือกใบส่งของ");
@@ -147,15 +151,15 @@ export default function ShippingModal({ show, close, values, selected, shippingD
         },
         getCheckboxProps: (record) => {
             return {
-                disabled: handleCheckDuplicate(record.code),
-                name: record.code,
+                disabled: handleCheckDuplicate(record._rowKey),
+                name: record._rowKey,
             }
         },
         onSelect: (record, selectedRow) => {
             setShippingRowKeySelect((state) => (
                 selectedRow
-                    ? [...new Set([...state, record.code])]
-                    : state.filter((item) => item !== record.code)
+                    ? [...new Set([...state, record._rowKey])]
+                    : state.filter((item) => item !== record._rowKey)
             ));
         },
     };
@@ -183,7 +187,7 @@ export default function ShippingModal({ show, close, values, selected, shippingD
     const ButtonShippingModal = (
         <Space direction="horizontal" size="middle" >
             <Button onClick={() => close(false) }>ย้อนกลับ</Button>
-            <Button type='primary' onClick={() => handleConfirm() }>ยืนยันเตรียมออกใบวางบิล</Button>
+            <Button type='primary' onClick={() => handleConfirm() } disabled={detailLoading}>ยืนยันเตรียมออกใบวางบิล</Button>
         </Space>
     );
 
@@ -203,7 +207,7 @@ export default function ShippingModal({ show, close, values, selected, shippingD
             width={1000}
             className='sample-request-modal-items'
         >
-            <Spin spinning={loading || detailLoading} >
+            <Spin spinning={loading} >
                 <Space direction="vertical" size="middle" style={{ display: 'flex', position: 'relative'}}  >
                     <Card style={{backgroundColor:'#f0f0f0' }}>
                         <Form form={form} layout="vertical" autoComplete="off" >
@@ -222,15 +226,16 @@ export default function ShippingModal({ show, close, values, selected, shippingD
                             bordered
                             dataSource={shippingDataWrap}
                             columns={shippingColumns()}
+                            loading={false}
                             rowSelection={shippingSelection}
-                            rowKey="code"
+                            rowKey="_rowKey"
                             onRow={(record, index) => createRowHandler({
                                 record,
                                 index,
                                 dataSource: shippingDataWrap,
-                                rowKey: "code",
+                                rowKey: "_rowKey",
                                 setSelectedKeys: setShippingRowKeySelect,
-                                isDisabled: (row) => handleCheckDuplicate(row.code),
+                                isDisabled: (row) => handleCheckDuplicate(row._rowKey),
                                 // onLastRow: handleConfirm,
                             })}
                             pagination={{

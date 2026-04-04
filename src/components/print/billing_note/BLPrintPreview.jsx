@@ -196,13 +196,14 @@ function BLPrintPreview() {
             <Flex
               style={{
                 borderTop: "1px solid",
+                justifyContent: "flex-end",
                 // borderLeft: "1px solid",
                 // borderRight: "1px solid",
               }}
             >
               <Typography.Text
                 className="tx-info "
-                style={{ fontSize: 15, marginLeft: 10, marginTop: 4 }}
+                style={{ fontSize: 15, marginRight: 10, marginTop: 4, textAlign: "right", width: "100%" }}
                 strong
               >
                 รวมเงินทั้งสิ้น
@@ -215,11 +216,12 @@ function BLPrintPreview() {
                 borderTop: "1px solid",
                 borderLeft: "1px solid",
                 borderRight: "1px solid",
+                justifyContent: "flex-end",
               }}
             >
               <Typography.Text
                 className="tx-info "
-                style={{ fontSize: 15, marginLeft: 10, marginTop: 4 }}
+                style={{ fontSize: 15, marginRight: 10, marginTop: 4, textAlign: "right", width: "100%" }}
                 strong
               >
                 {hData?.total_price}

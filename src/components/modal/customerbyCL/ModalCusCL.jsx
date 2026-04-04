@@ -166,12 +166,13 @@ export default function ModalCusCL({show, close, values, selected}) {
                             columns={column} 
                             rowSelection={itemSelection}
                             rowKey="cuscode"
-                            pagination={{ 
-                                total:itemsDataWrap.length, 
-                                showTotal:(_, range) => `${range[0]}-${range[1]} of ${itemsData.length} customer`,
-                                defaultPageSize:10,
-                                pageSizeOptions:[10,25,35,50,100]
-                            }}
+                            pagination={false}
+                            // pagination={{ 
+                            //     total:itemsDataWrap.length, 
+                            //     showTotal:(_, range) => `${range[0]}-${range[1]} of ${itemsData.length} customer`,
+                            //     defaultPageSize:10,
+                            //     pageSizeOptions:[10,25,35,50,100]
+                            // }}
                             scroll={{ x: 'max-content' }} size='small'
                         /> 
                     </Card>

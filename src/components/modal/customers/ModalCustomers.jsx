@@ -148,12 +148,7 @@ export default function ModalCustomers({show, close, values, selected}) {
                             dataSource={customersDataWrap}
                             columns={column}
                             rowKey="cuscode"
-                            pagination={{ 
-                                total:customersDataWrap.length, 
-                                showTotal:(_, range) => `${range[0]}-${range[1]} of ${customersData.length} items`,
-                                defaultPageSize:25,
-                                pageSizeOptions:[25,35,50,100]
-                            }}
+                            pagination={false}
                             scroll={{ x: 'max-content', y:400 }} 
                             size='small'
                         /> 
