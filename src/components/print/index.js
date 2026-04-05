@@ -4,6 +4,7 @@ import BLPrintPreview from "./billing_note/BLPrintPreview";
 import ReceiptPrintPreview from "./receipt/ReceiptPrintPreview";
 import DeliveryPrintPreview from "./delivery/DeliveryPrintPreview";
 import SOPrintPreview from "./so/SOPrintPreview";
+import SalesByProductPrintPreview from "./sales-by-product-report/MyPrintPreview";
 
 export {
   QuoPrintPreview,
@@ -11,5 +12,6 @@ export {
   BLPrintPreview,
   ReceiptPrintPreview,
   DeliveryPrintPreview,
-  SOPrintPreview
+  SOPrintPreview,
+  SalesByProductPrintPreview
 };
