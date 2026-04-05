@@ -5,6 +5,8 @@ import ReceiptPrintPreview from "./receipt/ReceiptPrintPreview";
 import DeliveryPrintPreview from "./delivery/DeliveryPrintPreview";
 import SOPrintPreview from "./so/SOPrintPreview";
 import SalesByProductPrintPreview from "./sales-by-product-report/MyPrintPreview";
+import SalesByCustomerPrintPreview from "./sales-by-customer-report/MyPrintPreview";
+import BestSellingProductPrintPreview from "./best-selling-product-report/MyPrintPreview";
 
 export {
   QuoPrintPreview,
@@ -13,5 +15,7 @@ export {
   ReceiptPrintPreview,
   DeliveryPrintPreview,
   SOPrintPreview,
-  SalesByProductPrintPreview
+  SalesByProductPrintPreview,
+  SalesByCustomerPrintPreview,
+  BestSellingProductPrintPreview
 };

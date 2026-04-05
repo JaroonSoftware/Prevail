@@ -1,10 +1,10 @@
-.sales-by-product-print-screen {
+.best-selling-product-print-screen {
   --sales-font-size: 12px;
   --sales-print-font-size: 10.5px;
   --sales-line-height: 1.4;
   --sales-print-line-height: 1.25;
-  --sales-grid-gap: 6px;
-  --sales-row-padding: 2px;
+  --sales-grid-gap: 10px;
+  --sales-row-padding: 5px;
   --sales-accent-color: #1d4ed8;
   min-height: 100vh;
   padding: 20px;
@@ -12,7 +12,7 @@
   background: #eef2f7;
 }
 
-.sales-by-product-print-toolbar {
+.best-selling-product-print-toolbar {
   width: calc(297mm - 20mm);
   max-width: 100%;
   margin: 0 auto 16px;
@@ -23,7 +23,7 @@
   box-shadow: none;
 }
 
-.sales-by-product-print-wrapper {
+.best-selling-product-print-wrapper {
   width: fit-content;
   margin: 0 auto;
   display: flex;
@@ -35,7 +35,7 @@
   display: none;
 }
 
-.sales-by-product-print-paper {
+.best-selling-product-print-paper {
   width: calc(297mm - 20mm);
   height: calc(210mm - 20mm);
   overflow: hidden;
@@ -47,19 +47,15 @@
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
 }
 
-.sales-by-product-print-sheet {
-  display: block;
-}
-
-.sales-by-product-print-paper-single {
+.best-selling-product-print-paper-single {
   display: block;
   height: auto;
   min-height: calc(210mm - 20mm);
 }
 
-.sales-by-product-print-paper-content {
+.best-selling-product-print-paper-content {
   width: 100%;
-  min-width: 1180px;
+  min-width: 860px;
   height: calc(210mm - 52mm);
   overflow: hidden;
   padding: 24px;
@@ -70,53 +66,53 @@
   background: #ffffff;
 }
 
-.sales-by-product-print-page {
+.best-selling-product-print-page {
   height: 100%;
   overflow: hidden;
   box-sizing: border-box;
 }
 
-.sales-by-product-print-paper-single .sales-by-product-print-paper-content,
-.sales-by-product-print-paper-single .sales-by-product-print-page {
+.best-selling-product-print-paper-single .best-selling-product-print-paper-content,
+.best-selling-product-print-paper-single .best-selling-product-print-page {
   height: auto;
   min-height: calc(210mm - 52mm);
   overflow: visible;
 }
 
-.sales-by-product-empty-state {
+.best-selling-product-empty-state {
   padding: 72px 0;
   text-align: center;
 }
 
-.sales-by-product-empty-title {
+.best-selling-product-empty-title {
   margin-bottom: 8px !important;
 }
 
-.sales-by-product-empty-content {
+.best-selling-product-empty-content {
   margin-top: 24px;
 }
 
-.sales-by-product-page-header {
+.best-selling-product-page-header {
   width: 100%;
 }
 
-.sales-by-product-title {
+.best-selling-product-title {
   font-weight: 700;
   font-size: 13px;
 }
 
-.sales-by-product-header-right {
+.best-selling-product-header-right {
   text-align: right;
 }
 
-.sales-by-product-grid {
+.best-selling-product-grid {
   display: grid;
   grid-template-columns: var(--sales-grid-template);
   gap: var(--sales-grid-gap);
   align-items: start;
 }
 
-.sales-by-product-column-header {
+.best-selling-product-column-header {
   margin-top: 16px;
   padding: 6px 0;
   border-top: 1px solid #111827;
@@ -126,37 +122,17 @@
   line-height: 1.2;
 }
 
-.sales-by-product-group {
-  margin-top: 14px;
-}
-
-.sales-by-product-group-title {
-  margin-bottom: 4px;
-  color: var(--sales-accent-color);
-  font-weight: 700;
-  font-size: 11.5px;
-  line-height: 1.25;
-}
-
-.sales-by-product-row {
+.best-selling-product-row {
   padding: var(--sales-row-padding) 0;
   border-bottom: 1px dotted #d1d5db;
   line-height: 1.28;
 }
 
-.sales-by-product-row-last {
+.best-selling-product-row-last {
   border-bottom: none;
 }
 
-.sales-by-product-group-summary {
-  margin-top: 4px;
-  padding-top: 4px;
-  border-top: 1px dashed #111827;
-  font-weight: 700;
-  font-size: 11px;
-}
-
-.sales-by-product-grand-total {
+.best-selling-product-grand-total {
   margin-top: 14px;
   padding-top: 8px;
   border-top: 2px solid #111827;
@@ -164,8 +140,7 @@
   font-size: 12px;
 }
 
-.sales-by-product-summary-label,
-.sales-by-product-total-label {
+.best-selling-product-total-label {
   grid-column: 1 / 5;
   color: #111827;
 }
@@ -192,23 +167,23 @@
     overflow: visible !important;
   }
 
-  .sales-by-product-print-screen {
+  .best-selling-product-print-screen {
     padding: 0 !important;
     background: #ffffff !important;
   }
 
-  .sales-by-product-print-toolbar {
+  .best-selling-product-print-toolbar {
     display: none !important;
   }
 
-  .sales-by-product-print-wrapper {
+  .best-selling-product-print-wrapper {
     display: block !important;
     width: 100% !important;
     margin: 0 !important;
     gap: 0 !important;
   }
 
-  .sales-by-product-print-paper {
+  .best-selling-product-print-paper {
     width: 100% !important;
     min-height: calc(210mm - 20mm) !important;
     height: auto !important;
@@ -220,11 +195,6 @@
     display: block !important;
   }
 
-  .sales-by-product-print-sheet {
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-  }
-
   .sales-page-break {
     display: block !important;
     height: 0 !important;
@@ -233,7 +203,7 @@
     break-after: page !important;
   }
 
-  .sales-by-product-print-paper-content {
+  .best-selling-product-print-paper-content {
     min-width: 0 !important;
     min-height: calc(210mm - 20mm) !important;
     height: auto !important;
@@ -243,62 +213,25 @@
     line-height: var(--sales-print-line-height) !important;
   }
 
-  .sales-by-product-print-page {
+  .best-selling-product-print-page {
     height: auto !important;
     min-height: calc(210mm - 20mm) !important;
     overflow: visible !important;
     box-sizing: border-box !important;
   }
 
-  .sales-by-product-print-paper-single,
-  .sales-by-product-print-paper-single .sales-by-product-print-paper-content,
-  .sales-by-product-print-paper-single .sales-by-product-print-page {
+  .best-selling-product-print-paper-single,
+  .best-selling-product-print-paper-single .best-selling-product-print-paper-content,
+  .best-selling-product-print-paper-single .best-selling-product-print-page {
     height: auto !important;
     min-height: calc(210mm - 20mm) !important;
     overflow: visible !important;
   }
 
-  .sales-by-product-page-header,
-  .sales-by-product-column-header,
-  .sales-by-product-group,
-  .sales-by-product-group-summary,
-  .sales-by-product-grand-total {
+  .best-selling-product-page-header,
+  .best-selling-product-column-header,
+  .best-selling-product-row,
+  .best-selling-product-grand-total {
     page-break-inside: avoid !important;
-  }
-
-  .sales-by-product-title {
-    font-size: 12px !important;
-  }
-
-  .sales-by-product-column-header {
-    margin-top: 12px !important;
-    padding: 5px 0 !important;
-    font-size: 10px !important;
-  }
-
-  .sales-by-product-group {
-    margin-top: 12px !important;
-  }
-
-  .sales-by-product-group-title {
-    margin-bottom: 3px !important;
-    font-size: 10.5px !important;
-  }
-
-  .sales-by-product-row {
-    padding: 2px 0 !important;
-    line-height: 1.2 !important;
-  }
-
-  .sales-by-product-group-summary {
-    margin-top: 4px !important;
-    padding-top: 4px !important;
-    font-size: 10px !important;
-  }
-
-  .sales-by-product-grand-total {
-    margin-top: 12px !important;
-    padding-top: 6px !important;
-    font-size: 11px !important;
   }
 }

@@ -72,6 +72,16 @@ let _nav = [
     to: "/so-by-product-report",
   },
   {
+    title: "รายงานยอดขายแยกตามสินค้าขายดี",
+    icon: <BarChartOutlined className="nav-ico" />,
+    to: "/best-selling-product-report",
+  },
+  {
+    title: "รายงานยอดขายตามลูกค้า",
+    icon: <BarChartOutlined className="nav-ico" />,
+    to: "/so-by-customer-report",
+  },
+  {
     title: "รายงานการซื้อของแห้ง",
     icon: <GiGrain  className="nav-ico" />,
     to: "/dry-report",

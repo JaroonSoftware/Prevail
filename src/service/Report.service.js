@@ -5,6 +5,7 @@ const API_URL = {
   API_GETNOODLE: `/reports/noodle/search.php`,
   API_GETFRUIT: `/reports/fruit/search.php`,
   API_GETSALESBYPRODUCT: `/reports/sales-by-product/search.php`,
+  API_GETSALESBYCUSTOMER: `/reports/sales-by-product/search.php`,
 };
   
 const ReportService = () => { 
@@ -14,6 +15,7 @@ const ReportService = () => {
   const getNoodle = (parm = {}, config = {}) => api.post(`${API_URL.API_GETNOODLE}`, parm, config);
   const getFruit = (parm = {}, config = {}) => api.post(`${API_URL.API_GETFRUIT}`, parm, config);
   const getSalesByProduct = (parm = {}, config = {}) => api.post(`${API_URL.API_GETSALESBYPRODUCT}`, parm, config);
+  const getSalesByCustomer = (parm = {}, config = {}) => api.post(`${API_URL.API_GETSALESBYCUSTOMER}`, parm, config);
  
 
   return {
@@ -22,6 +24,7 @@ const ReportService = () => {
     getNoodle,
     getFruit,
     getSalesByProduct,
+    getSalesByCustomer,
   };
 };
 
