@@ -11,7 +11,6 @@ import {
   Empty,
 } from "antd";
 import {
-  ReloadOutlined,
   BarChartOutlined,
   SearchOutlined,
   ClearOutlined,
@@ -29,6 +28,8 @@ import {
 
 const rpservice = ReportService();
 const RangePicker = DatePicker.RangePicker;
+const REPORT_GRID_TEMPLATE =
+  "minmax(88px, 1fr) minmax(100px, 1.05fr) minmax(100px, 1.05fr) minmax(72px, 0.8fr) minmax(64px, 0.7fr) minmax(96px, 1fr) minmax(60px, 0.65fr) minmax(108px, 1.15fr) minmax(118px, 1.2fr)";
 
 const formatThaiDate = (value) => {
   if (!value) {
@@ -219,7 +220,13 @@ const SalesByProductReport = () => {
         {`
           .sales-by-product-paper-content {
             width: 100%;
-            min-width: 1180px;
+            min-width: 100%;
+          }
+
+          .sales-by-product-grid-cell {
+            min-width: 0;
+            overflow-wrap: anywhere;
+            word-break: break-word;
           }
 
           @page {
@@ -428,17 +435,17 @@ const SalesByProductReport = () => {
                     borderTop: "1px solid #111827",
                     borderBottom: "1px solid #111827",
                     display: "grid",
-                    gridTemplateColumns: "110px 120px 120px 1.6fr 90px 70px 110px 70px 120px 130px",
+                    gridTemplateColumns: REPORT_GRID_TEMPLATE,
                     gap: 8,
                     fontWeight: 700,
                   }}
                 >
-                  <div>วันที่</div>
-                  <div>เลขที่ใบขายสินค้า</div>
-                  <div>รหัสลูกค้า</div>
+                  <div className="sales-by-product-grid-cell">วันที่</div>
+                  <div className="sales-by-product-grid-cell">เลขที่ใบขายสินค้า</div>
+                  <div className="sales-by-product-grid-cell">รหัสลูกค้า</div>
                   {/* <div>ชื่อลูกค้า</div> */}
                   <div style={{ textAlign: "right" }}>จำนวน</div>
-                  <div>หน่วย</div>
+                  <div className="sales-by-product-grid-cell">หน่วย</div>
                   <div style={{ textAlign: "right" }}>ราคาต่อหน่วย</div>
                   <div style={{ textAlign: "right" }}>VAT</div>
                   <div style={{ textAlign: "right" }}>รวมก่อน VAT</div>
@@ -457,6 +464,7 @@ const SalesByProductReport = () => {
                           color: "#1d4ed8",
                           fontWeight: 700,
                           marginBottom: 6,
+                          overflowWrap: "anywhere",
                         }}
                       >
                         {group.stname} / {group.stcode}
@@ -467,20 +475,20 @@ const SalesByProductReport = () => {
                           key={`${group.key}-${item.socode}-${index}`}
                           style={{
                             display: "grid",
-                            gridTemplateColumns: "110px 120px 120px 1.6fr 90px 70px 110px 70px 120px 130px",
+                            gridTemplateColumns: REPORT_GRID_TEMPLATE,
                             gap: 8,
                             padding: "3px 0",
                             borderBottom: index === group.items.length - 1 ? "none" : "1px dotted #d1d5db",
                           }}
                         >
-                          <div>{formatThaiDate(item.sodate)}</div>
-                          <div>{item.socode || "-"}</div>
-                          <div>{item.cuscode || "-"}</div>
+                          <div className="sales-by-product-grid-cell">{formatThaiDate(item.sodate)}</div>
+                          <div className="sales-by-product-grid-cell">{item.socode || "-"}</div>
+                          <div className="sales-by-product-grid-cell">{item.cuscode || "-"}</div>
                           {/* <div>{item.cusname || "-"}</div> */}
                           <div style={{ textAlign: "right", color: "#1d4ed8" }}>
                             {formatMoney(item.qty, 2, 2)}
                           </div>
-                          <div>{item.unit || "-"}</div>
+                          <div className="sales-by-product-grid-cell">{item.unit || "-"}</div>
                           <div style={{ textAlign: "right" }}>
                             {formatMoney(item.price, 2, 2)}
                           </div>
@@ -502,18 +510,19 @@ const SalesByProductReport = () => {
                           paddingTop: 6,
                           borderTop: "1px dashed #111827",
                           display: "grid",
-                          gridTemplateColumns: "110px 120px 120px 1.6fr 90px 70px 110px 70px 120px 130px",
+                          gridTemplateColumns: REPORT_GRID_TEMPLATE,
                           gap: 8,
                           fontWeight: 700,
                         }}
                       >
-                        <div style={{ gridColumn: "1 / 5", color: "#111827" }}>
+                        <div style={{ gridColumn: "1 / 4", color: "#111827" }}>
                           รวม {group.stcode}
                         </div>
                         <div style={{ textAlign: "right", color: "#1d4ed8" }}>
                           {formatMoney(group.totalQty, 2, 2)}
                         </div>
                         <div>{group.unit}</div>
+                        <div />
                         <div />
                         <div style={{ textAlign: "right" }}>
                           {formatMoney(group.totalSubtotal, 2, 2)}
@@ -533,13 +542,13 @@ const SalesByProductReport = () => {
                       paddingTop: 10,
                       borderTop: "2px solid #111827",
                       display: "grid",
-                      gridTemplateColumns: "110px 120px 120px 1.6fr 90px 70px 110px 70px 120px 130px",
+                      gridTemplateColumns: REPORT_GRID_TEMPLATE,
                       gap: 8,
                       fontWeight: 700,
                       fontSize: 14,
                     }}
                   >
-                    <div style={{ gridColumn: "1 / 5" }}>รวมทั้งหมด</div>
+                    <div style={{ gridColumn: "1 / 4" }}>รวมทั้งหมด</div>
                     <div style={{ textAlign: "right", color: "#1d4ed8" }}>
                       {formatMoney(reportTotals.totalQty, 2, 2)}
                     </div>

@@ -9,7 +9,6 @@ import { loadMyAccessSearchCookie } from "../../../utils/myaccessSearchCookie";
 import {
   PAGE_COOKIE_KEY,
   BEST_SELLING_REPORT_TITLE,
-  BEST_SELLING_PRODUCT_GRID_TEMPLATE,
   formatThaiDate,
   buildSearchPayload,
   buildBestSellingProductSummary,
@@ -70,10 +69,7 @@ function BestSellingProductPrintPreview() {
   }, []);
 
   return (
-    <div
-      className="best-selling-product-print-screen"
-      style={{ "--sales-grid-template": BEST_SELLING_PRODUCT_GRID_TEMPLATE }}
-    >
+    <div className="best-selling-product-print-screen" id="best-selling-product-report">
       {loading && <Spin fullscreen indicator={<LoadingOutlined />} />}
 
       <div className="best-selling-product-print-toolbar">
@@ -89,12 +85,14 @@ function BestSellingProductPrintPreview() {
           <div className="best-selling-product-print-paper best-selling-product-print-paper-single">
             <div className="best-selling-product-print-paper-content">
               <div className="best-selling-product-empty-state">
-                <Typography.Title level={4} className="best-selling-product-empty-title">
-                  {BEST_SELLING_REPORT_TITLE}
-                </Typography.Title>
-                <Typography.Text type="secondary">
-                  ไม่พบข้อมูลจากเงื่อนไขล่าสุดของหน้า Best Selling Product Report
-                </Typography.Text>
+                <div className="best-selling-product-print-header">
+                  <Typography.Title level={4} className="best-selling-product-empty-title">
+                    {BEST_SELLING_REPORT_TITLE}
+                  </Typography.Title>
+                  <Typography.Text type="secondary">
+                    ไม่พบข้อมูลจากเงื่อนไขล่าสุดของหน้า Best Selling Product Report
+                  </Typography.Text>
+                </div>
                 <div className="best-selling-product-empty-content">
                   <Empty description="ไม่มีข้อมูลรายงาน" />
                 </div>
@@ -104,62 +102,59 @@ function BestSellingProductPrintPreview() {
         ) : (
           reportPages.map((page, pageIndex) => (
             <Fragment key={`page-${pageIndex}`}>
-              <div className="best-selling-product-print-paper">
+              <div className="best-selling-product-print-paper best-selling-product-print-sheet">
                 <div className="best-selling-product-print-paper-content best-selling-product-print-page">
-                  <Flex className="best-selling-product-page-header" justify="space-between" align="flex-start" gap={15}>
-                    <div>
-                      <div className="best-selling-product-title">{BEST_SELLING_REPORT_TITLE}</div>
-                      <div>ช่วงวันที่: {selectedDateLabel}</div>
-                      <div>พิมพ์เมื่อ: {formatThaiDate(new Date())}</div>
-                    </div>
-                    <div className="best-selling-product-header-right">
-                      <div>หน้า : {pageIndex + 1} / {reportPages.length}</div>
-                      <div>จำนวนสินค้า : {productRows.length}</div>
-                      <div>จำนวนใบขายสินค้า : {totalSoCount}</div>
-                    </div>
-                  </Flex>
-
-                  <div className="best-selling-product-grid best-selling-product-column-header">
-                    <div className="sales-text-right">อันดับ</div>
-                    <div>รหัสสินค้า</div>
-                    <div>ชื่อสินค้า</div>
-                    <div>หน่วย</div>
-                    <div className="sales-text-right">จำนวนขายรวม</div>
-                    <div className="sales-text-right">ยอดก่อน VAT</div>
-                    <div className="sales-text-right">VAT</div>
-                    <div className="sales-text-right">ยอดสุทธิ</div>
+                  <div className="best-selling-product-print-header">
+                    <Flex className="best-selling-product-page-header" justify="space-between" align="flex-start" gap={15}>
+                      <div>
+                        <div className="best-selling-product-title">{BEST_SELLING_REPORT_TITLE}</div>
+                        <div>ช่วงวันที่: {selectedDateLabel}</div>
+                        <div>พิมพ์เมื่อ: {formatThaiDate(new Date())}</div>
+                      </div>
+                      <div className="best-selling-product-header-right">
+                        <div>หน้า : {pageIndex + 1} / {reportPages.length}</div>
+                        <div>จำนวนสินค้า : {productRows.length}</div>
+                        <div>จำนวนใบขายสินค้า : {totalSoCount}</div>
+                      </div>
+                    </Flex>
                   </div>
 
-                  {page.rows.map((row, index) => (
-                    <div
-                      key={row.key}
-                      className={`best-selling-product-grid best-selling-product-row${
-                        index === page.rows.length - 1 ? " best-selling-product-row-last" : ""
-                      }`}
-                    >
-                      <div className="sales-text-right sales-text-accent">{formatMoney(row.rank, 0, 0)}</div>
-                      <div>{row.stcode || "-"}</div>
-                      <div>{row.stname || "-"}</div>
-                      <div>{row.unit || "-"}</div>
-                      <div className="sales-text-right">{formatMoney(row.totalQty, 2, 2)}</div>
-                      <div className="sales-text-right">{formatMoney(row.totalSubtotal, 2, 2)}</div>
-                      <div className="sales-text-right">{formatMoney(row.totalVatAmount, 2, 2)}</div>
-                      <div className="sales-text-right sales-text-accent">{formatMoney(row.totalNet, 2, 2)}</div>
-                    </div>
-                  ))}
-
-                  {page.includeGrandTotal && (
-                    <div className="best-selling-product-grid best-selling-product-grand-total">
-                      <div className="best-selling-product-total-label">รวมทั้งหมด</div>
-                      <div className="sales-text-right">{formatMoney(reportTotals.totalQty, 2, 2)}</div>
-                      <div className="sales-text-right">{formatMoney(reportTotals.totalSubtotal, 2, 2)}</div>
-                      <div className="sales-text-right">{formatMoney(reportTotals.totalVatAmount, 2, 2)}</div>
-                      <div className="sales-text-right sales-text-accent">{formatMoney(reportTotals.totalNet, 2, 2)}</div>
-                    </div>
-                  )}
+                  <table className="best-selling-product-table">
+                    <thead>
+                      <tr>
+                        <th className="col-rank text-right">อันดับ</th>
+                        <th className="col-code">รหัสสินค้า</th>
+                        <th className="col-name">ชื่อสินค้า</th>
+                        <th className="col-unit">หน่วยนับ</th>
+                        <th className="col-qty text-right">ปริมาณขายสุทธิ</th>
+                        <th className="col-total text-right">มูลค่าขายสุทธิ</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {page.rows.map((row) => (
+                        <tr key={row.key}>
+                          <td className="text-right text-accent">{formatMoney(row.rank, 0, 0)}</td>
+                          <td>{row.stcode || "-"}</td>
+                          <td>{row.stname || "-"}</td>
+                          <td>{row.unit || "-"}</td>
+                          <td className="text-right">{formatMoney(row.totalQty, 2, 2)}</td>
+                          <td className="text-right text-accent">{formatMoney(row.totalSubtotal, 2, 2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    {page.includeGrandTotal && (
+                      <tfoot>
+                        <tr>
+                          <td colSpan="4" className="total-label-cell">รวมทั้งหมด</td>
+                          <td className="text-right">{formatMoney(reportTotals.totalQty, 2, 2)}</td>
+                          <td className="text-right text-accent">{formatMoney(reportTotals.totalSubtotal, 2, 2)}</td>
+                        </tr>
+                      </tfoot>
+                    )}
+                  </table>
                 </div>
               </div>
-              {pageIndex < reportPages.length - 1 && <div className="sales-page-break" />}
+              {pageIndex < reportPages.length - 1 && <div className="best-selling-page-break" />}
             </Fragment>
           ))
         )}

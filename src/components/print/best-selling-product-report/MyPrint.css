@@ -1,11 +1,4 @@
 .best-selling-product-print-screen {
-  --sales-font-size: 12px;
-  --sales-print-font-size: 10.5px;
-  --sales-line-height: 1.4;
-  --sales-print-line-height: 1.25;
-  --sales-grid-gap: 10px;
-  --sales-row-padding: 5px;
-  --sales-accent-color: #1d4ed8;
   min-height: 100vh;
   padding: 20px;
   box-sizing: border-box;
@@ -16,29 +9,26 @@
   width: calc(297mm - 20mm);
   max-width: 100%;
   margin: 0 auto 16px;
-  padding: 0;
   display: flex;
   justify-content: flex-end;
-  background: transparent;
-  box-shadow: none;
 }
 
 .best-selling-product-print-wrapper {
   width: fit-content;
+  max-width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.sales-page-break {
+.best-selling-page-break {
   display: none;
 }
 
 .best-selling-product-print-paper {
   width: calc(297mm - 20mm);
-  height: calc(210mm - 20mm);
-  overflow: hidden;
+  min-height: calc(210mm - 20mm);
   padding: 16px;
   box-sizing: border-box;
   border: 1px solid #d9dee7;
@@ -47,36 +37,31 @@
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
 }
 
+.best-selling-product-print-sheet {
+  display: block;
+}
+
 .best-selling-product-print-paper-single {
   display: block;
-  height: auto;
-  min-height: calc(210mm - 20mm);
 }
 
 .best-selling-product-print-paper-content {
   width: 100%;
-  min-width: 860px;
-  height: calc(210mm - 52mm);
-  overflow: hidden;
+  min-height: calc(210mm - 52mm);
   padding: 24px;
-  color: #111827;
-  font-size: var(--sales-font-size);
-  line-height: var(--sales-line-height);
   box-sizing: border-box;
+  color: #111827;
   background: #ffffff;
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 .best-selling-product-print-page {
-  height: 100%;
-  overflow: hidden;
-  box-sizing: border-box;
+  min-height: calc(210mm - 52mm);
 }
 
-.best-selling-product-print-paper-single .best-selling-product-print-paper-content,
-.best-selling-product-print-paper-single .best-selling-product-print-page {
-  height: auto;
-  min-height: calc(210mm - 52mm);
-  overflow: visible;
+.best-selling-product-print-header {
+  margin-bottom: 12px;
 }
 
 .best-selling-product-empty-state {
@@ -105,52 +90,73 @@
   text-align: right;
 }
 
-.best-selling-product-grid {
-  display: grid;
-  grid-template-columns: var(--sales-grid-template);
-  gap: var(--sales-grid-gap);
-  align-items: start;
+.best-selling-product-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: #ffffff;
 }
 
-.best-selling-product-column-header {
-  margin-top: 16px;
-  padding: 6px 0;
+.best-selling-product-table th,
+.best-selling-product-table td {
+  padding: 4px 6px;
+  font-size: 11px;
+  line-height: 1.25;
+  vertical-align: top;
+}
+
+.best-selling-product-table thead th {
   border-top: 1px solid #111827;
   border-bottom: 1px solid #111827;
   font-weight: 700;
-  font-size: 11px;
-  line-height: 1.2;
+  text-align: left;
 }
 
-.best-selling-product-row {
-  padding: var(--sales-row-padding) 0;
+.best-selling-product-table tbody td {
   border-bottom: 1px dotted #d1d5db;
-  line-height: 1.28;
 }
 
-.best-selling-product-row-last {
-  border-bottom: none;
-}
-
-.best-selling-product-grand-total {
-  margin-top: 14px;
-  padding-top: 8px;
+.best-selling-product-table tfoot td {
+  padding-top: 7px;
   border-top: 2px solid #111827;
   font-weight: 700;
   font-size: 12px;
 }
 
-.best-selling-product-total-label {
-  grid-column: 1 / 5;
+.total-label-cell {
   color: #111827;
 }
 
-.sales-text-right {
+.text-right {
   text-align: right;
 }
 
-.sales-text-accent {
-  color: var(--sales-accent-color);
+.text-accent {
+  color: #1d4ed8;
+}
+
+.col-rank {
+  width: 54px;
+}
+
+.col-code {
+  width: 110px;
+}
+
+.col-name {
+  width: auto;
+}
+
+.col-unit {
+  width: 80px;
+}
+
+.col-qty {
+  width: 130px;
+}
+
+.col-total {
+  width: 160px;
 }
 
 @page {
@@ -187,15 +193,19 @@
     width: 100% !important;
     min-height: calc(210mm - 20mm) !important;
     height: auto !important;
-    overflow: visible !important;
     padding: 0 !important;
     border: none !important;
     border-radius: 0 !important;
     box-shadow: none !important;
-    display: block !important;
+    background: #ffffff !important;
   }
 
-  .sales-page-break {
+  .best-selling-product-print-sheet {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .best-selling-page-break {
     display: block !important;
     height: 0 !important;
     margin: 0 !important;
@@ -203,35 +213,38 @@
     break-after: page !important;
   }
 
-  .best-selling-product-print-paper-content {
-    min-width: 0 !important;
-    min-height: calc(210mm - 20mm) !important;
-    height: auto !important;
-    overflow: visible !important;
-    padding: 0 !important;
-    font-size: var(--sales-print-font-size) !important;
-    line-height: var(--sales-print-line-height) !important;
-  }
-
-  .best-selling-product-print-page {
-    height: auto !important;
-    min-height: calc(210mm - 20mm) !important;
-    overflow: visible !important;
-    box-sizing: border-box !important;
-  }
-
+  .best-selling-product-print-paper-content,
+  .best-selling-product-print-page,
   .best-selling-product-print-paper-single,
-  .best-selling-product-print-paper-single .best-selling-product-print-paper-content,
-  .best-selling-product-print-paper-single .best-selling-product-print-page {
-    height: auto !important;
+  .best-selling-product-print-paper-single .best-selling-product-print-paper-content {
     min-height: calc(210mm - 20mm) !important;
+    height: auto !important;
+    padding: 0 !important;
     overflow: visible !important;
   }
 
   .best-selling-product-page-header,
-  .best-selling-product-column-header,
-  .best-selling-product-row,
-  .best-selling-product-grand-total {
+  .best-selling-product-table,
+  .best-selling-product-table thead,
+  .best-selling-product-table tbody,
+  .best-selling-product-table tfoot,
+  .best-selling-product-table tr {
     page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .best-selling-product-table thead {
+    display: table-header-group;
+  }
+
+  .best-selling-product-title {
+    font-size: 12px !important;
+  }
+
+  .best-selling-product-table th,
+  .best-selling-product-table td {
+    padding: 3px 5px !important;
+    font-size: 10px !important;
+    line-height: 1.2 !important;
   }
 }

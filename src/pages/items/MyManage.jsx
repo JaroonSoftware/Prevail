@@ -185,8 +185,8 @@ const ItemsManage = () => {
           </Form.Item>
         </Col>
         <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={4}>
-          <Form.Item label="ราคาขาย" name="price">
-            <Input placeholder="กรอกราคาขาย" />
+          <Form.Item label="ราคาขาย (สำหรับสร้างแคตตาล็อค)" name="price">
+            <Input placeholder="กรอกราคาขายสำหรับสร้างแคตตาล็อค" />
           </Form.Item>
         </Col>
         <Col xs={24} sm={24} md={4} lg={4}>

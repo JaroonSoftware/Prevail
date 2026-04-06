@@ -11,7 +11,7 @@ import {
   Empty,
 } from "antd";
 import {
-  BarChartOutlined,
+  TrophyOutlined,
   SearchOutlined,
   ClearOutlined,
   PrinterOutlined,
@@ -161,7 +161,7 @@ const BestSellingProductReport = () => {
               <div>
                 <Typography.Title className="m-0 !text-zinc-800" level={3}>
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                    <BarChartOutlined style={{ fontSize: "1.4rem", verticalAlign: "middle" }} />
+                    <TrophyOutlined style={{ fontSize: "1.4rem", verticalAlign: "middle" }} />
                     <span>{BEST_SELLING_REPORT_TITLE}</span>
                   </span>
                 </Typography.Title>

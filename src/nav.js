@@ -1,4 +1,12 @@
-import { FileTextFilled, ReconciliationFilled, AppstoreAddOutlined, BarcodeOutlined, BarChartOutlined } from "@ant-design/icons";
+import {
+  FileTextFilled,
+  ReconciliationFilled,
+  AppstoreAddOutlined,
+  BarcodeOutlined,
+  BarChartOutlined,
+  TrophyOutlined,
+  TeamOutlined,
+} from "@ant-design/icons";
 import { TbReportMoney } from "react-icons/tb";
 import { RiTeamFill } from "react-icons/ri";
 import { MdRamenDining } from "react-icons/md";
@@ -73,12 +81,12 @@ let _nav = [
   },
   {
     title: "รายงานยอดขายแยกตามสินค้าขายดี",
-    icon: <BarChartOutlined className="nav-ico" />,
+    icon: <TrophyOutlined className="nav-ico" />,
     to: "/best-selling-product-report",
   },
   {
     title: "รายงานยอดขายตามลูกค้า",
-    icon: <BarChartOutlined className="nav-ico" />,
+    icon: <TeamOutlined className="nav-ico" />,
     to: "/so-by-customer-report",
   },
   {

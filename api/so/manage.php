@@ -56,12 +56,13 @@ try {
         // $detail = $detail;  
         foreach ($detail as $ind => $val) {
             $val = (object)$val;
+            $vat = trim((string)($val->vat ?? "")) === "" ? 0 : (int)$val->vat;
             $stmt->bindParam(":socode", $socode, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
             $stmt->bindParam(":qty", $val->qty, PDO::PARAM_STR);
             $stmt->bindParam(":price", $val->price, PDO::PARAM_INT);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
-            $stmt->bindParam(":vat", $val->vat, PDO::PARAM_INT);
+            $stmt->bindValue(":vat", $vat, PDO::PARAM_INT);
             if (!$stmt->execute()) {
                 $error = $conn->errorInfo();
                 throw new PDOException("Insert data error => $error");
@@ -132,12 +133,13 @@ try {
         // $detail = $detail;  
         foreach ($detail as $ind => $val) {
             $val = (object)$val;
+            $vat = trim((string)($val->vat ?? "")) === "" ? 0 : (int)$val->vat;
             $stmt->bindParam(":socode", $header->socode, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
             $stmt->bindParam(":qty", $val->qty, PDO::PARAM_STR);
             $stmt->bindParam(":price", $val->price, PDO::PARAM_INT);
-            $stmt->bindParam(":vat", $val->vat, PDO::PARAM_INT);
+            $stmt->bindValue(":vat", $vat, PDO::PARAM_INT);
             if (!$stmt->execute()) {
                 $error = $conn->errorInfo();
                 throw new PDOException("Insert data error => $error");

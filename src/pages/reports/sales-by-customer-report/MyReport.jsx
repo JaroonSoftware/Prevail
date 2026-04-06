@@ -12,7 +12,7 @@ import {
   Empty,
 } from "antd";
 import {
-  BarChartOutlined,
+  TeamOutlined,
   SearchOutlined,
   ClearOutlined,
   PrinterOutlined,
@@ -219,7 +219,7 @@ const SalesByCustomerReport = () => {
               <div>
                 <Typography.Title className="m-0 !text-zinc-800" level={3}>
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                    <BarChartOutlined style={{ fontSize: "1.4rem", verticalAlign: "middle" }} />
+                    <TeamOutlined style={{ fontSize: "1.4rem", verticalAlign: "middle" }} />
                     <span>{reportTitle}</span>
                   </span>
                 </Typography.Title>
