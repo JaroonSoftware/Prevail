@@ -21,6 +21,7 @@ import {
   EditOutlined,
   SearchOutlined,
   ClearOutlined,
+  PrinterOutlined,
 } from "@ant-design/icons";
 import { GiFruitBowl } from "react-icons/gi";
 import dayjs from "dayjs";
@@ -250,6 +251,18 @@ const FruitReport = () => {
             onClick={() => handleSearch()}
           >
             Refresh
+          </Button>
+          <Button
+            size="small"
+            className="bn-action bn-center bn-primary-outline justify-center"
+            icon={<PrinterOutlined style={{ fontSize: ".9rem" }} />}
+            onClick={() => {
+              const url = `${window.location.origin}/fruit-report-print`;
+              const newWindow = window.open("", url, url);
+              newWindow.location.href = url;
+            }}
+          >
+            Print Report
           </Button>
         </Flex>
       </Col>

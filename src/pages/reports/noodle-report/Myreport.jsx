@@ -21,6 +21,7 @@ import {
   EditOutlined,
   SearchOutlined,
   ClearOutlined,
+  PrinterOutlined,
 } from "@ant-design/icons";
 import { MdRamenDining } from "react-icons/md";
 import dayjs from "dayjs";
@@ -254,6 +255,18 @@ const NoodleReport = () => {
             onClick={() => handleSearch()}
           >
             Refresh
+          </Button>
+          <Button
+            size="small"
+            className="bn-action bn-center bn-primary-outline justify-center"
+            icon={<PrinterOutlined style={{ fontSize: ".9rem" }} />}
+            onClick={() => {
+              const url = `${window.location.origin}/noodle-report-print`;
+              const newWindow = window.open("", url, url);
+              newWindow.location.href = url;
+            }}
+          >
+            Print Report
           </Button>
         </Flex>
       </Col>

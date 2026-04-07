@@ -5,6 +5,8 @@ import ReceiptPrintPreview from "./receipt/ReceiptPrintPreview";
 import DeliveryPrintPreview from "./delivery/DeliveryPrintPreview";
 import SOPrintPreview from "./so/SOPrintPreview";
 import DryReportPrintPreview from "./dry-report/DryReportPrintPreview";
+import FruitReportPrintPreview from "./fruit-report/FruitReportPrintPreview";
+import NoodleReportPrintPreview from "./noodle-report/NoodleReportPrintPreview";
 import SalesByProductPrintPreview from "./sales-by-product-report/MyPrintPreview";
 import SalesByCustomerPrintPreview from "./sales-by-customer-report/MyPrintPreview";
 import BestSellingProductPrintPreview from "./best-selling-product-report/MyPrintPreview";
@@ -17,6 +19,8 @@ export {
   DeliveryPrintPreview,
   SOPrintPreview,
   DryReportPrintPreview,
+  FruitReportPrintPreview,
+  NoodleReportPrintPreview,
   SalesByProductPrintPreview,
   SalesByCustomerPrintPreview,
   BestSellingProductPrintPreview
