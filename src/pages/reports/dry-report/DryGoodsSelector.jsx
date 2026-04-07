@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Card,
   Table,
@@ -12,7 +12,6 @@ import {
   Form,
   Row,
   Space,
-  Input,
   DatePicker,
 } from "antd";
 import { BsUiChecks } from "react-icons/bs";
@@ -21,6 +20,7 @@ import {
   EditOutlined,
   SearchOutlined,
   ClearOutlined,
+  PrinterOutlined,
 } from "@ant-design/icons";
 import { GiGrain } from "react-icons/gi";
 import dayjs from "dayjs";
@@ -52,7 +52,7 @@ const DryGoodsSelector = () => {
     return ignoreLoading;
   };
 
-  const getData = (data) => {
+  const getData = useCallback((data) => {
     rpservice
       .getDryGoods(data, { ignoreLoading: getIgnoreLoading() })
       .then((res) => {
@@ -64,9 +64,9 @@ const DryGoodsSelector = () => {
         console.log(err);
         message.error("Request error!");
       });
-  };
+  }, []);
 
-  const buildSearchPayload = (values = {}) => {
+  const buildSearchPayload = useCallback((values = {}) => {
     const data = { ...values };
     if (!!data?.sodate) {
       const arr = data?.sodate.map((m) => dayjs(m).format("YYYY-MM-DD"));
@@ -75,9 +75,9 @@ const DryGoodsSelector = () => {
     }
     delete data.sodate;
     return data;
-  };
+  }, []);
 
-  const savePageState = (searchValues) => {
+  const savePageState = useCallback((searchValues) => {
     saveMyAccessSearchCookie(
       PAGE_COOKIE_KEY,
       {
@@ -85,23 +85,23 @@ const DryGoodsSelector = () => {
       },
       7
     );
-  };
+  }, [PAGE_COOKIE_KEY]);
 
-  const handleSearch = (forcedValues = null) => {
+  const handleSearch = useCallback((forcedValues = null) => {
     const values = forcedValues ?? form.getFieldsValue(true);
     savePageState(values);
     const payload = buildSearchPayload(values);
 
     getData(payload);
-  };
+  }, [buildSearchPayload, form, getData, savePageState]);
 
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
     clearMyAccessSearchCookie(PAGE_COOKIE_KEY);
     form.resetFields();
     handleSearch({});
-  };
+  }, [PAGE_COOKIE_KEY, form, handleSearch]);
 
-  const init = async () => {
+  const init = useCallback(async () => {
     const restored = loadMyAccessSearchCookie(PAGE_COOKIE_KEY);
 
     if (restored?.searchValues) {
@@ -110,7 +110,7 @@ const DryGoodsSelector = () => {
     }
 
     return {};
-  };
+  }, [PAGE_COOKIE_KEY, form]);
 
   useEffect(() => {
     (async () => {
@@ -121,7 +121,7 @@ const DryGoodsSelector = () => {
     return async () => {
       //console.clear();
     };
-  }, []);
+  }, [handleSearch, init]);
 
   const FormSearch = (
     <Collapse
@@ -218,13 +218,12 @@ const DryGoodsSelector = () => {
     />
   );
 
-  const handleOpen = (value) => {
+  const handleOpen = useCallback((value) => {
     setSelected(value);
-    // console.log(value);
     setShow(true);
-  };
+  }, []);
 
-  const handleConfirmed = (v) => {
+  const handleConfirmed = useCallback((v) => {
     rpservice
       .setDryGoods(v, { ignoreLoading: getIgnoreLoading() })
       .then((res) => {
@@ -236,11 +235,7 @@ const DryGoodsSelector = () => {
         console.log(err);
         message.error("Request error!");
       });
-
-    // if( typeof value === 'function'){
-    //     value( v );
-    // }
-  };
+  }, [getData]);
 
   const TitleTable = (
     <Flex className="width-100" align="center">
@@ -262,6 +257,18 @@ const DryGoodsSelector = () => {
         <Flex gap={4} justify="end">
           <Button
             size="small"
+            className="bn-action bn-center bn-primary-outline justify-center"
+            icon={<PrinterOutlined style={{ fontSize: ".9rem" }} />}
+            onClick={() => {
+            const url = `${window.location.origin}/dry-report-print`;
+            const newWindow = window.open('', url, url);
+            newWindow.location.href = url;
+            }}
+          >
+            Print Report
+          </Button>
+          <Button
+            size="small"
             className="bn-action bn-center bn-primary justify-center"
             icon={<ReloadOutlined style={{ fontSize: ".9rem" }} />}
             onClick={() => handleSearch()}
@@ -274,7 +281,7 @@ const DryGoodsSelector = () => {
   );
 
   // ปุ่มเช็คลิสต์สำเร็จ ในคอลัมน์ "ตัวเลือก"
-  const handleCheck = (record) => {
+  const handleCheck = useCallback((record) => {
     return (
       <Button
         className="bt-icon bn-success-outline"
@@ -288,13 +295,14 @@ const DryGoodsSelector = () => {
         onClick={() => handleOpen(record)}
       />
     );
-  };
-  const handleSelectChange = () => {};
+  }, [handleOpen]);
+
+  const handleSelectChange = useCallback(() => {}, []);
 
   // สร้างคอลัมน์จาก model (ต้องส่ง handleCheck ให้ตรงชื่อ)
-  const columnDefs = React.useMemo(
+  const columnDefs = useMemo(
     () => columns({ handleCheck, handleSelectChange }),
-    []
+    [handleCheck, handleSelectChange]
   );
 
   return (

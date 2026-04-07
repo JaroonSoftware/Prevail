@@ -1,6 +1,5 @@
-import { Tag, Typography } from "antd";
+import { Typography } from "antd";
 import dayjs from "dayjs";
-import { IoMdTime } from "react-icons/io";
 import { formatMoney } from "../../../utils/util";
 
 export const columns = ({ handleCheck, handleSelectChange }) => [

@@ -4,7 +4,7 @@ import BLPrintPreview from "./billing_note/BLPrintPreview";
 import ReceiptPrintPreview from "./receipt/ReceiptPrintPreview";
 import DeliveryPrintPreview from "./delivery/DeliveryPrintPreview";
 import SOPrintPreview from "./so/SOPrintPreview";
-import DryReportPrintPreview from "./dry-report/SOPrintPreview";
+import DryReportPrintPreview from "./dry-report/DryReportPrintPreview";
 import SalesByProductPrintPreview from "./sales-by-product-report/MyPrintPreview";
 import SalesByCustomerPrintPreview from "./sales-by-customer-report/MyPrintPreview";
 import BestSellingProductPrintPreview from "./best-selling-product-report/MyPrintPreview";

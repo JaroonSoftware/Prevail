@@ -11,6 +11,7 @@ export const PrintRouter = (<>
   <Route path="/re-print/:code" element={<ReceiptPrintPreview />} />
   <Route path="/dn-print/:code" element={<DeliveryPrintPreview />} />
   <Route path="/so-print/:code" element={<SOPrintPreview />} />
+  <Route path="/dry-report-print" element={<DryReportPrintPreview />} />
   <Route path="/dry-report-print/:code" element={<DryReportPrintPreview />} />
   <Route path="/sales-by-product-print" element={<SalesByProductPrintPreview />} />
   <Route path="/sales-by-customer-print" element={<SalesByCustomerPrintPreview />} />
