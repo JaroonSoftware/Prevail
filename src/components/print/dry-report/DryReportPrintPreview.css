@@ -7,6 +7,8 @@
   --dry-surface: #fffdf8;
   --dry-surface-2: #f6f1e8;
   --dry-page-shadow: 0 24px 48px rgba(20, 33, 61, 0.16);
+  --dry-a4-preview-width: min(calc(100vw - 48px), 1123px);
+  --dry-a4-preview-height: calc(var(--dry-a4-preview-width) * 210 / 297);
   min-height: 100vh;
   padding: 24px;
   box-sizing: border-box;
@@ -16,7 +18,7 @@
 }
 
 .dry-report-toolbar {
-  width: calc(297mm - 20mm);
+  width: var(--dry-a4-preview-width);
   max-width: 100%;
   margin: 0 auto 18px;
   padding: 18px 22px;
@@ -72,16 +74,18 @@
 }
 
 .dry-report-preview-shell {
-  width: fit-content;
+  width: var(--dry-a4-preview-width);
+  max-width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 18px;
 }
 
 .dry-report-paper {
-  width: calc(297mm - 20mm);
-  min-height: calc(210mm - 20mm);
+  width: var(--dry-a4-preview-width);
+  min-height: var(--dry-a4-preview-height);
   padding: 16px;
   box-sizing: border-box;
   border: 1px solid var(--dry-border);
@@ -91,8 +95,8 @@
 }
 
 .dry-report-paper-content {
-  min-width: 1180px;
-  min-height: calc(210mm - 52mm);
+  width: 100%;
+  min-height: calc(var(--dry-a4-preview-height) - 32px);
   padding: 24px 26px;
   box-sizing: border-box;
   border: 1px solid rgba(20, 33, 61, 0.06);
@@ -376,6 +380,7 @@
 @media (max-width: 1024px) {
   .dry-report-print-screen {
     padding: 14px;
+    --dry-a4-preview-width: calc(100vw - 28px);
   }
 
   .dry-report-toolbar {

@@ -257,6 +257,14 @@ const DryGoodsSelector = () => {
         <Flex gap={4} justify="end">
           <Button
             size="small"
+            className="bn-action bn-center bn-primary justify-center"
+            icon={<ReloadOutlined style={{ fontSize: ".9rem" }} />}
+            onClick={() => handleSearch()}
+          >
+            Refresh
+          </Button>
+          <Button
+            size="small"
             className="bn-action bn-center bn-primary-outline justify-center"
             icon={<PrinterOutlined style={{ fontSize: ".9rem" }} />}
             onClick={() => {
@@ -266,14 +274,6 @@ const DryGoodsSelector = () => {
             }}
           >
             Print Report
-          </Button>
-          <Button
-            size="small"
-            className="bn-action bn-center bn-primary justify-center"
-            icon={<ReloadOutlined style={{ fontSize: ".9rem" }} />}
-            onClick={() => handleSearch()}
-          >
-            Refresh
           </Button>
         </Flex>
       </Col>

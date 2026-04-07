@@ -17,7 +17,6 @@ import { printColumns } from "./model";
 const rpservice = ReportService();
 const PAGE_COOKIE_KEY = "dry-report";
 const ROWS_PER_PAGE = 16;
-const ROW_HEIGHT = 18;
 
 const formatDateRangeLabel = (value) => {
   if (!Array.isArray(value) || value.length !== 2) {
@@ -150,14 +149,6 @@ export default function DryReportPrintPreview() {
 
   const totalPages = pages.length || 1;
 
-  const padRows = (rows, pageIndex) => {
-    const out = Array.isArray(rows) ? [...rows] : [];
-    for (let i = out.length; i < ROWS_PER_PAGE; i++) {
-      out.push({ _empty: true, key: `empty-${pageIndex}-${i}` });
-    }
-    return out;
-  };
-
   const ContentHead = ({ pageNumber }) => {
     return (
       <div className="dry-report-page-header">
@@ -198,41 +189,6 @@ export default function DryReportPrintPreview() {
     );
   };
 
-  const ContentHead2 = () => {
-    return (
-      <div className="dry-report-meta-grid">
-        <div className="dry-report-meta-card">
-          <div className="dry-report-meta-label">ช่วงวันที่</div>
-          <div className="dry-report-meta-value">{selectedDateLabel}</div>
-        </div>
-        <div className="dry-report-meta-card">
-          <div className="dry-report-meta-label">จำนวนรายการ</div>
-          <div className="dry-report-meta-value">{orderedDetails.length}</div>
-        </div>
-        <div className="dry-report-meta-card">
-          <div className="dry-report-meta-label">จำนวนใบขายสินค้า</div>
-          <div className="dry-report-meta-value">{totalSo}</div>
-        </div>
-        <div className="dry-report-meta-card">
-          <div className="dry-report-meta-label">ยอดรวมจำนวนซื้อ</div>
-          <div className="dry-report-meta-value dry-report-meta-value-accent">
-            {formatMoney(totalQty, 2, 2)}
-          </div>
-        </div>
-        <div className="dry-report-meta-card">
-          <div className="dry-report-meta-label">พิมพ์เมื่อ</div>
-          <div className="dry-report-meta-value">{dayjs().format("DD/MM/YYYY HH:mm:ss")}</div>
-        </div>
-        <div className="dry-report-meta-card">
-          <div className="dry-report-meta-label">พิมพ์โดย</div>
-          <div className="dry-report-meta-value">
-            {userInfo?.firstname} {userInfo?.lastname}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   const ReceiptSummary = () => {
     return (
       <>
@@ -259,48 +215,17 @@ export default function DryReportPrintPreview() {
             </Flex>
           </Table.Summary.Cell>
         </Table.Summary.Row>
-        <Table.Summary.Row className="dnpv-footer">
-          <Table.Summary.Cell colSpan={8} className="!align-top !ps-0 !pe-0">
-            <Flex className="dry-report-footer-box">
-              <Typography.Text className="dry-report-footer-text">
-                <p>รายงานนี้แสดงข้อมูลของแห้งสำหรับฝ่ายจัดซื้อจากเงื่อนไขค้นหาล่าสุด</p>
-                <p>ตรวจสอบจำนวนที่ต้องซื้อก่อนยืนยันการจัดซื้อทุกครั้ง</p>
-              </Typography.Text>
-            </Flex>
-            <Flex className="dry-report-footer-box">
-              <Typography.Text className="dry-report-footer-text">
-                <p>
-                  พิมพ์โดย
-                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                  วันที่ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                  {dayjs().format("DD/MM/YYYY  HH:mm:ss")}
-                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; บันทึกโดย {userInfo?.firstname}{" "}
-                  {userInfo?.lastname}
-                </p>
-              </Typography.Text>
-            </Flex>
-          </Table.Summary.Cell>
-        </Table.Summary.Row>
       </>
     );
   };
 
   const ContentBody = ({ rows, showSummary, pageIndex }) => {
-    const paddedRows = padRows(rows, pageIndex);
     return (
-      <div
-        className="dnpv-table-wrap dry-report-table-wrap"
-        style={{
-          "--dnpv-empty-row-height": `${ROW_HEIGHT}px`,
-          "--dnpv-row-height": `${ROW_HEIGHT}px`,
-        }}
-      >
+      <div className="dnpv-table-wrap dry-report-table-wrap">
         <Table
           className="dnpv-table dry-report-table"
           size="small"
-          dataSource={paddedRows}
+          dataSource={rows}
           columns={printColumns}
           pagination={false}
           rowKey={(rec) => {
@@ -336,7 +261,6 @@ export default function DryReportPrintPreview() {
         <div ref={componentRef}>
           <ContentData>
             <ContentHead pageNumber={1} />
-            <ContentHead2 />
             <Flex justify="center" align="center" style={{ minHeight: 320 }}>
               <Empty description="ไม่พบข้อมูลรายงานของแห้งจากเงื่อนไขล่าสุด" />
             </Flex>
@@ -353,7 +277,6 @@ export default function DryReportPrintPreview() {
             <React.Fragment key={`page-${idx}`}>
               <ContentData>
                 <ContentHead pageNumber={idx + 1} />
-                <ContentHead2 />
                 <ContentBody rows={p.rows} showSummary={isLast} pageIndex={idx} />
               </ContentData>
               {idx < totalPages - 1 && <div className="dry-report-page-break" />}
