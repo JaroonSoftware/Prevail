@@ -192,39 +192,6 @@ export default function PurchaseReportPrintPreview({
     </div>
   );
 
-  const ContentHead2 = () => (
-    <div className="dry-report-meta-grid">
-      <div className="dry-report-meta-card">
-        <div className="dry-report-meta-label">ช่วงวันที่</div>
-        <div className="dry-report-meta-value">{selectedDateLabel}</div>
-      </div>
-      <div className="dry-report-meta-card">
-        <div className="dry-report-meta-label">จำนวนรายการ</div>
-        <div className="dry-report-meta-value">{orderedDetails.length}</div>
-      </div>
-      <div className="dry-report-meta-card">
-        <div className="dry-report-meta-label">จำนวนใบขายสินค้า</div>
-        <div className="dry-report-meta-value">{totalSo}</div>
-      </div>
-      <div className="dry-report-meta-card">
-        <div className="dry-report-meta-label">ยอดรวมจำนวน</div>
-        <div className="dry-report-meta-value dry-report-meta-value-accent">
-          {formatMoney(totalQty, 2, 2)}
-        </div>
-      </div>
-      <div className="dry-report-meta-card">
-        <div className="dry-report-meta-label">พิมพ์เมื่อ</div>
-        <div className="dry-report-meta-value">{dayjs().format("DD/MM/YYYY HH:mm:ss")}</div>
-      </div>
-      <div className="dry-report-meta-card">
-        <div className="dry-report-meta-label">พิมพ์โดย</div>
-        <div className="dry-report-meta-value">
-          {userInfo?.firstname} {userInfo?.lastname}
-        </div>
-      </div>
-    </div>
-  );
-
   const ReceiptSummary = () => (
     <>
       <Table.Summary.Row className="dnpv-footer dry-report-summary-row">
@@ -288,7 +255,6 @@ export default function PurchaseReportPrintPreview({
         <div ref={componentRef}>
           <ContentData>
             <ContentHead pageNumber={1} />
-            <ContentHead2 />
             <Flex justify="center" align="center" style={{ minHeight: 320 }}>
               <Empty description={emptyDescription} />
             </Flex>
@@ -305,7 +271,6 @@ export default function PurchaseReportPrintPreview({
             <React.Fragment key={`page-${idx}`}>
               <ContentData>
                 <ContentHead pageNumber={idx + 1} />
-                <ContentHead2 />
                 <ContentBody rows={page.rows} showSummary={isLast} />
               </ContentData>
               {idx < totalPages - 1 && <div className="dry-report-page-break" aria-hidden="true" />}
