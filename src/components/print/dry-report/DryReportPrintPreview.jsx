@@ -16,7 +16,7 @@ import { printColumns } from "./model";
 
 const rpservice = ReportService();
 const PAGE_COOKIE_KEY = "dry-report";
-const ROWS_PER_PAGE = 16;
+const ROWS_PER_PAGE = 13;
 
 const formatDateRangeLabel = (value) => {
   if (!Array.isArray(value) || value.length !== 2) {

@@ -7,6 +7,10 @@
   --dry-surface: #fffdf8;
   --dry-surface-2: #f6f1e8;
   --dry-page-shadow: 0 24px 48px rgba(20, 33, 61, 0.16);
+  --dry-a4-width-mm: 297mm;
+  --dry-a4-height-mm: 210mm;
+  --dry-a4-print-width: calc(var(--dry-a4-width-mm) - 20mm);
+  --dry-a4-print-height: calc(var(--dry-a4-height-mm) - 20mm);
   --dry-a4-preview-width: min(calc(100vw - 48px), 1123px);
   --dry-a4-preview-height: calc(var(--dry-a4-preview-width) * 210 / 297);
   min-height: 100vh;
@@ -99,8 +103,8 @@
   min-height: calc(var(--dry-a4-preview-height) - 32px);
   padding: 24px 26px;
   box-sizing: border-box;
-  border: 1px solid rgba(20, 33, 61, 0.06);
-  border-radius: 18px;
+  border: none;
+  border-radius: 12px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(252, 248, 241, 0.96) 100%),
     repeating-linear-gradient(
@@ -331,28 +335,39 @@
 
   .dry-report-preview-shell {
     display: block !important;
-    width: 100% !important;
-    margin: 0 !important;
-    gap: 0 !important;
+    width: var(--dry-a4-print-width) !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
   }
 
   .dry-report-paper {
-    width: 100% !important;
-    min-height: calc(210mm - 20mm) !important;
-    padding: 0 !important;
-    border: none !important;
-    border-radius: 0 !important;
-    background: transparent !important;
+    width: var(--dry-a4-print-width) !important;
+    min-height: var(--dry-a4-print-height) !important;
+    padding: 16px !important;
+    border: 1px solid var(--dry-border) !important;
+    border-radius: 24px !important;
+    background: linear-gradient(180deg, #fffdfa 0%, #fff9f0 100%) !important;
     box-shadow: none !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
   }
 
   .dry-report-paper-content {
-    min-width: 0 !important;
-    min-height: calc(210mm - 20mm) !important;
-    padding: 0 !important;
+    width: 100% !important;
+    min-height: calc(var(--dry-a4-print-height) - 32px) !important;
+    padding: 24px 26px !important;
     border: none !important;
-    border-radius: 0 !important;
-    background: #ffffff !important;
+    border-radius: 12px !important;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(252, 248, 241, 0.96) 100%),
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 27px,
+        rgba(20, 33, 61, 0.03) 27px,
+        rgba(20, 33, 61, 0.03) 28px
+      ) !important;
+    box-sizing: border-box !important;
   }
 
   .dry-report-page-break {
