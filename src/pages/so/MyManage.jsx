@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import {
   Button,
+  Checkbox,
   DatePicker,
   Form,
   Input,
@@ -32,6 +33,47 @@ const soservice = SOService();
 
 const gotoFrom = "/sales-order";
 const dateFormat = "DD/MM/YYYY";
+const SO_CREATE_SODATE_STORAGE_KEY = "so-create-latest-sodate";
+
+const loadRememberedCreateSodate = () => {
+  const rawValue = localStorage.getItem(SO_CREATE_SODATE_STORAGE_KEY);
+  if (!rawValue) {
+    return null;
+  }
+
+  try {
+    const parsedValue = JSON.parse(rawValue);
+    const todayKey = dayjs().format("YYYY-MM-DD");
+
+    if (
+      parsedValue?.savedDate !== todayKey ||
+      !parsedValue?.sodate ||
+      !dayjs(parsedValue.sodate).isValid()
+    ) {
+      localStorage.removeItem(SO_CREATE_SODATE_STORAGE_KEY);
+      return null;
+    }
+
+    return parsedValue.sodate;
+  } catch (error) {
+    localStorage.removeItem(SO_CREATE_SODATE_STORAGE_KEY);
+    return null;
+  }
+};
+
+const saveRememberedCreateSodate = (sodate) => {
+  localStorage.setItem(
+    SO_CREATE_SODATE_STORAGE_KEY,
+    JSON.stringify({
+      savedDate: dayjs().format("YYYY-MM-DD"),
+      sodate,
+    })
+  );
+};
+
+const clearRememberedCreateSodate = () => {
+  localStorage.removeItem(SO_CREATE_SODATE_STORAGE_KEY);
+};
 
 function MyManage() {
   const navigate = useNavigate();
@@ -51,6 +93,7 @@ function MyManage() {
   const [listDetail, setListDetail] = useState([]);
 
   const [formDetail, setFormDetail] = useState(soForm);
+  const [rememberCreateSodate, setRememberCreateSodate] = useState(false);
 
   const [unitOption, setUnitOption] = useState([]);
   const [stcodeOption, setStcodeOption] = useState([]);
@@ -82,6 +125,11 @@ function MyManage() {
         // setTimeout( () => {  handleCalculatePrice(head?.valid_price_until, head?.dated_price_until) }, 200);
         // handleChoosedCustomer(head);
       } else {
+        const rememberedSodate = loadRememberedCreateSodate();
+        const defaultSodate = rememberedSodate
+          ? dayjs(rememberedSodate)
+          : dayjs(new Date());
+
         setListDetail([
           {
             _rid: 1,
@@ -104,9 +152,10 @@ function MyManage() {
         const ininteial_value = {
           ...formDetail,
           socode: code,
-          sodate: dayjs(new Date()),
+          sodate: defaultSodate,
           deldate: dayjs(new Date()),
         };
+        setRememberCreateSodate(Boolean(rememberedSodate));
         setFormDetail(ininteial_value);
         form.setFieldsValue(ininteial_value);
         getstcodeList("");
@@ -197,6 +246,7 @@ function MyManage() {
     setFormDetail((state) => ({ ...state, ...customer }));
     form.setFieldsValue({ ...fvalue, ...customer });
     getstcodeList(val?.cuscode);
+    setListDetail([]); // clear item list when change customer
   };
 
   // const handleItemsChoosed = (value) => {
@@ -233,6 +283,13 @@ function MyManage() {
           config?.action !== "create" ? soservice.update : soservice.create;
         actions(parm)
           .then((r) => {
+            if (config?.action === "create") {
+              if (rememberCreateSodate) {
+                saveRememberedCreateSodate(header.sodate);
+              } else {
+                clearRememberedCreateSodate();
+              }
+            }
             handleClose().then((r) => {
               message.success("Request SaleOrder success.");
             });
@@ -678,6 +735,14 @@ function MyManage() {
                             format={dateFormat}
                           />
                         </Form.Item>
+                        {config?.action === "create" && (
+                          <Checkbox
+                            checked={rememberCreateSodate}
+                            onChange={(event) => setRememberCreateSodate(event.target.checked)}
+                          >
+                            จำวันที่ใบขายสินค้าล่าสุดของวันนี้
+                          </Checkbox>
+                        )}
                       </Flex>
                     </Col>
                   </Row>
