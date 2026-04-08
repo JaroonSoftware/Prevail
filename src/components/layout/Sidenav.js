@@ -12,6 +12,7 @@ const Sidenav = () => {
   const authService =  Authenticate();
   const userInfo = authService.getUserInfo();
   const currentUsername = userInfo?.username || userInfo?.userid || "";
+  const currentRole = authService.getType()?.toLowerCase() || "";
   const [search, setSearch] = useState("");
   // const [ waitApprove, setWaitAppreve ] = useState(0);
   // const dispatch = useAppDispatch();
@@ -62,11 +63,13 @@ const Sidenav = () => {
       {/* <Sidebar style={{minWidth:"100%", width:"100%"}} > */}
         <Menu theme="light" mode="inline">
         {filterNav(nav).filter( (item) => {
-            const allowRole = !item.role || !!item?.role?.includes( authService.getType()?.toLowerCase() );
+            const allowRole = !item.role || !!item?.role?.includes(currentRole);
             const allowUsername =
               !item.usernames || item.usernames.includes(currentUsername);
+            const hideForRole =
+              !!item.hiddenRoles?.map((role) => role?.toLowerCase()).includes(currentRole);
 
-            return allowRole && allowUsername;
+            return allowRole && allowUsername && !hideForRole;
           }).map((item, idx) => (
           ( !item?.type ? (
               <MenuItem
