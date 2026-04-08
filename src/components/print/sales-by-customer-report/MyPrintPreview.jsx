@@ -1,6 +1,10 @@
-import React, { Fragment, useCallback, useEffect, useMemo, useState } from "react";
+import React, { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useReactToPrint } from "react-to-print";
 import { Button, Empty, Flex, Spin, Typography, message } from "antd";
-import { LoadingOutlined, PrinterOutlined } from "@ant-design/icons";
+import { LoadingOutlined } from "@ant-design/icons";
+import { PiPrinterFill } from "react-icons/pi";
+import "../delivery/delivery.css";
+import "../dry-report/DryReportPrintPreview.css";
 import "./MyPrint.css";
 
 import ReportService from "../../../service/Report.service";
@@ -9,23 +13,30 @@ import { loadMyAccessSearchCookie } from "../../../utils/myaccessSearchCookie";
 import {
   PAGE_COOKIE_KEY,
   CUSTOMER_REPORT_MODE,
-  CUSTOMER_REPORT_GRID_TEMPLATE,
   formatThaiDate,
   buildSearchPayload,
   buildCustomerSummary,
   buildCustomerTotals,
   buildCustomerReportPages,
   getCustomerReportTitle,
-} from "../../../pages/reports/sales-by-customer-report/reportHelpers";
+} from "./model";
 
 const rpservice = ReportService();
 
 function SalesByCustomerPrintPreview() {
+  const componentRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [listDetail, setListDetail] = useState([]);
   const [searchValues, setSearchValues] = useState({});
   const viewMode = searchValues?.viewMode || CUSTOMER_REPORT_MODE.NORMAL;
   const modeLabel = viewMode === CUSTOMER_REPORT_MODE.RANKING ? "จัดอันดับ" : "ปกติ";
+
+  const handlePrint = useReactToPrint({
+    documentTitle: "Sales By Customer Report",
+    onBeforePrint: () => {},
+    onAfterPrint: () => {},
+    removeAfterPrint: true,
+  });
 
   const fetchData = useCallback((forcedSearchValues = null) => {
     const restored = forcedSearchValues ?? loadMyAccessSearchCookie(PAGE_COOKIE_KEY)?.searchValues ?? {};
@@ -67,35 +78,78 @@ function SalesByCustomerPrintPreview() {
     return `${formatThaiDate(searchValues.sodate[0])} - ${formatThaiDate(searchValues.sodate[1])}`;
   }, [searchValues]);
 
-  const printReport = useCallback(() => {
-    window.print();
-  }, []);
-
-  return (
-    <div
-      className="sales-by-customer-print-screen"
-      style={{ "--sales-grid-template": CUSTOMER_REPORT_GRID_TEMPLATE }}
-    >
-      {loading && <Spin fullscreen indicator={<LoadingOutlined />} />}
-
-      <div className="sales-by-customer-print-toolbar">
-        <Flex gap={8} wrap="wrap">
-          <Button type="primary" icon={<PrinterOutlined />} onClick={printReport}>
-            Print
-          </Button>
-        </Flex>
+  const ContentHead = ({ pageNumber }) => (
+    <div className="dry-report-page-header sales-by-customer-page-header">
+      <div className="dry-report-page-header-top">
+        <div className="dry-report-brand-block">
+          <div className="dry-report-brand-badge">Sales By Customer Report</div>
+          <Flex className="mb-1.5" vertical>
+            <Typography.Text className="dry-report-company" strong>
+              บริษัท พรีเวล อินเตอร์เนชั่นแนล ฟู้ด จำกัด
+            </Typography.Text>
+            <Typography.Text className="dry-report-company-meta">
+              60/3 ถ.กระ ต.ตลาดใหญ่ อ.เมือง จ.ภูเก็ต 83000
+            </Typography.Text>
+            <Typography.Text className="dry-report-company-meta">
+              TEL: 076 641 117, 098 192 9391
+            </Typography.Text>
+            <Typography.Text className="dry-report-company-meta">
+              เลขประจำตัวผู้เสียภาษี 083556101164 สำนักงานใหญ่
+            </Typography.Text>
+          </Flex>
+        </div>
+        <div className="dry-report-title-block">
+          <Typography.Text className="dry-report-title" strong>
+            {reportTitle}
+          </Typography.Text>
+          <Typography.Text className="dry-report-title-subtitle">
+            สรุปยอดขายแยกตามลูกค้าจากใบขายสินค้า | โหมด{modeLabel} | ช่วงวันที่ {selectedDateLabel}
+          </Typography.Text>
+          <Typography.Text className="dry-report-page-counter">
+            หน้า {pageNumber} / {reportPages.length}
+          </Typography.Text>
+        </div>
       </div>
+    </div>
+  );
 
-      <div className="sales-by-customer-print-wrapper">
-        {customerRows.length < 1 && !loading ? (
-          <div className="sales-by-customer-print-paper sales-by-customer-print-paper-single">
-            <div className="sales-by-customer-print-paper-content">
+  const ColumnHeader = () => (
+    <div className="sales-by-customer-grid sales-by-customer-column-header">
+      <div>รหัสลูกค้า</div>
+      <div>ชื่อลูกค้า</div>
+      <div className="sales-text-right">ยอดก่อน VAT</div>
+      <div className="sales-text-right">VAT</div>
+      <div className="sales-text-right">ยอดสุทธิ</div>
+    </div>
+  );
+
+  const GrandTotal = () => (
+    <div className="sales-by-customer-grid sales-by-customer-grand-total">
+      <div className="sales-by-customer-total-label">รวมทั้งหมด</div>
+      <div className="sales-by-customer-total-subtotal sales-text-right">
+        {formatMoney(reportTotals.totalSubtotal, 2, 2)}
+      </div>
+      <div className="sales-by-customer-total-vat sales-text-right">
+        {formatMoney(reportTotals.totalVatAmount, 2, 2)}
+      </div>
+      <div className="sales-by-customer-total-net sales-text-right sales-text-accent">
+        {formatMoney(reportTotals.totalNet, 2, 2)}
+      </div>
+    </div>
+  );
+
+  const PrintablePages = () => {
+    if (!loading && customerRows.length < 1) {
+      return (
+        <div ref={componentRef}>
+          <div className="dry-report-paper">
+            <div className="dry-report-paper-content sales-by-customer-print-page">
+              <ContentHead pageNumber={1} />
               <div className="sales-by-customer-empty-state">
                 <Typography.Title level={4} className="sales-by-customer-empty-title">
                   {reportTitle}
                 </Typography.Title>
                 <Typography.Text type="secondary">โหมด: {modeLabel}</Typography.Text>
-                <br />
                 <Typography.Text type="secondary">
                   ไม่พบข้อมูลจากเงื่อนไขล่าสุดของหน้า Sales By Customer Report
                 </Typography.Text>
@@ -105,70 +159,73 @@ function SalesByCustomerPrintPreview() {
               </div>
             </div>
           </div>
-        ) : (
-          reportPages.map((page, pageIndex) => (
-            <Fragment key={`page-${pageIndex}`}>
-              <div className="sales-by-customer-print-paper sales-by-customer-print-sheet">
-                <div className="sales-by-customer-print-paper-content sales-by-customer-print-page">
-                  <Flex className="sales-by-customer-page-header" justify="space-between" align="flex-start" gap={15}>
-                    <div>
-                      <div className="sales-by-customer-title">{reportTitle}</div>
-                      {/* <div>โหมด: {modeLabel}</div> */}
-                      <div>ช่วงวันที่: {selectedDateLabel}</div>
-                      <div>พิมพ์เมื่อ: {formatThaiDate(new Date())}</div>
-                    </div>
-                    <div className="sales-by-customer-header-right">
-                      <div>หน้า : {pageIndex + 1} / {reportPages.length}</div>
-                      <div>จำนวนลูกค้า : {customerRows.length}</div>
-                      <div>จำนวนใบขายสินค้า : {reportTotals.invoiceCount}</div>
-                    </div>
-                  </Flex>
+        </div>
+      );
+    }
 
-                  <div className="sales-by-customer-grid sales-by-customer-column-header">
-                    <div>รหัสลูกค้า</div>
-                    <div>ชื่อลูกค้า</div>
-                        {/* <div className="sales-text-right">จำนวนบิล</div>
-                        <div className="sales-text-right">จำนวนรวม</div> */}
-                    <div className="sales-text-right">ยอดก่อน VAT</div>
-                    <div className="sales-text-right">VAT</div>
-                    <div className="sales-text-right">ยอดสุทธิ</div>
-                    {/* <div>ขายล่าสุด</div> */}
+    return (
+      <div ref={componentRef}>
+        {reportPages.map((page, pageIndex) => (
+          <Fragment key={`page-${pageIndex}`}>
+            <div className="dry-report-paper">
+              <div className="dry-report-paper-content sales-by-customer-print-page">
+                <ContentHead pageNumber={pageIndex + 1} />
+                <div className="dry-report-table-wrap sales-by-customer-table-wrap">
+                  <ColumnHeader />
+                  <div className="sales-by-customer-page-sections">
+                    {page.rows.map((row, index) => (
+                      <div
+                        key={row.key}
+                        className={`sales-by-customer-grid sales-by-customer-row${
+                          index === page.rows.length - 1 ? " sales-by-customer-row-last" : ""
+                        }`}
+                      >
+                        <div>{row.cuscode || "-"}</div>
+                        <div>{row.cusname || "-"}</div>
+                        <div className="sales-text-right">{formatMoney(row.totalSubtotal, 2, 2)}</div>
+                        <div className="sales-text-right">{formatMoney(row.totalVatAmount, 2, 2)}</div>
+                        <div className="sales-text-right sales-text-accent">
+                          {formatMoney(row.totalNet, 2, 2)}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-
-                  {page.rows.map((row, index) => (
-                    <div
-                      key={row.key}
-                      className={`sales-by-customer-grid sales-by-customer-row${
-                        index === page.rows.length - 1 ? " sales-by-customer-row-last" : ""
-                      }`}
-                    >
-                      <div>{row.cuscode || "-"}</div>
-                      <div>{row.cusname || "-"}</div>
-                      {/* <div className="sales-text-right">{formatMoney(row.invoiceCount, 0, 0)}</div>
-                      <div className="sales-text-right sales-text-accent">{formatMoney(row.totalQty, 2, 2)}</div> */}
-                      <div className="sales-text-right">{formatMoney(row.totalSubtotal, 2, 2)}</div>
-                      <div className="sales-text-right">{formatMoney(row.totalVatAmount, 2, 2)}</div>
-                      <div className="sales-text-right sales-text-accent">{formatMoney(row.totalNet, 2, 2)}</div>
-                      {/* <div>{formatThaiDate(row.lastSaleDate)}</div> */}
-                    </div>
-                  ))}
-
-                  {page.includeGrandTotal && (
-                    <div className="sales-by-customer-grid sales-by-customer-grand-total">
-                      <div className="sales-by-customer-total-label">รวมทั้งหมด</div>
-                      {/* <div className="sales-text-right">{formatMoney(reportTotals.invoiceCount, 0, 0)}</div>
-                      <div className="sales-text-right sales-text-accent">{formatMoney(reportTotals.totalQty, 2, 2)}</div> */}
-                      <div className="sales-text-right">{formatMoney(reportTotals.totalSubtotal, 2, 2)}</div>
-                      <div className="sales-text-right">{formatMoney(reportTotals.totalVatAmount, 2, 2)}</div>
-                      <div className="sales-text-right sales-text-accent">{formatMoney(reportTotals.totalNet, 2, 2)}</div>
-                    </div>
-                  )}
+                  {page.includeGrandTotal && <GrandTotal />}
                 </div>
               </div>
-              {pageIndex < reportPages.length - 1 && <div className="sales-page-break" />}
-            </Fragment>
-          ))
-        )}
+            </div>
+            {pageIndex < reportPages.length - 1 && (
+              <div className="dry-report-page-break" aria-hidden="true" />
+            )}
+          </Fragment>
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    <div className="dry-report-print-screen sales-by-customer-print-screen" id="dnpv">
+      {loading && <Spin fullscreen indicator={<LoadingOutlined />} />}
+
+      <div className="dry-report-toolbar">
+        <div className="dry-report-toolbar-copy">
+          <span className="dry-report-toolbar-kicker">Preview</span>
+          <h1 className="dry-report-toolbar-title">Sales By Customer Print Preview</h1>
+        </div>
+        <Button
+          type="primary"
+          className="dry-report-print-button"
+          onClick={() => {
+            handlePrint(null, () => componentRef.current);
+          }}
+          icon={<PiPrinterFill className="dry-report-print-button-icon" />}
+        >
+          พิมพ์รายงาน
+        </Button>
+      </div>
+
+      <div className="dry-report-preview-shell">
+        <PrintablePages />
       </div>
     </div>
   );

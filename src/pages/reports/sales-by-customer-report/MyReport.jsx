@@ -136,8 +136,10 @@ const SalesByCustomerReport = () => {
   }, [dateRange]);
 
   const printReport = useCallback(() => {
-    const newWindow = window.open("", "_blank");
-    newWindow.location.href = `${window.location.origin}/sales-by-customer-print`;
+
+    const url = `${window.location.origin}/sales-by-customer-print`;
+    const newWindow = window.open('', url, url);
+    newWindow.location.href = url;
   }, []);
 
   return (

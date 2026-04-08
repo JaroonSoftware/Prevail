@@ -124,8 +124,9 @@ const BestSellingProductReport = () => {
   }, [dateRange]);
 
   const printReport = useCallback(() => {
-    const newWindow = window.open("", "_blank");
-    newWindow.location.href = `${window.location.origin}/best-selling-product-print`;
+    const url = `${window.location.origin}/best-selling-product-print`;
+    const newWindow = window.open('', url, url);
+    newWindow.location.href = url;
   }, []);
 
   return (

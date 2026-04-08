@@ -1,90 +1,23 @@
-.sales-by-customer-print-screen {
-  --sales-font-size: 12px;
-  --sales-print-font-size: 10.5px;
-  --sales-line-height: 1.4;
-  --sales-print-line-height: 1.25;
-  --sales-grid-gap: 10px;
-  --sales-row-padding: 5px;
-  --sales-accent-color: #1d4ed8;
-  min-height: 100vh;
-  padding: 20px;
-  box-sizing: border-box;
-  background: #eef2f7;
-}
-
-.sales-by-customer-print-toolbar {
-  width: calc(297mm - 20mm);
-  max-width: 100%;
-  margin: 0 auto 16px;
-  padding: 0;
-  display: flex;
-  justify-content: flex-end;
-  background: transparent;
-  box-shadow: none;
-}
-
-.sales-by-customer-print-wrapper {
-  width: fit-content;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.sales-page-break {
-  display: none;
-}
-
-.sales-by-customer-print-paper {
-  width: calc(297mm - 20mm);
-  height: calc(210mm - 20mm);
-  overflow: hidden;
-  padding: 16px;
-  box-sizing: border-box;
-  border: 1px solid #d9dee7;
-  border-radius: 12px;
-  background: #ffffff;
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
-}
-
-.sales-by-customer-print-sheet {
-  display: block;
-}
-
-.sales-by-customer-print-paper-single {
-  display: block;
-  height: auto;
-  min-height: calc(210mm - 20mm);
-}
-
-.sales-by-customer-print-paper-content {
-  width: 100%;
-  min-width: 940px;
-  height: calc(210mm - 52mm);
-  overflow: hidden;
-  padding: 24px;
-  color: #111827;
-  font-size: var(--sales-font-size);
-  line-height: var(--sales-line-height);
-  box-sizing: border-box;
-  background: #ffffff;
-}
-
 .sales-by-customer-print-page {
-  height: 100%;
-  overflow: hidden;
-  box-sizing: border-box;
+  --sales-grid-template: 116px minmax(260px, 2.8fr) 160px 110px 170px;
+  min-width: 0;
+  color: #1f2937;
 }
 
-.sales-by-customer-print-paper-single .sales-by-customer-print-paper-content,
-.sales-by-customer-print-paper-single .sales-by-customer-print-page {
-  height: auto;
-  min-height: calc(210mm - 52mm);
-  overflow: visible;
+.sales-by-customer-print-screen,
+.sales-by-customer-print-screen * {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
 .sales-by-customer-empty-state {
-  padding: 72px 0;
+  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 48px 0;
   text-align: center;
 }
 
@@ -96,40 +29,47 @@
   margin-top: 24px;
 }
 
-.sales-by-customer-page-header {
-  width: 100%;
+.sales-by-customer-table-wrap {
+  overflow: hidden;
 }
 
-.sales-by-customer-title {
-  font-weight: 700;
-  font-size: 13px;
-}
-
-.sales-by-customer-header-right {
-  text-align: right;
+.sales-by-customer-page-sections {
+  display: flex;
+  flex-direction: column;
 }
 
 .sales-by-customer-grid {
   display: grid;
   grid-template-columns: var(--sales-grid-template);
-  gap: var(--sales-grid-gap);
+  gap: 16px;
   align-items: start;
 }
 
 .sales-by-customer-column-header {
-  margin-top: 16px;
-  padding: 6px 0;
-  border-top: 1px solid #111827;
-  border-bottom: 1px solid #111827;
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(199, 120, 43, 0.28);
+  color: var(--dry-ink);
   font-weight: 700;
-  font-size: 11px;
-  line-height: 1.2;
+  font-size: 11.5px;
+  line-height: 1.25;
+  background: linear-gradient(180deg, #f9efe3 0%, #f6e5d3 100%);
+}
+
+.sales-by-customer-column-header > div,
+.sales-by-customer-row > div,
+.sales-by-customer-grand-total > div {
+  padding-block: 3px;
 }
 
 .sales-by-customer-row {
-  padding: var(--sales-row-padding) 0;
-  border-bottom: 1px dotted #d1d5db;
-  line-height: 1.28;
+  padding: 9px 20px;
+  border-bottom: 1px solid rgba(20, 33, 61, 0.06);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.sales-by-customer-row:nth-child(even) {
+  background: rgba(20, 33, 61, 0.02);
 }
 
 .sales-by-customer-row-last {
@@ -137,16 +77,28 @@
 }
 
 .sales-by-customer-grand-total {
-  margin-top: 14px;
-  padding-top: 8px;
-  border-top: 2px solid #111827;
+  padding: 16px 20px 18px;
+  border-top: 1px dashed var(--dry-border-strong);
+  background: #fffdf9;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .sales-by-customer-total-label {
   grid-column: 1 / 3;
-  color: #111827;
+  color: var(--dry-ink);
+}
+
+.sales-by-customer-total-subtotal {
+  grid-column: 3;
+}
+
+.sales-by-customer-total-vat {
+  grid-column: 4;
+}
+
+.sales-by-customer-total-net {
+  grid-column: 5;
 }
 
 .sales-text-right {
@@ -154,114 +106,59 @@
 }
 
 .sales-text-accent {
-  color: var(--sales-accent-color);
-}
-
-@page {
-  size: A4 landscape;
-  margin: 10mm;
+  color: var(--dry-accent);
 }
 
 @media print {
-  html,
-  body {
-    margin: 0 !important;
-    padding: 0 !important;
-    background: #ffffff !important;
-    overflow: visible !important;
-  }
-
   .sales-by-customer-print-screen {
-    padding: 0 !important;
-    background: #ffffff !important;
+    background: linear-gradient(180deg, #f4efe6 0%, #edf2f7 100%) !important;
   }
 
-  .sales-by-customer-print-toolbar {
-    display: none !important;
-  }
-
-  .sales-by-customer-print-wrapper {
-    display: block !important;
+  .sales-by-customer-print-screen .dry-report-preview-shell {
     width: 100% !important;
-    margin: 0 !important;
-    gap: 0 !important;
   }
 
-  .sales-by-customer-print-paper {
+  .sales-by-customer-print-screen .dry-report-paper {
     width: 100% !important;
-    min-height: calc(210mm - 20mm) !important;
-    height: auto !important;
-    overflow: visible !important;
-    padding: 0 !important;
-    border: none !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    display: block !important;
+    max-width: none !important;
+    background: linear-gradient(180deg, #fffdfa 0%, #fff7eb 100%) !important;
   }
 
-  .sales-by-customer-print-sheet {
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-  }
-
-  .sales-page-break {
-    display: block !important;
-    height: 0 !important;
-    margin: 0 !important;
-    page-break-after: always !important;
-    break-after: page !important;
-  }
-
-  .sales-by-customer-print-paper-content {
-    min-width: 0 !important;
-    min-height: calc(210mm - 20mm) !important;
-    height: auto !important;
-    overflow: visible !important;
-    padding: 0 !important;
-    font-size: var(--sales-print-font-size) !important;
-    line-height: var(--sales-print-line-height) !important;
+  .sales-by-customer-print-screen .dry-report-paper-content {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(252, 248, 241, 0.98) 100%),
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 27px,
+        rgba(20, 33, 61, 0.03) 27px,
+        rgba(20, 33, 61, 0.03) 28px
+      ) !important;
   }
 
   .sales-by-customer-print-page {
-    height: auto !important;
-    min-height: calc(210mm - 20mm) !important;
-    overflow: visible !important;
-    box-sizing: border-box !important;
-  }
-
-  .sales-by-customer-print-paper-single,
-  .sales-by-customer-print-paper-single .sales-by-customer-print-paper-content,
-  .sales-by-customer-print-paper-single .sales-by-customer-print-page {
-    height: auto !important;
-    min-height: calc(210mm - 20mm) !important;
-    overflow: visible !important;
-  }
-
-  .sales-by-customer-page-header,
-  .sales-by-customer-column-header,
-  .sales-by-customer-row,
-  .sales-by-customer-grand-total {
-    page-break-inside: avoid !important;
-  }
-
-  .sales-by-customer-title {
-    font-size: 12px !important;
+    --sales-grid-template: 112px minmax(220px, 2.4fr) 154px 106px 164px;
   }
 
   .sales-by-customer-column-header {
-    margin-top: 12px !important;
-    padding: 5px 0 !important;
-    font-size: 10px !important;
+    padding: 12px 16px !important;
+    font-size: 10.5px !important;
+  }
+
+  .sales-by-customer-column-header > div,
+  .sales-by-customer-row > div,
+  .sales-by-customer-grand-total > div {
+    padding-block: 2px !important;
   }
 
   .sales-by-customer-row {
-    padding: 3px 0 !important;
-    line-height: 1.2 !important;
+    padding: 8px 16px !important;
+    font-size: 10.5px !important;
+    line-height: 1.25 !important;
   }
 
   .sales-by-customer-grand-total {
-    margin-top: 12px !important;
-    padding-top: 6px !important;
+    padding: 14px 16px 16px !important;
     font-size: 11px !important;
   }
 }
