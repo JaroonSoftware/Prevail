@@ -95,9 +95,14 @@ let _nav = [
     to: "/dry-report",
   },
   {
-    title: "รายงานเส้น เต้าหู้ เครื่องแกง",
+    title: "รายงานเส้น เต้าหู้",
     icon: <MdRamenDining  className="nav-ico" />,
     to: "/noodle-report",
+  },
+  {
+    title: "รายงานเครื่องแกง",
+    icon: <MdRamenDining className="nav-ico" />,
+    to: "/curry-paste-report",
   },
   {
     title: "รายงานผลไม้",

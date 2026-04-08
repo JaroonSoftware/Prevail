@@ -6,6 +6,7 @@ import DeliveryPrintPreview from "./delivery/DeliveryPrintPreview";
 import SOPrintPreview from "./so/SOPrintPreview";
 import DryReportPrintPreview from "./dry-report/DryReportPrintPreview";
 import FruitReportPrintPreview from "./fruit-report/FruitReportPrintPreview";
+import CurryPasteReportPrintPreview from "./curry-paste-report/CurryPasteReportPrintPreview";
 import NoodleReportPrintPreview from "./noodle-report/NoodleReportPrintPreview";
 import SalesByProductPrintPreview from "./sales-by-product-report/MyPrintPreview";
 import SalesByCustomerPrintPreview from "./sales-by-customer-report/MyPrintPreview";
@@ -20,6 +21,7 @@ export {
   SOPrintPreview,
   DryReportPrintPreview,
   FruitReportPrintPreview,
+  CurryPasteReportPrintPreview,
   NoodleReportPrintPreview,
   SalesByProductPrintPreview,
   SalesByCustomerPrintPreview,
