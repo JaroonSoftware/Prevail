@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import {
   Card,
   Table,
+  Tabs,
   Typography,
   Flex,
   Col,
@@ -24,6 +25,7 @@ import dayjs from "dayjs";
 
 import { columns } from "./model";
 import ReportService from "../../../service/Report.service";
+import { formatMoney } from "../../../utils/util";
 import {
   saveMyAccessSearchCookie,
   loadMyAccessSearchCookie,
@@ -233,6 +235,107 @@ const CurryPasteReport = () => {
 
   const columnDefs = useMemo(() => columns(), []);
 
+  const productSummaryData = useMemo(() => {
+    const groupedData = listDetail.reduce((accumulator, item) => {
+      const productKey = [item?.stcode || "", item?.stname || "", item?.unit || ""].join("__");
+
+      if (!accumulator[productKey]) {
+        accumulator[productKey] = {
+          key: productKey,
+          stcode: item?.stcode || "-",
+          stname: item?.stname || "-",
+          unit: item?.unit || "-",
+          totalQty: 0,
+          orderCount: 0,
+        };
+      }
+
+      accumulator[productKey].totalQty += Number(item?.qty || 0);
+      accumulator[productKey].orderCount += 1;
+
+      return accumulator;
+    }, {});
+
+    return Object.values(groupedData);
+  }, [listDetail]);
+
+  const productSummaryColumns = useMemo(() => [
+    {
+      title: "ลำดับ",
+      key: "index",
+      width: 60,
+      align: "center",
+      render: (_, __, index) => index + 1,
+    },
+    {
+      title: "รหัสสินค้า",
+      dataIndex: "stcode",
+      key: "stcode",
+      width: 120,
+    },
+    {
+      title: "ชื่อสินค้า",
+      dataIndex: "stname",
+      key: "stname",
+    },
+    {
+      title: "หน่วยสินค้า",
+      dataIndex: "unit",
+      key: "unit",
+      width: 120,
+      align: "center",
+    },
+    {
+      title: "จำนวนรายการ",
+      dataIndex: "orderCount",
+      key: "orderCount",
+      width: 120,
+      align: "right",
+      render: (value) => formatMoney(Number(value || 0), 0),
+    },
+    {
+      title: "ผลรวมจำนวนสั่ง",
+      dataIndex: "totalQty",
+      key: "totalQty",
+      width: 160,
+      align: "right",
+      render: (value) => formatMoney(Number(value || 0), 2, 2),
+    },
+  ], []);
+
+  const tabItems = useMemo(() => [
+    {
+      key: "main-report",
+      label: "ข้อมูลหลัก",
+      children: (
+        <Table
+          size="small"
+          rowKey="key"
+          columns={columnDefs}
+          dataSource={listDetail}
+          pagination={false}
+          scroll={{ x: "max-content" }}
+          locale={{ emptyText: "ไม่มีรายการ" }}
+        />
+      ),
+    },
+    {
+      key: "product-summary",
+      label: "ผลรวมของแต่ละสินค้า",
+      children: (
+        <Table
+          size="small"
+          rowKey="key"
+          columns={productSummaryColumns}
+          dataSource={productSummaryData}
+          pagination={false}
+          scroll={{ x: "max-content" }}
+          locale={{ emptyText: "ไม่มีข้อมูลสรุปสินค้า" }}
+        />
+      ),
+    },
+  ], [columnDefs, listDetail, productSummaryColumns, productSummaryData]);
+
   return (
     <div
       style={{
@@ -257,15 +360,7 @@ const CurryPasteReport = () => {
           }}
           bodyStyle={{ padding: 12 }}
         >
-          <Table
-            size="small"
-            rowKey="key"
-            columns={columnDefs}
-            dataSource={listDetail}
-            pagination={false}
-            scroll={{ x: "max-content" }}
-            locale={{ emptyText: "ไม่มีรายการ" }}
-          />
+          <Tabs defaultActiveKey="main-report" items={tabItems} />
         </Card>
       </Space>
     </div>

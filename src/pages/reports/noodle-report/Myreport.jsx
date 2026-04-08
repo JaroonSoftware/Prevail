@@ -241,7 +241,7 @@ const NoodleReport = () => {
               <MdRamenDining
                 style={{ fontSize: "1.4rem", verticalAlign: "middle" }}
               />
-              <span>รายงานเส้น เต้าหู้ เครื่องแกง</span>
+              <span>รายงานเส้น เต้าหู้</span>
             </span>
           </Typography.Title>
         </Flex>

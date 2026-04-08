@@ -14,9 +14,9 @@ export default function NoodleReportPrintPreview() {
     <PurchaseReportPrintPreview
       documentTitle="Noodle Report"
       toolbarTitle="Noodle Report Print Preview"
-      reportTitle="รายงานเส้น เต้าหู้ เครื่องแกง"
+      reportTitle="รายงานเส้น เต้าหู้"
       reportBadge="Noodle and Tofu Purchase Report"
-      reportSubtitle="เอกสารสรุปรายการเส้น เต้าหู้ และเครื่องแกงสำหรับฝ่ายจัดซื้อ"
+      reportSubtitle="เอกสารสรุปรายการเส้นและเต้าหู้ สำหรับฝ่ายจัดซื้อ"
       emptyDescription="ไม่พบข้อมูลรายงานเส้นจากเงื่อนไขล่าสุด"
       pageCookieKey="noodle-report"
       fetchReport={(payload, config) => reportService.getNoodle(payload, config)}
