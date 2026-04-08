@@ -383,6 +383,33 @@ const MyManage = () => {
     </Row>
   );
 
+  const SectionTop = (
+    <Row
+      gutter={[{ xs: 32, sm: 32, md: 32, lg: 12, xl: 12 }, 8]}
+      className="m-0"
+    >
+      <Col span={12} className="p-0">
+        <Flex gap={4} justify="start">
+          <ButtonBack target={from} />
+        </Flex>
+      </Col>
+      <Col span={12} style={{ paddingInline: 0 }}>
+        <Flex gap={4} justify="end">
+          <Button
+            icon={<SaveFilled style={{ fontSize: "1rem" }} />}
+            type="primary"
+            style={{ width: "9.5rem" }}
+            onClick={() => {
+              handleConfirm();
+            }}
+          >
+            บันทึก
+          </Button>
+        </Flex>
+      </Col>
+    </Row>
+  );
+
   const SectionBottom = (
     <Row
       gutter={[{ xs: 32, sm: 32, md: 32, lg: 12, xl: 12 }, 8]}
@@ -413,6 +440,7 @@ const MyManage = () => {
   return (
     <div className="supplier-manage xs:px-0 sm:px-0 md:px-8 lg:px-8">
       <Space direction="vertical" className="flex gap-2">
+        {SectionTop}
         <Form form={form} layout="vertical" autoComplete="off">
           <Card title={config?.title}>
             <Divider

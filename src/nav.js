@@ -4,6 +4,7 @@ import {
   AppstoreAddOutlined,
   BarcodeOutlined,
   BarChartOutlined,
+  FundProjectionScreenOutlined,
   TrophyOutlined,
   TeamOutlined,
 } from "@ant-design/icons";
@@ -78,6 +79,11 @@ let _nav = [
     title: "รายงานขายแยกตามสินค้า",
     icon: <BarChartOutlined className="nav-ico" />,
     to: "/so-by-product-report",
+  },
+  {
+    title: "รายงานกำไรรายสินค้า แบ่งลูกค้า",
+    icon: <FundProjectionScreenOutlined className="nav-ico" />,
+    to: "/profit-by-product-customer-report",
   },
   {
     title: "รายงานยอดขายแยกตามสินค้าขายดี",

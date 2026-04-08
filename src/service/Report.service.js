@@ -7,6 +7,7 @@ const API_URL = {
   API_GETCURRY: `/reports/curry/search.php`,
   API_GETSALESBYPRODUCT: `/reports/sales-by-product/search.php`,
   API_GETSALESBYCUSTOMER: `/reports/sales-by-product/search.php`,
+  API_GETPROFITBYPRODUCTCUSTOMER: `/reports/profit-by-product-customer/search.php`,
 };
   
 const ReportService = () => { 
@@ -18,6 +19,7 @@ const ReportService = () => {
   const getCurry = (parm = {}, config = {}) => api.post(`${API_URL.API_GETCURRY}`, parm, config);
   const getSalesByProduct = (parm = {}, config = {}) => api.post(`${API_URL.API_GETSALESBYPRODUCT}`, parm, config);
   const getSalesByCustomer = (parm = {}, config = {}) => api.post(`${API_URL.API_GETSALESBYCUSTOMER}`, parm, config);
+  const getProfitByProductCustomer = (parm = {}, config = {}) => api.post(`${API_URL.API_GETPROFITBYPRODUCTCUSTOMER}`, parm, config);
  
 
   return {
@@ -28,6 +30,7 @@ const ReportService = () => {
     getCurry,
     getSalesByProduct,
     getSalesByCustomer,
+    getProfitByProductCustomer,
   };
 };
 

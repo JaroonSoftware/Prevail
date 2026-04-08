@@ -11,6 +11,7 @@ import NoodleReportPrintPreview from "./noodle-report/NoodleReportPrintPreview";
 import SalesByProductPrintPreview from "./sales-by-product-report/MyPrintPreview";
 import SalesByCustomerPrintPreview from "./sales-by-customer-report/MyPrintPreview";
 import BestSellingProductPrintPreview from "./best-selling-product-report/MyPrintPreview";
+import ProfitByProductCustomerPrintPreview from "./profit-by-product-customer-report/MyPrintPreview";
 
 export {
   QuoPrintPreview,
@@ -25,5 +26,6 @@ export {
   NoodleReportPrintPreview,
   SalesByProductPrintPreview,
   SalesByCustomerPrintPreview,
-  BestSellingProductPrintPreview
+  BestSellingProductPrintPreview,
+  ProfitByProductCustomerPrintPreview
 };
