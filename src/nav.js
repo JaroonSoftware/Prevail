@@ -81,9 +81,10 @@ let _nav = [
     to: "/so-by-product-report",
   },
   {
-    title: "รายงานกำไรรายสินค้า แบ่งลูกค้า",
+    title: "รายงานกำไรรายสินค้า แบ่งตามลูกค้า",
     icon: <FundProjectionScreenOutlined className="nav-ico" />,
     to: "/profit-by-product-customer-report",
+    usernames: ["Nextrntt", "Nvdfti", "test"],
   },
   {
     title: "รายงานยอดขายแยกตามสินค้าขายดี",
@@ -104,6 +105,11 @@ let _nav = [
     title: "รายงานเส้น เต้าหู้",
     icon: <MdRamenDining  className="nav-ico" />,
     to: "/noodle-report",
+  },
+  {
+    title: "รายงานของแห้งพิเศษ",
+    icon: <GiGrain className="nav-ico" />,
+    to: "/special-dry-report",
   },
   {
     title: "รายงานเครื่องแกง",

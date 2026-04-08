@@ -10,6 +10,8 @@ import { Authenticate } from '../../service/Authenticate.service.js';
 // import { useAppDispatch } from '../../store/store';
 const Sidenav = () => {
   const authService =  Authenticate();
+  const userInfo = authService.getUserInfo();
+  const currentUsername = userInfo?.username || userInfo?.userid || "";
   const [search, setSearch] = useState("");
   // const [ waitApprove, setWaitAppreve ] = useState(0);
   // const dispatch = useAppDispatch();
@@ -60,7 +62,11 @@ const Sidenav = () => {
       {/* <Sidebar style={{minWidth:"100%", width:"100%"}} > */}
         <Menu theme="light" mode="inline">
         {filterNav(nav).filter( (item) => {
-            return ( !item.role || !!item?.role?.includes( authService.getType()?.toLowerCase() ) );
+            const allowRole = !item.role || !!item?.role?.includes( authService.getType()?.toLowerCase() );
+            const allowUsername =
+              !item.usernames || item.usernames.includes(currentUsername);
+
+            return allowRole && allowUsername;
           }).map((item, idx) => (
           ( !item?.type ? (
               <MenuItem

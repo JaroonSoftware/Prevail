@@ -67,8 +67,8 @@ export  const Authenticate = () => {
     const getUserInfo = () =>{
         const t = sessionStorage.getItem( STORE_KEY.authen);
         if(!t) return null;
-        const { userid, firstname, lastname } = decodeToken(t); 
-        return { userid, firstname, lastname };
+        const { userid, username, firstname, lastname } = decodeToken(t); 
+        return { userid, username: username || userid, firstname, lastname };
     }
 
     const token = getToken();

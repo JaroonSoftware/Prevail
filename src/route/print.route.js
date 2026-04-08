@@ -1,7 +1,7 @@
 import React from 'react'
 import { Route } from 'react-router-dom'
 
-import { QuoPrintPreview,PrintWeightListPrint,BLPrintPreview,ReceiptPrintPreview,DeliveryPrintPreview,SOPrintPreview,DryReportPrintPreview,FruitReportPrintPreview,CurryPasteReportPrintPreview,NoodleReportPrintPreview,SalesByProductPrintPreview,SalesByCustomerPrintPreview,BestSellingProductPrintPreview,ProfitByProductCustomerPrintPreview } from '../components/print'
+import { QuoPrintPreview,PrintWeightListPrint,BLPrintPreview,ReceiptPrintPreview,DeliveryPrintPreview,SOPrintPreview,DryReportPrintPreview,FruitReportPrintPreview,CurryPasteReportPrintPreview,NoodleReportPrintPreview,SpecialDryReportPrintPreview,SalesByProductPrintPreview,SalesByCustomerPrintPreview,BestSellingProductPrintPreview,ProfitByProductCustomerPrintPreview } from '../components/print'
 
 
 export const PrintRouter = (<>
@@ -16,6 +16,7 @@ export const PrintRouter = (<>
   <Route path="/fruit-report-print" element={<FruitReportPrintPreview />} />
   <Route path="/curry-paste-report-print" element={<CurryPasteReportPrintPreview />} />
   <Route path="/noodle-report-print" element={<NoodleReportPrintPreview />} />
+  <Route path="/special-dry-report-print" element={<SpecialDryReportPrintPreview />} />
   <Route path="/sales-by-product-print" element={<SalesByProductPrintPreview />} />
   <Route path="/profit-by-product-customer-print" element={<ProfitByProductCustomerPrintPreview />} />
   <Route path="/sales-by-customer-print" element={<SalesByCustomerPrintPreview />} />
