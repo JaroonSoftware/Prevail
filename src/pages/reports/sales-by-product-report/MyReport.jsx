@@ -200,9 +200,10 @@ const SalesByProductReport = () => {
 
   const printReport = useCallback(() => {
     // window.open(previewUrl, "_blank", "noopener,noreferrer");
+    const url = `${window.location.origin}/sales-by-product-print`;
+    const newWindow = window.open('', url, url);
+    newWindow.location.href = url;
 
-    const newWindow = window.open("", "_blank");
-    newWindow.location.href = `${window.location.origin}/sales-by-product-print`;
   }, []);
 
   return (

@@ -1,7 +1,11 @@
-import React, { Fragment, useCallback, useEffect, useMemo, useState } from "react";
+import React, { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useReactToPrint } from "react-to-print";
 import { Button, Empty, Flex, Spin, Typography, message } from "antd";
-import { LoadingOutlined, PrinterOutlined } from "@ant-design/icons";
+import { LoadingOutlined } from "@ant-design/icons";
+import { PiPrinterFill } from "react-icons/pi";
 import dayjs from "dayjs";
+import "../delivery/delivery.css";
+import "../dry-report/DryReportPrintPreview.css";
 import "./MyPrint.css";
 
 import ReportService from "../../../service/Report.service";
@@ -10,9 +14,8 @@ import { loadMyAccessSearchCookie } from "../../../utils/myaccessSearchCookie";
 
 const rpservice = ReportService();
 const PAGE_COOKIE_KEY = "sales-by-product-report";
-const GRID_TEMPLATE = "110px 120px 120px 1.6fr 90px 70px 110px 70px 120px 130px";
-const PAGE_HEIGHT_ESTIMATE = 742;
-const PAGE_HEADER_ESTIMATE = 82;
+const PAGE_HEIGHT_ESTIMATE = 530;
+const PAGE_HEADER_ESTIMATE = 75;
 const PAGE_COLUMN_HEADER_ESTIMATE = 36;
 const PAGE_TOTAL_ESTIMATE = 44;
 const GROUP_MARGIN_ESTIMATE = 14;
@@ -83,13 +86,19 @@ const estimateGroupTitleHeight = (group) => {
 };
 
 function SalesByProductPrintPreview() {
+  const componentRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [listDetail, setListDetail] = useState([]);
-  const [searchValues, setSearchValues] = useState({});
+
+  const handlePrint = useReactToPrint({
+    documentTitle: "Sales By Product Report",
+    onBeforePrint: () => {},
+    onAfterPrint: () => {},
+    removeAfterPrint: true,
+  });
 
   const fetchData = useCallback((forcedSearchValues = null) => {
     const restored = forcedSearchValues ?? loadMyAccessSearchCookie(PAGE_COOKIE_KEY)?.searchValues ?? {};
-    setSearchValues(restored);
     setLoading(true);
 
     rpservice
@@ -191,19 +200,6 @@ function SalesByProductPrintPreview() {
       ),
     [groupedReport]
   );
-
-  const totalSoCount = useMemo(
-    () => new Set(listDetail.map((item) => item?.socode).filter(Boolean)).size,
-    [listDetail]
-  );
-
-  const selectedDateLabel = useMemo(() => {
-    if (!Array.isArray(searchValues?.sodate) || searchValues.sodate.length !== 2) {
-      return "ทั้งหมด";
-    }
-
-    return `${formatThaiDate(searchValues.sodate[0])} - ${formatThaiDate(searchValues.sodate[1])}`;
-  }, [searchValues]);
 
   const reportPages = useMemo(() => {
     if (groupedReport.length < 1) {
@@ -312,32 +308,143 @@ function SalesByProductPrintPreview() {
     return pages;
   }, [groupedReport]);
 
-  const printReport = useCallback(() => {
-    window.print();
-  }, []);
+  const ContentHead = ({ pageNumber }) => (
+    <>
+      <div className="dry-report-page-header sales-by-product-page-header">
+        <div className="dry-report-page-header-top">
+          <div className="dry-report-brand-block">
+            <div className="dry-report-brand-badge">Sales By Product Report</div>
+            <Flex className="mb-1.5" vertical>
+              <Typography.Text className="dry-report-company" strong>
+                บริษัท พรีเวล อินเตอร์เนชั่นแนล ฟู้ด จำกัด
+              </Typography.Text>
+              <Typography.Text className="dry-report-company-meta">
+                60/3 ถ.กระ ต.ตลาดใหญ่ อ.เมือง จ.ภูเก็ต 83000
+              </Typography.Text>
+              <Typography.Text className="dry-report-company-meta">
+                TEL: 076 641 117, 098 192 9391
+              </Typography.Text>
+              <Typography.Text className="dry-report-company-meta">
+                เลขประจำตัวผู้เสียภาษี 083556101164 สำนักงานใหญ่
+              </Typography.Text>
+            </Flex>
+          </div>
+          <div className="dry-report-title-block">
+            <Typography.Text className="dry-report-title" strong>
+              รายงานขายแยกตามสินค้า
+            </Typography.Text>
+            <Typography.Text className="dry-report-title-subtitle">
+              เอกสารสรุปยอดขายแยกตามสินค้าแบบจัดกลุ่มตามรายการสินค้า
+            </Typography.Text>
+            <Typography.Text className="dry-report-page-counter">
+              หน้า {pageNumber} / {reportPages.length}
+            </Typography.Text>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 
-  return (
-    <div
-      className="sales-by-product-print-screen"
-      style={{ "--sales-grid-template": GRID_TEMPLATE }}
-    >
-      {loading && <Spin fullscreen indicator={<LoadingOutlined />} />}
+  const ColumnHeader = () => (
+    <div className="sales-by-product-grid sales-by-product-column-header">
+      <div>วันที่</div>
+      <div>เลขที่ใบขายสินค้า</div>
+      <div>รหัสลูกค้า</div>
+      <div className="sales-text-right">จำนวน</div>
+      <div>หน่วย</div>
+      <div className="sales-text-right">ราคาต่อหน่วย</div>
+      <div className="sales-text-right">VAT</div>
+      <div className="sales-text-right">รวมก่อน VAT</div>
+      <div className="sales-text-right">ยอดรวมสุทธิ</div>
+    </div>
+  );
 
-      <div className="sales-by-product-print-toolbar">
-        <Flex gap={8} wrap="wrap">
-          {/* <Button icon={<ReloadOutlined />} onClick={() => fetchData()}>
-            โหลดข้อมูลล่าสุด
-          </Button> */}
-          <Button type="primary" icon={<PrinterOutlined />} onClick={printReport}>
-            Print
-          </Button>
-        </Flex>
+  const GroupSection = ({ group, pageIndex }) => (
+    <div className="sales-by-product-group" key={`${pageIndex}-${group.key}`}>
+      <div className="sales-by-product-group-title-row">
+        <div>
+          <Typography.Text className="sales-by-product-group-code" strong>
+            {group.stcode}
+          </Typography.Text>
+          <Typography.Text className="sales-by-product-group-name" strong>
+            {group.stname}
+          </Typography.Text>
+          {group.continuedFromPrevious ? (
+            <Typography.Text className="sales-by-product-group-continued">
+              ต่อจากหน้าก่อน
+            </Typography.Text>
+          ) : null}
+        </div>
+        <Typography.Text className="sales-by-product-group-unit">
+          หน่วย: {group.unit}
+        </Typography.Text>
       </div>
 
-      <div className="sales-by-product-print-wrapper">
-        {groupedReport.length < 1 && !loading ? (
-          <div className="sales-by-product-print-paper sales-by-product-print-paper-single">
-            <div className="sales-by-product-print-paper-content">
+      <div className="sales-by-product-group-body">
+        {group.items.map((item, index) => (
+          <div
+            key={`${group.key}-${item.socode}-${index}`}
+            className={`sales-by-product-grid sales-by-product-row${
+              index === group.items.length - 1 ? " sales-by-product-row-last" : ""
+            }`}
+          >
+            <div>{formatThaiDate(item.sodate)}</div>
+            <div>{item.socode || "-"}</div>
+            <div>{item.cuscode || "-"}</div>
+            <div className="sales-text-right sales-text-accent">
+              {formatMoney(item.qty, 2, 2)}
+            </div>
+            <div>{item.unit || "-"}</div>
+            <div className="sales-text-right">{formatMoney(item.price, 2, 2)}</div>
+            <div className="sales-text-right">{formatMoney(item.vat, 0, 0)}</div>
+            <div className="sales-text-right">{formatMoney(item.lineSubtotal, 2, 2)}</div>
+            <div className="sales-text-right sales-text-accent">
+              {formatMoney(item.lineNetTotal, 2, 2)}
+            </div>
+          </div>
+        ))}
+
+        {group.showSummary && (
+          <div className="sales-by-product-grid sales-by-product-group-summary">
+            <div className="sales-by-product-summary-label">รวม {group.stcode}</div>
+            <div className="sales-by-product-summary-qty sales-text-right sales-text-accent">
+              {formatMoney(group.totalQty, 2, 2)}
+            </div>
+            <div className="sales-by-product-summary-unit">{group.unit}</div>
+            <div className="sales-by-product-summary-subtotal sales-text-right">
+              {formatMoney(group.totalSubtotal, 2, 2)}
+            </div>
+            <div className="sales-by-product-summary-net sales-text-right sales-text-accent">
+              {formatMoney(group.totalNet, 2, 2)}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const GrandTotal = () => (
+    <div className="sales-by-product-grid sales-by-product-grand-total">
+      <div className="sales-by-product-total-label">รวมทั้งหมด</div>
+      <div className="sales-by-product-summary-qty sales-text-right sales-text-accent">
+        {formatMoney(reportTotals.totalQty, 2, 2)}
+      </div>
+      <div className="sales-by-product-summary-subtotal sales-text-right">
+        {formatMoney(reportTotals.totalSubtotal, 2, 2)}
+      </div>
+      <div className="sales-by-product-summary-net sales-text-right sales-text-accent">
+        {formatMoney(reportTotals.totalNet, 2, 2)}
+      </div>
+    </div>
+  );
+
+  const PrintablePages = () => {
+    if (!loading && groupedReport.length < 1) {
+      return (
+        <div ref={componentRef}>
+          <div className="dry-report-paper">
+            <div className="dry-report-paper-content sales-by-product-print-page">
+              <ContentHead pageNumber={1} />
               <div className="sales-by-product-empty-state">
                 <Typography.Title level={4} className="sales-by-product-empty-title">
                   รายงานขายแยกตามสินค้า
@@ -351,107 +458,63 @@ function SalesByProductPrintPreview() {
               </div>
             </div>
           </div>
-        ) : (
-          reportPages.map((page, pageIndex) => (
-            <Fragment key={`page-${pageIndex}`}>
-              <div className="sales-by-product-print-paper sales-by-product-print-sheet">
-                <div className="sales-by-product-print-paper-content sales-by-product-print-page">
-                <Flex className="sales-by-product-page-header" justify="space-between" align="flex-start" gap={15}>
-                  <div>
-                    <div className="sales-by-product-title">รายงานขายแยกตามสินค้า (ใบขายสินค้า)</div>
-                    <div>ช่วงวันที่: {selectedDateLabel}</div>
-                    <div>พิมพ์เมื่อ: {formatThaiDate(new Date())}</div>
-                  </div>
-                  <div className="sales-by-product-header-right">
-                    <div>หน้า : {pageIndex + 1} / {reportPages.length}</div>
-                    <div>จำนวนสินค้า : {groupedReport.length}</div>
-                    <div>จำนวนใบขายสินค้า : {totalSoCount}</div>
-                  </div>
-                </Flex>
+        </div>
+      );
+    }
 
-                <div className="sales-by-product-grid sales-by-product-column-header">
-                  <div>วันที่</div>
-                  <div>เลขที่ใบขายสินค้า</div>
-                  <div>รหัสลูกค้า</div>
-                  {/* <div>ชื่อลูกค้า</div> */}
-                  <div className="sales-text-right">จำนวน</div>
-                  <div>หน่วย</div>
-                  <div className="sales-text-right">ราคาต่อหน่วย</div>
-                  <div className="sales-text-right">VAT</div>
-                  <div className="sales-text-right">รวมก่อน VAT</div>
-                  <div className="sales-text-right">ยอดรวมสุทธิ</div>
-                </div>
-
-                {page.sections.map((group) => (
-                  <div className="sales-by-product-group" key={`${pageIndex}-${group.key}`}>
-                    <div className="sales-by-product-group-title">
-                      {group.stname} / {group.stcode}
-                      {group.continuedFromPrevious ? " (ต่อ)" : ""}
-                    </div>
-
-                    {group.items.map((item, index) => (
-                      <div
-                        key={`${group.key}-${item.socode}-${index}`}
-                        className={`sales-by-product-grid sales-by-product-row${
-                          index === group.items.length - 1 ? " sales-by-product-row-last" : ""
-                        }`}
-                      >
-                        <div>{formatThaiDate(item.sodate)}</div>
-                        <div>{item.socode || "-"}</div>
-                        <div>{item.cuscode || "-"}</div>
-                        {/* <div>{item.cusname || "-"}</div> */}
-                        <div className="sales-text-right sales-text-accent">
-                          {formatMoney(item.qty, 2, 2)}
-                        </div>
-                        <div>{item.unit || "-"}</div>
-                        <div className="sales-text-right">{formatMoney(item.price, 2, 2)}</div>
-                        <div className="sales-text-right">{formatMoney(item.vat, 0, 0)}</div>
-                        <div className="sales-text-right">{formatMoney(item.lineSubtotal, 2, 2)}</div>
-                        <div className="sales-text-right sales-text-accent">
-                          {formatMoney(item.lineNetTotal, 2, 2)}
-                        </div>
-                      </div>
+    return (
+      <div ref={componentRef}>
+        {reportPages.map((page, pageIndex) => (
+          <Fragment key={`page-${pageIndex}`}>
+            <div className="dry-report-paper">
+              <div className="dry-report-paper-content sales-by-product-print-page">
+                <ContentHead pageNumber={pageIndex + 1} />
+                <div className="dry-report-table-wrap sales-by-product-table-wrap">
+                  <ColumnHeader />
+                  <div className="sales-by-product-page-sections">
+                    {page.sections.map((group) => (
+                      <GroupSection group={group} pageIndex={pageIndex} key={`${pageIndex}-${group.key}`} />
                     ))}
-
-                    {group.showSummary && (
-                      <div className="sales-by-product-grid sales-by-product-group-summary">
-                        <div className="sales-by-product-summary-label">รวม {group.stcode}</div>
-                        <div className="sales-text-right sales-text-accent">
-                          {formatMoney(group.totalQty, 2, 2)}
-                        </div>
-                        <div>{group.unit}</div>
-                        <div />
-                        <div />
-                        <div className="sales-text-right">{formatMoney(group.totalSubtotal, 2, 2)}</div>
-                        <div className="sales-text-right sales-text-accent">
-                          {formatMoney(group.totalNet, 2, 2)}
-                        </div>
-                      </div>
-                    )}
                   </div>
-                ))}
-
-                {page.includeGrandTotal && (
-                  <div className="sales-by-product-grid sales-by-product-grand-total">
-                    <div className="sales-by-product-total-label">รวมทั้งหมด</div>
-                    <div className="sales-text-right sales-text-accent">
-                      {formatMoney(reportTotals.totalQty, 2, 2)}
-                    </div>
-                    <div />
-                    <div />
-                    <div />
-                    <div className="sales-text-right">{formatMoney(reportTotals.totalSubtotal, 2, 2)}</div>
-                    <div className="sales-text-right sales-text-accent">
-                      {formatMoney(reportTotals.totalNet, 2, 2)}
-                    </div>
-                  </div>
-                )}
+                  {page.includeGrandTotal && <GrandTotal />}
                 </div>
               </div>
-              {pageIndex < reportPages.length - 1 && <div className="sales-page-break" />}
-            </Fragment>
-          ))
-        )}
+            </div>
+            {pageIndex < reportPages.length - 1 && (
+              <div className="dry-report-page-break" aria-hidden="true" />
+            )}
+          </Fragment>
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    <div
+      className="dry-report-print-screen sales-by-product-print-screen"
+      id="dnpv"
+    >
+      {loading && <Spin fullscreen indicator={<LoadingOutlined />} />}
+
+      <div className="dry-report-toolbar">
+        <div className="dry-report-toolbar-copy">
+          <span className="dry-report-toolbar-kicker">Preview</span>
+          <h1 className="dry-report-toolbar-title">Sales By Product Print Preview</h1>
+        </div>
+        <Button
+          type="primary"
+          className="dry-report-print-button"
+          onClick={() => {
+            handlePrint(null, () => componentRef.current);
+          }}
+          icon={<PiPrinterFill className="dry-report-print-button-icon" />}
+        >
+          พิมพ์รายงาน
+        </Button>
+      </div>
+
+      <div className="dry-report-preview-shell">
+        <PrintablePages />
       </div>
     </div>
   );
