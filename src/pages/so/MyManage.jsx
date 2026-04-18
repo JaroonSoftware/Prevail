@@ -34,9 +34,10 @@ const soservice = SOService();
 const gotoFrom = "/sales-order";
 const dateFormat = "DD/MM/YYYY";
 const SO_CREATE_SODATE_STORAGE_KEY = "so-create-latest-sodate";
+const SO_CREATE_DELDATE_STORAGE_KEY = "so-create-latest-deldate";
 
-const loadRememberedCreateSodate = () => {
-  const rawValue = localStorage.getItem(SO_CREATE_SODATE_STORAGE_KEY);
+const loadRememberedCreateDate = (storageKey, fieldName) => {
+  const rawValue = localStorage.getItem(storageKey);
   if (!rawValue) {
     return null;
   }
@@ -47,32 +48,48 @@ const loadRememberedCreateSodate = () => {
 
     if (
       parsedValue?.savedDate !== todayKey ||
-      !parsedValue?.sodate ||
-      !dayjs(parsedValue.sodate).isValid()
+      !parsedValue?.[fieldName] ||
+      !dayjs(parsedValue[fieldName]).isValid()
     ) {
-      localStorage.removeItem(SO_CREATE_SODATE_STORAGE_KEY);
+      localStorage.removeItem(storageKey);
       return null;
     }
 
-    return parsedValue.sodate;
+    return parsedValue[fieldName];
   } catch (error) {
-    localStorage.removeItem(SO_CREATE_SODATE_STORAGE_KEY);
+    localStorage.removeItem(storageKey);
     return null;
   }
 };
 
-const saveRememberedCreateSodate = (sodate) => {
+const loadRememberedCreateSodate = () =>
+  loadRememberedCreateDate(SO_CREATE_SODATE_STORAGE_KEY, "sodate");
+
+const loadRememberedCreateDeldate = () =>
+  loadRememberedCreateDate(SO_CREATE_DELDATE_STORAGE_KEY, "deldate");
+
+const saveRememberedCreateDate = (storageKey, fieldName, value) => {
   localStorage.setItem(
-    SO_CREATE_SODATE_STORAGE_KEY,
+    storageKey,
     JSON.stringify({
       savedDate: dayjs().format("YYYY-MM-DD"),
-      sodate,
+      [fieldName]: value,
     })
   );
 };
 
+const saveRememberedCreateSodate = (sodate) =>
+  saveRememberedCreateDate(SO_CREATE_SODATE_STORAGE_KEY, "sodate", sodate);
+
+const saveRememberedCreateDeldate = (deldate) =>
+  saveRememberedCreateDate(SO_CREATE_DELDATE_STORAGE_KEY, "deldate", deldate);
+
 const clearRememberedCreateSodate = () => {
   localStorage.removeItem(SO_CREATE_SODATE_STORAGE_KEY);
+};
+
+const clearRememberedCreateDeldate = () => {
+  localStorage.removeItem(SO_CREATE_DELDATE_STORAGE_KEY);
 };
 
 function MyManage() {
@@ -94,6 +111,7 @@ function MyManage() {
 
   const [formDetail, setFormDetail] = useState(soForm);
   const [rememberCreateSodate, setRememberCreateSodate] = useState(false);
+  const [rememberCreateDeldate, setRememberCreateDeldate] = useState(false);
 
   const [unitOption, setUnitOption] = useState([]);
   const [stcodeOption, setStcodeOption] = useState([]);
@@ -126,8 +144,12 @@ function MyManage() {
         // handleChoosedCustomer(head);
       } else {
         const rememberedSodate = loadRememberedCreateSodate();
+        const rememberedDeldate = loadRememberedCreateDeldate();
         const defaultSodate = rememberedSodate
           ? dayjs(rememberedSodate)
+          : dayjs(new Date());
+        const defaultDeldate = rememberedDeldate
+          ? dayjs(rememberedDeldate)
           : dayjs(new Date());
 
         setListDetail([
@@ -153,9 +175,10 @@ function MyManage() {
           ...formDetail,
           socode: code,
           sodate: defaultSodate,
-          deldate: dayjs(new Date()),
+          deldate: defaultDeldate,
         };
         setRememberCreateSodate(Boolean(rememberedSodate));
+        setRememberCreateDeldate(Boolean(rememberedDeldate));
         setFormDetail(ininteial_value);
         form.setFieldsValue(ininteial_value);
         getstcodeList("");
@@ -288,6 +311,12 @@ function MyManage() {
                 saveRememberedCreateSodate(header.sodate);
               } else {
                 clearRememberedCreateSodate();
+              }
+
+              if (rememberCreateDeldate) {
+                saveRememberedCreateDeldate(header.deldate);
+              } else {
+                clearRememberedCreateDeldate();
               }
             }
             handleClose().then((r) => {
@@ -470,6 +499,16 @@ function MyManage() {
                 format={dateFormat}
               />
             </Form.Item>
+            {config?.action === "create" && (
+              <Checkbox
+                checked={rememberCreateDeldate}
+                onChange={(event) =>
+                  setRememberCreateDeldate(event.target.checked)
+                }
+              >
+                จำวันที่นัดส่งสินค้าล่าสุดของวันนี้
+              </Checkbox>
+            )}
           </Col>
           <Col xs={24} sm={24} md={6} lg={6}>
             <Form.Item name="customer_po" label="PO ลูกค้า" className="!mb-1">
