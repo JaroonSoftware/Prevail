@@ -13,12 +13,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $catalog_code = !empty($catalog_code) ? "and a.catalog_code like '%$catalog_code%'" : "";
     $catalog_name = !empty($catalog_name) ? "and a.catalog_name like '%$catalog_name%'" : "";
+    $active_status = !empty($active_status) && $active_status !== "ALL" ? "and a.active_status like '%$active_status%'" : "";
 
     try {
         $sql = "SELECT a.catalog_code, a.catalog_name,a.active_status FROM `catalog_master` as a
         where 1 = 1
         $catalog_code
         $catalog_name
+        $active_status
         order by a.catalog_code desc";
 
         $stmt = $conn->prepare($sql);

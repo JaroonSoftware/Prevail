@@ -1,9 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card } from "antd";
+import { Card, Checkbox } from "antd";
 import { Collapse, Form, Flex, Row, Col, Space } from "antd";
-import { Input, Button, Table, message, Typography } from "antd";
+import { Input, Button, Table, message, Typography,Select,Badge } from "antd";
 import {
   SearchOutlined,
   ClearOutlined,
@@ -42,14 +42,35 @@ const CatalogAccess = () => {
   const CollapseCatalogSearch = (
     <>
       <Row gutter={[8, 8]}>
-        <Col xs={24} sm={8} md={8} lg={8} xl={8}>
+        {/* <Col xs={24} sm={8} md={8} lg={8} xl={8}>
           <Form.Item label="รหัสแคตตาล๊อก" name="catalog_code">
             <Input placeholder="ใส่รหัส แคตตาล๊อก" />
           </Form.Item>
-        </Col>
+        </Col> */}
         <Col xs={24} sm={8} md={8} lg={8} xl={8}>
           <Form.Item label="ชื่อแคตตาล๊อก" name="catalog_name">
             <Input placeholder="ใส่ชื่อ แคตตาล๊อก" />
+          </Form.Item>
+        </Col>
+        <Col xs={24} sm={8} md={8} lg={8} xl={8}>
+          <Form.Item label="สถานะการใช้งาน" name="active_status">
+            <Select
+                size="large"
+                options={[
+                  {
+                    value: "Y",
+                    label: <Badge status="success" text="เปิดการใช้งาน" />,
+                  },
+                  {
+                    value: "N",
+                    label: <Badge status="error" text="ปิดการใช้งาน" />,
+                  },
+                  {
+                    value: "ALL",
+                    label: <Badge status="default" text="ทั้งหมด" />,
+                  },
+                ]}
+              />         
           </Form.Item>
         </Col>
       </Row>

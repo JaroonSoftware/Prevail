@@ -195,8 +195,9 @@ try {
         }
         $header = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT a.code,a.blcode,a.socode,a.dncode,a.qty,a.stcode, a.price,a.unit,i.stname ";
+        $sql = "SELECT a.code,a.blcode,a.socode,a.dncode,d.dndate,a.qty,a.stcode, a.price,a.unit,i.stname ";
         $sql .= " FROM `bl_detail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
+        $sql .= " inner join `dnmaster` as d on (a.dncode=d.dncode)";
         $sql .= " where a.blcode = :code";
         $sql .= " order by i.seq";
 
