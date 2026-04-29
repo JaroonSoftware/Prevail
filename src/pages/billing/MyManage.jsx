@@ -21,7 +21,6 @@ import {
   InputNumber,
 } from "antd";
 
-import OptionService from "../../service/Options.service";
 import BillingNoteService from "../../service/BillingNote.Service";
 import { SaveFilled, SearchOutlined } from "@ant-design/icons";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
@@ -29,8 +28,8 @@ import { ModalDeliverynoteBilling } from "../../components/modal/delivery-note-f
 
 import {
   DEFALUT_CHECK_INVOICE,
-  columnsParametersEditable,
-  componentsEditable,
+  prodcolumns as groupedDnColumns,
+  detailColumns
 } from "./model";
 
 import dayjs from "dayjs";
@@ -41,7 +40,6 @@ import {TbSquareRoundedX} from "react-icons/tb";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { LuPackageSearch } from "react-icons/lu";
 import { LuPrinter } from "react-icons/lu";
-const opservice = OptionService();
 const blservice = BillingNoteService();
 
 const gotoFrom = "/billing";
@@ -57,6 +55,50 @@ const normalizeBillingDetail = (items = []) => (
     _rowKey: getBillingRowKey(item),
   }))
 );
+
+const groupBillingDetailByDn = (items = []) => {
+  const grouped = items.reduce((collection, item) => {
+    const groupKey = item?.dncode || item?._rowKey;
+
+    if (!groupKey) {
+      return collection;
+    }
+
+    const qty = Number(item?.qty || 0);
+    const price = Number(item?.price || 0);
+    const totalPrice = qty * price;
+    const current = collection[groupKey];
+
+    if (!current) {
+      collection[groupKey] = {
+        _groupRowKey: groupKey,
+        dncode: groupKey,
+        dndate: item?.dndate || null,
+        socodes: item?.socode ? [item.socode] : [],
+        qty,
+        total_price: totalPrice,
+        itemCount: 1,
+        detailRows: [item],
+      };
+      return collection;
+    }
+
+    if (item?.socode && !current.socodes.includes(item.socode)) {
+      current.socodes.push(item.socode);
+    }
+
+    current.qty += qty;
+    current.total_price += totalPrice;
+    current.itemCount += 1;
+    current.detailRows.push(item);
+    return collection;
+  }, {});
+
+  return Object.values(grouped).map((item) => ({
+    ...item,
+    socode: item.socodes.join(", "),
+  }));
+};
 
 function BillingnoteManage() {
   const navigate = useNavigate();
@@ -76,8 +118,6 @@ function BillingnoteManage() {
   const [listDetail, setListDetail] = useState([]);
 
   const [formDetail, setFormDetail] = useState(DEFALUT_CHECK_INVOICE);
-
-  const [unitOption, setUnitOption] = React.useState([]);
 
   const cardStyle = {
     backgroundColor: "#f0f0f0",
@@ -127,11 +167,6 @@ function BillingnoteManage() {
         form.setFieldValue("payment", "เงินสด");
         form.setFieldValue("duedate", dayjs(new Date()));
       }
-      const [unitOprionRes] = await Promise.all([
-        opservice.optionsUnit({ p: "unit-option" }),
-      ]);
-      // console.log(unitOprionRes.data.data)
-      setUnitOption(unitOprionRes.data.data);
     };
 
     initial();
@@ -269,9 +304,9 @@ function BillingnoteManage() {
     newWindow.location.href = `/quo-print/${formDetail.quotcode}`;
   };
 
-  const handleDelete = (rowKey) => {
+  const handleDelete = (dncode) => {
     const itemDetail = [...listDetail];
-    const newData = itemDetail.filter((item) => item?._rowKey !== rowKey);
+    const newData = itemDetail.filter((item) => item?.dncode !== dncode);
     setListDetail([...newData]);
   };
 
@@ -291,9 +326,9 @@ function BillingnoteManage() {
         }
         onClick={() => {
           if (isLockedStatus) return;
-          handleDelete(record?._rowKey);
+          handleDelete(record?.dncode);
         }}
-        disabled={!record?._rowKey || isLockedStatus}
+        disabled={!record?.dncode || isLockedStatus}
         // disabled={!record?.code || config.action !== "create"}
       />
     ) : null;
@@ -322,30 +357,10 @@ function BillingnoteManage() {
     });
   };
 
-  const handleEditCell = (row) => {
-    const newData = (r) => {
-      const itemDetail = [...listDetail];
-      const newData = [...itemDetail];
+  const groupedListDetail = groupBillingDetailByDn(listDetail);
 
-      const ind = newData.findIndex((item) => r?._rowKey === item?._rowKey);
-      if (ind < 0) return itemDetail;
-      const item = newData[ind];
-      newData.splice(ind, 1, {
-        ...item,
-        ...row,
-      });
 
-      handleSummaryPrice();
-      return newData;
-    };
-    // console.log([...newData(row)])
-    setListDetail([...newData(row)]);
-  };
-
-  /** setting column table */
-  const prodcolumns = columnsParametersEditable(handleEditCell, unitOption, {
-    handleRemove,
-  });
+  const prodcolumns = groupedDnColumns({ handleRemove });
 
   const SectionCustomers = (
     <>
@@ -443,8 +458,9 @@ function BillingnoteManage() {
             onClick={() => {
               setOpenProduct(true);
             }}
+            disabled={isLockedStatus}
           >
-            Choose Product
+            เพิ่มใบส่งของ
           </Button>
         </Flex>
       </Col>
@@ -456,26 +472,36 @@ function BillingnoteManage() {
       <Flex className="width-100" vertical gap={4}>
         <Table
           title={() => TitleTable}
-          components={componentsEditable}
-          rowClassName={() => "editable-row"}
           bordered
-          dataSource={listDetail}
+          dataSource={groupedListDetail}
           columns={prodcolumns}
           pagination={false}
-          rowKey="_rowKey"
-          scroll={{ x: "max-content" }}
+          rowKey="_groupRowKey"
+          expandable={{
+            expandedRowRender: (record) => (
+                <Table
+                  bordered
+                  size="small"
+                  pagination={false}
+                  dataSource={record.detailRows}
+                  columns={detailColumns}
+                  rowKey="_rowKey"
+                />
+            ),
+            rowExpandable: (record) => (record?.detailRows || []).length > 0,
+          }}
           locale={{
             emptyText: <span>No data available, please add some data.</span>,
           }}
           summary={(record) => {
             return (
               <>
-                {listDetail.length > 0 && (
+                {groupedListDetail.length > 0 && (
                   <>
                     <Table.Summary.Row>
                       <Table.Summary.Cell
                         index={0}
-                        colSpan={7}
+                        colSpan={4}
                       ></Table.Summary.Cell>
                       <Table.Summary.Cell
                         index={4}
@@ -486,7 +512,7 @@ function BillingnoteManage() {
                       </Table.Summary.Cell>
                       <Table.Summary.Cell
                         className="!pe-4 text-end border-right-0"
-                        style={{ borderRigth: "0px solid" }}
+                        style={{ borderRight: "0px solid" }}
                       >
                         <Typography.Text type="danger">
                           {formatMoney(Number(formDetail?.total_price || 0))}
@@ -497,7 +523,7 @@ function BillingnoteManage() {
                     <Table.Summary.Row>
                       <Table.Summary.Cell
                         index={0}
-                        colSpan={7}
+                        colSpan={4}
                       ></Table.Summary.Cell>
                       <Table.Summary.Cell
                         index={4}
@@ -530,7 +556,7 @@ function BillingnoteManage() {
                     <Table.Summary.Row>
                       <Table.Summary.Cell
                         index={0}
-                        colSpan={7}
+                        colSpan={4}
                       ></Table.Summary.Cell>
                       <Table.Summary.Cell
                         index={4}

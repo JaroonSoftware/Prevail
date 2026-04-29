@@ -118,6 +118,69 @@ export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}
   }, 
 ];
 
+export const detailColumns = [
+    {
+      title: "ลำดับ",
+      key: "__index",
+      width: 80,
+      align: "center",
+      render: (_, __, index) => index + 1,
+    },
+    {
+      title: "เลขที่ SO",
+      dataIndex: "socode",
+      key: "socode",
+      width: 140,
+      align: "center",
+    },
+    {
+      title: "รหัสสินค้า",
+      dataIndex: "stcode",
+      key: "stcode",
+      width: 140,
+      align: "center",
+      ellipsis: true,
+    },
+    {
+      title: "ชื่อสินค้า",
+      dataIndex: "stname",
+      key: "stname",
+      width: 270,
+      align: "left",
+      ellipsis: {
+        showTitle: true,
+      },
+      render: (_, record) => record?.stname || record?.purdetail || "-",
+    },
+    {
+      title: "จำนวน",
+      dataIndex: "qty",
+      key: "qty",
+      width: 100,
+      align: "right",
+      className: "!pe-3",
+      render: (value) => formatMoney(Number(value || 0), 2),
+    },
+    {
+      title: "ราคาขาย",
+      dataIndex: "price",
+      key: "price",
+      width: 110,
+      align: "right",
+      className: "!pe-3",
+      render: (value) => formatMoney(Number(value || 0), 2),
+    },
+    {
+      title: "มูลค่ารวม",
+      key: "total_price",
+      width: 120,
+      align: "right",
+      className: "!pe-3",
+      render: (_, record) =>
+        formatMoney(Number(record?.qty || 0) * Number(record?.price || 0), 2),
+    },
+  ];
+
 export const blViewColumns = [
       {
         title: "ลำดับ",
@@ -209,6 +272,59 @@ export const blViewColumns = [
         },
       },
     ];
+
+export const prodcolumns = ({ handleRemove }) => [
+  {
+    title: "เลขที่ใบส่งของ",
+    dataIndex: "dncode",
+    key: "dncode",
+    width: 160,
+    align: "center",
+  },
+  {
+    title: "วันที่ใบส่งของ",
+    dataIndex: "dndate",
+    key: "dndate",
+    width: 120,
+    align: "center",
+    render: (value) => value ? dayjs(value).format("DD/MM/YY") : "-",
+  },
+  {
+    title: "จำนวนรายการ",
+    dataIndex: "itemCount",
+    key: "itemCount",
+    align: "right",
+    className: "!pe-3",
+    render: (value) => formatMoney(Number(value || 0), 0),
+  },
+  {
+    title: "จำนวนรวม",
+    dataIndex: "qty",
+    key: "qty",
+    width: 140,
+    align: "right",
+    className: "!pe-3",
+    render: (value) => formatMoney(Number(value || 0), 2),
+  },
+  {
+    title: "มูลค่ารวม",
+    dataIndex: "total_price",
+    key: "total_price",
+    width: 160,
+    align: "right",
+    className: "!pe-3",
+    render: (value) => formatMoney(Number(value || 0), 2),
+  },
+  {
+    title: "ลบ",
+    align: "center",
+    key: "operation",
+    dataIndex: "operation",
+    render: (_, record) => handleRemove(record),
+    width: "50px",
+    fixed: "right",
+  },
+];
 
 export const productColumn = ({handleRemove,handleSelectChange}) => [
   {
