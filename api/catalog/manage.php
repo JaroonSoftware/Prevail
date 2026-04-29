@@ -16,6 +16,17 @@ try {
         $_POST = json_decode($rest_json, true);
         extract($_POST, EXTR_OVERWRITE, "_");
 
+        $sql = "SELECT number FROM catalog_code ORDER BY id DESC LIMIT 1 FOR UPDATE";
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) throw new PDOException("Geting data error => {$conn->errorInfo()}");
+        if (!$stmt->execute()) {
+            $error = $conn->errorInfo();
+            throw new PDOException("Geting data error => $error");
+        }
+
+        $catalog_number = (int)$stmt->fetchColumn();
+        $catalog_code = "CL" . sprintf("%04s", $catalog_number + 1);
+
 
         // var_dump($_POST);
 
@@ -26,7 +37,7 @@ try {
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
         $header = (object)$header;
-        $stmt->bindParam(":catalog_code", $header->catalog_code, PDO::PARAM_STR);
+        $stmt->bindParam(":catalog_code", $catalog_code, PDO::PARAM_STR);
         $stmt->bindParam(":catalog_name", $header->catalog_name, PDO::PARAM_STR);
         $stmt->bindParam(":start_date", $header->start_date, PDO::PARAM_STR);
         $stmt->bindParam(":stop_date", $header->stop_date, PDO::PARAM_STR);
@@ -49,7 +60,7 @@ try {
         foreach ($customer as $ind => $val) {
             $val = (object)$val;
 
-            $stmt->bindParam(":catalog_code", $header->catalog_code, PDO::PARAM_STR);
+            $stmt->bindParam(":catalog_code", $catalog_code, PDO::PARAM_STR);
             $stmt->bindParam(":cuscode", $val->cuscode, PDO::PARAM_STR);
             $stmt->bindParam(":updated_date", $val->updated_date, PDO::PARAM_STR);
             $stmt->bindParam(":created_by", $val->created_by, PDO::PARAM_STR);
@@ -70,7 +81,7 @@ try {
         foreach ($detail as $ind => $val) {
             $val = (object)$val;
 
-            $stmt->bindParam(":catalog_code", $header->catalog_code, PDO::PARAM_STR);
+            $stmt->bindParam(":catalog_code", $catalog_code, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
             $stmt->bindParam(":price", $val->price, PDO::PARAM_STR);
 
@@ -87,7 +98,7 @@ try {
         if ($stmt3->execute()) {
             $conn->commit();
             http_response_code(200);
-            echo json_encode(array("data" => array("id" => "ok", 'message' => 'เพิ่ม Catalog สำเร็จ')));
+            echo json_encode(array("data" => array("id" => "ok", "catalog_code" => $catalog_code, 'message' => 'เพิ่ม Catalog สำเร็จ')));
         } else {
             $error = $conn->errorInfo();
             throw new PDOException("Insert data error => $error");
