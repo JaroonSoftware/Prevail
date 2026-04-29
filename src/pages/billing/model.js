@@ -273,7 +273,7 @@ export const blViewColumns = [
       },
     ];
 
-export const prodcolumns = ({ handleRemove }) => [
+export const prodcolumns = ({ handleRemove, handleEdit }) => [
   {
     title: "เลขที่ใบส่งของ",
     dataIndex: "dncode",
@@ -314,6 +314,22 @@ export const prodcolumns = ({ handleRemove }) => [
     align: "right",
     className: "!pe-3",
     render: (value) => formatMoney(Number(value || 0), 2),
+  },
+  {
+    title: "แก้ไข",
+    align: "center",
+    key: "edit-operation",
+    dataIndex: "edit-operation",
+    render: (_, record) => (
+      <Button
+        size="small"
+        className="bn-primary-outline"
+        icon={<EditOutlined />}
+        onClick={() => handleEdit(record)}
+      />
+    ),
+    width: "60px",
+    fixed: "right",
   },
   {
     title: "ลบ",

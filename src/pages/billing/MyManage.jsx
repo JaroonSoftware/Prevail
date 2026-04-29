@@ -22,6 +22,7 @@ import {
 } from "antd";
 
 import BillingNoteService from "../../service/BillingNote.Service";
+import SOService from "../../service/SO.service";
 import { SaveFilled, SearchOutlined } from "@ant-design/icons";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
 import { ModalDeliverynoteBilling } from "../../components/modal/delivery-note-for-billing";
@@ -41,6 +42,7 @@ import { RiDeleteBin5Line } from "react-icons/ri";
 import { LuPackageSearch } from "react-icons/lu";
 import { LuPrinter } from "react-icons/lu";
 const blservice = BillingNoteService();
+const soservice = SOService();
 
 const gotoFrom = "/billing";
 const dateFormat = "DD/MM/YYYY";
@@ -110,6 +112,10 @@ function BillingnoteManage() {
   /** Modal handle */
   const [openCustomers, setOpenCustomers] = useState(false);
   const [openProduct, setOpenProduct] = useState(false);
+  const [openEditItemModal, setOpenEditItemModal] = useState(false);
+  const [editingGroup, setEditingGroup] = useState(null);
+  const [editingItem, setEditingItem] = useState(null);
+  const [savingEditItem, setSavingEditItem] = useState(false);
 
   /** Billing Note state */
   const [blCode, setBLCode] = useState(null);
@@ -118,6 +124,7 @@ function BillingnoteManage() {
   const [listDetail, setListDetail] = useState([]);
 
   const [formDetail, setFormDetail] = useState(DEFALUT_CHECK_INVOICE);
+  const [editItemForm] = Form.useForm();
 
   const cardStyle = {
     backgroundColor: "#f0f0f0",
@@ -334,6 +341,130 @@ function BillingnoteManage() {
     ) : null;
   };
 
+  const handleOpenEditItemModal = (record) => {
+    setEditingGroup(record);
+    setEditingItem(null);
+    editItemForm.resetFields();
+    setOpenEditItemModal(true);
+  };
+
+  const handleCloseEditItemModal = () => {
+    setOpenEditItemModal(false);
+    setEditingGroup(null);
+    setEditingItem(null);
+    editItemForm.resetFields();
+  };
+
+  const handleSelectEditItem = (record) => {
+    setEditingItem(record);
+    editItemForm.setFieldsValue({
+      qty: Number(record?.qty || 0),
+      price: Number(record?.price || 0),
+    });
+  };
+
+  const calculateSoTotalPrice = (detail = []) => (
+    detail.reduce((total, item) => {
+      const qty = Number(item?.qty || 0);
+      const price = Number(item?.price || 0);
+      const vat = Number(item?.vat || 0);
+      return total + qty * price + qty * price * (vat / 100);
+    }, 0)
+  );
+
+  const handleSaveEditItem = async () => {
+    if (!editingItem?.socode || !editingItem?.stcode) {
+      message.warning("ไม่พบรายการใบขายสินค้าที่ต้องการแก้ไข");
+      return;
+    }
+
+    try {
+      const values = await editItemForm.validateFields();
+      const nextQty = Number(values?.qty || 0);
+      const nextPrice = Number(values?.price || 0);
+
+      setSavingEditItem(true);
+
+      const soResponse = await soservice.get(editingItem.socode, { ignoreLoading: true });
+      const { header, detail } = soResponse?.data?.data || {};
+      const soDetail = Array.isArray(detail) ? [...detail] : [];
+
+      const targetIndex = soDetail.findIndex((item) => item?.stcode === editingItem.stcode);
+      if (targetIndex < 0) {
+        throw new Error("ไม่พบรายการสินค้าในใบขายสินค้า");
+      }
+
+      const updatedDetail = soDetail.map((item, index) => (
+        index === targetIndex
+          ? {
+              ...item,
+              qty: nextQty,
+              price: nextPrice,
+            }
+          : item
+      ));
+
+      const updatedHeader = {
+        ...header,
+        total_price: calculateSoTotalPrice(updatedDetail),
+      };
+
+      await soservice.update({
+        header: updatedHeader,
+        detail: updatedDetail,
+      }, { ignoreLoading: true });
+
+      setListDetail((state) => state.map((item) => (
+        item?._rowKey === editingItem._rowKey
+          ? {
+              ...item,
+              qty: nextQty,
+              price: nextPrice,
+            }
+          : item
+      )));
+
+      setEditingGroup((state) => {
+        if (!state) {
+          return state;
+        }
+
+        return {
+          ...state,
+          detailRows: (state.detailRows || []).map((item) => (
+            item?._rowKey === editingItem._rowKey
+              ? {
+                  ...item,
+                  qty: nextQty,
+                  price: nextPrice,
+                }
+              : item
+          )),
+        };
+      });
+
+      setEditingItem((state) => (
+        state
+          ? {
+              ...state,
+              qty: nextQty,
+              price: nextPrice,
+            }
+          : state
+      ));
+
+      message.success("แก้ไขรายการและอัปเดตใบขายสินค้าแล้ว");
+    } catch (error) {
+      if (error?.errorFields) {
+        return;
+      }
+
+      message.error(error?.message || "แก้ไขรายการสินค้าไม่สำเร็จ");
+    } finally {
+      setSavingEditItem(false);
+    }
+  };
+
   const handleCancelBilling = () => {
     Modal.confirm({
       title: "ยืนยันที่จะยกเลิกใบแจ้งหนี้",
@@ -360,7 +491,70 @@ function BillingnoteManage() {
   const groupedListDetail = groupBillingDetailByDn(listDetail);
 
 
-  const prodcolumns = groupedDnColumns({ handleRemove });
+  const prodcolumns = groupedDnColumns({
+    handleRemove,
+    handleEdit: handleOpenEditItemModal,
+  });
+
+  const editItemColumns = [
+    {
+      title: "ลำดับ",
+      key: "__index",
+      width: 70,
+      align: "center",
+      render: (_, __, index) => index + 1,
+    },
+    {
+      title: "เลขที่ SO",
+      dataIndex: "socode",
+      key: "socode",
+      width: 130,
+      align: "center",
+    },
+    {
+      title: "รหัสสินค้า",
+      dataIndex: "stcode",
+      key: "stcode",
+      width: 110,
+      align: "center",
+    },
+    {
+      title: "ชื่อสินค้า",
+      key: "stname",
+      render: (_, record) => record?.stname || record?.purdetail || "-",
+    },
+    {
+      title: "จำนวน",
+      dataIndex: "qty",
+      key: "qty",
+      width: 110,
+      align: "right",
+      render: (value) => formatMoney(Number(value || 0), 2),
+    },
+    {
+      title: "ราคาขาย",
+      dataIndex: "price",
+      key: "price",
+      width: 110,
+      align: "right",
+      render: (value) => formatMoney(Number(value || 0), 2),
+    },
+    {
+      title: "เลือก",
+      key: "edit",
+      width: 80,
+      align: "center",
+      render: (_, record) => (
+        <Button
+          size="small"
+          type={editingItem?._rowKey === record?._rowKey ? "primary" : "default"}
+          onClick={() => handleSelectEditItem(record)}
+        >
+          แก้ไข
+        </Button>
+      ),
+    },
+  ];
 
   const SectionCustomers = (
     <>
@@ -784,6 +978,84 @@ function BillingnoteManage() {
           selected={listDetail}
         ></ModalDeliverynoteBilling>
       )}
+
+      <Modal
+        open={openEditItemModal}
+        title={editingGroup?.dncode ? `แก้ไขรายการใบส่งของ ${editingGroup.dncode}` : "แก้ไขรายการสินค้า"}
+        onCancel={handleCloseEditItemModal}
+        width={960}
+        maskClosable={false}
+        footer={(
+          <Space>
+            <Button onClick={handleCloseEditItemModal}>ปิด</Button>
+            <Button
+              type="primary"
+              onClick={handleSaveEditItem}
+              disabled={!editingItem || isLockedStatus}
+              loading={savingEditItem}
+            >
+              บันทึกการแก้ไข
+            </Button>
+          </Space>
+        )}
+      >
+        <Space direction="vertical" size="middle" style={{ display: "flex" }}>
+          <Table
+            bordered
+            size="small"
+            pagination={false}
+            dataSource={editingGroup?.detailRows || []}
+            columns={editItemColumns}
+            rowKey="_rowKey"
+          />
+
+          <Card size="small" title="แก้ไขทีละรายการ">
+            {editingItem ? (
+              <Form form={editItemForm} layout="vertical">
+                <Row gutter={[12, 12]}>
+                  <Col span={8}>
+                    <Form.Item label="เลขที่ SO">
+                      <Input value={editingItem?.socode || ""} readOnly />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item label="รหัสสินค้า">
+                      <Input value={editingItem?.stcode || ""} readOnly />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item label="ชื่อสินค้า">
+                      <Input value={editingItem?.stname || editingItem?.purdetail || ""} readOnly />
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item
+                      name="qty"
+                      label="จำนวน"
+                      rules={[{ required: true, message: "กรุณาระบุจำนวน" }]}
+                    >
+                      <InputNumber min={0} controls={false} className="width-100 input-40" />
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item
+                      name="price"
+                      label="ราคาขาย"
+                      rules={[{ required: true, message: "กรุณาระบุราคาขาย" }]}
+                    >
+                      <InputNumber min={0} controls={false} className="width-100 input-40" />
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </Form>
+            ) : (
+              <Typography.Text type="secondary">
+                เลือกรายการที่ต้องการแก้ไขจากตารางด้านบนก่อน
+              </Typography.Text>
+            )}
+          </Card>
+        </Space>
+      </Modal>
     </div>
   );
 }
