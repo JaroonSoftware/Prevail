@@ -1,39 +1,41 @@
-/* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, {useEffect, useMemo, useState} from 'react'; 
+import React, {useEffect, useState} from 'react'; 
 import CountUp from 'react-countup'; 
 import { Drawer, Card, Col, Flex, Row, Space, Statistic, Table, Typography } from 'antd';
 import { 
-    sampleListColumn, 
-    sampleWaitingApproveColumn, 
+    salesOrderListColumn,
+    deliveryNoteListColumn,
     itemFileExpireColumn,
     statisticValue,
-    sampleDetailColumn,
+    salesOrderDetailColumn,
 } from './model';
 
 import { FiFileText } from "react-icons/fi";
 import { LuFileClock } from "react-icons/lu";
 
-import DashBoardService from '../../service/DashBoard.service';
+import dayjs from 'dayjs';
+import SOService from '../../service/SO.service';
+import DeliveryNoteService from '../../service/DeliveryNote.service';
 
 const pagging = { pagination: { current: 1, pageSize: 10, }, };
-const dsbservice = DashBoardService();
+const soservice = SOService();
+const dnservice = DeliveryNoteService();
+
 function DashBoard() {
-    const [mounted, setMounted] = useState( false );
-    const [sampleListSource, setSampleListSource] = useState([]);
-    const [sampleListloading, setSampleListLoading] = useState(false);
-    const [sampleListParams, setSampleListParams] = useState({ ...pagging });
+    const [salesOrderListSource, setSalesOrderListSource] = useState([]);
+    const [salesOrderListloading, setSalesOrderListLoading] = useState(false);
+    const [salesOrderListParams, setSalesOrderListParams] = useState({ ...pagging });
 
-    const [sampleWaitingApproveSource, setSampleWaitingApproveSource] = useState([]);
-    const [sampleWaitingApproveLoading, setSampleWaitingApproveLoading] = useState(false);
-    const [sampleWaitingApproveParams, setSampleWaitingApproveParams] = useState({ ...pagging });
+    const [deliveryNoteSource, setDeliveryNoteSource] = useState([]);
+    const [deliveryNoteLoading, setDeliveryNoteLoading] = useState(false);
+    const [deliveryNoteParams, setDeliveryNoteParams] = useState({ ...pagging });
 
-    const [sampleDetailSource, setSampleDetailSource] = useState([]);
-    const [sampleDetailLoading,setSampleDetailLoading] = useState(false);
-    const [sampleDetailParams, setSampleDetailParams] = useState({ ...pagging });
+    const [salesOrderDetailSource, setSalesOrderDetailSource] = useState([]);
+    const [salesOrderDetailLoading,setSalesOrderDetailLoading] = useState(false);
+    const [salesOrderDetailParams, setSalesOrderDetailParams] = useState({ ...pagging });
     
-    const [srDetailOpen, setSrDetailOpen] = useState(false);
-    const [srDetailSelected, setSrDetailSelected] = useState(null);
+    const [salesOrderDetailOpen, setSalesOrderDetailOpen] = useState(false);
+    const [salesOrderDetailSelected, setSalesOrderDetailSelected] = useState(null);
 
     const [filesExpireSource,  setFilesExpireSource] = useState([]);
     const [filesExpireLoading, setFilesExpireLoading] = useState(false);
@@ -43,21 +45,27 @@ function DashBoard() {
     
     const formatter = (value) => <CountUp end={value} separator="," delay={1.4} />;
     const showTotal = (total, range) => {
-        // console.log( total, range); 
-        return `${range.join("-")} of ${total} items.`;
+        return `${range.join("-")} of ${total} items`;
     }
 
-    const showSrDetail = (value) => {
-        const { srcode } = value;
+    const showSalesOrderDetail = (value) => {
+        const { socode } = value;
 
-        setSrDetailSelected( srcode );
-
-        fetchSampleDetailData(false);
-        setSrDetailOpen(true);
+        setSalesOrderDetailSelected( socode );
+        setSalesOrderDetailOpen(true);
     }
 
-    const CardStatistic = useMemo( () =>({bgColor, title, value, icon})=>{ 
-        // console.log( value );
+    const buildStatisticData = (salesOrders = [], deliveryNotes = []) => {
+        const now = dayjs();
+        const daily = salesOrders.filter((item) => dayjs(item?.sodate).isSame(now, 'day')).length;
+        const monthly = salesOrders.filter((item) => dayjs(item?.sodate).isSame(now, 'month')).length;
+        const yearly = salesOrders.filter((item) => dayjs(item?.sodate).isSame(now, 'year')).length;
+        const waiting = deliveryNotes.filter((item) => item?.doc_status === 'รอจัดเตรียมสินค้า' || item?.issue_status === 'ยังไม่ตัดสต๊อก').length;
+
+        return { daily, monthly, yearly, waiting };
+    };
+
+    const CardStatistic = ({bgColor, title, value, icon})=>{
         return (
         <> 
             <Card className='flex w-full' style={{backgroundColor:bgColor, borderRadius:'2rem',  color:'#fff', height:'100%' }} >
@@ -71,7 +79,7 @@ function DashBoard() {
                             value={value} 
                             className='font-semibold !text-slate-100 uppercase' 
                             formatter={formatter} 
-                            suffix="Case." 
+                            suffix="รายการ" 
                             valueStyle={{fontSize: 'clamp( 11px, .9vw, 17.6px)', color:'rgb(241 245 249 / var(--tw-text-opacity))'}} 
                         />
                     </Flex>
@@ -79,9 +87,9 @@ function DashBoard() {
             </Card>         
         </>
         )
-    }, [statisticData])
+    }
 
-    const CardSampleList = ()=>{ 
+    const CardSalesOrderList = ()=>{ 
         return (
         <> 
             <Card 
@@ -89,18 +97,18 @@ function DashBoard() {
             style={{borderRadius:'2rem', height:'100%'}} 
             title={(
                 <Typography.Title level={4} className='m-0 font-semibold !text-slate-700 uppercase' >
-                    Sample List
+                    ใบขายสินค้า
                 </Typography.Title>
             )}> 
                 <Table 
                     bordered={false}
                     size='small'
-                    columns={sampleListColumn({handleShowDetail : showSrDetail})} 
-                    dataSource={sampleListSource} 
-                    rowKey="srcode" 
-                    pagination={{...sampleListParams.pagination, showSizeChanger:false, showTotal:showTotal}}
-                    loading={sampleListloading}
-                    onChange={handleSampleListChange}
+                    columns={salesOrderListColumn({handleShowDetail : showSalesOrderDetail})} 
+                    dataSource={salesOrderListSource} 
+                    rowKey="socode" 
+                    pagination={{...salesOrderListParams.pagination, showSizeChanger:false, showTotal:showTotal}}
+                    loading={salesOrderListloading}
+                    onChange={handleSalesOrderListChange}
                     scroll={{ x: 'max-content' }}
                 /> 
             </Card>
@@ -108,34 +116,7 @@ function DashBoard() {
         )
     }
 
-    // const CardSampleList = ()=>{ 
-    //     return (
-    //     <> 
-    //         <Card 
-    //         className='w-full' 
-    //         style={{borderRadius:'2rem', height:'100%'}} 
-    //         title={(
-    //             <Typography.Title level={4} className='m-0 font-semibold !text-slate-700 uppercase' >
-    //                 Sample List
-    //             </Typography.Title>
-    //         )}> 
-    //             <Table 
-    //                 bordered={false}
-    //                 size='small'
-    //                 columns={sampleWaitingApproveColumn} 
-    //                 dataSource={sampleListSource} 
-    //                 rowKey="spcode" 
-    //                 pagination={{...sampleListParams.pagination, showSizeChanger:false, showTotal:showTotal}}
-    //                 loading={sampleListloading}
-    //                 onChange={handleSampleListChange}
-    //                 scroll={{ x: 'max-content' }}
-    //             /> 
-    //         </Card>
-    //     </>
-    //     )
-    // }
-
-    const CardSampleWaitingApprove = ()=>{ 
+    const CardDeliveryNoteList = ()=>{ 
         return (
         <> 
             <Card 
@@ -143,18 +124,18 @@ function DashBoard() {
             style={{borderRadius:'2rem', height:'100%'}} 
             title={(
                 <Typography.Title level={4} className='m-0 font-semibold !text-slate-700 uppercase' >
-                    Sample Waiting Approve
+                    ใบส่งของ
                 </Typography.Title>
             )}> 
                 <Table 
                     bordered={false}
                     size='small'
-                    columns={sampleWaitingApproveColumn} 
-                    dataSource={sampleWaitingApproveSource} 
-                    rowKey="spcode" 
-                    pagination={{...sampleWaitingApproveParams.pagination, showSizeChanger:false, showTotal:showTotal}}
-                    loading={sampleWaitingApproveLoading}
-                    onChange={handleSampleWaitingApproveChange}
+                    columns={deliveryNoteListColumn} 
+                    dataSource={deliveryNoteSource} 
+                    rowKey="dncode" 
+                    pagination={{...deliveryNoteParams.pagination, showSizeChanger:false, showTotal:showTotal}}
+                    loading={deliveryNoteLoading}
+                    onChange={handleDeliveryNoteChange}
                     scroll={{ x: 'max-content' }}
                 /> 
             </Card>
@@ -162,7 +143,7 @@ function DashBoard() {
         )
     } 
 
-    const CardSampleDetail = () => { 
+    const CardSalesOrderDetail = () => { 
         return (
         <> 
             <Card 
@@ -170,18 +151,18 @@ function DashBoard() {
             style={{ height:'100%'}} 
             title={(
                 <Typography.Title level={5} className='m-0 font-semibold !text-slate-700 uppercase' >
-                    Sample Name List
+                    รายการสินค้าในใบขายสินค้า
                 </Typography.Title>
             )}> 
                 <Table 
                     bordered={false}
                     size='small'
-                    columns={sampleDetailColumn} 
-                    dataSource={sampleDetailSource} 
-                    rowKey="id" 
-                    pagination={{...sampleDetailParams.pagination, showSizeChanger:false, showTotal:showTotal}}
-                    loading={sampleDetailLoading}
-                    onChange={handleSampleDetailChange}
+                    columns={salesOrderDetailColumn} 
+                    dataSource={salesOrderDetailSource} 
+                    rowKey={(record, index) => `${record?.stcode || 'item'}-${index}`}
+                    pagination={{...salesOrderDetailParams.pagination, showSizeChanger:false, showTotal:showTotal}}
+                    loading={salesOrderDetailLoading}
+                    onChange={handleSalesOrderDetailChange}
                     scroll={{ x: 'max-content' }}
                     locale = {{ emptyText: <span>{'\u00A0'}</span> }}
                 /> 
@@ -217,32 +198,37 @@ function DashBoard() {
     //     )
     // }
 
-    const fetchSampleWaitingApproveData = async (load = false) => {
-        setSampleWaitingApproveLoading(true && load);
-        const res = await dsbservice.samplelist(  { ...sampleWaitingApproveParams, result:'waiting_approve' }, load );
-        const { data:{source, pagination} } = res.data;
-        setSampleWaitingApproveSource(source);
-        setSampleWaitingApproveLoading(false && load);
-        setSampleWaitingApproveParams( (state) => ({ ...state, pagination, }));
+    const fetchDeliveryNoteData = async (load = false) => {
+        setDeliveryNoteLoading(true && load);
+        const res = await dnservice.search({}, { ignoreLoading: !load });
+        const source = res?.data?.data || [];
+
+        setDeliveryNoteSource(source);
+        setDeliveryNoteLoading(false && load);
+
+        return source;
     }
 
-    const fetchSampleData = async (load = false) => {
-        setSampleListLoading(true && load);
-        // const res = await dsbservice.samplelist( { ...sampleListParams, result:'approved' }, load );
-        const res = await dsbservice.sample_requestlist( { ...sampleListParams }, load );
-        const { data:{source, pagination} } = res.data;
-        setSampleListSource(source);
-        setSampleListLoading(false && load);
-        setSampleListParams( (state) => ({ ...state, pagination, }));
+    const fetchSalesOrderData = async (load = false) => {
+        setSalesOrderListLoading(true && load);
+        const res = await soservice.search({}, { ignoreLoading: !load });
+        const source = res?.data?.data || [];
+
+        setSalesOrderListSource(source);
+        setSalesOrderListLoading(false && load);
+
+        return source;
     }
 
-    const fetchSampleDetailData = async (load = false) => {
-        setSampleDetailLoading(true && load);
-        const res = await dsbservice.sample_requestdetail( { ...sampleDetailParams, code: srDetailSelected }, !load );
-        const { data:{source, pagination} } = res.data;
-        setSampleDetailSource(source);
-        setSampleDetailLoading(false && load);
-        setSampleDetailParams( (state) => ({ ...state, pagination, }));
+    const fetchSalesOrderDetailData = async (load = false) => {
+        if( !salesOrderDetailSelected ) return;
+
+        setSalesOrderDetailLoading(true && load);
+        const res = await soservice.get(salesOrderDetailSelected, { ignoreLoading: !load });
+        const source = res?.data?.data?.detail || [];
+
+        setSalesOrderDetailSource(source);
+        setSalesOrderDetailLoading(false && load);
     }
 
     // const fetchFilesExpireData = async (load = false) => {
@@ -254,130 +240,96 @@ function DashBoard() {
     //     setFilesExpireParams( (state) => ({ ...state, pagination, }));
     // }
 
-    const fetchStatisticData = async () => {
-        const res = await dsbservice.statistics();
-        const { data } = res.data;
-        setStatistic( state => ({...state, ...data}))
-    }
+        useEffect(() => {
+                setStatistic(buildStatisticData(salesOrderListSource, deliveryNoteSource));
+        }, [salesOrderListSource, deliveryNoteSource]);
 
-    // useEffect(() => {
-    //   if( mounted ) fetchSampleData( true );
-    // }, [JSON.stringify(sampleListParams)]);
+        useEffect(() => {
+                if( salesOrderDetailOpen && salesOrderDetailSelected ) fetchSalesOrderDetailData( true );
+        }, [JSON.stringify(salesOrderDetailParams), salesOrderDetailOpen, salesOrderDetailSelected]);
 
-    // useEffect(() => {
-    //   if( mounted ) fetchSampleWaitingApproveData( true );
-    // }, [JSON.stringify(sampleWaitingApproveParams)]);
+    useEffect(() => {
+        const initeial = async () => {
+                        await Promise.all([
+                                fetchSalesOrderData( false ), 
+                                fetchDeliveryNoteData( false ),
+                        ]);
+        } 
 
-    // useEffect(() => {
-    //   if( mounted ) fetchSampleDetailData( false );
-    // }, [JSON.stringify(sampleDetailParams)]);
+                initeial();
+    }, []);
 
-    // useEffect(() => {
-    //   if( mounted ) fetchFilesExpireData( true );
-    // }, [JSON.stringify(filesExpireParams)]);
-
-    // useEffect(() => {
-    //     const initeial = async () => {
-    //         await Promise.all([
-    //             fetchSampleData( false ), 
-    //             fetchSampleWaitingApproveData( false ),
-    //             // fetchFilesExpireData( false ),
-    //             fetchStatisticData(),
-    //         ]); 
-
-    //         setTimeout( () =>setMounted(true) , 400);
-    //     } 
-
-    //     if( !mounted ) initeial();
-    // }, []);
-
-    const handleSampleListChange = (pagination, filters, sorter) => {
-      setSampleListParams({ pagination, filters, ...sorter, }); 
-      // `dataSource` is useless since `pageSize` changed
-      if (pagination.pageSize !== sampleListParams.pagination?.pageSize) {
-        setSampleListSource([]);
-      }
+        const handleSalesOrderListChange = (pagination, filters, sorter) => {
+            setSalesOrderListParams({ pagination, filters, ...sorter, }); 
     };    
 
-    const handleSampleWaitingApproveChange = (pagination, filters, sorter) => {
-      setSampleWaitingApproveParams({ pagination, filters, ...sorter, }); 
-      // `dataSource` is useless since `pageSize` changed
-      if (pagination.pageSize !== sampleWaitingApproveParams.pagination?.pageSize) {
-        setSampleWaitingApproveSource([]);
-      }
+        const handleDeliveryNoteChange = (pagination, filters, sorter) => {
+            setDeliveryNoteParams({ pagination, filters, ...sorter, }); 
     };    
 
-    const handleSampleDetailChange = (pagination, filters, sorter) => {
-      setSampleDetailParams({ pagination, filters, ...sorter, }); 
-      // `dataSource` is useless since `pageSize` changed
-      if (pagination.pageSize !== sampleDetailParams.pagination?.pageSize) {
-        setSampleDetailSource([]);
-      }
+        const handleSalesOrderDetailChange = (pagination, filters, sorter) => {
+            setSalesOrderDetailParams({ pagination, filters, ...sorter, }); 
     };    
 
     const handleFilesExpireChange = (pagination, filters, sorter) => {
       setFilesExpireParams({ pagination, filters, ...sorter, }); 
-      // `dataSource` is useless since `pageSize` changed
-      if (pagination.pageSize !== sampleListParams.pagination?.pageSize) {
-        setFilesExpireSource([]);
-      }
     };    
 
     return (
         <>
         <div className='layout-content px-3 sm:px-5 md:px-5'>
             <Space direction="vertical" size="middle" style={{ display: 'flex', position: 'relative', paddingInline:"1.34rem" }} className='dashboard' id='dashboard' >
-                {/* <Row gutter={[12, 12]}>
+                <Row gutter={[12, 12]}>
                     <Col xs={24} sm={12} md={12} lg={6} xl={6}>
                         <div style={{height:'100%'}}> 
-                            <CardStatistic bgColor="#8f8df9" title="Sample Daily" icon={<FiFileText />} value={statisticData.daily} />
+                            <CardStatistic bgColor="#8f8df9" title="ใบขายสินค้าวันนี้" icon={<FiFileText />} value={statisticData.daily} />
                         </div>
                     </Col>
                     <Col xs={24} sm={12} md={12} lg={6} xl={6}>
                         <div style={{height:'100%'}}>
-                            <CardStatistic bgColor="#fe8992" title="Sample Monthly" icon={<FiFileText />} value={statisticData.monthly} />
+                            <CardStatistic bgColor="#fe8992" title="ใบขายสินค้าเดือนนี้" icon={<FiFileText />} value={statisticData.monthly} />
                         </div>
                     </Col>
                     <Col xs={24} sm={12} md={12} lg={6} xl={6}>
                         <div style={{height:'100%'}}>
-                            <CardStatistic bgColor="#3987d3" title="Sample Yearly" icon={<FiFileText />} value={statisticData.yearly} />
+                            <CardStatistic bgColor="#3987d3" title="ใบขายสินค้าปีนี้" icon={<FiFileText />} value={statisticData.yearly} />
                         </div>
                     </Col>
                     <Col xs={24} sm={12} md={12} lg={6} xl={6}>
                         <div style={{height:'100%'}}>
-                            <CardStatistic bgColor="#ffd19d" title="Sample Waiting Approve" icon={<LuFileClock />} value={statisticData.waiting} />
+                            <CardStatistic bgColor="#ffd19d" title="ใบส่งของรอจัดเตรียม" icon={<LuFileClock />} value={statisticData.waiting} />
                         </div>
                     </Col>
                 </Row>
                 <Row gutter={[18, 12]} style={{minHeight:380}}>
                     <Col xs={24} sm={12} md={12} lg={14} xl={14} >
                         <div style={{height:'100%'}}>
-                            <CardSampleList />
+                            <CardSalesOrderList />
                         </div>
                     </Col>
                     <Col xs={24} sm={12} md={12} lg={10} xl={10} >
                         <div style={{height:'100%'}}>
-                            <CardSampleWaitingApprove /> 
+                            <CardDeliveryNoteList /> 
 
                         </div>
                     </Col>
-                </Row>  */}
+                </Row>
             </Space> 
         </div>
             <div className='drawer-dashboard'> 
                 <Drawer 
-                title="Sample Details"
+                title="รายละเอียดใบขายสินค้า"
                 className="responsive-drawer"
                 width={668}
                 onClose={() => { 
-                    setSrDetailOpen(false);
-                    setSrDetailSelected( null );
-                    setSampleDetailSource([]);
+                    setSalesOrderDetailOpen(false);
+                    setSalesOrderDetailSelected( null );
+                    setSalesOrderDetailSource([]);
                 }} 
                 getContainer={() => document.querySelector(".drawer-dashboard")}
-                open={srDetailOpen}
+                open={salesOrderDetailOpen}
                 >
-                    { srDetailOpen && <CardSampleDetail /> }
+                    { salesOrderDetailOpen && <CardSalesOrderDetail /> }
                 </Drawer> 
             </div> 
         </>

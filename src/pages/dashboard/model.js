@@ -1,81 +1,103 @@
 import { Tag, Typography } from "antd";
 import dayjs from "dayjs";
 import { IoMdTime } from "react-icons/io";
-import { comma } from "../../utils/util";
-export const sampleListColumn = ({handleShowDetail}) => [
+import { TagDeliveryNoteStatus, TagSalesOrderStatus } from "../../components/badge-and-tag";
+import { comma, formatMoney } from "../../utils/util";
+
+export const salesOrderListColumn = ({handleShowDetail}) => [
     {
-      title: "SR Code",
-      key: "srcode",
-      dataIndex: "srcode", 
-      align: "left",  
-    },
-    {
-      title: "SR Date",
-      key: "srdate",
-      dataIndex: "srdate", 
-      render : (v) => dayjs(v).format("DD/MM/YYYY")
-    },
-    {
-      title: "Sample Name",
-      key: "count_srdetail",
-      dataIndex: "count_srdetail", 
+      title: "เลขที่ใบขายสินค้า",
+      key: "socode",
+      dataIndex: "socode",
       align: "left",
-      render : (v, record) => <Typography.Link onClick={() => handleShowDetail(record)}>({comma(Number(v || 0))}) samples</Typography.Link>
-    }, 
+      render : (value, record) => <Typography.Link onClick={() => handleShowDetail(record)}>{value || "-"}</Typography.Link>
+    },
     {
-      title: "Customer",
+      title: "วันที่ใบขายสินค้า",
+      key: "sodate",
+      dataIndex: "sodate",
+      render : (v) => v ? dayjs(v).format("DD/MM/YYYY") : "-"
+    },
+    {
+      title: "ชื่อลูกค้า",
       key: "cusname",
-      dataIndex: "cusname", 
-      align: "left",  
-    }, 
+      dataIndex: "cusname",
+      align: "left",
+    },
     {
-      title: "Due Date",
-      key: "duedate",
-      dataIndex: "duedate", 
-      render : (v) => dayjs(v).format("DD/MM/YYYY")
+      title: "สถานะเอกสาร",
+      key: "doc_status",
+      dataIndex: "doc_status",
+      render : (value) => <TagSalesOrderStatus result={value} />
+    },
+    // {
+    //   title: "สถานะปริ้น",
+    //   key: "print_status",
+    //   dataIndex: "print_status",
+    //   render : (value) => <TagSalesOrderStatus result={value} />
+    // },
+    {
+      title: "ระยะเวลา",
+      key: "waiting_days",
+      dataIndex: "sodate",
+      render: (v) => {
+        const parsedDate1 = dayjs(v);
+        const parsedDate2 = dayjs(new Date());
+        const diffInDays = parsedDate2.diff(parsedDate1, 'day');
+
+        return diffInDays < 1 ? <Tag color="#3ab38a">วันนี้</Tag> : <Tag color="#b4b4b1">{diffInDays} วันที่แล้ว</Tag>;
+      }
     },
 ]
 
-export const sampleWaitingApproveColumn = [
+export const deliveryNoteListColumn = [
     {
       title: "",
       key: "ind",
-      dataIndex: "ind", 
+      dataIndex: "ind",
       width:20,
       render:() => <IoMdTime color="#ff7e23" style={{fontSize: '1.3rem'}} />
     },
     {
-      title: "Sample Code",
-      key: "spcode",
-      dataIndex: "spcode", 
-      align: "left",  
+      title: "เลขที่ใบส่งของ",
+      key: "dncode",
+      dataIndex: "dncode",
+      align: "left",
     },
     {
-      title: "Sample Name",
-      key: "spname",
-      dataIndex: "spname", 
-      align: "left",  
+      title: "วันที่ใบส่งของ",
+      key: "dndate",
+      dataIndex: "dndate",
+      render : (v) => v ? dayjs(v).format("DD/MM/YYYY") : "-"
     },
     {
-      title: "Sample Date",
-      key: "spdate",
-      dataIndex: "spdate", 
-      render : (v) => dayjs(v).format("DD/MM/YYYY")
+      title: "ชื่อลูกค้า",
+      key: "cusname",
+      dataIndex: "cusname",
+      align: "left",
     },
     {
-      title: "Sample Date",
-      key: "spdate",
-      dataIndex: "spdate", 
-      render: (v) => {     
+      title: "สถานะเอกสาร",
+      key: "doc_status",
+      dataIndex: "doc_status",
+      render: (value) => <TagDeliveryNoteStatus result={value} />
+    },
+    {
+      title: "สถานะตัดสต๊อก",
+      key: "issue_status",
+      dataIndex: "issue_status",
+      render: (value) => <TagDeliveryNoteStatus result={value} />
+    },
+    {
+      title: "ระยะเวลา",
+      key: "waiting_days",
+      dataIndex: "dndate",
+      render: (v) => {
         const parsedDate1 = dayjs(v);
         const parsedDate2 = dayjs(new Date());
-        
-        // // Calculate the difference in days
         const diffInDays = parsedDate2.diff(parsedDate1, 'day');
-        
-        // console.log(`The difference between ${parsedDate1.format("DD/MM/YYYY")} and ${parsedDate2.format("DD/MM/YYYY")} is ${diffInDays} days.`);
-        // <Tag icon={<MdOutlineFiberNew />} color="#cd201f"> </Tag>
-        return diffInDays < 1 ? <Tag color="#3ab38a" >today.</Tag> : <Tag  color="#b4b4b1">{diffInDays} days ago.</Tag>;
+
+        return diffInDays < 1 ? <Tag color="#3ab38a">วันนี้</Tag> : <Tag color="#b4b4b1">{diffInDays} วันที่แล้ว</Tag>;
       }
     },
 ]
@@ -117,24 +139,50 @@ export const itemFileExpireColumn = [
     },
 ];
 
-export const sampleDetailColumn = [
+export const salesOrderDetailColumn = [
     {
-      title: "Sample Name",
-      key: "spname",
-      dataIndex: "spname", 
+      title: "ชื่อสินค้า",
+      key: "stname",
+      dataIndex: "stname",
     },
     {
-      title: "Packaging",
-      key: "pkname",
-      dataIndex: "pkname", 
-      align: "left",  
-    },
-    {
-      title: "Amount",
-      key: "amount",
-      dataIndex: "amount", 
+      title: "หน่วย",
+      key: "unit",
+      dataIndex: "unit",
       align: "left",
-      render:(v) => comma( Number(v || 0) )
+    },
+    {
+      title: "จำนวน",
+      key: "qty",
+      dataIndex: "qty",
+      align: "right",
+      render:(v) => comma( Number(v || 0), 2, 2 )
+    },
+    {
+      title: "ราคาขาย",
+      key: "price",
+      dataIndex: "price",
+      align: "right",
+      render:(v) => formatMoney( Number(v || 0), 2 )
+    },
+    {
+      title: "VAT (%)",
+      key: "vat",
+      dataIndex: "vat",
+      align: "right",
+      render:(v) => comma( Number(v || 0), 0 )
+    },
+    {
+      title: "ราคารวมสุทธิ",
+      key: "totalnet",
+      dataIndex: "totalnet",
+      align: "right",
+      render:(_, record) => {
+        const base = Number(record?.qty || 0) * Number(record?.price || 0);
+        const net = base * (1 + Number(record?.vat || 0) / 100);
+
+        return formatMoney(net, 2);
+      }
     },
 ];
 

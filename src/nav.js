@@ -17,7 +17,18 @@ import { FaUserCircle } from "react-icons/fa";
 import { RiBox3Fill } from "react-icons/ri";
 import { TfiTruck } from "react-icons/tfi";
 import { BsShop } from "react-icons/bs";
+import { MdOutlineDashboard  } from "react-icons/md";
+
 let _nav = [
+  {
+      title: "DATA",
+      type: "group",
+    },
+    {
+      title: "Dashboard",
+      icon: <MdOutlineDashboard className="nav-ico" />,
+      to: "/dashboard",
+    },  
   {
     title: "SELL",
     type: "group",
