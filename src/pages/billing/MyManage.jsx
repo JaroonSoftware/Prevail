@@ -26,6 +26,7 @@ import SOService from "../../service/SO.service";
 import { SaveFilled, SearchOutlined } from "@ant-design/icons";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
 import { ModalDeliverynoteBilling } from "../../components/modal/delivery-note-for-billing";
+import ModalEditItem from "../../components/modal/edit-item/ModalEditItem";
 
 import {
   DEFALUT_CHECK_INVOICE,
@@ -979,83 +980,17 @@ function BillingnoteManage() {
         ></ModalDeliverynoteBilling>
       )}
 
-      <Modal
+      <ModalEditItem
         open={openEditItemModal}
-        title={editingGroup?.dncode ? `แก้ไขรายการใบส่งของ ${editingGroup.dncode}` : "แก้ไขรายการสินค้า"}
+        editingGroup={editingGroup}
+        editingItem={editingItem}
+        savingEditItem={savingEditItem}
+        editItemForm={editItemForm}
+        editItemColumns={editItemColumns}
         onCancel={handleCloseEditItemModal}
-        width={960}
-        maskClosable={false}
-        footer={(
-          <Space>
-            <Button onClick={handleCloseEditItemModal}>ปิด</Button>
-            <Button
-              type="primary"
-              onClick={handleSaveEditItem}
-              disabled={!editingItem || isLockedStatus}
-              loading={savingEditItem}
-            >
-              บันทึกการแก้ไข
-            </Button>
-          </Space>
-        )}
-      >
-        <Space direction="vertical" size="middle" style={{ display: "flex" }}>
-          <Table
-            bordered
-            size="small"
-            pagination={false}
-            dataSource={editingGroup?.detailRows || []}
-            columns={editItemColumns}
-            rowKey="_rowKey"
-          />
-
-          <Card size="small" title="แก้ไขทีละรายการ">
-            {editingItem ? (
-              <Form form={editItemForm} layout="vertical">
-                <Row gutter={[12, 12]}>
-                  <Col span={8}>
-                    <Form.Item label="เลขที่ SO">
-                      <Input value={editingItem?.socode || ""} readOnly />
-                    </Form.Item>
-                  </Col>
-                  <Col span={8}>
-                    <Form.Item label="รหัสสินค้า">
-                      <Input value={editingItem?.stcode || ""} readOnly />
-                    </Form.Item>
-                  </Col>
-                  <Col span={8}>
-                    <Form.Item label="ชื่อสินค้า">
-                      <Input value={editingItem?.stname || editingItem?.purdetail || ""} readOnly />
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                      name="qty"
-                      label="จำนวน"
-                      rules={[{ required: true, message: "กรุณาระบุจำนวน" }]}
-                    >
-                      <InputNumber min={0} controls={false} className="width-100 input-40" />
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                      name="price"
-                      label="ราคาขาย"
-                      rules={[{ required: true, message: "กรุณาระบุราคาขาย" }]}
-                    >
-                      <InputNumber min={0} controls={false} className="width-100 input-40" />
-                    </Form.Item>
-                  </Col>
-                </Row>
-              </Form>
-            ) : (
-              <Typography.Text type="secondary">
-                เลือกรายการที่ต้องการแก้ไขจากตารางด้านบนก่อน
-              </Typography.Text>
-            )}
-          </Card>
-        </Space>
-      </Modal>
+        onSaveEditItem={handleSaveEditItem}
+        onSelectEditItem={handleSelectEditItem}
+      />
     </div>
   );
 }

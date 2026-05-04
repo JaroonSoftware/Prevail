@@ -189,13 +189,13 @@ export const blViewColumns = [
         align: "center",
         render: (_, __, index) => index + 1,
       },
-      // {
-      //   title: "เลขที่ใบขายสินค้า",
-      //   dataIndex: "socode",
-      //   key: "socode",
-      //   width: 140,
-      //   align: "left",
-      // },
+      {
+        title: "เลขที่ใบขายสินค้า",
+        dataIndex: "socode",
+        key: "socode",
+        width: 140,
+        align: "left",
+      },
     {
         title: "เลขที่ใบส่งของ",
         dataIndex: "dncode",
@@ -282,12 +282,20 @@ export const prodcolumns = ({ handleRemove, handleEdit }) => [
     align: "center",
   },
   {
-    title: "วันที่ใบส่งของ",
+    title: "วันที่",
     dataIndex: "dndate",
     key: "dndate",
     width: 120,
     align: "center",
     render: (value) => value ? dayjs(value).format("DD/MM/YY") : "-",
+  },
+  {
+    title: "ครบกำหนด",
+    dataIndex: "duedate",
+    key: "duedate",
+    width: 120,
+    align: "center",
+    render: (value, record) => record.dndate ? dayjs(record.dndate).add(30, 'day').format("DD/MM/YY") : "-",
   },
   {
     title: "จำนวนรายการ",

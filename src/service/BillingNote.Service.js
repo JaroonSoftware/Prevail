@@ -4,6 +4,7 @@ const API_URL = {
   API_SEARCH: `/billing/search.php`, 
   API_LIST: `/billing/list.php`, 
   API_GETCODE: `/billing/get-blcode.php`, 
+  API_CHECKBL: `/billing/checkbl.php`,
 };
   
 const BillingNoteService = () => { 
@@ -17,6 +18,7 @@ const BillingNoteService = () => {
 
   const search = (parm = {}, config = {}) => api.post(`${API_URL.API_SEARCH}`, parm, {...config, cancle: true});
   
+  const checkBillingByDncode = (dncode, config = {}) => api.get(`${API_URL.API_CHECKBL}?dncode=${encodeURIComponent(dncode)}`, config);
 
   return {
     create,
@@ -25,8 +27,8 @@ const BillingNoteService = () => {
     get, 
     getlist,
     code,
-
     search,
+    checkBillingByDncode,
   };
 };
 

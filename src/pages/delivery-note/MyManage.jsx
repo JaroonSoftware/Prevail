@@ -9,10 +9,12 @@ import {
   Typography,
   message,
   Modal,
+  Tabs,
 } from "antd";
 import { Card, Col, Divider, Flex, Row, Space, Popconfirm } from "antd";
 import OptionService from "../../service/Options.service";
 import DeliveryNoteService from "../../service/DeliveryNote.service";
+import BillingNoteService from "../../service/BillingNote.Service";
 import { SearchOutlined, SaveFilled,QuestionCircleOutlined } from "@ant-design/icons";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
 import { ModalSO } from "../../components/modal/so-for-dn";
@@ -33,6 +35,7 @@ import { TbExclamationCircle } from "react-icons/tb";
 import { CloseCircleFilledIcon } from "../../components/icon";
 const opservice = OptionService();
 const dnservice = DeliveryNoteService();
+const blservice = BillingNoteService();
 // const qtservice = QuotationService();
 
 const gotoFrom = "/delivery-note";
@@ -58,6 +61,8 @@ function DeliveryNoteManage() {
 
   const [formDetail, setFormDetail] = useState(DEFALUT_CHECK_DELIVERY);
 
+  const [billingInfo, setBillingInfo] = useState(null);
+
   const [unitOption, setUnitOption] = React.useState([]);
 
   const cardStyle = {
@@ -81,6 +86,9 @@ function DeliveryNoteManage() {
           ...header,
           dndate: dayjs(dndate),
         });
+
+        // ตรวจสอบสถานะการออกใบวางบิล
+        await checkBillingStatus(dncode);
 
         // console.log(dncode)
         // setTimeout( () => {  handleCalculatePrice(head?.valid_grand_total_price_until, head?.dated_grand_total_price_until) }, 200);
@@ -135,6 +143,30 @@ function DeliveryNoteManage() {
       total_price,
     }));
     // console.log(formDetail)
+  };
+
+  const checkBillingStatus = async (dncode) => {
+    if (!dncode) return;
+    
+    try {
+      const res = await blservice.checkBillingByDncode(dncode);
+
+      const { data } = res.data;
+      
+      if (data && data.length > 0) {
+        // หากเจอ billing note ที่ active และมี dncode นี้
+        const billing = data[0]; // เอาใบแรกที่เจอ
+        setBillingInfo({
+          blcode: billing.blcode,
+          hasBilling: true
+        });
+      } else {
+        setBillingInfo(null);
+      }
+    } catch (error) {
+      console.warn("Error checking billing status:", error);
+      setBillingInfo(null);
+    }
   };
   const handleConfirm = () => {
     form
@@ -547,56 +579,86 @@ function DeliveryNoteManage() {
             className="width-100"
             autoComplete="off"
           >
-            <Card
-              title={
-                <>
-                  <Row className="m-0 py-3 sm:py-0" gutter={[12, 12]}>
-                    <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
-                      <Typography.Title level={3} className="m-0">
-                        เลขที่ใบส่งสินค้า : {dnCode}
-                      </Typography.Title>
-                    </Col>
-                    <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
-                      <Flex
-                        gap={10}
-                        align="center"
-                        className="justify-start sm:justify-end"
-                      >
-                        <Typography.Title level={3} className="m-0">
-                          วันที่ใบส่งสินค้า :{" "}
+            <Tabs
+              defaultActiveKey="1"
+              items={[
+                {
+                  key: "1",
+                  label: "ข้อมูลใบส่งสินค้า",
+                  children: (
+                    <Card
+                      title={
+                        <>
+                          <Row className="m-0 py-3 sm:py-0" gutter={[12, 12]}>
+                            <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
+                              <Typography.Title level={3} className="m-0">
+                                เลขที่ใบส่งสินค้า : {dnCode}
+                              </Typography.Title>
+                            </Col>
+                            <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
+                              <Flex
+                                gap={10}
+                                align="center"
+                                className="justify-start sm:justify-end"
+                              >
+                                <Typography.Title level={3} className="m-0">
+                                  วันที่ใบส่งสินค้า :{" "}
+                                </Typography.Title>
+                                <Form.Item name="dndate" className="!m-0">
+                                  <DatePicker
+                                    className="input-40"
+                                    allowClear={false}
+                                    onChange={handleDNDate}
+                                    format={dateFormat}
+                                  />
+                                </Form.Item>
+                              </Flex>
+                            </Col>
+                          </Row>
+                        </>
+                      }
+                    >
+                      <Row className="m-0" gutter={[12, 12]}>
+                        <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+                          <Divider orientation="left" className="!mb-3 !mt-1">
+                            {" "}
+                            ข้อมูลใบส่งสินค้า{" "}
+                          </Divider>
+                          <Card style={cardStyle}>{SectionCustomers}</Card>
+                        </Col>
+                        <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+                          <Divider orientation="left" className="!my-0">
+                            รายการใบส่งสินค้า
+                          </Divider>
+                          <Card style={{ backgroundColor: "#f0f0f0" }}>
+                            {SectionProduct}
+                          </Card>
+                        </Col>
+                      </Row>
+                    </Card>
+                  ),
+                },
+                ...(billingInfo?.hasBilling ? [{
+                  key: "2",
+                  label: "รายการรับชำระ",
+                  children: (
+                    <Card>
+                      <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+                        <Typography.Title level={4}>
+                          ใบวางบิล: {billingInfo.blcode}
                         </Typography.Title>
-                        <Form.Item name="dndate" className="!m-0">
-                          <DatePicker
-                            className="input-40"
-                            allowClear={false}
-                            onChange={handleDNDate}
-                            format={dateFormat}
-                          />
-                        </Form.Item>
-                      </Flex>
-                    </Col>
-                  </Row>
-                </>
-              }
-            >
-              <Row className="m-0" gutter={[12, 12]}>
-                <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-                  <Divider orientation="left" className="!mb-3 !mt-1">
-                    {" "}
-                    ข้อมูลใบส่งสินค้า{" "}
-                  </Divider>
-                  <Card style={cardStyle}>{SectionCustomers}</Card>
-                </Col>
-                <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-                  <Divider orientation="left" className="!my-0">
-                    รายการใบส่งสินค้า
-                  </Divider>
-                  <Card style={{ backgroundColor: "#f0f0f0" }}>
-                    {SectionProduct}
-                  </Card>
-                </Col>
-              </Row>
-            </Card>
+                        <Button
+                          type="primary"
+                          onClick={() => navigate(`/billing/manage/edit`, { state: { config: { code: billingInfo.blcode, action: 'edit' } } })}
+                        >
+                          ไปยังใบวางบิล
+                        </Button>
+                      </Space>
+                    </Card>
+                  ),
+                }] : []),
+              ]}
+            />
           </Form>
           {SectionBottom}
         </Space>

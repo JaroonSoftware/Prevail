@@ -3,13 +3,14 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
-import { Row, Col, Space, Descriptions, Table, Collapse } from "antd";
+import { Row, Col, Space, Descriptions, Table, Collapse, Tabs, Card } from "antd";
 import { Typography, Button, Form, message } from "antd";
 import { ArrowLeftOutlined, PrinterOutlined } from "@ant-design/icons";
 import { TbBasketCheck } from "react-icons/tb";
 import dayjs from "dayjs";
 
 import DeliveryNoteService from "../../service/DeliveryNote.service";
+import BillingNoteService from "../../service/BillingNote.Service";
 
 import { TagDeliveryNoteStatus } from "../../components/badge-and-tag";
 import { formatMoney } from "../../utils/util";
@@ -19,6 +20,7 @@ import useConfirm from "../../store/hook/use-confirm.hook";
 import "./MyPage.css";
 
 const dnservice = DeliveryNoteService();
+const blservice = BillingNoteService();
 
 export default function DeliveryNoteView() {
   const navigate = useNavigate();
@@ -31,6 +33,7 @@ export default function DeliveryNoteView() {
   const [detailItems, setDetailItems] = useState([]);
   const [lastItems, setLastItems] = useState([]);
   const [dnCode, setDnCode] = useState(null);
+  const [billingInfo, setBillingInfo] = useState(null);
 
   const confirm = useConfirm();
 
@@ -52,6 +55,9 @@ export default function DeliveryNoteView() {
         buildMasterItems(header || {});
         buildDetailItems(detail || []);
         buildLastUpdateInfo(header || {});
+
+        // ตรวจสอบสถานะการออกใบวางบิล
+         checkBillingStatus(header?.dncode || "");
       } catch (err) {
         console.warn(err);
         const data = err?.response?.data;
@@ -135,6 +141,29 @@ export default function DeliveryNoteView() {
       },
     ];
     setLastItems(items);
+  };
+
+  const checkBillingStatus = async (dncode) => {
+    if (!dncode) return;
+    
+      // console.log("Checking billing status for dncode:", dncode);
+      const res = await blservice.checkBillingByDncode(dncode);
+
+      const { data } = res.data;
+      // console.log("Billing check result:", data);
+      // console.log("Billing check result:", res);
+      
+      if (data.length > 0) {
+        // alert("พบใบวางบิลที่เชื่อมโยงกับใบส่งของนี้แล้ว ระบบจะนำคุณไปยังหน้าดูใบวางบิล");
+        // หากเจอ billing note ที่ active และมี dncode นี้
+        const billing = data[0]; // เอาใบแรกที่เจอ
+        setBillingInfo({
+          blcode: billing.blcode,
+          hasBilling: true
+        });
+      } else {
+        setBillingInfo(null);
+      }
   };
 
   const buildDetailItems = (detail = []) => {
@@ -272,26 +301,58 @@ export default function DeliveryNoteView() {
         </Col>
       </Row>
 
-      <Descriptions
-        bordered
-        column={{ xs: 1, sm: 2, md: 3, lg: 3, xl: 3, xxl: 3 }}
-        items={masterItems}
-      />
+      <Tabs
+        defaultActiveKey="1"
+        items={[
+          {
+            key: "1",
+            label: "ข้อมูลใบส่งสินค้า",
+            children: (
+              <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+                <Descriptions
+                  bordered
+                  column={{ xs: 1, sm: 2, md: 3, lg: 3, xl: 3, xxl: 3 }}
+                  items={masterItems}
+                />
 
-      <Collapse
-        size="large"
-        className="view-collapse-sp"
-        collapsible="disabled"
-        activeKey={detailItems.map((_, i) => `${i + 1}`)}
-        bordered={false}
-        style={{ backgroundColor: "transparent" }}
-        items={detailItems}
-      />
+                <Collapse
+                  size="large"
+                  className="view-collapse-sp"
+                  collapsible="disabled"
+                  activeKey={detailItems.map((_, i) => `${i + 1}`)}
+                  bordered={false}
+                  style={{ backgroundColor: "transparent" }}
+                  items={detailItems}
+                />
 
-      <Descriptions
-        bordered
-        column={{ xs: 1, sm: 2, md: 3, lg: 3, xl: 3, xxl: 3 }}
-        items={lastItems}
+                <Descriptions
+                  bordered
+                  column={{ xs: 1, sm: 2, md: 3, lg: 3, xl: 3, xxl: 3 }}
+                  items={lastItems}
+                />
+              </Space>
+            ),
+          },
+          ...(billingInfo?.hasBilling ? [{
+            key: "2",
+            label: "รายการรับชำระ",
+            children: (
+              <Card>
+                <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+                  <Typography.Title level={4}>
+                    ใบวางบิล: {billingInfo.blcode}
+                  </Typography.Title>
+                  <Button
+                    type="primary"
+                    onClick={() => navigate(`/billing/view`, { state: { config: { code: billingInfo.blcode, action: 'view' } } })}                    
+                  >
+                    ไปยังใบวางบิล
+                  </Button>
+                </Space>
+              </Card>
+            ),
+          }] : []),
+        ]}
       />
     </Space>
   );
