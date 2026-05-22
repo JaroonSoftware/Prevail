@@ -6,42 +6,73 @@ import {QRCodeSVG} from 'qrcode.react';
 
 const FormPKBarcode = forwardRef(({ printData }, ref) => {
   return (
-    <div ref={ref} >
+    <div ref={ref} id="pk-print-root">
+      <style>{`
+        @media print {
+          @page {
+            size: 100mm 50mm;
+            margin: 0;
+          }
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          #pk-print-root {
+            width: 100mm;
+            margin: 0;
+            padding: 0;
+          }
+          .ant-card.pkqrcode {
+            width: 100mm !important;
+            height: 50mm !important;
+            box-sizing: border-box !important;
+            border: none !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            page-break-after: always;
+            overflow: hidden;
+          }
+          .ant-card.pkqrcode .ant-card-body {
+            padding: 6px 8px !important;
+            width: 100% !important;
+            height: 100% !important;
+            box-sizing: border-box !important;
+          }
+        }
+      `}</style>
       {printData.map((maindata, index) =>
         maindata.map((data, index) => (
           <Card title={null} key={1} className="pkqrcode" 
           style={{ pageBreakAfter: "always" }}
           >
-            <table style={{ height: "140px"}}>
+            <table style={{ width: "100%", tableLayout: "fixed" }}>
               <tr>
                 <td
-                 style={{fontWeight: "bold", fontSize: "16px", width: "200px"}} 
+                 style={{fontWeight: "bold", fontSize: "14px", width: "55%"}}
                 >
                   {data?.stcode}/{data?.package_id}
                 </td>
-                <td style={{fontWeight: "bold", fontSize: "50px" }} rowSpan={2}>
-                  <div style={{marginLeft: "16px"}}>{data?.cuscode}</div>
-                  
+                <td style={{fontWeight: "bold", fontSize: "36px", textAlign: "center" }} rowSpan={2}>
+                  {data?.cuscode}
                 </td>
               </tr>
               <tr>
                 <td
-                  style={{ fontSize: "16px",width: "200px"}}
+                  style={{ fontSize: "14px" }}
                 >
                   {data?.stname}
                 </td>
-                
               </tr>
               <tr>
-                <td style={{fontWeight: "bold", fontSize: "16px"}}>{data?.sup_weight} KG</td>
-                <td rowSpan={2} >
-                  <QRCodeSVG size={80} style={{marginLeft: "25px"}} value={data.package_id.toString()} />
-                  {/* <QRCode size={80} value={data.package_id.toString()} /> */}
-                  {/* <Barcode displayValue={false} width={1} height={40} value={data.package_id.toString()} /> */}
+                <td style={{fontWeight: "bold", fontSize: "14px"}}>{data?.sup_weight} KG</td>
+                <td rowSpan={2} style={{ textAlign: "center" }}>
+                  <QRCodeSVG size={70} value={data.package_id.toString()} />
                 </td>
               </tr>
               <tr>
-                <td style={{ fontSize: "12px" }} colSpan={2}>
+                <td style={{ fontSize: "11px" }}>
                   {data?.cusname} {data?.socode}
                 </td>
               </tr>

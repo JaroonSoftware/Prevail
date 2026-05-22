@@ -3408,8 +3408,7 @@ button, [type='button'], [type='reset'], [type='submit'] {
 .pkqrcode .ant-card-body {
   padding-top: 0 !important;
   padding-left: 18px !important;
-  padding-bottom: 10px ;
-  /* page-break-after: always; */
+  padding-bottom: 10px;
 }
 
 /* .ant-modal-root .ant-modal-wrap { 

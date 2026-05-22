@@ -3,19 +3,19 @@ import {decode as dcode, encode as ecode} from 'base-64';
 import { STORE_KEY } from "../constant/constant";
 export  const Authenticate = () => {
     
-    const setToken = (token) =>{
-       sessionStorage.setItem(STORE_KEY.authen, token);
+   const setToken = (token) =>{
+       localStorage.setItem(STORE_KEY.authen, token);
     }
-    
+
     const getToken = () =>{
-        const t = sessionStorage.getItem(STORE_KEY.authen);
+        const t = localStorage.getItem(STORE_KEY.authen);
         // console.log(t);
         return t;
     }
-    
+
     const removeToken = () =>{
         window.history.replaceState(null, null, "/");
-        return sessionStorage.removeItem(STORE_KEY.authen);
+        return localStorage.removeItem(STORE_KEY.authen);
     }
     
     const decodeToken = (token) => {

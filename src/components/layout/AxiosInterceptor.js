@@ -23,7 +23,8 @@ const AxiosInterceptor = ({ children }) => {
         const interceptorReq = instance.interceptors.request.use(
             (config) => {
                 // const t = token;
-                const t = sessionStorage.getItem(STORE_KEY.authen);
+                // const t = sessionStorage.getItem(STORE_KEY.authen);
+                const t = localStorage.getItem(STORE_KEY.authen);
                 // console.log(t, "asdas");
                 if( !config?.ignoreLoading ) startLoading();
                 // const token = auThen.getToken();
