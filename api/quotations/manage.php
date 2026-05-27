@@ -66,9 +66,9 @@ try {
             $val = (object)$val;
             $stmt->bindParam(":qtcode", $header->qtcode, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
-            $stmt->bindParam(":price", $val->price, PDO::PARAM_INT);
-            $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);            
-            
+            $stmt->bindParam(":price", $val->price, PDO::PARAM_STR);
+            $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
+
             if(!$stmt->execute()) {
                 $error = $conn->errorInfo();
                 throw new PDOException("Insert data error => $error"); 
@@ -135,7 +135,7 @@ try {
             $stmt->bindParam(":qtcode", $header->qtcode, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
-            $stmt->bindParam(":price", $val->price, PDO::PARAM_INT);
+            $stmt->bindParam(":price", $val->price, PDO::PARAM_STR);
             if(!$stmt->execute()) {
                 $error = $conn->errorInfo();
                 throw new PDOException("Insert data error => $error"); 

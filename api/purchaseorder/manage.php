@@ -78,7 +78,7 @@ try {
             $stmt->bindParam(":pocode", $pocode, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
             $stmt->bindParam(":qty", $val->qty, PDO::PARAM_INT);
-            $stmt->bindParam(":price", $val->buyprice, PDO::PARAM_INT);
+            $stmt->bindParam(":price", $val->buyprice, PDO::PARAM_STR);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
             $stmt->bindParam(":discount", $val->discount, PDO::PARAM_INT);
             $stmt->bindParam(":vat", $val->vat, PDO::PARAM_STR);
@@ -106,7 +106,7 @@ try {
             if (!$stmt3) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
             $stmt3->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
-            $stmt3->bindParam(":price", $val->buyprice, PDO::PARAM_INT);
+            $stmt3->bindParam(":price", $val->buyprice, PDO::PARAM_STR);
             $stmt3->bindValue(":qty", $val->qty, PDO::PARAM_STR);
             $stmt3->bindParam(":updated_by", $action_user, PDO::PARAM_STR);
 
@@ -220,7 +220,7 @@ try {
             $stmt5->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
             $stmt5->bindParam(":unit", $val->unit, PDO::PARAM_STR);
             $stmt5->bindParam(":qty", $val->qty, PDO::PARAM_INT);
-            $stmt5->bindParam(":price", $val->buyprice, PDO::PARAM_INT);
+            $stmt5->bindParam(":price", $val->buyprice, PDO::PARAM_STR);
             $stmt5->bindParam(":discount", $val->discount, PDO::PARAM_INT);
             $stmt5->bindParam(":vat", $val->vat, PDO::PARAM_INT);
             $stmt5->bindParam(":recamount", $val->recamount, PDO::PARAM_INT);
@@ -244,7 +244,7 @@ try {
             if (!$stmt4) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
             $stmt4->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
-            $stmt4->bindParam(":price", $val->buyprice, PDO::PARAM_INT);
+            $stmt4->bindParam(":price", $val->buyprice, PDO::PARAM_STR);
             $stmt4->bindValue(":qty", $val->qty, PDO::PARAM_STR);
             $stmt4->bindParam(":updated_by", $action_user, PDO::PARAM_STR);
 

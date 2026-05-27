@@ -50,6 +50,7 @@ export const EditableCell = ({
   const tdRef = useRef(null);
   const lastValueRef = useRef(undefined);
   const pendingNavRef = useRef(null);
+  const savedRef = useRef(false);
   const form = useContext(EditableContext);
 
   const filterOption = (input, option) =>
@@ -67,6 +68,7 @@ export const EditableCell = ({
   const toggleEdit = (force) => {
     const next = typeof force === "boolean" ? force : !editing;
     if (readonly) return;
+    savedRef.current = false;
     setEditing(next);
     if (next) {
       lastValueRef.current = record[dataIndex];
@@ -75,6 +77,8 @@ export const EditableCell = ({
   };
 
   const save = async () => {
+    if (savedRef.current) return;
+    savedRef.current = true;
     try {
       const values = await form.validateFields();
       setEditing(false);
@@ -88,7 +92,9 @@ export const EditableCell = ({
         pendingNavRef.current = null;
         setTimeout(() => moveToNeighbor(dir), 0);
       }
-    } catch {}
+    } catch {
+      savedRef.current = false;
+    }
   };
 
   const select = async () => {
