@@ -1,6 +1,6 @@
 import React, { createContext, useContext } from 'react';
 import useLoading from '../hook/use-loading.hook';
-import { Spin } from "antd";
+import logoPrevail from '../../assets/images/logo.png';
 
 const LoadingContext = createContext();
 
@@ -9,22 +9,14 @@ export const LoadingProvider = ({ children }) => {
 
   return (
     <LoadingContext.Provider value={loading}>
-      {loading.loading && <div 
-        style={{
-          position: 'absolute',
-          backgroundColor: 'rgb(250 250 250 / 90%)',
-          top: 0,
-          left: 0,
-          bottom: 0,
-          right: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 90000,
-        }} 
-      >
-        <Spin spinning={loading.loading} />
-      </div>}
+      {loading.loading && (
+        <div className="loading-overlay">
+          <div className="loading-card">
+            <img src={logoPrevail} alt="Prevail" className="loading-logo" />
+            <span className="loading-text">กำลังโหลด...</span>
+          </div>
+        </div>
+      )}
       {children}
     </LoadingContext.Provider>
   );

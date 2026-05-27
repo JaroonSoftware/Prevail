@@ -9,7 +9,13 @@ use InvalidArgumentException;
 use OpenSSLAsymmetricKey;
 use UnexpectedValueException;
 use DateTime;
-use  \Firebase\JWT\ExpiredException;
+require_once __DIR__ . '/ExpiredException.php';
+require_once __DIR__ . '/SignatureInvalidException.php';
+require_once __DIR__ . '/BeforeValidException.php';
+
+use \Firebase\JWT\ExpiredException;
+use \Firebase\JWT\SignatureInvalidException;
+use \Firebase\JWT\BeforeValidException;
 /**
  * JSON Web Token implementation, based on this spec:
  * https://tools.ietf.org/html/rfc7519
