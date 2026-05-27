@@ -2,8 +2,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, message } from "antd";
-import { Collapse, Form, Flex, Row, Col, Space } from "antd";
-import { Input, Button, Table, Typography } from "antd";
+import { Collapse, Form, Flex, Row, Col, Space,Badge } from "antd";
+import { Input, Button, Table, Typography, Select } from "antd";
 import { SearchOutlined, ClearOutlined } from "@ant-design/icons";
 import { MdGroupAdd } from "react-icons/md";
 import { accessColumn } from "./model";
@@ -83,9 +83,9 @@ const UsersAccess = () => {
   const handleClear = () => {
     clearMyAccessSearchCookie(PAGE_COOKIE_KEY);
     form.resetFields();
+    form.setFieldsValue({ active_status: "Y" });
     setTablePagination(defaultTablePagination);
-
-    handleSearch({}, defaultTablePagination);
+    handleSearch({ active_status: "Y" }, defaultTablePagination);
   };
 
   const hangleAdd = () => {
@@ -172,8 +172,10 @@ const UsersAccess = () => {
       form.setFieldsValue(restored);
     }
 
+    const defaultSearch = { active_status: "Y" };
+    form.setFieldsValue(defaultSearch);
     return {
-      searchValues: restored,
+      searchValues: defaultSearch,
       tablePagination: defaultTablePagination,
     };
   };
@@ -201,7 +203,7 @@ const UsersAccess = () => {
           label: <><SearchOutlined /><span> ค้นหา</span></>,  
           children: (
             <>
-              <Form form={form} layout="vertical" autoComplete="off">
+              <Form form={form} layout="vertical" autoComplete="off" initialValues={{ active_status: "Y" }}>
                 <Row gutter={[8, 8]}>
                   <Col xs={24} sm={8} md={8} lg={8} xl={6}>
                     <Form.Item
@@ -237,6 +239,25 @@ const UsersAccess = () => {
                       onChange={() => triggerSearch()}
                     >
                       <Input placeholder="ใส่เบอร์โทร" />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} sm={8} md={8} lg={8} xl={6}>
+                    <Form.Item label="สถานะการใช้งาน" name="active_status">
+                      <Select
+                        placeholder="เลือกสถานะ"
+                        allowClear
+                        onChange={() => triggerSearch()}
+                        options={[
+                {
+                  value: "Y",
+                  label: <Badge status="success" text="เปิดการใช้งาน" />,
+                },
+                {
+                  value: "N",
+                  label: <Badge status="error" text="ปิดการใช้งาน" />,
+                },
+              ]}
+                      />
                     </Form.Item>
                   </Col>
                 </Row>

@@ -80,23 +80,27 @@ export default function ModalBanks({ show, close, values, selected = [] }) {
     } else setModalDataWrap(modalData);
   };
 
-  const onFinish = (values) => {
-    // console.log( values )
-    const { bank, acc_name, acc_no, remark } = values;
-    const bnk = banksOptionData.find((d) => d.key === bank);
-    if (!bnk) {
-      message.error("Bank data error please choose bank");
-      throw new Error("Bank Data is not empty.");
+  const handleSubmit = async () => {
+    try {
+      const formValues = await form.validateFields();
+      const { bank, acc_name, acc_no, remark } = formValues;
+      const bnk = banksOptionData.find((d) => d.key === bank);
+      if (!bnk) {
+        message.error("Bank data error please choose bank");
+        return;
+      }
+      values({
+        bank,
+        acc_name,
+        acc_no,
+        remark,
+        bank_name: bnk?.official_name,
+        bank_name_th: bnk?.thai_name,
+        bank_nickname: bnk?.nice_name,
+      });
+    } catch {
+      // validation failed — Ant Design will show field errors
     }
-    values({
-      bank,
-      acc_name,
-      acc_no,
-      remark,
-      bank_name: bnk?.official_name,
-      bank_name_th: bnk?.thai_name,
-      bank_nickname: bnk?.nice_name,
-    });
   };
 
   /** setting initial component */
@@ -224,7 +228,7 @@ export default function ModalBanks({ show, close, values, selected = [] }) {
                 <Button
                   className="bn-center bn-primary"
                   icon={<BsUiChecks />}
-                  onClick={() => onFinish()}
+                  onClick={() => handleSubmit()}
                 >
                   {" "}
                   Confirm{" "}
@@ -240,6 +244,7 @@ export default function ModalBanks({ show, close, values, selected = [] }) {
             size="middle"
             style={{ display: "flex", position: "relative" }}
           >
+            <Form form={form} layout="vertical">
             <Card style={{ backgroundColor: "#f0f0f0" }}>
               <Row gutter={[8, 8]} className="m-0">
                 <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
@@ -316,6 +321,7 @@ export default function ModalBanks({ show, close, values, selected = [] }) {
                 </Col>
               </Row>
             </Card>
+            </Form>
           </Space>
         </Spin>
       </Modal>

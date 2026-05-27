@@ -39,13 +39,14 @@ const ShippingRoutes = ({ allowdRole, layout = "child" }) => {
   // }, []);
 
   const authCheck = () => {
-    let payload = { role: "admin" };
     const exp = authService.isExpireToken(() => {
       authService.setCurrent(location.pathname);
       navigate("/login", { replace: true });
     });
 
-    if (allowdRole.includes(payload?.role) && exp) return true;
+    const userType = authService.getType() || "user";
+
+    if (allowdRole.includes(userType) && exp) return true;
     else
       return Modal.error({
         title: "Session Expire",

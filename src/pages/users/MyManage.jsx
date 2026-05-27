@@ -253,7 +253,7 @@ const UsersManage = () => {
               : { display: "none" }
           }
         >
-          <Form.Item label="สถานการใช้งาน" name="active_status">
+          <Form.Item label="สถานะการใช้งาน" name="active_status">
             <Select
               size="large"
               options={[

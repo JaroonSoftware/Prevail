@@ -206,7 +206,7 @@ try {
         }
         $detail = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT a.paydate,a.recode,a.paid_amount, a.payment_type,a.bank_code,a.bank_name,a.reference_no,a.branch,a.remark ";
+        $sql = "SELECT a.code,a.paydate,a.recode,a.paid_amount, a.payment_type,a.bank_code,a.bank_name,a.reference_no,a.branch,a.remark ";
         $sql .= " FROM `receipt_payment` as a   ";
         $sql .= " where a.recode = :code";
 

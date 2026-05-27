@@ -1,13 +1,11 @@
-import { Button, Space,Flex,Typography } from "antd"; 
-// import { Typography } from "antd"; 
-// import { Popconfirm, Button } from "antd";
+import { Button, Space,Flex,Typography, Popconfirm } from "antd";
 import { Tooltip,Badge } from "antd";
 // import { EditOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons"; 
 import { EditableRow, EditableCell } from "../../components/table/TableEditAble";
 import { TagReceiptStatus } from "../../components/badge-and-tag/";
 import { TagsCreateBy } from "../../components/badge-and-tag/";
 import dayjs from 'dayjs';
-import {  EditOutlined, PrinterOutlined,ExclamationCircleOutlined } from "@ant-design/icons";
+import {  EditOutlined, PrinterOutlined, ExclamationCircleOutlined, DeleteOutlined } from "@ant-design/icons";
 import { comma,formatMoney } from '../../utils/util';
 
 const calTotalDiscount = (rec) => {
@@ -161,8 +159,7 @@ export const reViewColumns = [
   },
 ];
 
-    // Add: view-only payment columns (inline for now)
-export const rePaymentViewColumns = [
+export const rePaymentViewColumns = ({ handleDelete } = {}) => [
   {
     title: "ลำดับ",
     key: "__no",
@@ -171,54 +168,78 @@ export const rePaymentViewColumns = [
     render: (_, __, index) => index + 1,
   },
   {
-    title: "ธนาคาร",
-    dataIndex: "bank_name",
-    key: "bank_name",
-    align: "left",
-    // Fallbacks if the API provides a different shape
-    render: (_, val) => <>
-      <Flex align='center' gap={8}>
-          <i className={`bank bank-${val.bank_code} shadow huge`} style={{height:30, width:30}}></i>
-          <Flex align='start' gap={1} vertical>
-              {/* <Typography.Text ellipsis style={{ fontSize: 13 }}>{v.thai_name}</Typography.Text>  */}
-              <Typography.Text ellipsis={true} style={{ fontSize: 'clamp(10px, .9vw, 14px)', }}>{val.bank_name}</Typography.Text> 
-          </Flex>
-      </Flex>
-    </>,
-  },
-  {
-    title: "วิธีชำระเงิน",
+    title: "รูปแบบการชำระเงิน",
     dataIndex: "payment_type",
     key: "payment_type",
     align: "left",
+    width: 180,
   },
   {
-    title: "เลขอ้างอิง",
-    dataIndex: "reference_no",
-    key: "reference_no",
+    title: "วันที่ชำระเงิน",
+    dataIndex: "payment_date",
+    key: "payment_date",
     align: "left",
-    width: 160,
-  },
-  {
-    title: "สาขา",
-    dataIndex: "branch",
-    key: "branch",
-    align: "left",
+    width: 100,
+    render: (v) => dayjs(v).format("DD/MM/YYYY"),
   },
   {
     title: "จำนวนเงิน",
     dataIndex: "paid_amount",
     key: "paid_amount",
     align: "right",
-    width: 160,
+    width: 140,
     className: "!pe-3",
     render: (v) => formatMoney(Number(v || 0), 2),
-  },  
+  },
+  {
+    title: "เลขที่เช็ค/อ้างอิง",
+    dataIndex: "reference_no",
+    key: "reference_no",
+    align: "left",
+    width: 160,
+  },
+  {
+    title: "ธนาคาร",
+    dataIndex: "bank_name",
+    key: "bank_name",
+    align: "left",
+    render: (_, val) => (
+      <Flex align='center' gap={8}>
+        <i className={`bank bank-${val.bank_code} shadow huge`} style={{ height: 30, width: 30 }}></i>
+        <Typography.Text ellipsis={true} style={{ fontSize: 'clamp(10px, .9vw, 14px)' }}>{val.bank_name}</Typography.Text>
+      </Flex>
+    ),
+  },
+  {
+    title: "สาขา",
+    dataIndex: "branch",
+    key: "branch",
+    align: "left",
+    width: 120,
+  },
   {
     title: "หมายเหตุ",
     dataIndex: "remark",
     key: "remark",
     align: "left",
+  },
+  {
+    title: "",
+    key: "operation",
+    align: "center",
+    width: 60,
+    fixed: "right",
+    render: (_, record) => (
+      <Popconfirm
+        title="ยืนยันการลบรายการชำระเงิน?"
+        okText="ลบ"
+        okButtonProps={{ danger: true }}
+        cancelText="ยกเลิก"
+        onConfirm={() => handleDelete?.(record?.code)}
+      >
+        <Button danger size="small" icon={<DeleteOutlined />} />
+      </Popconfirm>
+    ),
   },
 ];
 
@@ -235,7 +256,7 @@ export const productColumn = ({handleRemove}) => [
     title: "เลขที่ใบวางบิล",
     dataIndex: "blcode",
     key: "blcode",
-    align: "center",
+    align: "left",
   },
   {
     title: "วันที่ใบวางบิล",

@@ -15,6 +15,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $lastname = !empty($lastname) ? "and a.lastname like '%$lastname%'" : "";
     $tel = !empty($tel) ? "and a.tel like '%$tel%'" : "";
     $email = !empty($email) ? "and a.email like '%$email'" : "";
+    $active_status_filter = (isset($active_status) && in_array($active_status, ['Y', 'N'])) ? "and a.active_status = '$active_status'" : "";
 
     try {
         $sql = "SELECT a.*
@@ -25,6 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $lastname
         $tel
         $email
+        $active_status_filter
         order by a.created_date desc";
 
         $stmt = $conn->prepare($sql);

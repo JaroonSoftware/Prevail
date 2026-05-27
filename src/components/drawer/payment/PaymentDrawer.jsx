@@ -41,12 +41,18 @@ export default function DryCheckDrawer({
   const paid_amount = Form.useWatch("paid_amount", form);
   const paid_withholding = Form.useWatch("withholding_discount_txt", form);
 
-  const handleConfirm = () => {
-    const dataSource = { 
-      ...form.getFieldsValue(),
-      bank_code: dataBank?.key || null, 
-     };
-    submit(dataSource);
+  const handleConfirm = async () => {
+    try {
+      const values = await form.validateFields();
+      const dataSource = {
+        ...values,
+        bank_code: dataBank?.key || null,
+        paydate: values.paydate ? dayjs(values.paydate).format("YYYY-MM-DD") : null,
+      };
+      submit(dataSource);
+    } catch {
+      // validation failed — fields will show errors
+    }
   };
 
   useEffect(() => {

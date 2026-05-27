@@ -256,9 +256,9 @@ function ReceiptManage() {
     newWindow.location.href = `/receipt/${formDetail.recode}`;
   };
 
-  const handleDelete = (ivcode) => {
+  const handleDelete = (blcode) => {
     const itemDetail = [...listDetail];
-    const newData = itemDetail.filter((item) => item?.ivcode !== ivcode);
+    const newData = itemDetail.filter((item) => item?.blcode !== blcode);
     setListDetail([...newData]);
   };
 
@@ -272,8 +272,8 @@ function ReceiptManage() {
         icon={
           <RiDeleteBin5Line style={{ fontSize: "1rem", marginTop: "3px" }} />
         }
-        onClick={() => handleDelete(record?.ivcode)}
-        disabled={!record?.ivcode || config.action !== "create"}
+        onClick={() => handleDelete(record?.blcode)}
+        disabled={!record?.blcode || config.action !== "create"}
       />
     ) : null;
   };
@@ -738,6 +738,7 @@ function ReceiptManage() {
             handleChoosedBilling(v);
           }}
           selected={listDetail}
+          cuscode={formDetail.cuscode}
         ></ModalBilling>
       )}
 

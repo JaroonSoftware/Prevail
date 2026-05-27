@@ -109,14 +109,41 @@ try {
         http_response_code(200);
         echo json_encode(array("data" => array("code" => $code)));
     } else  if ($_SERVER["REQUEST_METHOD"] == "DELETE") {
-        // $code = $_DELETE["code"];
         $code = $_GET["code"];
 
-        $sql = "delete from receipt_payment where code = :code";
+        $stmt_get = $conn->prepare("SELECT recode FROM receipt_payment WHERE code = :code");
+        if (!$stmt_get->execute(['code' => $code])) throw new PDOException("Record not found");
+        $row = $stmt_get->fetch(PDO::FETCH_ASSOC);
+        $recode = $row['recode'] ?? null;
+        if (!$recode) throw new PDOException("Payment record not found");
+
+        $sql = "DELETE FROM receipt_payment WHERE code = :code";
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute(['code' => $code])) {
             $error = $conn->errorInfo();
             throw new PDOException("Remove data error => $error");
+        }
+
+        $stmt_sum = $conn->prepare("SELECT COALESCE(SUM(paid_amount), 0) AS new_total FROM receipt_payment WHERE recode = :recode");
+        $stmt_sum->execute(['recode' => $recode]);
+        $new_total = (float)$stmt_sum->fetchColumn();
+
+        $stmt_grand = $conn->prepare("SELECT grand_total_price FROM receipt WHERE recode = :recode");
+        $stmt_grand->execute(['recode' => $recode]);
+        $grand_total = (float)($stmt_grand->fetchColumn() ?? 0);
+
+        if ($new_total <= 0) {
+            $new_status = 'รอชำระเงิน';
+        } elseif ($new_total >= $grand_total) {
+            $new_status = 'ชำระเงินครบแล้ว';
+        } else {
+            $new_status = 'ชำระเงินไม่ครบ';
+        }
+
+        $stmt_update = $conn->prepare("UPDATE receipt SET total_paid = :new_total, doc_status = :new_status, updated_date = CURRENT_TIMESTAMP(), updated_by = :action_user WHERE recode = :recode");
+        if (!$stmt_update->execute(['new_total' => $new_total, 'new_status' => $new_status, 'action_user' => $action_user, 'recode' => $recode])) {
+            $error = $conn->errorInfo();
+            throw new PDOException("Update receipt status error => $error");
         }
 
         $conn->commit();

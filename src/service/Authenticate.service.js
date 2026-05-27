@@ -51,23 +51,23 @@ export  const Authenticate = () => {
     }
 
     const getType = () =>{
-        const t = sessionStorage.getItem( STORE_KEY.authen);
+        const t = getToken();
         if(!t) return null;
         const { type } = decodeToken(t);
         return type;
     }
 
     const getUserId = () =>{
-        const t = sessionStorage.getItem( STORE_KEY.authen);
+        const t = getToken();
         if(!t) return null;
-        const { userid } = decodeToken(t); 
+        const { userid } = decodeToken(t);
         return userid;
     }
 
     const getUserInfo = () =>{
-        const t = sessionStorage.getItem( STORE_KEY.authen);
+        const t = getToken();
         if(!t) return null;
-        const { userid, username, firstname, lastname } = decodeToken(t); 
+        const { userid, username, firstname, lastname } = decodeToken(t);
         return { userid, username: username || userid, firstname, lastname };
     }
 

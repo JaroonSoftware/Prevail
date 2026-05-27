@@ -12,7 +12,7 @@ import OptionService from '../../../service/Options.service.js';
 
 const opservice = OptionService();
 
-export default function ModalBilling({show, close, values, selected}) {
+export default function ModalBilling({show, close, values, selected, cuscode}) {
     const [form] = useForm(); 
 
     const [customersData, setCustomersData] = useState([]);
@@ -117,7 +117,7 @@ export default function ModalBilling({show, close, values, selected}) {
     useEffect( () => {
         const onload = () =>{            
             setLoading(true);
-            opservice.optionsBilling().then((res) => {
+            opservice.optionsBilling( cuscode ? { cuscode } : {} ).then((res) => {
                 let { data } = res.data; 
                 setCustomersData(data);
                 setCustomersDataWrap(data);

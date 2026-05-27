@@ -1,7 +1,7 @@
-import { Space } from "antd";
+import { Space, Tag } from "antd";
 import { Button } from "antd";
-// import { PrinterOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons"; 
-import { EditOutlined } from "@ant-design/icons"; 
+// import { PrinterOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons";
+import { EditOutlined } from "@ant-design/icons";
 // import dayjs from 'dayjs';
 
 export const accessColumn = ({handleEdit, handleDelete, handleView}) => [
@@ -49,6 +49,16 @@ export const accessColumn = ({handleEdit, handleDelete, handleView}) => [
     width: 120,
     sorter: (a, b) => a.type.length - b.type.length,
     sortDirections: ["descend", "ascend"],
+  },
+  {
+    title: "สถานะ",
+    dataIndex: "active_status",
+    key: "active_status",
+    width: 110,
+    align: "center",
+    render: (v) => v === "Y"
+      ? <Tag color="success">ใช้งาน</Tag>
+      : <Tag color="error">ยกเลิก</Tag>,
   },
   {
     title: "Action",

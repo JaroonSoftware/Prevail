@@ -53,33 +53,25 @@ export default function ReceiptView() {
   // Add: state for payment section
   const [paymentItems, setPaymentItems] = useState([]);
 
+  const loadReceiptData = async () => {
+    if (!config?.code) return;
+    try {
+      const res = await reservice.get(config.code);
+      const { header, detail, payment } = res?.data?.data || {};
+      setMaster(header || {});
+      setReCode(header?.recode || "");
+      setDetailData(detail || []);
+      setPaymentData(payment || []);
+      buildLastUpdateInfo(header || {});
+    } catch (err) {
+      console.warn(err);
+      const data = err?.response?.data;
+      message.error(data?.message || "Fail to load Receipt");
+    }
+  };
+
   useEffect(() => {
-    const initial = async () => {
-      if (!config?.code) return;
-      try {
-        const res = await reservice.get(config.code);
-        // Receipt get() returns { data: { header, detail } }
-        const { header, detail, payment } = res?.data?.data || {};
-
-        setMaster(header || {});
-        setReCode(header?.recode || "");
-
-        buildMasterItems(header || {});
-        buildDetailItems(detail || {});
-        buildPaymentItems(payment || {});
-        setDetailData(detail || []);
-        setPaymentData(payment || []);
-
-        buildLastUpdateInfo(header || {});
-      } catch (err) {
-        console.warn(err);
-        const data = err?.response?.data;
-        message.error(data?.message || "Fail to load Receipt");
-      }
-    };
-
-    initial();
-    return () => {};
+    loadReceiptData();
   }, [config]);
 
   useEffect(() => {
@@ -200,17 +192,27 @@ export default function ReceiptView() {
     setDetailItems(d);
   };
 
-  // Add: Payment records section (view-only) with empty message
+  const handleDeletePayment = async (code) => {
+    try {
+      await payservice.deleted(code);
+      message.success("ลบรายการชำระเงินสำเร็จ");
+      loadReceiptData();
+    } catch (err) {
+      message.error("ลบรายการชำระเงินไม่สำเร็จ");
+      console.warn(err);
+    }
+  };
+
   const buildPaymentItems = (payments = []) => {
-    const data = Array.isArray(paymentData) ? paymentData : [];
+    const data = Array.isArray(payments) ? payments : [];
 
     const tableNode = (
       <Table
         style={{ backgroundColor: "#fafafa" }}
         dataSource={data}
-        columns={rePaymentViewColumns}
+        columns={rePaymentViewColumns({ handleDelete: handleDeletePayment })}
         pagination={false}
-        rowKey={(r) => r?.acc_no ?? r?.id ?? r?.key}
+        rowKey={(r) => r?.code ?? r?.id ?? r?.key}
         scroll={{ x: "max-content" }}
         size="small"
         locale={{
@@ -304,13 +306,6 @@ export default function ReceiptView() {
       style={{ display: "flex", justifyContent: "end" }}
     >
       <Button
-        icon={<DollarOutlined />}
-        onClick={handlePayment}
-        className="bn-center bn-success-outline"
-      >
-        ชำระเงิน
-      </Button>
-      <Button
         icon={<PrinterOutlined />}
         onClick={handlePrint}
         className="bn-center bn-warning-outline"
@@ -321,22 +316,16 @@ export default function ReceiptView() {
   );
 
   const handleConfirmPayment = (res) => {
-
-     setPaymentDrawer(false)
-    // let errormessage = "";
-
-        const parm = { res };
-        // console.log(parm);
-        payservice.create(parm)
-          .then((r) => {
-            handleClose().then((r) => {
-              message.success("สร้างใบเสร็จรับเงินสำเร็จ.");
-            });
-          })
-          .catch((err) => {
-            message.error("Error สร้างใบเสร็จรับเงินไม่สำเร็จ.");
-            console.warn(err);
-          });
+    setPaymentDrawer(false);
+    payservice.create({ res })
+      .then(() => {
+        message.success("บันทึกการชำระเงินสำเร็จ.");
+        loadReceiptData();
+      })
+      .catch((err) => {
+        message.error("บันทึกการชำระเงินไม่สำเร็จ.");
+        console.warn(err);
+      });
   };
 
   return (
@@ -379,6 +368,20 @@ export default function ReceiptView() {
           style={{ backgroundColor: "transparent" }}
           items={detailItems}
         />
+
+        <Flex justify="end">
+          <Button
+            icon={<DollarOutlined />}
+            onClick={handlePayment}
+            className="bn-center bn-success-outline"
+            disabled={
+              paymentData.reduce((s, r) => s + Number(r?.paid_amount || 0), 0) >=
+              Number(master?.total_price ?? master?.price ?? 0)
+            }
+          >
+            ชำระเงิน
+          </Button>
+        </Flex>
 
         {/* Add: Payment records section with empty message */}
         <Collapse
