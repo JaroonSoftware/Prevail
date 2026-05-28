@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Modal } from 'antd';
 import Main from "../layout/Main";
@@ -15,7 +15,7 @@ const PrivateRoute = ({ allowdRole, mode = "manage" }) => {
   const location = useLocation();
   const navigate = useNavigate();
    
-  // const [ tokenExp, setTokenExp ] = useState(true);
+  const isModalShown = useRef(false);
   const [ isAuth, setIsAuth ] = useState(true);
   // const navigate = useNavigate(); 
   //   useEffect(() => {
@@ -43,46 +43,55 @@ const PrivateRoute = ({ allowdRole, mode = "manage" }) => {
       navigate("/login", { replace: true });
     });
 
+    // Token expired or missing → show session expire modal
+    if (!exp) {
+      if (!isModalShown.current) {
+        isModalShown.current = true;
+        Modal.error({
+          title: 'Session Expire',
+          content: 'your session expired please relogin',
+          onOk: () => {
+            isModalShown.current = false;
+            authService.removeToken();
+            navigate("/login", { replace: true });
+          }
+        });
+      }
+      return true;
+    }
+
     const userType = authService.getType() || "user";
 
-    if( allowdRole.includes(userType) && exp ) return true;
-    else return Modal.error({
-      title: 'Session Expire',
-      content: 'your session expired please relogin',
-      onOk: () => { 
-        authService.setCurrent(location.pathname);
-        navigate("/", { replace: true })
-      }
-    })
+    // Valid session but wrong role → redirect to dashboard silently
+    // if (!allowdRole.includes(userType)) {
+    //   navigate("/dashboard", { replace: true });
+    //   return true;
+    // }
+
+    return true;
   };
 
-  const Contents = () => {
-    if( isAuth && mode === "manage" ) {
-      return (
-        <Provider store={store}>
-          {/* <LoadingProvider> */}
-            <Main>
-              <Outlet />
-            </Main>
-          {/* </LoadingProvider> */}
-        </Provider>        
-      )
-    } else if (isAuth && mode === "print") {
-      return ( 
-        <LoadingProvider>
-          <AxiosInterceptor>
-          <div style={{height:'100vh', overflow:'auto'}}>
+  if (isAuth && mode === "manage") {
+    return (
+      <Provider store={store}>
+        <Main>
+          <Outlet />
+        </Main>
+      </Provider>
+    );
+  } else if (isAuth && mode === "print") {
+    return (
+      <LoadingProvider>
+        <AxiosInterceptor>
+          <div style={{ height: '100vh', overflow: 'auto' }}>
             <Outlet />
-            </div>
-          </AxiosInterceptor>
-        </LoadingProvider>
-      )
-    } else {
-      return ( <Navigate to="/login" state={{ from: location }} replace /> )
-    }
+          </div>
+        </AxiosInterceptor>
+      </LoadingProvider>
+    );
+  } else {
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
-
-  return <Contents /> 
 };
 
 export default PrivateRoute;

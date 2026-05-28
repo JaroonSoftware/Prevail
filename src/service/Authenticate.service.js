@@ -35,8 +35,8 @@ export  const Authenticate = () => {
             dirc(); 
             return false;
         } else {
-            const {expd:newdate} = decodeToken(t); 
-            return (new Date(newdate.date)).getTime() > Date.now();
+            const { exp } = decodeToken(t);
+            return exp * 1000 > Date.now();
         }
     }
     

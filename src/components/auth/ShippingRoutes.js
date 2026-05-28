@@ -52,8 +52,8 @@ const ShippingRoutes = ({ allowdRole, layout = "child" }) => {
         title: "Session Expire",
         content: "your session expired please relogin",
         onOk: () => {
-          authService.setCurrent(location.pathname);
-          navigate("/", { replace: true });
+          authService.removeToken();
+          navigate("/login", { replace: true });
         },
       });
   };
