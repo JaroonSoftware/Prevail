@@ -12,13 +12,14 @@ import {
 
 } from "antd";
 
-import { UserOutlined } from "@ant-design/icons";
+import { SettingOutlined, UserOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 // import styled from "styled-components";
 import { Authenticate } from "../../service/Authenticate.service";
 import { capitalized } from "../../utils/util";
-
 import { useLoadingContext } from "../../store/context/loading-context";
+import ModalResetPassword from "../modal/reset-password/ModalResetPassword";
+
 const authService = Authenticate();
 function Header({
   placement,
@@ -32,6 +33,7 @@ function Header({
   const navigate = useNavigate();
   const { startLoading, stopLoading } = useLoadingContext();
   const [userInfo, setUserInfo] = useState(null);
+  const [openResetPassword, setOpenResetPassword] = useState(false);
   useEffect(() => {
     return window.scrollTo(0, 0);
   }, []);
@@ -85,15 +87,26 @@ function Header({
   const items = [
     {
       label: (
-        <>
-          <Typography.Link
-            onClick={() => onLogout()}
-            className="btn-sign-in"
-            style={{ border: "none", backgroundColor: "inherit" }}
-          >
-            <span>Log out</span>
-          </Typography.Link>
-        </>
+        <Typography.Link
+          onClick={() => setOpenResetPassword(true)}
+          style={{ border: "none", backgroundColor: "inherit" }}
+        >
+          <SettingOutlined style={{ marginRight: 6 }} />
+          เปลี่ยนรหัสผ่าน
+        </Typography.Link>
+      ),
+      key: "reset-password",
+    },
+    { type: "divider" },
+    {
+      label: (
+        <Typography.Link
+          onClick={() => onLogout()}
+          className="btn-sign-in"
+          style={{ border: "none", backgroundColor: "inherit", color: "#ff4d4f" }}
+        >
+          <span>Log out</span>
+        </Typography.Link>
       ),
       key: "0",
     },
@@ -177,6 +190,11 @@ function Header({
           </Dropdown>
         </Col>
       </Row>
+      <ModalResetPassword
+        open={openResetPassword}
+        onClose={() => setOpenResetPassword(false)}
+        userid={userInfo?.userid}
+      />
     </>
   );
 }

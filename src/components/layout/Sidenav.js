@@ -188,11 +188,13 @@ const Sidenav = () => {
         <Menu theme="light" mode="inline">
         {filterNav(nav).filter( (item) => {
             const allowRole = !item.role || !!item?.role?.includes(currentRole);
-            const allowUsername =
-              !item.usernames || item.usernames.includes(currentUsername);
+            const pinnedUsername = !!item.usernames?.includes(currentUsername);
+            const allowUsername = !item.usernames || pinnedUsername;
             const hideForRole =
               !!item.hiddenRoles?.map((role) => role?.toLowerCase()).includes(currentRole);
 
+            // usernames whitelist overrides hiddenRoles
+            if (pinnedUsername) return true;
             return allowRole && allowUsername && !hideForRole;
           }).map((item, idx) => (
           ( !item?.type ? (

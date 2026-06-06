@@ -196,6 +196,7 @@ let _nav = [
     icon: <FaUserCircle className="nav-ico" />,
     to: "/users",
     hiddenRoles: ["จัดซื้อ","พนักงานขาย","พนักงานส่งสินค้า"],
+    usernames: ["Yui6003", "test"],
   },
   
   {
