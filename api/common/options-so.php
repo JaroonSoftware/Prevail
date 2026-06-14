@@ -9,8 +9,8 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
     try { 
         $res = null;
         
-        $sql = "SELECT i.socode,i.sodate,c.cuscode, c.cusname,c.prename, c.idno, c.road, c.subdistrict, c.district, c.province, c.zipcode,i.doc_status
-         FROM somaster as i inner join `customer` as c on (i.cuscode=c.cuscode) where c.cuscode= '$cuscode' and i.doc_status != 'ยกเลิก' and i.doc_status = 'รอออกใบส่งของ'  
+        $sql = "SELECT i.socode, i.sodate, i.customer_po, c.cuscode, c.cusname, c.prename, c.idno, c.road, c.subdistrict, c.district, c.province, c.zipcode, i.doc_status
+         FROM somaster as i inner join `customer` as c on (i.cuscode=c.cuscode) where c.cuscode= '$cuscode' and i.doc_status != 'ยกเลิก' and i.doc_status = 'รอออกใบส่งของ'
          order by i.socode DESC";
             // $type_code
             $stmt = $conn->prepare($sql); 

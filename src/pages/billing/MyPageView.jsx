@@ -60,9 +60,9 @@ export default function BillingView() {
 
   const buildMasterItems = (h) => {
     const items = [
-      { label: "เลขที่ใบแจ้งหนี้", children: h?.blcode || "" },
+      { label: "เลขที่ใบวางบิล", children: h?.blcode || "" },
       {
-        label: "วันที่ใบแจ้งหนี้",
+        label: "วันที่ใบวางบิล",
         children: h?.bldate ? dayjs(h.bldate).format("DD/MM/YYYY") : "",
       },
       {

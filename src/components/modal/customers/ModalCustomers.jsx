@@ -15,7 +15,7 @@ import OptionService from '../../../service/Options.service';
 const ctmService = CustomerService();
 const opservice = OptionService();
 
-export default function ModalCustomers({show, close, values, selected}) {
+export default function ModalCustomers({show, close, values, selected, fetchOptions, showPendingSO = false, showPendingDN = false}) {
     const [form] = useForm(); 
 
     const [customersData, setCustomersData] = useState([]);
@@ -71,10 +71,11 @@ export default function ModalCustomers({show, close, values, selected}) {
     }
 
     /** setting initial component */ 
-    const column = customersColumn({handleChoose});
+    const column = customersColumn({handleChoose, showPendingSO, showPendingDN});
     const search = () =>{
         setLoading(true);
-        opservice.optionsCustomer().then((res) => {
+        const apiFn = fetchOptions || opservice.optionsCustomer;
+        apiFn().then((res) => {
             let { data } = res.data; 
             setCustomersData(data);
             setCustomersDataWrap(data);

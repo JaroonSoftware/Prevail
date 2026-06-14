@@ -23,6 +23,7 @@ import {
 
 import BillingNoteService from "../../service/BillingNote.Service";
 import SOService from "../../service/SO.service";
+import OptionService from "../../service/Options.service";
 import { SaveFilled, SearchOutlined } from "@ant-design/icons";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
 import { ModalDeliverynoteBilling } from "../../components/modal/delivery-note-for-billing";
@@ -44,6 +45,7 @@ import { LuPackageSearch } from "react-icons/lu";
 import { LuPrinter } from "react-icons/lu";
 const blservice = BillingNoteService();
 const soservice = SOService();
+const opservice = OptionService();
 
 const gotoFrom = "/billing";
 const dateFormat = "DD/MM/YYYY";
@@ -468,8 +470,8 @@ function BillingnoteManage() {
 
   const handleCancelBilling = () => {
     Modal.confirm({
-      title: "ยืนยันที่จะยกเลิกใบแจ้งหนี้",
-      content: "ต้องการยกเลิกใบแจ้งหนี้ ใช่หรือไม่",
+      title: "ยืนยันที่จะยกเลิกใบวางบิล",
+      content: "ต้องการยกเลิกใบวางบิล ใช่หรือไม่",
       okText: "ยืนยัน",
       okType: "danger",
       cancelText: "ยกเลิก",
@@ -478,7 +480,7 @@ function BillingnoteManage() {
           .deleted(formDetail?.blcode || config?.code)
           .then(() => {
             return handleClose().then(() => {
-              message.success("ยกเลิกใบแจ้งหนี้สำเร็จ");
+              message.success("ยกเลิกใบวางบิลสำเร็จ");
             });
           })
           .catch((err) => {
@@ -823,7 +825,7 @@ function BillingnoteManage() {
               }}
               disabled={isLockedStatus}
             >
-              ยกเลิกใบแจ้งหนี้
+              ยกเลิกใบวางบิล
             </Button>
           )}
           <Button
@@ -902,7 +904,7 @@ function BillingnoteManage() {
                   <Row className="m-0 py-3 sm:py-0" gutter={[12, 12]}>
                     <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
                       <Typography.Title level={3} className="m-0">
-                        เลขที่ใบแจ้งหนี้ : {blCode}
+                        เลขที่ใบวางบิล : {blCode}
                       </Typography.Title>
                     </Col>
                     <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
@@ -912,7 +914,7 @@ function BillingnoteManage() {
                         className="justify-start sm:justify-end"
                       >
                         <Typography.Title level={3} className="m-0">
-                          วันที่ใบแจ้งหนี้ :{" "}
+                          วันที่ใบวางบิล :{" "}
                         </Typography.Title>
                         <Form.Item name="bldate" className="!m-0">
                           <DatePicker
@@ -932,13 +934,13 @@ function BillingnoteManage() {
                 <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
                   <Divider orientation="left" className="!mb-3 !mt-1">
                     {" "}
-                    ข้อมูลใบแจ้งหนี้{" "}
+                    ข้อมูลใบวางบิล{" "}
                   </Divider>
                   <Card style={cardStyle}>{SectionCustomers}</Card>
                 </Col>
                 <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
                   <Divider orientation="left" className="!my-0">
-                    รายการใบแจ้งหนี้
+                    รายการใบวางบิล
                   </Divider>
                   <Card style={{ backgroundColor: "#f0f0f0" }}>
                     {SectionProduct}
@@ -965,6 +967,8 @@ function BillingnoteManage() {
           values={(v) => {
             handleChoosedCustomers(v);
           }}
+          fetchOptions={config?.action === "create" ? opservice.optionsCustomerPendingBL : undefined}
+          showPendingDN={config?.action === "create"}
         ></ModalCustomers>
       )}
 

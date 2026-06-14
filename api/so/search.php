@@ -17,24 +17,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
     // $spcode_cdt = !empty($spcode) ? "and e.spcode like '%$spcode%'" : "";
     // $spname_cdt = !empty($spname) ? "and e.spname like '%$spname%'" : "";
     $created_by = !empty($created_by) ? "and ( u.firstname like '%$created_by%' or u.lastname like '%$created_by%' )" : "";
+    $doc_status = !empty($doc_status) ? "and a.doc_status = '$doc_status'" : "";
     $sodate = "";
     if( !empty($sodate_form) && !empty($sodate_to) ) {
         $sodate = "and date_format( a.sodate, '%Y-%m-%d' ) >= '$sodate_form' and date_format( a.sodate, '%Y-%m-%d' ) <= '$sodate_to' ";
-    } 
-    
-    try {   
-        $sql = " 
-        SELECT 
-        a.socode,a.sodate,a.customer_po,a.cuscode,c.cusname,a.print_status,a.doc_status,concat(IFNULL(u.firstname, ''), ' ', IFNULL(u.lastname, '')) created_name  
-        from somaster a        
-        left join customer c on a.cuscode = c.cuscode  
+    }
+
+    try {
+        $sql = "
+        SELECT
+        a.socode,a.sodate,a.customer_po,a.cuscode,c.cusname,a.print_status,a.doc_status,concat(IFNULL(u.firstname, ''), ' ', IFNULL(u.lastname, '')) created_name
+        from somaster a
+        left join customer c on a.cuscode = c.cuscode
         left join user u on a.created_by = u.code
-        where 1 = 1 
+        where 1 = 1
         $socode
         $cuscode
         $cusname
         $customer_po
         $created_by
+        $doc_status
         $sodate
         order by a.socode desc ;";
 

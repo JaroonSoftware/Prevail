@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { Card } from 'antd';
 import { Collapse, Form, Flex, Row, Col, Space } from 'antd';
-import { Input, Button, Table, message, DatePicker, Typography } from 'antd';
+import { Input, Button, Table, message, DatePicker, Typography, Select } from 'antd';
 import { SearchOutlined, ClearOutlined, FileAddOutlined } from '@ant-design/icons'; 
 import { accessColumn } from "./model";
 
@@ -75,7 +75,27 @@ const MyAccess = () => {
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
                 <Form.Item label='Customer Name' name='cusname'>
                     <Input placeholder='Enter Customer Name.' />
-                </Form.Item>                            
+                </Form.Item>
+            </Col>
+            <Col xs={24} sm={8} md={8} lg={8} xl={8}>
+                <Form.Item label='สถานะใบขาย' name='doc_status'>
+                    <Select
+                        placeholder='-- ทั้งหมด --'
+                        allowClear
+                        style={{ width: '100%', height: 40 }}
+                        options={[
+                            { value: 'รอจัดเตรียมสินค้า',      label: 'รอจัดเตรียมสินค้า' },
+                            { value: 'รอออกใบส่งของ',           label: 'รอออกใบส่งของ' },
+                            { value: 'รอออกใบวางบิล',           label: 'รอออกใบวางบิล' },
+                            { value: 'รอออกใบเสร็จรับเงิน',     label: 'รอออกใบเสร็จรับเงิน' },
+                            { value: 'รอชำระเงิน',              label: 'รอชำระเงิน' },
+                            { value: 'ชำระเงินยังไม่ครบ',       label: 'ชำระเงินยังไม่ครบ' },
+                            { value: 'ชำระครบแล้ว',             label: 'ชำระครบแล้ว' },
+                            { value: 'คืนสินค้า',               label: 'คืนสินค้า' },
+                            { value: 'ยกเลิก',                  label: 'ยกเลิก' },
+                        ]}
+                    />
+                </Form.Item>
             </Col>
         </Row>
         <Row gutter={[8,8]}>

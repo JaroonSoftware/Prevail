@@ -27,6 +27,7 @@ try {
         $sql .= " FROM `sodetail` as a";
         $sql .= " left outer join `items` i on (a.stcode=i.stcode)  ";
         $sql .= " where a.socode IN (". implode(',',$tmp_array) . ") ";
+        $sql .= " ORDER BY a.socode ASC ";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute()) {

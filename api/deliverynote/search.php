@@ -20,14 +20,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
     } 
     
     try {   
-        $sql = " 
-        select 
+        $sql = "
+        select
         a.*,
-        c.*,        
-        concat(u.firstname, ' ', u.lastname) created_name
-        from dnmaster a        
+        c.*,
+        concat(u.firstname, ' ', u.lastname) created_name,
+        bl.blcode as billing_blcode
+        from dnmaster a
         left join customer c on (a.cuscode = c.cuscode)
         left join user u on a.created_by = u.code
+        left join (
+            select d.dncode, min(d.blcode) as blcode
+            from bl_detail d
+            inner join bl_master m on (d.blcode = m.blcode and m.doc_status != 'ยกเลิก' and m.active_status = 'Y')
+            group by d.dncode
+        ) bl on (a.dncode = bl.dncode)
         where 1 = 1 and a.doc_status != 'ยกเลิก'
         $dncode
         $cuscode

@@ -524,7 +524,7 @@ function DelPrintPreview() {
                     <Typography.Text
                       style={{ fontSize: 30, margin: 0, padding: 0 }}
                     >
-                      ใบแจ้งหนี้/ใบขนส่ง
+                      ใบวางบิล/ใบขนส่ง
                     </Typography.Text>
                     <br></br>
                     <Typography.Text
@@ -606,7 +606,7 @@ function DelPrintPreview() {
             <div className="flex flex-col">
               <Space style={{ width: "100%", textAlign: "center" }}>
                 <Typography.Text strong style={{ fontSize: 14, margin: 20 }}>
-                  ใบแจ้งหนี้/INVOICE No.
+                  ใบวางบิล/INVOICE No.
                 </Typography.Text>
               </Space>
               <Space className="w-full items-baseline">

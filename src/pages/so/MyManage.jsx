@@ -18,7 +18,10 @@ import SOService from "../../service/SO.service";
 import { PrinterOutlined, SaveFilled, SearchOutlined } from "@ant-design/icons";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
 
-import { soForm, columnsParametersEditable, componentsEditable } from "./model";
+import { soForm, columnsParametersEditableWithDrag, componentsEditableWithDrag } from "./model";
+import { DndContext, PointerSensor, closestCenter, useSensor, useSensors } from "@dnd-kit/core";
+import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 // import { ModalItems } from "../../components/modal/itemsbyCL/modal-items";
 import dayjs from "dayjs";
 import { delay, comma } from "../../utils/util";
@@ -440,8 +443,21 @@ function MyManage() {
     ]);
   };
 
+  /** DnD sensors */
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 1 } }));
+
+  const handleDragEnd = ({ active, over }) => {
+    if (active.id !== over?.id) {
+      setListDetail((prev) => {
+        const oldIndex = prev.findIndex((item) => String(item._rid) === String(active.id));
+        const newIndex = prev.findIndex((item) => String(item._rid) === String(over.id));
+        return arrayMove(prev, oldIndex, newIndex);
+      });
+    }
+  };
+
   /** setting column table */
-  const prodcolumns = columnsParametersEditable(
+  const prodcolumns = columnsParametersEditableWithDrag(
     handleEditCell,
     unitOption,
     stcodeOption,
@@ -568,9 +584,11 @@ function MyManage() {
   const SectionProduct = (
     <>
       <Flex className="width-100" vertical gap={4}>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} modifiers={[restrictToVerticalAxis]} onDragEnd={handleDragEnd}>
+          <SortableContext items={listDetail.map((i) => String(i._rid))} strategy={verticalListSortingStrategy}>
         <Table
           title={() => TitleTable}
-          components={componentsEditable}
+          components={componentsEditableWithDrag}
           rowClassName={() => "editable-row"}
           bordered
           dataSource={listDetail}
@@ -589,7 +607,7 @@ function MyManage() {
                     <Table.Summary.Row>
                       <Table.Summary.Cell
                         index={0}
-                        colSpan={7}
+                        colSpan={8}
                       ></Table.Summary.Cell>
                       <Table.Summary.Cell
                         index={4}
@@ -614,6 +632,8 @@ function MyManage() {
             );
           }}
         />
+          </SortableContext>
+        </DndContext>
       </Flex>
     </>
   );

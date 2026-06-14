@@ -1,7 +1,7 @@
 import { Button,Space,Badge,Tooltip } from "antd"; 
 
 // import { EditOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons"; 
-import { EditableRow, EditableCell } from "../../components/table/TableEditAble";
+import { EditableRow, EditableCell, RowDrag } from "../../components/table/TableEditAble";
 import dayjs from 'dayjs';
 import { EditOutlined,ExclamationCircleOutlined,PrinterOutlined } from "@ant-design/icons";
 import { comma,formatMoney } from '../../utils/util';
@@ -16,6 +16,11 @@ const calTotalDiscount = (rec) => {
 /** export component for edit table */
 export const componentsEditable = {
   body: { row: EditableRow, cell: EditableCell },
+};
+
+/** export component for edit table with drag-and-drop row sorting */
+export const componentsEditableWithDrag = {
+  body: { row: RowDrag, cell: EditableCell },
 };
 
 /** get sample column */
@@ -297,6 +302,38 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
     fixed: 'right',
   },
 ];
+
+export const columnsParametersEditableWithDrag = (handleEditCell, optionsItems, optionsStcode, { handleRemove, handleAddRow }) => {
+  const dragCol = {
+    key: "sort",
+    align: "center",
+    width: 40,
+    render: () => null, // RowDrag จะ inject ไอคอนลากเองผ่าน child.key === "sort"
+  };
+  const col = [dragCol, ...productColumn({ handleRemove })];
+  return col.map((colItem) => {
+    if (!colItem.editable) return colItem;
+
+    return {
+      ...colItem,
+      onCell: (record) => {
+        return {
+          record,
+          editable: colItem.editable,
+          dataIndex: colItem.dataIndex,
+          title: colItem.title,
+          type: colItem?.type || "input",
+          handleEditCell,
+          optionsItems,
+          optionsStcode,
+          childProps: {
+            handleAddRow,
+          },
+        };
+      },
+    };
+  });
+};
 
 export const columnsParametersEditable = (handleEditCell, optionsItems, optionsStcode, { handleRemove, handleAddRow }) => {
   const col = productColumn({ handleRemove });

@@ -114,7 +114,7 @@ export default function DeliveryPrintPreview(props) {
                 style={{ textAlign: "right", fontSize: 17 }}
                 strong
               >
-                ใบส่งสินค้า/ใบแจ้งหนี้
+                ใบส่งสินค้า/ใบวางบิล
               </Typography.Text>
             </Flex>
           </div>

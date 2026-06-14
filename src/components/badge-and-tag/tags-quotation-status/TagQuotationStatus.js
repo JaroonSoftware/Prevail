@@ -9,7 +9,8 @@ export default function TagQuotationStatus({result}) {
 
   switch (result) {
     case 'ออกใบแจ้งหนี้แล้ว':
-      elementToRender = <Tag icon={<CheckCircleFilled />} color="#87d068"> ออกใบแจ้งหนี้แล้ว </Tag>;
+    case 'ออกใบวางบิลแล้ว':
+      elementToRender = <Tag icon={<CheckCircleFilled />} color="#87d068"> ออกใบวางบิลแล้ว </Tag>;
       break;
     case 'กำลังรอดำเนินการ':
       elementToRender = <Tag icon={<ClockCircleFilled />} color="#347C98"> กำลังรอดำเนินการ </Tag>;

@@ -86,7 +86,44 @@
     padding-inline: 12px;
 }
 
-@media print { 
+/* ============================================
+   Drag & Drop Row — Ghost Fade Style
+   ============================================ */
+
+/* Drag handle — hidden by default, show on row hover */
+.drag-handle-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    cursor: grab;
+    color: transparent;
+    transition: color 0.15s ease, background-color 0.15s ease;
+    user-select: none;
+}
+
+.editable-row:hover .drag-handle-icon {
+    color: #bfbfbf;
+}
+
+.drag-handle-icon:hover {
+    color: #595959;
+    background-color: #f0f0f0;
+}
+
+.drag-handle-icon:active {
+    cursor: grabbing;
+}
+
+/* Row being dragged — ghost/fade */
+tr.row-dragging > td {
+    opacity: 0.25 !important;
+    background: #fafafa !important;
+}
+
+@media print {
     body {
         background-color: #fff;
         margin: 0;

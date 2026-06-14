@@ -33,9 +33,11 @@ import { RiDeleteBin5Line } from "react-icons/ri";
 import { LuPackageSearch } from "react-icons/lu";
 import { TbExclamationCircle } from "react-icons/tb";
 import { CloseCircleFilledIcon } from "../../components/icon";
+import { Authenticate } from "../../service/Authenticate.service";
 const opservice = OptionService();
 const dnservice = DeliveryNoteService();
 const blservice = BillingNoteService();
+const authService = Authenticate();
 // const qtservice = QuotationService();
 
 const gotoFrom = "/delivery-note";
@@ -47,6 +49,8 @@ function DeliveryNoteManage() {
 
   const { config } = location.state || { config: null };
   const [form] = Form.useForm();
+
+  const isSalesman = authService.getType() === "พนักงานขาย";
 
   /** Modal handle */
   const [openCustomers, setOpenCustomers] = useState(false);
@@ -255,7 +259,7 @@ function DeliveryNoteManage() {
     // console.log(val.contact)
     setFormDetail((state) => ({ ...state, ...customers }));
     form.setFieldsValue({ ...fvalue, ...customers });
-    // setListDetail([]);
+    setListDetail([]);
   };
   const handleChoosedSO = (v) => {
     let value = { detail: v };
@@ -273,10 +277,8 @@ function DeliveryNoteManage() {
 
     // console.log(value);
   };
-  const handleDelete = (code) => {
-    const itemDetail = [...listDetail];
-    const newData = itemDetail.filter((item) => item?.code !== code);
-    setListDetail([...newData]);
+  const handleDelete = (socode) => {
+    setListDetail((prev) => prev.filter((item) => item?.socode !== socode));
   };
 
   const handleRemove = (record) => {
@@ -289,8 +291,8 @@ function DeliveryNoteManage() {
         icon={
           <RiDeleteBin5Line style={{ fontSize: "1rem", marginTop: "3px" }} />
         }
-        onClick={() => handleDelete(record?.code)}
-        disabled={formDetail.doc_status !== "รอจัดเตรียมสินค้า"}
+        onClick={() => handleDelete(record?.socode)}
+        disabled={!!billingInfo?.hasBilling}
       />
     ) : null;
   };
@@ -422,7 +424,7 @@ function DeliveryNoteManage() {
             onClick={() => {
               setOpenProduct(true);
             }}
-            disabled={formDetail.doc_status !== "รอจัดเตรียมสินค้า"}
+            disabled={!!billingInfo?.hasBilling}
           >
             เลือกใบขายสินค้า
           </Button>
@@ -503,8 +505,9 @@ function DeliveryNoteManage() {
       </Col>
       <Col span={12} className="p-0">
         <Flex gap={4} justify="end">
-        {formDetail.doc_status === "รอจัดเตรียมสินค้า" &&
-            config?.action !== "create" && (
+        {!billingInfo?.hasBilling &&
+            config?.action !== "create" &&
+            !isSalesman && (
               <Popconfirm
                 placement="topRight"
                 title="ยืนยันการยกเลิก"
@@ -531,7 +534,7 @@ function DeliveryNoteManage() {
             onClick={() => {
               handleConfirm();
             }}
-            disabled={formDetail.doc_status !== "รอจัดเตรียมสินค้า"}
+            disabled={!!billingInfo?.hasBilling}
           >
             Save
           </Button>
@@ -559,7 +562,7 @@ function DeliveryNoteManage() {
             onClick={() => {
               handleConfirm();
             }}
-            disabled={formDetail.doc_status !== "รอจัดเตรียมสินค้า"}
+            disabled={!!billingInfo?.hasBilling}
           >
             Save
           </Button>
@@ -671,6 +674,8 @@ function DeliveryNoteManage() {
           values={(v) => {
             handleChoosedCustomers(v);
           }}
+          fetchOptions={config?.action === "create" ? opservice.optionsCustomerPendingDN : undefined}
+          showPendingSO={config?.action === "create"}
         ></ModalCustomers>
       )}
 

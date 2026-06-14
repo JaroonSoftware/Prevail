@@ -2,7 +2,7 @@ import { Button, Space } from "antd";
 import "../../assets/styles/banks.css";
 // import { Typography } from "antd";
 // import { Popconfirm, Button } from "antd";
-import { Tooltip,Badge } from "antd";
+import { Tooltip, Badge, Tag } from "antd";
 // import { EditOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons";
 import {
   EditableRow,
@@ -71,10 +71,23 @@ export const accessColumn = ({
     ),
   },
   {
+    title: "สถานะใบวางบิล",
+    dataIndex: "billing_blcode",
+    key: "billing_blcode",
+    width: 130,
+    align: "center",
+    render: (v) =>
+      v ? (
+        <Tag color="green">{v}</Tag>
+      ) : (
+        <Tag color="default">ยังไม่ออก</Tag>
+      ),
+  },
+  {
     title: "สถานะตัดสต๊อก",
     dataIndex: "issue_status",
     key: "issue_status",
-    width: "13%",
+    width: 130,
     sorter: (a, b) => a.issue_status.localeCompare(b.issue_status),
     sortDirections: ["descend", "ascend"],
     render: (data) => <TagDeliveryNoteStatus result={data} />,
@@ -83,7 +96,7 @@ export const accessColumn = ({
     title: "สถานะ",
     dataIndex: "doc_status",
     key: "doc_status",
-    width: "13%",
+    width: 130,
     sorter: (a, b) => a.doc_status.localeCompare(b.doc_status),
     sortDirections: ["descend", "ascend"],
     render: (data) => <TagDeliveryNoteStatus result={data} />,

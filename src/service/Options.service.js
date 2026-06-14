@@ -18,6 +18,8 @@ const API_URL = {
   OPTION_USER: `/common/options-user.php`,
   OPTION_County: `/common/options-county.php`,
   OPTION_SO: `/common/options-so.php`,
+  OPTION_CUSTOMER_PENDING_DN: `/common/options-customer-pending-dn.php`,
+  OPTION_CUSTOMER_PENDING_BL: `/common/options-customer-pending-bl.php`,
 };
  
 
@@ -41,6 +43,8 @@ const OptionService = () => {
   const optionsUser = (config = {}) => api.get(`${API_URL.OPTION_USER}`, { ignoreLoading : true, ...config });  
   const optionsCounty = (config = {}) => api.get(`${API_URL.OPTION_County}`, { ignoreLoading : true, ...config });  
   const optionsSO = (parm = {}, config = {}) => api.get(`${API_URL.OPTION_SO}?${getParmeter(parm)}`, { ignoreLoading : true, ...config });
+  const optionsCustomerPendingDN = (config = {}) => api.get(`${API_URL.OPTION_CUSTOMER_PENDING_DN}`, { ignoreLoading : true, ...config });
+  const optionsCustomerPendingBL = (config = {}) => api.get(`${API_URL.OPTION_CUSTOMER_PENDING_BL}`, { ignoreLoading : true, ...config });
 
   return {
     optionsItems,
@@ -62,6 +66,8 @@ const OptionService = () => {
     optionsUser,
     optionsCounty,
     optionsSO,
+    optionsCustomerPendingDN,
+    optionsCustomerPendingBL,
   };
 };
 

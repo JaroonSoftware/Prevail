@@ -16,6 +16,12 @@ export const columns = ()=>{
       key: "socode",
       dataIndex: "socode", 
     },
+  {
+    title: "PO ลูกค้า",
+    dataIndex: "customer_po",
+    key: "customer_po",
+    render: (v) => v || "-",
+  },
     {
       title: "วันที่ใบส่งสินค้า",
       key: "sodate",
@@ -31,7 +37,7 @@ export const columns = ()=>{
   {
     title: "ชื่อลูกค้า",
     dataIndex: "cusname",
-    key: "cusname", 
+    key: "cusname",
   },
   {
     title: "สถานะ",

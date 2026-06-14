@@ -69,7 +69,7 @@ try {
                 throw new PDOException("Insert data error => $error");
             }            
 
-            $sql = "update sodetail set delamount = delamount+:qty where socode = :socode and stcode = :stcode";
+            $sql = "update sodetail set delamount = IFNULL(delamount,0)+:qty where socode = :socode and stcode = :stcode";
 
             $stmt3 = $conn->prepare($sql);
             if (!$stmt3) throw new PDOException("Insert data error => {$conn->errorInfo()}");

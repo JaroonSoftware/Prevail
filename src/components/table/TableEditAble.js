@@ -562,19 +562,32 @@ export const RowDrag = ({ children, ...props }) => {
   return (
     <Form form={form} component={false} autoComplete="off">
       <EditableContext.Provider value={form}>
-        <tr {...props} ref={setNodeRef} style={style} {...attributes}>
+        <tr
+          {...props}
+          ref={setNodeRef}
+          style={style}
+          {...attributes}
+          className={[props.className, isDragging ? "row-dragging" : ""].filter(Boolean).join(" ")}
+        >
           {React.Children.map(children, (child) => {
             if (child.key === "sort") {
               return React.cloneElement(child, {
                 children: (
-                  <MenuOutlined
+                  <span
                     ref={setActivatorNodeRef}
-                    style={{
-                      touchAction: "none",
-                      cursor: "move",
-                    }}
+                    className="drag-handle-icon"
+                    style={{ touchAction: "none" }}
                     {...listeners}
-                  />
+                  >
+                    <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor" aria-hidden="true">
+                      <circle cx="2.5" cy="2.5" r="1.5"/>
+                      <circle cx="7.5" cy="2.5" r="1.5"/>
+                      <circle cx="2.5" cy="7"   r="1.5"/>
+                      <circle cx="7.5" cy="7"   r="1.5"/>
+                      <circle cx="2.5" cy="11.5" r="1.5"/>
+                      <circle cx="7.5" cy="11.5" r="1.5"/>
+                    </svg>
+                  </span>
                 ),
               });
             }

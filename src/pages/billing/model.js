@@ -25,7 +25,7 @@ export const componentsEditable = {
 /** get sample column */
 export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}) => [
   {
-    title: "เลขที่ใบแจ้งหนี้",
+    title: "เลขที่ใบวางบิล",
     key: "blcode",
     dataIndex: "blcode",
     align: "left",
@@ -33,7 +33,7 @@ export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}
     width:140,
   },
   {
-    title: "วันที่ใบแจ้งหนี้",
+    title: "วันที่ใบวางบิล",
     dataIndex: "bldate",
     key: "bldate",
     width: 140,

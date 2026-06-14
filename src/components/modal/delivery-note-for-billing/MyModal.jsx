@@ -80,7 +80,7 @@ export default function ModalDeliverynoteBilling({show, close,cuscode, values, s
 
     }
 
-    const handleCheckDuplicate = () => false;
+    const handleCheckDuplicate = (socode) => !!selected?.some(item => item.socode === socode);
 
     const loadShippingOptions = (salesOrders) => {
         const selectedSalesOrders = salesOrders.map((item) => item.socode).filter(Boolean).join(",");
