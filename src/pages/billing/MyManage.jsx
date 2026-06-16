@@ -24,6 +24,7 @@ import {
 import BillingNoteService from "../../service/BillingNote.Service";
 import SOService from "../../service/SO.service";
 import OptionService from "../../service/Options.service";
+import { Authenticate } from "../../service/Authenticate.service";
 import { SaveFilled, SearchOutlined } from "@ant-design/icons";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
 import { ModalDeliverynoteBilling } from "../../components/modal/delivery-note-for-billing";
@@ -46,6 +47,7 @@ import { LuPrinter } from "react-icons/lu";
 const blservice = BillingNoteService();
 const soservice = SOService();
 const opservice = OptionService();
+const authService = Authenticate();
 
 const gotoFrom = "/billing";
 const dateFormat = "DD/MM/YYYY";
@@ -102,6 +104,9 @@ const groupBillingDetailByDn = (items = []) => {
   return Object.values(grouped).map((item) => ({
     ...item,
     socode: item.socodes.join(", "),
+    detailRows: [...(item.detailRows || [])].sort((a, b) => (
+      (a.socode || "").localeCompare(b.socode || "", undefined, { numeric: true })
+    )),
   }));
 };
 
@@ -111,6 +116,8 @@ function BillingnoteManage() {
 
   const { config } = location.state || { config: null };
   const [form] = Form.useForm();
+
+  const isSalesman = authService.getType() !== "พนักงานขาย";
 
   /** Modal handle */
   const [openCustomers, setOpenCustomers] = useState(false);
@@ -812,7 +819,7 @@ function BillingnoteManage() {
       </Col>
       <Col span={12} style={{ paddingInline: 0 }}>
         <Flex gap={4} justify="end">
-          {config?.action !== "create" && (
+          {config?.action !== "create" && !isSalesman && (
             <Button
               icon={<TbSquareRoundedX style={{ fontSize: "1.4rem" }} />}
               type="primary"

@@ -107,10 +107,12 @@ export default function ShippingModal({ show, close, values, selected, shippingD
         try {
             const payload = shippingData.map((item) => ({ dncode: item.dncode }));
             const res = await dnService.getlist(payload, { ignoreLoading: true });
-            const detail = (res?.data?.data?.detail || []).map((item) => ({
-                ...item,
-                _rowKey: getShippingRowKey(item),
-            }));
+            const detail = (res?.data?.data?.detail || [])
+                .map((item) => ({
+                    ...item,
+                    _rowKey: getShippingRowKey(item),
+                }))
+                .sort((a, b) => (a.socode || "").localeCompare(b.socode || "", undefined, { numeric: true }));
             const selectedKeys = [...new Set(selected.map((item) => getShippingRowKey(item)).filter(Boolean))];
 
             setShippingItems(detail);

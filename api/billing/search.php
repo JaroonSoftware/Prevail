@@ -14,26 +14,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
     $cuscode = !empty($cuscode) ? "and c.cuscode like '%$cuscode%'" : "";
     $cusname = !empty($cusname) ? "and c.cusname like '%$cusname%'" : "";
     $created_by = !empty($created_by) ? "and ( u.firstname like '%$created_by%' or u.lastname like '%$created_by%' )" : "";
+    $socode = !empty($socode) ? "and d.socode like '%$socode%'" : "";
+    $stcode = !empty($stcode) ? "and d.stcode like '%$stcode%'" : "";
+    $stname = !empty($stname) ? "and i.stname like '%$stname%'" : "";
     $bldate = "";
     if( !empty($bldate_form) && !empty($bldate_to) ) {
         $bldate = "and date_format( a.bldate, '%Y-%m-%d' ) >= '$bldate_form' and date_format( a.bldate, '%Y-%m-%d' ) <= '$bldate_to' ";
-    } 
-    
-    try {   
-        $sql = " 
-        select 
+    }
+
+    try {
+        $sql = "
+        select distinct
         a.*,
         c.*,
         concat(u.firstname, ' ', u.lastname) created_name
-        from bl_master a        
-        left join customer c on a.cuscode = c.cuscode        
+        from bl_master a
+        left join customer c on a.cuscode = c.cuscode
         left join user u on a.created_by = u.code
-        where 1 = 1 
+        left join bl_detail d on a.blcode = d.blcode
+        left join items i on d.stcode = i.stcode
+        where 1 = 1
         $blcode
         $cuscode
         $cusname
         $created_by
         $bldate
+        $socode
+        $stcode
+        $stname
         order by a.blcode desc ;";
 
 

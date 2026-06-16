@@ -12,20 +12,19 @@ export const column = [
     align: "center",
     width: "5%",
     render: (_, record, idx) => (
-      <Typography.Text className="tx-info">{idx + 1}</Typography.Text>
+      <Typography.Text className="tx-info">{record._no ?? idx + 1}</Typography.Text>
     ),
   },
   {
     title: (
       <div style={{ textAlign: "center" }}>
-        เลขที่ใบกำกับ
-
+        เลขที่ใบขายสินค้า
       </div>
     ),
     align: "center",
     width: "15%",
-    key: "dncode",
-    dataIndex: "dncode",
+    key: "socode",
+    dataIndex: "socode",
   },
   {
     title: (

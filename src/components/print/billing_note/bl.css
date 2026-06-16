@@ -1,7 +1,8 @@
 @media print {
   @page {
-    size: A4;
-    font-family: open sans, Helvetica, Arial, sans-serif; 
+    size: 210mm 297mm !important;
+    margin: 0 !important;
+    font-family: open sans, Helvetica, Arial, sans-serif;
   }
   #bl.page-show {
     visibility: visible;
@@ -9,7 +10,7 @@
     padding: 0px !important;
     display: block;
   }
-  .bl-pages { 
+  .bl-pages {
     letter-spacing: .48px;
     width: 21cm; /* A4 width */
     height: 29.7cm; /* A4 height */
@@ -76,6 +77,12 @@
     letter-spacing: 0px; 
     color: #000;
     position: relative;
+  }
+
+  /* Visual separator between pages on screen */
+  .page-break {
+    border-top: 2px dashed #ccc;
+    margin: 16px 0;
   }
 
   .bl-pages {

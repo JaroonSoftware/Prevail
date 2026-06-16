@@ -199,7 +199,7 @@ try {
         $sql .= " FROM `bl_detail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
         $sql .= " inner join `dnmaster` as d on (a.dncode=d.dncode)";
         $sql .= " where a.blcode = :code";
-        $sql .= " order by i.seq";
+        $sql .= " order by a.socode ASC";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute(['code' => $code])) {

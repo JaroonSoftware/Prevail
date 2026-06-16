@@ -50,7 +50,7 @@ function DeliveryNoteManage() {
   const { config } = location.state || { config: null };
   const [form] = Form.useForm();
 
-  const isSalesman = authService.getType() === "พนักงานขาย";
+  const isSalesman = authService.getType() !== "พนักงานขาย";
 
   /** Modal handle */
   const [openCustomers, setOpenCustomers] = useState(false);

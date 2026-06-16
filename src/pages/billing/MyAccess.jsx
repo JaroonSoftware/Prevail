@@ -54,19 +54,29 @@ const MyAccess = () => {
                 </Form.Item>
             </Col> 
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='จัดทำโดย' name='created_by'>
-                    <Input placeholder='Enter First Name or Last Name.' />
-                </Form.Item>
-            </Col>
-            <Col xs={24} sm={8} md={8} lg={8} xl={8}>
                 <Form.Item label='รหัสลูกค้า' name='cuscode'>
                     <Input placeholder='Enter Customer Code.' />
-                </Form.Item>                            
+                </Form.Item>
             </Col>
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
                 <Form.Item label='ชื่อลุูกค้า' name='cusname'>
                     <Input placeholder='Enter Customer Name.' />
-                </Form.Item>                            
+                </Form.Item>
+            </Col>
+            <Col xs={24} sm={8} md={8} lg={8} xl={8}>
+                <Form.Item label='เลขที่ SO' name='socode'>
+                    <Input placeholder='Enter SO Code.' />
+                </Form.Item>
+            </Col>
+            <Col xs={24} sm={8} md={8} lg={8} xl={8}>
+                <Form.Item label='รหัสสินค้า' name='stcode'>
+                    <Input placeholder='Enter Product Code.' />
+                </Form.Item>
+            </Col>
+            <Col xs={24} sm={8} md={8} lg={8} xl={8}>
+                <Form.Item label='ชื่อสินค้า' name='stname'>
+                    <Input placeholder='Enter Product Name.' />
+                </Form.Item>
             </Col>
         </Row>
         <Row gutter={[8,8]}>
