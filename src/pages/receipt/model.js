@@ -4,6 +4,7 @@ import { Tooltip,Badge } from "antd";
 import { EditableRow, EditableCell } from "../../components/table/TableEditAble";
 import { TagReceiptStatus } from "../../components/badge-and-tag/";
 import { TagsCreateBy } from "../../components/badge-and-tag/";
+import { ButtonAttachFiles } from "../../components/button";
 import dayjs from 'dayjs';
 import {  EditOutlined, PrinterOutlined, ExclamationCircleOutlined, DeleteOutlined } from "@ant-design/icons";
 import { comma,formatMoney } from '../../utils/util';
@@ -109,7 +110,7 @@ export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}
           onClick={(e) => handlePrint(record) }
           size="small"
         />        
-        {/* <ButtonAttachFiles code={record.srcode} refs='Sample Request' showExpire={true} /> */}
+        <ButtonAttachFiles code={record.recode} refs='receipt' showExpire={true} />
       </Space>
     ),
   }, 

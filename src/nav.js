@@ -7,12 +7,13 @@ import {
   FundProjectionScreenOutlined,
   TrophyOutlined,
   TeamOutlined,
+  WalletOutlined,
 } from "@ant-design/icons";
 import { TbReportMoney } from "react-icons/tb";
 import { RiTeamFill } from "react-icons/ri";
 import { MdRamenDining } from "react-icons/md";
 import { TiThLarge } from "react-icons/ti";
-import { GiDatabase,GiFruitBowl,GiGrain } from "react-icons/gi";
+import { GiDatabase,GiFruitBowl,GiGrain,GiMeat } from "react-icons/gi";
 import { FaUserCircle } from "react-icons/fa";
 import { RiBox3Fill } from "react-icons/ri";
 import { TfiTruck } from "react-icons/tfi";
@@ -124,6 +125,12 @@ let _nav = [
     hiddenRoles: ["จัดซื้อ","พนักงานส่งสินค้า"],
   },
   {
+    title: "รายงานของสด",
+    icon: <GiMeat className="nav-ico" />,
+    to: "/fresh-report",
+    hiddenRoles: ["จัดซื้อ","พนักงานส่งสินค้า"],
+  },
+  {
     title: "รายงานของแห้งพิเศษ",
     icon: <GiGrain className="nav-ico" />,
     to: "/special-dry-report",
@@ -139,6 +146,12 @@ let _nav = [
     title: "รายงานผลไม้",
     icon: <GiFruitBowl className="nav-ico" />,
     to: "/fruit-report",
+    hiddenRoles: ["จัดซื้อ","พนักงานส่งสินค้า"],
+  },
+  {
+    title: "รายงานค้างจ่ายตามลูกค้า",
+    icon: <WalletOutlined className="nav-ico" />,
+    to: "/outstanding-by-customer-report",
     hiddenRoles: ["จัดซื้อ","พนักงานส่งสินค้า"],
   },
   {

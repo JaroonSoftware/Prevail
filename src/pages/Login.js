@@ -12,20 +12,34 @@ import {
   Space,
   Flex,
   Modal,
+  Table,
 } from "antd";
 import { message } from "antd";
 import logo4 from "../assets/images/logo.png";
 import SystemService from "../service/System.service";
 import { Authenticate } from "../service/Authenticate.service";
+import ReportService from "../service/Report.service";
+import { formatMoney } from "../utils/util";
+import {
+  buildCustomerSummary,
+  filterCustomersOverdueByMonths,
+  formatThaiDate,
+} from "./reports/outstanding-by-customer-report/reportHelpers";
 
 const { Title } = Typography;
 const { Header, Footer, Content } = Layout;
 const authService = Authenticate();
+const rpservice = ReportService();
+const OVERDUE_MONTHS_THRESHOLD = 3;
+const SHIPPING_STAFF_TYPE = "พนักงานส่งสินค้า";
+
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const [logined, setLogined] = useState(false);
+  const [overdueModalOpen, setOverdueModalOpen] = useState(false);
+  const [overdueCustomers, setOverdueCustomers] = useState([]);
   useEffect(() => {
     const isLogin = () => {
       const isAuthen = authService.isExpireToken();
@@ -53,11 +67,40 @@ const Login = () => {
   };
   const direcetSystem = () => {
     const type = authService.getType();
-    
+
     if(type!=='พนักงานส่งสินค้า')
     navigate("/dashboard", { replace: true });
     else
     navigate("/shipping", { replace: true });
+  };
+
+  const checkOverdueCustomers = async () => {
+    try {
+      const res = await rpservice.getOutstandingByCustomer({}, { ignoreLoading: true });
+      const rows = res?.data?.data || [];
+      const customerRows = buildCustomerSummary(rows);
+      const overdue = filterCustomersOverdueByMonths(customerRows, OVERDUE_MONTHS_THRESHOLD);
+
+      if (overdue.length > 0) {
+        setOverdueCustomers(overdue);
+        setOverdueModalOpen(true);
+        return;
+      }
+    } catch (err) {
+      console.log(err);
+    }
+
+    direcetSystem();
+  };
+
+  const handleOverdueModalProceed = () => {
+    setOverdueModalOpen(false);
+    direcetSystem();
+  };
+
+  const handleViewOverdueReport = () => {
+    setOverdueModalOpen(false);
+    navigate("/outstanding-by-customer-report");
   };
 
   const Connectapp = (values) => {
@@ -69,7 +112,12 @@ const Login = () => {
           if (data?.status === "1") {
             authService.setToken(token);
 
-            direcetSystem();
+            const type = authService.getType();
+            if (type === SHIPPING_STAFF_TYPE) {
+              direcetSystem();
+            } else {
+              checkOverdueCustomers();
+            }
           } else {
             Modal.error({
               title: <strong>{data.message}</strong>,
@@ -180,6 +228,54 @@ const Login = () => {
       ) : (
         <Navigate to="/login" state={{ from: location }} replace />
       )}
+
+      <Modal
+        title="แจ้งเตือนลูกค้าค้างจ่ายเกินกำหนด"
+        open={overdueModalOpen}
+        onCancel={handleOverdueModalProceed}
+        width={680}
+        footer={[
+          <Button key="view" onClick={handleViewOverdueReport}>
+            ดูรายงานค้างจ่าย
+          </Button>,
+          <Button key="ok" type="primary" onClick={handleOverdueModalProceed}>
+            เข้าใช้งานระบบ
+          </Button>,
+        ]}
+      >
+        <Typography.Paragraph className="!mb-3">
+          พบลูกค้าที่มียอดค้างจ่ายเกินกำหนดมากกว่า {OVERDUE_MONTHS_THRESHOLD} เดือน จำนวน{" "}
+          <strong>{overdueCustomers.length}</strong> ราย
+        </Typography.Paragraph>
+        <Table
+          size="small"
+          rowKey="key"
+          pagination={false}
+          dataSource={overdueCustomers}
+          scroll={{ y: 320 }}
+          columns={[
+            { title: "รหัสลูกค้า", dataIndex: "cuscode" },
+            { title: "ชื่อลูกค้า", dataIndex: "cusname" },
+            {
+              title: "จำนวนใบวางบิล",
+              dataIndex: "billCount",
+              align: "right",
+              render: (v) => formatMoney(v, 0),
+            },
+            {
+              title: "ยอดค้างจ่าย",
+              dataIndex: "totalOutstanding",
+              align: "right",
+              render: (v) => formatMoney(v, 2),
+            },
+            {
+              title: "ครบกำหนดใกล้สุด",
+              dataIndex: "nearestDueDate",
+              render: (v) => formatThaiDate(v),
+            },
+          ]}
+        />
+      </Modal>
     </>
   );
 };

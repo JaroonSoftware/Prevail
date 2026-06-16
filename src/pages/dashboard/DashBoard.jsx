@@ -11,15 +11,17 @@ import {
 } from './model';
 
 import { FiFileText } from "react-icons/fi";
-import { LuFileClock } from "react-icons/lu";
+import { LuFileClock, LuWallet } from "react-icons/lu";
 
 import dayjs from 'dayjs';
 import SOService from '../../service/SO.service';
 import DeliveryNoteService from '../../service/DeliveryNote.service';
+import ReportService from '../../service/Report.service';
 
 const pagging = { pagination: { current: 1, pageSize: 10, }, };
 const soservice = SOService();
 const dnservice = DeliveryNoteService();
+const rpservice = ReportService();
 
 function DashBoard() {
     const [salesOrderListSource, setSalesOrderListSource] = useState([]);
@@ -41,6 +43,8 @@ function DashBoard() {
     const [filesExpireLoading, setFilesExpireLoading] = useState(false);
     const [filesExpireParams,  setFilesExpireParams] = useState({ ...pagging });
 
+    const [outstandingSource, setOutstandingSource] = useState([]);
+
     const [statisticData,  setStatistic] = useState({ ...statisticValue });
     
     const formatter = (value) => <CountUp end={value} separator="," delay={1.4} />;
@@ -55,36 +59,41 @@ function DashBoard() {
         setSalesOrderDetailOpen(true);
     }
 
-    const buildStatisticData = (salesOrders = [], deliveryNotes = []) => {
+    const buildStatisticData = (salesOrders = [], deliveryNotes = [], outstandingBills = []) => {
         const now = dayjs();
         const daily = salesOrders.filter((item) => dayjs(item?.sodate).isSame(now, 'day')).length;
         const monthly = salesOrders.filter((item) => dayjs(item?.sodate).isSame(now, 'month')).length;
         const yearly = salesOrders.filter((item) => dayjs(item?.sodate).isSame(now, 'year')).length;
         const waiting = deliveryNotes.filter((item) => item?.doc_status === 'รอจัดเตรียมสินค้า' || item?.issue_status === 'ยังไม่ตัดสต๊อก').length;
+        const outstanding = outstandingBills.length;
 
-        return { daily, monthly, yearly, waiting };
+        return { daily, monthly, yearly, waiting, outstanding };
     };
 
     const CardStatistic = ({bgColor, title, value, icon})=>{
         return (
-        <> 
-            <Card className='flex w-full' style={{backgroundColor:bgColor, borderRadius:'2rem',  color:'#fff', height:'100%' }} >
-                <Flex className='w-full' gap={10} align='center'>
+        <>
+            <Card
+                className='flex w-full'
+                style={{backgroundColor:bgColor, borderRadius:'1.4rem',  color:'#fff', height:'100%' }}
+                bodyStyle={{padding:'14px 16px'}}
+            >
+                <Flex className='w-full' gap={8} align='center'>
                     <Flex justify='center'>
-                        <div className='p-4 text-4xl' style={{backgroundColor:'rgb(255 255 255 / 35%)', borderRadius:'calc( 2rem - 16px )'}} >{icon}</div>
+                        <div className='p-3 text-2xl' style={{backgroundColor:'rgb(255 255 255 / 35%)', borderRadius:'calc( 1.4rem - 12px )'}} >{icon}</div>
                     </Flex>
-                    <Flex vertical>
-                        <Typography.Title style={{fontSize: 'clamp( 14px, 1.12vw, 20px)'}} className='!mb-2 font-semibold !text-slate-100 uppercase' >{title}</Typography.Title>
-                        <Statistic 
-                            value={value} 
-                            className='font-semibold !text-slate-100 uppercase' 
-                            formatter={formatter} 
-                            suffix="รายการ" 
-                            valueStyle={{fontSize: 'clamp( 11px, .9vw, 17.6px)', color:'rgb(241 245 249 / var(--tw-text-opacity))'}} 
+                    <Flex vertical style={{minWidth:0}}>
+                        <Typography.Title style={{fontSize: 'clamp( 11px, 1vw, 15px)'}} className='!mb-1 font-semibold !text-slate-100 uppercase' >{title}</Typography.Title>
+                        <Statistic
+                            value={value}
+                            className='font-semibold !text-slate-100 uppercase'
+                            formatter={formatter}
+                            suffix="รายการ"
+                            valueStyle={{fontSize: 'clamp( 10px, .85vw, 15px)', color:'rgb(241 245 249 / var(--tw-text-opacity))'}}
                         />
                     </Flex>
-                </Flex> 
-            </Card>         
+                </Flex>
+            </Card>
         </>
         )
     }
@@ -220,6 +229,15 @@ function DashBoard() {
         return source;
     }
 
+    const fetchOutstandingData = async (load = false) => {
+        const res = await rpservice.getOutstandingByCustomer({}, { ignoreLoading: !load });
+        const source = res?.data?.data || [];
+
+        setOutstandingSource(source);
+
+        return source;
+    }
+
     const fetchSalesOrderDetailData = async (load = false) => {
         if( !salesOrderDetailSelected ) return;
 
@@ -241,8 +259,8 @@ function DashBoard() {
     // }
 
         useEffect(() => {
-                setStatistic(buildStatisticData(salesOrderListSource, deliveryNoteSource));
-        }, [salesOrderListSource, deliveryNoteSource]);
+                setStatistic(buildStatisticData(salesOrderListSource, deliveryNoteSource, outstandingSource));
+        }, [salesOrderListSource, deliveryNoteSource, outstandingSource]);
 
         useEffect(() => {
                 if( salesOrderDetailOpen && salesOrderDetailSelected ) fetchSalesOrderDetailData( true );
@@ -251,10 +269,11 @@ function DashBoard() {
     useEffect(() => {
         const initeial = async () => {
                         await Promise.all([
-                                fetchSalesOrderData( false ), 
+                                fetchSalesOrderData( false ),
                                 fetchDeliveryNoteData( false ),
+                                fetchOutstandingData( false ),
                         ]);
-        } 
+        }
 
                 initeial();
     }, []);
@@ -280,24 +299,29 @@ function DashBoard() {
         <div className='layout-content px-3 sm:px-5 md:px-5'>
             <Space direction="vertical" size="middle" style={{ display: 'flex', position: 'relative', paddingInline:"1.34rem" }} className='dashboard' id='dashboard' >
                 <Row gutter={[12, 12]}>
-                    <Col xs={24} sm={12} md={12} lg={6} xl={6}>
-                        <div style={{height:'100%'}}> 
+                    <Col className='dashboard-stat-col' xs={24} sm={12} md={12} lg={6} xl={6}>
+                        <div style={{height:'100%'}}>
                             <CardStatistic bgColor="#8f8df9" title="ใบขายสินค้าวันนี้" icon={<FiFileText />} value={statisticData.daily} />
                         </div>
                     </Col>
-                    <Col xs={24} sm={12} md={12} lg={6} xl={6}>
+                    <Col className='dashboard-stat-col' xs={24} sm={12} md={12} lg={6} xl={6}>
                         <div style={{height:'100%'}}>
                             <CardStatistic bgColor="#fe8992" title="ใบขายสินค้าเดือนนี้" icon={<FiFileText />} value={statisticData.monthly} />
                         </div>
                     </Col>
-                    <Col xs={24} sm={12} md={12} lg={6} xl={6}>
+                    <Col className='dashboard-stat-col' xs={24} sm={12} md={12} lg={6} xl={6}>
                         <div style={{height:'100%'}}>
                             <CardStatistic bgColor="#3987d3" title="ใบขายสินค้าปีนี้" icon={<FiFileText />} value={statisticData.yearly} />
                         </div>
                     </Col>
-                    <Col xs={24} sm={12} md={12} lg={6} xl={6}>
+                    <Col className='dashboard-stat-col' xs={24} sm={12} md={12} lg={6} xl={6}>
                         <div style={{height:'100%'}}>
-                            <CardStatistic bgColor="#ffd19d" title="ใบส่งของรอจัดเตรียม" icon={<LuFileClock />} value={statisticData.waiting} />
+                            <CardStatistic bgColor="#ff9f43" title="ใบส่งของรอจัดเตรียม" icon={<LuFileClock />} value={statisticData.waiting} />
+                        </div>
+                    </Col>
+                    <Col className='dashboard-stat-col' xs={24} sm={12} md={12} lg={6} xl={6}>
+                        <div style={{height:'100%'}}>
+                            <CardStatistic bgColor="#2dce89" title="ใบวางบิลค้างจ่าย" icon={<LuWallet />} value={statisticData.outstanding} />
                         </div>
                     </Col>
                 </Row>

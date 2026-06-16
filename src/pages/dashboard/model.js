@@ -192,4 +192,5 @@ export const statisticValue = {
   monthly : 0,
   yearly : 0,
   waiting : 0,
+  outstanding : 0,
 }

@@ -42,5 +42,13 @@
 @media screen and (min-width: 768px) {
   .drawer-dashboard .responsive-drawer {
      width: 668px !important; /* Set a fixed width for larger screens */
-   } 
+   }
+}
+
+/* Fit all 5 statistic cards on a single row from "lg" breakpoint up */
+@media screen and (min-width: 992px) {
+  .dashboard-stat-col {
+    flex: 0 0 20% !important;
+    max-width: 20% !important;
+  }
 }

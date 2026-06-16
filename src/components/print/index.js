@@ -8,11 +8,13 @@ import DryReportPrintPreview from "./dry-report/DryReportPrintPreview";
 import FruitReportPrintPreview from "./fruit-report/FruitReportPrintPreview";
 import CurryPasteReportPrintPreview from "./curry-paste-report/CurryPasteReportPrintPreview";
 import NoodleReportPrintPreview from "./noodle-report/NoodleReportPrintPreview";
+import FreshReportPrintPreview from "./fresh-report/FreshReportPrintPreview";
 import SpecialDryReportPrintPreview from "./special-dry-report/SpecialDryReportPrintPreview";
 import SalesByProductPrintPreview from "./sales-by-product-report/MyPrintPreview";
 import SalesByCustomerPrintPreview from "./sales-by-customer-report/MyPrintPreview";
 import BestSellingProductPrintPreview from "./best-selling-product-report/MyPrintPreview";
 import ProfitByProductCustomerPrintPreview from "./profit-by-product-customer-report/MyPrintPreview";
+import OutstandingByCustomerPrintPreview from "./outstanding-by-customer-report/MyPrintPreview";
 
 export {
   QuoPrintPreview,
@@ -25,9 +27,11 @@ export {
   FruitReportPrintPreview,
   CurryPasteReportPrintPreview,
   NoodleReportPrintPreview,
+  FreshReportPrintPreview,
   SpecialDryReportPrintPreview,
   SalesByProductPrintPreview,
   SalesByCustomerPrintPreview,
   BestSellingProductPrintPreview,
-  ProfitByProductCustomerPrintPreview
+  ProfitByProductCustomerPrintPreview,
+  OutstandingByCustomerPrintPreview
 };

@@ -50,7 +50,7 @@ const FormPKBarcode = forwardRef(({ printData }, ref) => {
             <table style={{ width: "100%", tableLayout: "fixed" }}>
               <tr>
                 <td
-                 style={{fontWeight: "bold", fontSize: "14px", width: "55%"}}
+                 style={{fontWeight: "bold", fontSize: "16px", width: "55%"}}
                 >
                   {data?.stcode}/{data?.package_id}
                 </td>
@@ -60,19 +60,19 @@ const FormPKBarcode = forwardRef(({ printData }, ref) => {
               </tr>
               <tr>
                 <td
-                  style={{ fontSize: "14px" }}
+                  style={{ fontSize: "16px" }}
                 >
                   {data?.stname}
                 </td>
               </tr>
               <tr>
-                <td style={{fontWeight: "bold", fontSize: "14px"}}>{data?.sup_weight} KG</td>
+                <td style={{fontWeight: "bold", fontSize: "16px"}}>{data?.sup_weight} KG</td>
                 <td rowSpan={2} style={{ textAlign: "center" }}>
                   <QRCodeSVG size={70} value={data.package_id.toString()} />
                 </td>
               </tr>
               <tr>
-                <td style={{ fontSize: "11px" }}>
+                <td style={{ fontSize: "13px" }}>
                   {data?.cusname} {data?.socode}
                 </td>
               </tr>
