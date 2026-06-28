@@ -5,23 +5,14 @@ import { Row, Col, Space } from "antd";
 import { Input, Button } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 
-import { shippingColumns } from "./model";
-import DeliveryNoteService from "../../../service/DeliveryNote.service";
+import { dnSummaryColumns } from "./model";
 
-const dnService = DeliveryNoteService();
-
-const getShippingRowKey = (item) => (
-    item?._rowKey || [item?.dncode, item?.socode, item?.code].filter(Boolean).join("::")
-);
-
-export default function ShippingModal({ show, close, values, selected, shippingData, loading }) {
+export default function DnSummaryModal({ show, close, values, selected, dnData, loading, dimmed = false }) {
     const [form] = Form.useForm();
     const tableWrapRef = useRef(null);
     const focusFrameRef = useRef(null);
-    const [shippingDataWrap, setShippingDataWrap] = useState([]);
-    const [shippingItems, setShippingItems] = useState([]);
-    const [shippingRowKeySelect, setShippingRowKeySelect] = useState([]);
-    const [detailLoading, setDetailLoading] = useState(false);
+    const [dnDataWrap, setDnDataWrap] = useState([]);
+    const [dnRowKeySelect, setDnRowKeySelect] = useState([]);
 
     const toggleRowKey = (rowKey, setSelectedKeys, disabled = false) => {
         if (disabled) {
@@ -80,103 +71,69 @@ export default function ShippingModal({ show, close, values, selected, shippingD
 
     const handleSearch = (value) => {
         if (!!value) {
-            const f = shippingItems.filter((d) => (
+            const f = dnData.filter((d) => (
                 d.dncode?.toLowerCase().includes(value?.toLowerCase()) ||
-                d.socode?.toLowerCase().includes(value?.toLowerCase()) ||
-                d.stcode?.toLowerCase().includes(value?.toLowerCase()) ||
-                d.stname?.toLowerCase().includes(value?.toLowerCase())
+                d.cusname?.toLowerCase().includes(value?.toLowerCase())
             ));
 
-            setShippingDataWrap(f);
+            setDnDataWrap(f);
         } else {
-            setShippingDataWrap(shippingItems);
+            setDnDataWrap(dnData);
         }
     };
 
-    const handleCheckDuplicate = (rowKey) => !!selected.find((item) => getShippingRowKey(item) === rowKey);
-
-    const loadShippingItems = async () => {
-        if (!show || shippingData.length < 1) {
-            setShippingItems([]);
-            setShippingDataWrap([]);
-            setShippingRowKeySelect([]);
+    const loadDnData = () => {
+        if (!show) {
+            setDnDataWrap([]);
+            setDnRowKeySelect([]);
             return;
         }
 
-        setDetailLoading(true);
-        try {
-            const payload = shippingData.map((item) => ({ dncode: item.dncode }));
-            const res = await dnService.getlist(payload, { ignoreLoading: true });
-            const detail = (res?.data?.data?.detail || [])
-                .map((item) => ({
-                    ...item,
-                    _rowKey: getShippingRowKey(item),
-                }))
-                .sort((a, b) => (a.socode || "").localeCompare(b.socode || "", undefined, { numeric: true }));
-            const selectedKeys = [...new Set(selected.map((item) => getShippingRowKey(item)).filter(Boolean))];
+        const selectedDncodes = [...new Set((selected || []).map((item) => item?.dncode).filter(Boolean))];
 
-            setShippingItems(detail);
-            setShippingDataWrap(detail);
-            setShippingRowKeySelect(selectedKeys);
-        } catch (error) {
-            message.error("โหลดรายการสินค้าใบส่งของไม่สำเร็จ");
-        } finally {
-            setDetailLoading(false);
-        }
+        setDnDataWrap(dnData || []);
+        setDnRowKeySelect(selectedDncodes.filter((dncode) => (dnData || []).some((item) => item.dncode === dncode)));
     };
 
     const handleConfirm = () => {
-        const choosed = [...selected];
-        const itemsChoose = shippingItems.filter(
-            (item) => shippingRowKeySelect.includes(item._rowKey) && !choosed.some((row) => getShippingRowKey(row) === item._rowKey)
-        );
+        const itemsChoose = dnDataWrap.filter((item) => dnRowKeySelect.includes(item.dncode));
 
-        const merged = [...choosed, ...itemsChoose]
-            .filter((item, index, array) => array.findIndex((row) => getShippingRowKey(row) === getShippingRowKey(item)) === index);
-
-        if (merged.length < 1) {
+        if (itemsChoose.length < 1) {
             message.warning("กรุณาเลือกใบส่งของ");
             return;
         }
 
-        values(merged);
-        close(false);
+        values(itemsChoose);
     };
 
-    const shippingSelection = {
-        selectedRowKeys: shippingRowKeySelect,
+    const dnSelection = {
+        selectedRowKeys: dnRowKeySelect,
         type: "checkbox",
         fixed: true,
         hideSelectAll: false,
         onChange: (selectedRowKeys) => {
-            setShippingRowKeySelect(selectedRowKeys);
-        },
-        getCheckboxProps: (record) => {
-            return {
-                disabled: handleCheckDuplicate(record._rowKey),
-                name: record._rowKey,
-            }
+            setDnRowKeySelect(selectedRowKeys);
         },
         onSelect: (record, selectedRow) => {
-            setShippingRowKeySelect((state) => (
+            setDnRowKeySelect((state) => (
                 selectedRow
-                    ? [...new Set([...state, record._rowKey])]
-                    : state.filter((item) => item !== record._rowKey)
+                    ? [...new Set([...state, record.dncode])]
+                    : state.filter((item) => item !== record.dncode)
             ));
         },
     };
 
     useEffect(() => {
-        loadShippingItems();
-    }, [show, shippingData, selected]);
+        loadDnData();
+    }, [show, dnData, selected]);
 
     useEffect(() => {
-        if (!show || loading || detailLoading || shippingDataWrap.length < 1) {
+        if (!show || loading || dnDataWrap.length < 1) {
             return;
         }
 
         focusFirstTableRow();
-    }, [show, loading, detailLoading, shippingDataWrap]);
+    }, [show, loading, dnDataWrap]);
 
     useEffect(() => {
         return () => {
@@ -184,29 +141,32 @@ export default function ShippingModal({ show, close, values, selected, shippingD
                 cancelAnimationFrame(focusFrameRef.current);
             }
         };
-    }, [show, loading, detailLoading, shippingDataWrap]);
+    }, [show, loading, dnDataWrap]);
 
-    const ButtonShippingModal = (
+    const column = dnSummaryColumns();
+
+    const ButtonDnSummaryModal = (
         <Space direction="horizontal" size="middle" >
-            <Button onClick={() => close(false) }>ย้อนกลับ</Button>
-            <Button type='primary' onClick={() => handleConfirm() } disabled={detailLoading}>ยืนยันเตรียมออกใบวางบิล</Button>
+            <Button onClick={() => close(false) }>ปิด</Button>
+            <Button type='primary' onClick={() => handleConfirm() }>ถัดไปเลือกรายการสินค้า</Button>
         </Space>
     );
 
     return (
         <Modal
             open={show}
-            title="เลือกรายการสินค้า"
+            title="เลือกใบส่งของ"
             onCancel={() => close(false) }
             afterOpenChange={(open) => {
                 if (open) {
                     focusFirstTableRow();
                 }
             }}
-            footer={ButtonShippingModal}
+            footer={ButtonDnSummaryModal}
             maskClosable={false}
-            style={{ top: 20 }}
-            width={1000}
+            mask={!dimmed}
+            style={{ top: 20, visibility: dimmed ? 'hidden' : 'visible' }}
+            width={900}
             className='sample-request-modal-items'
         >
             <Spin spinning={loading} >
@@ -226,23 +186,22 @@ export default function ShippingModal({ show, close, values, selected, shippingD
                         <div ref={tableWrapRef}>
                         <Table
                             bordered
-                            dataSource={shippingDataWrap}
-                            columns={shippingColumns()}
+                            dataSource={dnDataWrap}
+                            columns={column}
                             loading={false}
-                            rowSelection={shippingSelection}
-                            rowKey="_rowKey"
+                            rowSelection={dnSelection}
+                            rowKey="dncode"
                             onRow={(record, index) => createRowHandler({
                                 record,
                                 index,
-                                dataSource: shippingDataWrap,
-                                rowKey: "_rowKey",
-                                setSelectedKeys: setShippingRowKeySelect,
-                                isDisabled: (row) => handleCheckDuplicate(row._rowKey),
-                                // onLastRow: handleConfirm,
+                                dataSource: dnDataWrap,
+                                rowKey: "dncode",
+                                setSelectedKeys: setDnRowKeySelect,
+                                onLastRow: handleConfirm,
                             })}
                             pagination={{
-                                total: shippingDataWrap.length,
-                                showTotal: (_, range) => `${range[0]}-${range[1]} of ${shippingItems.length} items`,
+                                total: dnDataWrap.length,
+                                showTotal: (_, range) => `${range[0]}-${range[1]} of ${dnDataWrap.length} items`,
                                 defaultPageSize: 10,
                                 pageSizeOptions: [10,25,35,50,100]
                             }}

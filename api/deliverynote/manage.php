@@ -60,7 +60,7 @@ try {
             $stmt2->bindParam(":dncode", $dncode, PDO::PARAM_STR);
             $stmt2->bindParam(":socode", $val->socode, PDO::PARAM_STR);
             $stmt2->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
-            $stmt2->bindParam(":qty", $val->qty, PDO::PARAM_INT);
+            $stmt2->bindParam(":qty", $val->qty, PDO::PARAM_STR);
             $stmt2->bindParam(":price", $val->price, PDO::PARAM_STR);
             $stmt2->bindParam(":unit", $val->unit, PDO::PARAM_STR);
 
@@ -185,7 +185,7 @@ try {
             $stmt->bindParam(":dncode", $header->dncode, PDO::PARAM_STR);
             $stmt->bindParam(":socode", $val->socode, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
-            $stmt->bindParam(":qty", $val->qty, PDO::PARAM_INT);
+            $stmt->bindParam(":qty", $val->qty, PDO::PARAM_STR);
             $stmt->bindParam(":price", $val->price, PDO::PARAM_STR);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
         

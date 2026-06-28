@@ -138,12 +138,12 @@ try {
             throw new PDOException("Remove data error => $error");
         }
 
-        $sql = "insert into bl_detail (blcode,socode,dncode,stcode,unit,price)
-        values (:blcode,:socode,:dncode,:stcode,:unit,:price)";
+        $sql = "insert into bl_detail (blcode,socode,dncode,stcode,unit,qty,price)
+        values (:blcode,:socode,:dncode,:stcode,:unit,:qty,:price)";
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
-        // $detail = $detail;  
+        // $detail = $detail;
         foreach ($detail as $ind => $val) {
             $val = (object)$val;
             $stmt->bindParam(":blcode", $header->blcode, PDO::PARAM_STR);
@@ -151,7 +151,7 @@ try {
             $stmt->bindParam(":dncode", $val->dncode, PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
-         
+            $stmt->bindParam(":qty", $val->qty, PDO::PARAM_STR);
             $stmt->bindParam(":price", $val->price, PDO::PARAM_STR);
             if (!$stmt->execute()) {
                 $error = $conn->errorInfo();

@@ -10,7 +10,12 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
 
         $join_detail = "";
         $cuscode_filter = !empty($cuscode) ? " and s.cuscode = '$cuscode'" : "";
-        $status_filter = " and (s.doc_status = 'รอจัดเตรียมสินค้า' or s.doc_status = 'จัดเตรียมสินค้ายังไม่ครบ')";
+        $status_filter = " and s.doc_status != 'ยกเลิก'
+            and s.dncode not in (
+                select distinct bd.dncode from bl_detail bd
+                inner join bl_master bm on bd.blcode = bm.blcode
+                where bm.doc_status != 'ยกเลิก' and bm.active_status = 'Y'
+            )";
         $socode_filter = "";
 
         if (!empty($socode)) {
@@ -27,8 +32,8 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
             }
         }
         
-        $sql = "SELECT distinct s.dncode,c.cuscode, c.cusname,c.prename, s.doc_status
-            FROM dnmaster as s 
+        $sql = "SELECT distinct s.dncode,s.dndate,s.total_price,c.cuscode, c.cusname,c.prename, s.doc_status
+            FROM dnmaster as s
             $join_detail
             inner join `customer` as c on (s.cuscode=c.cuscode) 
             where 1 = 1

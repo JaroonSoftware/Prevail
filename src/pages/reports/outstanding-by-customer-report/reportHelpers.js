@@ -70,6 +70,7 @@ export const buildCustomerSummary = (listDetail = []) => {
         cuscode: item?.cuscode || "-",
         cusname: item?.cusname || "-",
         blcodes: [],
+        bills: [],
         totalOutstanding: 0,
         nearestDueDateValue: null,
       };
@@ -82,6 +83,13 @@ export const buildCustomerSummary = (listDetail = []) => {
 
     if (item?.blcode) {
       current.blcodes.push(item.blcode);
+      current.bills.push({
+        key: item.blcode,
+        blcode: item.blcode,
+        bldate: item?.bldate || null,
+        duedate: item?.duedate || null,
+        grandTotal,
+      });
     }
 
     current.totalOutstanding += grandTotal;
@@ -104,6 +112,7 @@ export const buildCustomerSummary = (listDetail = []) => {
       cuscode: group.cuscode,
       cusname: group.cusname,
       billCount: group.blcodes.length,
+      bills: group.bills,
       totalOutstanding: group.totalOutstanding,
       nearestDueDate: group.nearestDueDateValue ? dayjs(group.nearestDueDateValue).toISOString() : null,
       isOverdue: group.nearestDueDateValue ? group.nearestDueDateValue < dayjs().startOf("day").valueOf() : false,

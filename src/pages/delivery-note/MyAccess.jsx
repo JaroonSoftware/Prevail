@@ -56,8 +56,18 @@ const MyAccess = () => {
     <>
       <Row gutter={[8, 8]}>
         <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-          <Form.Item label="Sale Order Code" name="dncode" >
+          <Form.Item label="Delivery Note" name="dncode" >
+            <Input placeholder="Enter Delivery Note Code." />
+          </Form.Item>
+        </Col>
+        <Col xs={24} sm={8} md={8} lg={8} xl={8}>
+          <Form.Item label="Sale Order Code" name="socode">
             <Input placeholder="Enter Sale Order Code." />
+          </Form.Item>
+        </Col>
+        <Col xs={24} sm={8} md={8} lg={8} xl={8}>
+          <Form.Item label="Billing Note" name="blcode">
+            <Input placeholder="Enter Billing Note Code." />
           </Form.Item>
         </Col>
         <Col xs={24} sm={8} md={8} lg={8} xl={8}>

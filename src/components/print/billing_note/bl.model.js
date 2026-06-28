@@ -61,7 +61,7 @@ export const column = [
     dataIndex: "total_price",
     width: "10%",
     render: (v,t) => (
-      <Typography.Text className="tx-info" style={{paddingRight: "20px"}}>{comma(Number(t.qty*t.price), 2)}</Typography.Text>
+      <Typography.Text className="tx-info" style={{paddingRight: "20px"}}>{comma(Number(t.total_price || 0), 2)}</Typography.Text>
     ),
     onCell: () => ({
       style: {

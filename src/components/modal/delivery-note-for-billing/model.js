@@ -1,5 +1,7 @@
 /** get items column */
-import { TagSalesOrderStatus } from "../../badge-and-tag";
+import { TagSalesOrderStatus, TagDeliveryNoteStatus } from "../../badge-and-tag";
+import dayjs from "dayjs";
+import { formatMoney } from "../../../utils/util";
 export const columns = ()=>{
   return [
     {
@@ -47,6 +49,46 @@ export const columns = ()=>{
       render: (data) => <TagSalesOrderStatus result={data} />,
     },
   ]
+};
+
+export const dnSummaryColumns = () => {
+  return [
+    {
+      title: "เลขที่ใบส่งของ",
+      key: "dncode",
+      width: "20%",
+      dataIndex: "dncode",
+    },
+    {
+      title: "วันที่ใบส่งของ",
+      key: "dndate",
+      width: "20%",
+      dataIndex: "dndate",
+      render: (v) => (v ? dayjs(v).format("DD/MM/YYYY") : "-"),
+    },
+    {
+      title: "ชื่อลูกค้า",
+      dataIndex: "cusname",
+      width: "30%",
+      key: "cusname",
+    },
+    {
+      title: "สถานะ",
+      dataIndex: "doc_status",
+      key: "doc_status",
+      width: "15%",
+      align: "center",
+      render: (data) => <TagDeliveryNoteStatus result={data} />,
+    },
+    {
+      title: "ยอดรวม",
+      dataIndex: "total_price",
+      key: "total_price",
+      width: "15%",
+      align: "right",
+      render: (v) => formatMoney(Number(v || 0), 2),
+    },
+  ];
 };
 
 export const shippingColumns = () => {

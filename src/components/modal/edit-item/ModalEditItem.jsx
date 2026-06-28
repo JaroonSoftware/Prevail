@@ -107,18 +107,20 @@ function ModalEditItem({
             </Typography.Text>
           )}
         </Card>
-        
- <Space style={{ display: "flex", justifyContent: "right" }}>
-          <Button onClick={onCancel}>ปิด</Button>
-          <Button
-            type="primary"
-            onClick={onSaveEditItem}
-            disabled={!editingItem}
-            loading={savingEditItem}
-          >
-            บันทึกการแก้ไข
-          </Button>
-        </Space>
+
+        {(editingGroup?.detailRows?.length || 0) >= 10 && (
+          <Space style={{ display: "flex", justifyContent: "right" }}>
+            <Button onClick={onCancel}>ปิด</Button>
+            <Button
+              type="primary"
+              onClick={onSaveEditItem}
+              disabled={!editingItem}
+              loading={savingEditItem}
+            >
+              บันทึกการแก้ไข
+            </Button>
+          </Space>
+        )}
         <Table
           bordered
           size="small"

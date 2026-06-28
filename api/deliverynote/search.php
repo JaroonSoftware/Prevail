@@ -11,6 +11,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
 
     extract($_POST, EXTR_OVERWRITE, "_");  
     $dncode = !empty($dncode) ? "and a.dncode like '%$dncode%'" : "";
+    $socode = !empty($socode) ? "and exists (select 1 from dndetail dd where dd.dncode = a.dncode and dd.socode like '%$socode%')" : "";
+    $blcode = !empty($blcode) ? "and exists (select 1 from bl_detail bld inner join bl_master blm on (bld.blcode = blm.blcode and blm.doc_status != 'ยกเลิก' and blm.active_status = 'Y') where bld.dncode = a.dncode and bld.blcode like '%$blcode%')" : "";
     $cuscode = !empty($cuscode) ? "and c.cuscode like '%$cuscode%'" : "";
     $cusname = !empty($cusname) ? "and c.cusname like '%$cusname%'" : "";
     $created_by = !empty($created_by) ? "and ( u.firstname like '%$created_by%' or u.lastname like '%$created_by%' )" : "";
@@ -37,6 +39,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
         ) bl on (a.dncode = bl.dncode)
         where 1 = 1 and a.doc_status != 'ยกเลิก'
         $dncode
+        $socode
+        $blcode
         $cuscode
         $cusname
         $created_by

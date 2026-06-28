@@ -49,17 +49,40 @@ function BLPrintPreview() {
     setUserInfo(authService.getUserInfo());
   }, []);
 
+  const groupedDetails = useMemo(() => {
+    if (!details || details.length === 0) return [];
+
+    const map = new Map();
+    details.forEach((row) => {
+      const key = row.socode;
+      const amount = Number(row.qty || 0) * Number(row.price || 0);
+
+      if (!map.has(key)) {
+        map.set(key, {
+          socode: row.socode,
+          redate: row.redate ?? row.dndate,
+          duedate: row.duedate ?? hData?.duedate,
+          total_price: 0,
+        });
+      }
+
+      map.get(key).total_price += amount;
+    });
+
+    return Array.from(map.values());
+  }, [details, hData]);
+
   const pageChunks = useMemo(() => {
-    if (!details || details.length === 0) return [[]];
+    if (!groupedDetails || groupedDetails.length === 0) return [[]];
     const chunks = [];
-    for (let i = 0; i < details.length; i += ROWS_PER_PAGE) {
-      const slice = details
+    for (let i = 0; i < groupedDetails.length; i += ROWS_PER_PAGE) {
+      const slice = groupedDetails
         .slice(i, i + ROWS_PER_PAGE)
         .map((row, j) => ({ ...row, _no: i + j + 1 }));
       chunks.push(slice);
     }
     return chunks;
-  }, [details]);
+  }, [groupedDetails]);
 
   const ContentHead = () => (
     <div className="content-head in-sample flex flex-col">
@@ -218,7 +241,7 @@ function BLPrintPreview() {
                         dataSource={rows}
                         columns={column}
                         pagination={false}
-                        rowKey={(r, i) => `${r.stcode}-${r.socode}-${i}`}
+                        rowKey={(r, i) => `${r.socode}-${i}`}
                         bordered={false}
                         locale={{ emptyText: <span>ไม่มีข้อมูล</span> }}
                         onRow={() => ({ className: "r-sub" })}

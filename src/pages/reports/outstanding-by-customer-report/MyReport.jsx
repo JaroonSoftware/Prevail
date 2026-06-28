@@ -10,12 +10,15 @@ import {
   DatePicker,
   Empty,
   Tag,
+  Modal,
+  Table,
 } from "antd";
 import {
   WalletOutlined,
   SearchOutlined,
   ClearOutlined,
   PrinterOutlined,
+  UnorderedListOutlined,
 } from "@ant-design/icons";
 
 import ReportService from "../../../service/Report.service";
@@ -41,6 +44,7 @@ const MonthPicker = DatePicker;
 const OutstandingByCustomerReport = () => {
   const [form] = Form.useForm();
   const [listDetail, setListDetail] = useState([]);
+  const [billListRow, setBillListRow] = useState(null);
   const isFirstLoadRef = useRef(true);
   const monthValue = Form.useWatch("month", form);
 
@@ -301,7 +305,17 @@ const OutstandingByCustomerReport = () => {
                       <div>{row.cuscode || "-"}</div>
                       <div>{row.cusname || "-"}</div>
                       <div style={{ textAlign: "right" }}>
-                        {formatMoney(row.billCount, 0)}
+                        <Flex justify="flex-end" align="center" gap={4}>
+                          <Button
+                            type="text"
+                            size="small"
+                            icon={<UnorderedListOutlined />}
+                            style={{ padding: 0, height: "auto" }}
+                            onClick={() => setBillListRow(row)}
+                            title="ดูรายการใบวางบิล"
+                          />
+                          <span>{formatMoney(row.billCount, 0)}</span>
+                        </Flex>
                       </div>
                       <div style={{ textAlign: "right", color: "#dc2626", fontWeight: 600 }}>
                         {formatMoney(row.totalOutstanding, 2)}
@@ -347,6 +361,55 @@ const OutstandingByCustomerReport = () => {
           </div>
         </Card>
       </Space>
+
+      <Modal
+        open={!!billListRow}
+        title={`รายการใบวางบิลค้างจ่าย${billListRow ? ` : ${billListRow.cuscode || "-"} ${billListRow.cusname || "-"}` : ""}`}
+        onCancel={() => setBillListRow(null)}
+        footer={null}
+        destroyOnClose
+      >
+        <Table
+          size="small"
+          rowKey="key"
+          dataSource={billListRow?.bills || []}
+          pagination={false}
+          columns={[
+            { title: "เลขที่ใบวางบิล", dataIndex: "blcode" },
+            {
+              title: "วันที่บิล",
+              dataIndex: "bldate",
+              render: (value) => formatThaiDate(value),
+            },
+            {
+              title: "ครบกำหนด",
+              dataIndex: "duedate",
+              render: (value) => formatThaiDate(value),
+            },
+            {
+              title: "ยอดค้างจ่าย",
+              dataIndex: "grandTotal",
+              align: "right",
+              render: (value) => formatMoney(value, 2),
+            },
+          ]}
+          summary={(pageData) => {
+            const sum = pageData.reduce((total, item) => total + Number(item.grandTotal || 0), 0);
+            return (
+              <Table.Summary fixed>
+                <Table.Summary.Row>
+                  <Table.Summary.Cell index={0} colSpan={3} className="text-right">
+                    <strong>ยอดรวม</strong>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={1} align="right">
+                    <strong style={{ color: "#dc2626" }}>{formatMoney(sum, 2)}</strong>
+                  </Table.Summary.Cell>
+                </Table.Summary.Row>
+              </Table.Summary>
+            );
+          }}
+        />
+      </Modal>
     </div>
   );
 };
