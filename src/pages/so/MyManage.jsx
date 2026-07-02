@@ -354,9 +354,9 @@ function MyManage() {
     newWindow.location.href = url;
   };
 
-  const handleDelete = (code) => {
+  const handleDelete = (rid) => {
     const itemDetail = [...listDetail];
-    const newData = itemDetail.filter((item) => item?.stcode !== code);
+    const newData = itemDetail.filter((item) => item?._rid !== rid);
     setListDetail([...newData]);
   };
 
@@ -370,8 +370,7 @@ function MyManage() {
         icon={
           <RiDeleteBin5Line style={{ fontSize: "1rem", marginTop: "3px" }} />
         }
-        onClick={() => handleDelete(record?.stcode)}
-        // disabled={!record?.stcode}
+        onClick={() => handleDelete(record?._rid)}
       />
     ) : null;
   };

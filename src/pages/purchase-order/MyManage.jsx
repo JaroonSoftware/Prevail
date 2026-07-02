@@ -181,8 +181,18 @@ function PurchaseOrderManage() {
   };
 
   const handleItemsChoosed = (value) => {
-    // console.log(value);
-    setListDetail(value);
+    // กันสินค้าซ้ำ: เก็บเฉพาะรายการแรกของแต่ละ stcode
+    const seen = new Set();
+    const unique = (value || []).filter((v) => {
+      const code = v?.stcode;
+      if (!code) return true;
+      if (seen.has(code)) return false;
+      seen.add(code);
+      return true;
+    });
+    if (unique.length < (value || []).length)
+      message.warning("มีสินค้าซ้ำในรายการ ระบบตัดรายการที่ซ้ำออกแล้ว");
+    setListDetail(unique);
     handleSummaryPrice();
   };
 

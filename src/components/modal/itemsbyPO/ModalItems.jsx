@@ -58,6 +58,10 @@ const opService = OptionService();
         (f) =>
           itemsRowKeySelect.includes(f.stcode) && !choosed.includes(f.stcode)
       )
+      // กันสินค้าซ้ำ กรณีข้อมูลสินค้ามี stcode ซ้ำกัน
+      .filter(
+        (f, i, arr) => arr.findIndex((x) => x.stcode === f.stcode) === i
+      )
       .map((m, i) => ({
         stcode: m.stcode,
         stname: m.stname,

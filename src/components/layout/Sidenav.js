@@ -11,6 +11,9 @@ import { Authenticate } from '../../service/Authenticate.service.js';
 // import { useAppDispatch } from '../../store/store';
 
 const SIDENAV_SEARCH_COOKIE = "prevail_sidenav_search";
+const RECENT_MENU_COOKIE = "prevail_recent_menus";
+const RECENT_MENU_LIMIT = 10;
+const RECENT_MENU_EXCLUDE = ["/dashboard"];
 
 const getCookieValue = (name) => {
   if (typeof document === "undefined") {
@@ -36,12 +39,23 @@ const setCookieValue = (name, value, days = 30) => {
   document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
 };
 
+const getRecentMenus = () => {
+  try {
+    const raw = getCookieValue(RECENT_MENU_COOKIE);
+    const list = raw ? JSON.parse(raw) : [];
+    return Array.isArray(list) ? list : [];
+  } catch (e) {
+    return [];
+  }
+};
+
 const Sidenav = () => {
   const authService =  Authenticate();
   const userInfo = authService.getUserInfo();
   const currentUsername = userInfo?.username || userInfo?.userid || "";
   const currentRole = authService.getType()?.toLowerCase() || "";
   const [search, setSearch] = useState(() => getCookieValue(SIDENAV_SEARCH_COOKIE));
+  const [recentMenus, setRecentMenus] = useState(getRecentMenus);
   // const [ waitApprove, setWaitAppreve ] = useState(0);
   // const dispatch = useAppDispatch();
   
@@ -57,6 +71,47 @@ const Sidenav = () => {
   useEffect(() => {
     setCookieValue(SIDENAV_SEARCH_COOKIE, search);
   }, [search]);
+
+  // เก็บประวัติการเข้าเมนูล่าสุด (ยกเว้น Dashboard) ลง cookie สูงสุด 6 เมนู
+  useEffect(() => {
+    const current = nav
+      .filter(
+        (item) =>
+          !item?.type &&
+          !!item?.to &&
+          !RECENT_MENU_EXCLUDE.includes(item.to) &&
+          pathname.startsWith(item.to)
+      )
+      .sort((a, b) => b.to.length - a.to.length)[0];
+    if (!current) return;
+
+    setRecentMenus((prev) => {
+      const next = [
+        current.to,
+        ...prev.filter((to) => to !== current.to),
+      ].slice(0, RECENT_MENU_LIMIT);
+      setCookieValue(RECENT_MENU_COOKIE, JSON.stringify(next));
+      return next;
+    });
+  }, [pathname]);
+
+  // สิทธิ์การมองเห็นเมนู (ใช้ทั้งเมนูหลัก และเมนูเข้าล่าสุด)
+  const allowNavItem = (item) => {
+    const allowRole = !item.role || !!item?.role?.includes(currentRole);
+    const pinnedUsername = !!item.usernames?.includes(currentUsername);
+    const allowUsername = !item.usernames || pinnedUsername;
+    const hideForRole = !!item.hiddenRoles
+      ?.map((role) => role?.toLowerCase())
+      .includes(currentRole);
+
+    // usernames whitelist overrides hiddenRoles
+    if (pinnedUsername) return true;
+    return allowRole && allowUsername && !hideForRole;
+  };
+
+  const recentNavItems = recentMenus
+    .map((to) => nav.find((item) => !item?.type && item?.to === to))
+    .filter((item) => !!item && allowNavItem(item));
 
   const Notification = ( {title}) => {
     // console.log(title);
@@ -184,19 +239,39 @@ const Sidenav = () => {
           ) : null}
         </div>
       </div>
+      {recentNavItems.length > 0 && !search ? (
+        <div style={{ width: "calc(100% - 20px)", margin: "0 auto 6px" }}>
+          <span
+            style={{
+              display: "block",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: 0.4,
+              textTransform: "uppercase",
+              color: "#4a6ea8",
+              padding: "0 2px 4px",
+            }}
+          >
+            เข้าล่าสุด
+          </span>
+          <Menu theme="light" mode="inline">
+            {recentNavItems.map((item) => (
+              <MenuItem
+                icon={item?.icon}
+                key={`recent-${item?.to}`}
+                component={<Link to={item?.to} />}
+                className={pathname.startsWith(item?.to) ? "nav-active" : null}
+              >
+                <span>{item?.title}</span>
+              </MenuItem>
+            ))}
+          </Menu>
+          <hr style={{ margin: "8px 0 0" }} />
+        </div>
+      ) : null}
       {/* <Sidebar style={{minWidth:"100%", width:"100%"}} > */}
         <Menu theme="light" mode="inline">
-        {filterNav(nav).filter( (item) => {
-            const allowRole = !item.role || !!item?.role?.includes(currentRole);
-            const pinnedUsername = !!item.usernames?.includes(currentUsername);
-            const allowUsername = !item.usernames || pinnedUsername;
-            const hideForRole =
-              !!item.hiddenRoles?.map((role) => role?.toLowerCase()).includes(currentRole);
-
-            // usernames whitelist overrides hiddenRoles
-            if (pinnedUsername) return true;
-            return allowRole && allowUsername && !hideForRole;
-          }).map((item, idx) => (
+        {filterNav(nav).filter(allowNavItem).map((item, idx) => (
           ( !item?.type ? (
               <MenuItem
                 icon={item?.icon}
