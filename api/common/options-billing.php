@@ -10,7 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
         $res = null;
         
         $cuscode_code = !empty($cuscode) ? "and i.cuscode = :cuscode" : "";
-        $sql = "SELECT i.blcode,i.bldate,c.cuscode, c.cusname,c.prename, c.idno, c.road, c.subdistrict, c.district, c.province, c.zipcode,i.doc_status
+        $sql = "SELECT i.blcode,i.bldate,i.total_price,i.discount,c.cuscode, c.cusname,c.prename, c.idno, c.road, c.subdistrict, c.district, c.province, c.zipcode,i.doc_status
          FROM bl_master as i inner join `customer` as c on (i.cuscode=c.cuscode) where (i.doc_status != 'ออกใบเสร็จแล้ว' and i.doc_status != 'ยกเลิก') $cuscode_code";
             $stmt = $conn->prepare($sql);
             if (!empty($cuscode)) $stmt->bindParam(':cuscode', $cuscode);

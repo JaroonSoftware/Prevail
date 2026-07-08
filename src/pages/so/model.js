@@ -4,6 +4,7 @@ import { Button,Space,Badge,Tooltip } from "antd";
 import { EditableRow, EditableCell, RowDrag } from "../../components/table/TableEditAble";
 import dayjs from 'dayjs';
 import { EditOutlined,ExclamationCircleOutlined,PrinterOutlined } from "@ant-design/icons";
+import { TfiTruck } from "react-icons/tfi";
 import { comma,formatMoney } from '../../utils/util';
 import { TagsCreateBy } from "../../components/badge-and-tag/";
 import { TagSalesOrderStatus } from "../../components/badge-and-tag";
@@ -24,7 +25,7 @@ export const componentsEditableWithDrag = {
 };
 
 /** get sample column */
-export const accessColumn = ({handleEdit, handleView, handlePrintsData}) => [
+export const accessColumn = ({handleEdit, handleView, handlePrintsData, handleCreateDN}) => [
   {
     title: "รหัสใบขายสินค้า",
     key: "socode",
@@ -108,13 +109,29 @@ export const accessColumn = ({handleEdit, handleView, handlePrintsData}) => [
               size="small"
             />
         </Badge>
-        <Button
-          icon={<EditOutlined />} 
-          className='bn-primary-outline'
-          style={{ cursor: "pointer", display: 'flex', alignItems: 'center', justifyContent: 'center'}}
-          onClick={(e) => handleEdit(record) }
-          size="small"
-        />
+        {/* ซ่อนปุ่มแก้ไข เมื่อออกใบส่งของแล้ว */}
+        {record?.doc_status === "รอออกใบส่งของ" && (
+          <Button
+            icon={<EditOutlined />}
+            className='bn-primary-outline'
+            style={{ cursor: "pointer", display: 'flex', alignItems: 'center', justifyContent: 'center'}}
+            onClick={(e) => handleEdit(record) }
+            size="small"
+          />
+        )}
+
+        {/* เพิ่มไปส่งของ (สร้างใบส่งของทันที) เฉพาะใบที่ยังไม่ออกใบส่งของ */}
+        {record?.doc_status === "รอออกใบส่งของ" && (
+          <Tooltip title="เพิ่มไปส่งของ">
+            <Button
+              icon={<TfiTruck style={{ fontSize: '0.9rem' }} />}
+              className='bn-success-outline'
+              style={{ cursor: "pointer", display: 'flex', alignItems: 'center', justifyContent: 'center'}}
+              onClick={(e) => handleCreateDN(record)}
+              size="small"
+            />
+          </Tooltip>
+        )}
 
         <Button
           icon={<PrinterOutlined />} 

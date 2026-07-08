@@ -126,11 +126,14 @@ try {
         extract($_PUT, EXTR_OVERWRITE, "_");
         // var_dump($_POST);
         $sql = "
-        update receipt 
+        update receipt
         set
         redate = :redate,
         cuscode = :cuscode,
         remark = :remark,
+        total_price = :total_price,
+        total_discount = :discount,
+        grand_total_price = :grand_total_price,
         updated_date = CURRENT_TIMESTAMP(),
         updated_by = :action_user
         where recode = :recode";
@@ -144,6 +147,9 @@ try {
         $stmt->bindParam(":redate", $header->redate, PDO::PARAM_STR);
         $stmt->bindParam(":cuscode", $header->cuscode, PDO::PARAM_STR);
         $stmt->bindParam(":remark", $header->remark, PDO::PARAM_STR);
+        $stmt->bindParam(":total_price", $header->total_price, PDO::PARAM_STR);
+        $stmt->bindParam(":discount", $header->discount, PDO::PARAM_STR);
+        $stmt->bindParam(":grand_total_price", $header->grand_total_price, PDO::PARAM_STR);
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_INT);
         $stmt->bindParam(":recode", $header->recode, PDO::PARAM_STR);
 
@@ -179,7 +185,7 @@ try {
         echo json_encode(array("status" => 1));
     } else  if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $code = $_GET["code"];
-        $sql = "SELECT a.*,c.*,a.created_date, a.updated_date,
+        $sql = "SELECT a.*,c.*,a.total_discount as discount,a.created_date, a.updated_date,
         concat(IFNULL(u.firstname, ''), ' ', IFNULL(u.lastname, '')) as created_by,concat(IFNULL(u2.firstname, ''), ' ', IFNULL(u2.lastname, '')) as updated_by ";
         $sql .= " FROM `receipt` as a left outer join customer as c on (a.cuscode=c.cuscode) ";
         $sql .= " left join user u on a.created_by = u.code";

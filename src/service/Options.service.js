@@ -20,6 +20,7 @@ const API_URL = {
   OPTION_SO: `/common/options-so.php`,
   OPTION_CUSTOMER_PENDING_DN: `/common/options-customer-pending-dn.php`,
   OPTION_CUSTOMER_PENDING_BL: `/common/options-customer-pending-bl.php`,
+  OPTION_CUSTOMER_PENDING_RE: `/common/options-customer-pending-re.php`,
 };
  
 
@@ -45,6 +46,7 @@ const OptionService = () => {
   const optionsSO = (parm = {}, config = {}) => api.get(`${API_URL.OPTION_SO}?${getParmeter(parm)}`, { ignoreLoading : true, ...config });
   const optionsCustomerPendingDN = (config = {}) => api.get(`${API_URL.OPTION_CUSTOMER_PENDING_DN}`, { ignoreLoading : true, ...config });
   const optionsCustomerPendingBL = (config = {}) => api.get(`${API_URL.OPTION_CUSTOMER_PENDING_BL}`, { ignoreLoading : true, ...config });
+  const optionsCustomerPendingRE = (config = {}) => api.get(`${API_URL.OPTION_CUSTOMER_PENDING_RE}`, { ignoreLoading : true, ...config });
 
   return {
     optionsItems,
@@ -68,6 +70,7 @@ const OptionService = () => {
     optionsSO,
     optionsCustomerPendingDN,
     optionsCustomerPendingBL,
+    optionsCustomerPendingRE,
   };
 };
 

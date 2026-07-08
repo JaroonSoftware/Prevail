@@ -22,13 +22,12 @@ import {
 } from "antd";
 
 import BillingNoteService from "../../service/BillingNote.Service";
-import SOService from "../../service/SO.service";
+import DeliveryNoteService from "../../service/DeliveryNote.service";
 import OptionService from "../../service/Options.service";
 import { Authenticate } from "../../service/Authenticate.service";
 import { SaveFilled, SearchOutlined } from "@ant-design/icons";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
 import { ModalDeliverynoteBilling } from "../../components/modal/delivery-note-for-billing";
-import ModalEditItem from "../../components/modal/edit-item/ModalEditItem";
 
 import {
   DEFALUT_CHECK_INVOICE,
@@ -45,7 +44,7 @@ import { RiDeleteBin5Line } from "react-icons/ri";
 import { LuPackageSearch } from "react-icons/lu";
 import { LuPrinter } from "react-icons/lu";
 const blservice = BillingNoteService();
-const soservice = SOService();
+const dnservice = DeliveryNoteService();
 const opservice = OptionService();
 const authService = Authenticate();
 
@@ -122,10 +121,7 @@ function BillingnoteManage() {
   /** Modal handle */
   const [openCustomers, setOpenCustomers] = useState(false);
   const [openProduct, setOpenProduct] = useState(false);
-  const [openEditItemModal, setOpenEditItemModal] = useState(false);
-  const [editingGroup, setEditingGroup] = useState(null);
-  const [editingItem, setEditingItem] = useState(null);
-  const [savingEditItem, setSavingEditItem] = useState(false);
+  const [savingRowKey, setSavingRowKey] = useState(null);
 
   /** Billing Note state */
   const [blCode, setBLCode] = useState(null);
@@ -134,7 +130,6 @@ function BillingnoteManage() {
   const [listDetail, setListDetail] = useState([]);
 
   const [formDetail, setFormDetail] = useState(DEFALUT_CHECK_INVOICE);
-  const [editItemForm] = Form.useForm();
 
   const cardStyle = {
     backgroundColor: "#f0f0f0",
@@ -351,127 +346,66 @@ function BillingnoteManage() {
     ) : null;
   };
 
-  const handleOpenEditItemModal = (record) => {
-    setEditingGroup(record);
-    setEditingItem(null);
-    editItemForm.resetFields();
-    setOpenEditItemModal(true);
+  // แก้ไข จำนวน/ราคา ในตารางโดยตรง (เก็บในสถานะก่อน กด "บันทึก" เพื่ออัปเดตใบส่งของ)
+  const handleEditDetailCell = (rowKey, field, value) => {
+    setListDetail((state) => state.map((item) => (
+      item?._rowKey === rowKey
+        ? { ...item, [field]: Number(value || 0), _dirty: true }
+        : item
+    )));
   };
 
-  const handleCloseEditItemModal = () => {
-    setOpenEditItemModal(false);
-    setEditingGroup(null);
-    setEditingItem(null);
-    editItemForm.resetFields();
-  };
-
-  const handleSelectEditItem = (record) => {
-    setEditingItem(record);
-    editItemForm.setFieldsValue({
-      qty: Number(record?.qty || 0),
-      price: Number(record?.price || 0),
-    });
-  };
-
-  const calculateSoTotalPrice = (detail = []) => (
-    detail.reduce((total, item) => {
-      const qty = Number(item?.qty || 0);
-      const price = Number(item?.price || 0);
-      const vat = Number(item?.vat || 0);
-      return total + qty * price + qty * price * (vat / 100);
-    }, 0)
-  );
-
-  const handleSaveEditItem = async () => {
-    if (!editingItem?.socode || !editingItem?.stcode) {
-      message.warning("ไม่พบรายการใบขายสินค้าที่ต้องการแก้ไข");
+  // บันทึกการแก้ไขรายการ ไปที่ "ใบส่งของ" (dndetail) แทนใบขายสินค้า
+  const handleSaveDetailRow = async (record) => {
+    if (!record?.dncode || !record?.stcode) {
+      message.warning("ไม่พบรายการใบส่งของที่ต้องการแก้ไข");
       return;
     }
 
+    const nextQty = Number(record?.qty || 0);
+    const nextPrice = Number(record?.price || 0);
+
     try {
-      const values = await editItemForm.validateFields();
-      const nextQty = Number(values?.qty || 0);
-      const nextPrice = Number(values?.price || 0);
+      setSavingRowKey(record._rowKey);
 
-      setSavingEditItem(true);
+      const res = await dnservice.get(record.dncode, { ignoreLoading: true });
+      const { header, detail } = res?.data || {};
+      const dnDetail = Array.isArray(detail) ? [...detail] : [];
 
-      const soResponse = await soservice.get(editingItem.socode, { ignoreLoading: true });
-      const { header, detail } = soResponse?.data?.data || {};
-      const soDetail = Array.isArray(detail) ? [...detail] : [];
-
-      const targetIndex = soDetail.findIndex((item) => item?.stcode === editingItem.stcode);
+      const targetIndex = dnDetail.findIndex((item) => (
+        item?.stcode === record.stcode &&
+        (!record?.socode || item?.socode === record.socode)
+      ));
       if (targetIndex < 0) {
-        throw new Error("ไม่พบรายการสินค้าในใบขายสินค้า");
+        throw new Error("ไม่พบรายการสินค้าในใบส่งของ");
       }
 
-      const updatedDetail = soDetail.map((item, index) => (
+      const updatedDetail = dnDetail.map((item, index) => (
         index === targetIndex
-          ? {
-              ...item,
-              qty: nextQty,
-              price: nextPrice,
-            }
+          ? { ...item, qty: nextQty, price: nextPrice }
           : item
       ));
 
-      const updatedHeader = {
-        ...header,
-        total_price: calculateSoTotalPrice(updatedDetail),
-      };
+      const total_price = updatedDetail.reduce((total, item) => (
+        total + Number(item?.qty || 0) * Number(item?.price || 0)
+      ), 0);
 
-      await soservice.update({
-        header: updatedHeader,
+      await dnservice.update({
+        header: { ...header, total_price },
         detail: updatedDetail,
       }, { ignoreLoading: true });
 
       setListDetail((state) => state.map((item) => (
-        item?._rowKey === editingItem._rowKey
-          ? {
-              ...item,
-              qty: nextQty,
-              price: nextPrice,
-            }
+        item?._rowKey === record._rowKey
+          ? { ...item, qty: nextQty, price: nextPrice, _dirty: false }
           : item
       )));
 
-      setEditingGroup((state) => {
-        if (!state) {
-          return state;
-        }
-
-        return {
-          ...state,
-          detailRows: (state.detailRows || []).map((item) => (
-            item?._rowKey === editingItem._rowKey
-              ? {
-                  ...item,
-                  qty: nextQty,
-                  price: nextPrice,
-                }
-              : item
-          )),
-        };
-      });
-
-      setEditingItem((state) => (
-        state
-          ? {
-              ...state,
-              qty: nextQty,
-              price: nextPrice,
-            }
-          : state
-      ));
-
-      message.success("แก้ไขรายการและอัปเดตใบขายสินค้าแล้ว");
+      message.success("แก้ไขรายการและอัปเดตใบส่งของแล้ว");
     } catch (error) {
-      if (error?.errorFields) {
-        return;
-      }
-
       message.error(error?.message || "แก้ไขรายการสินค้าไม่สำเร็จ");
     } finally {
-      setSavingEditItem(false);
+      setSavingRowKey(null);
     }
   };
 
@@ -503,68 +437,50 @@ function BillingnoteManage() {
 
   const prodcolumns = groupedDnColumns({
     handleRemove,
-    handleEdit: handleOpenEditItemModal,
   });
 
-  const editItemColumns = [
-    {
-      title: "ลำดับ",
-      key: "__index",
-      width: 70,
-      align: "center",
-      render: (_, __, index) => index + 1,
-    },
-    {
-      title: "เลขที่ SO",
-      dataIndex: "socode",
-      key: "socode",
-      width: 130,
-      align: "center",
-    },
-    {
-      title: "รหัสสินค้า",
-      dataIndex: "stcode",
-      key: "stcode",
-      width: 110,
-      align: "center",
-    },
-    {
-      title: "ชื่อสินค้า",
-      key: "stname",
-      render: (_, record) => record?.stname || record?.purdetail || "-",
-    },
-    {
-      title: "จำนวน",
-      dataIndex: "qty",
-      key: "qty",
-      width: 110,
-      align: "right",
-      render: (value) => formatMoney(Number(value || 0), 2),
-    },
-    {
-      title: "ราคาขาย",
-      dataIndex: "price",
-      key: "price",
-      width: 110,
-      align: "right",
-      render: (value) => formatMoney(Number(value || 0), 2),
-    },
-    {
-      title: "เลือก",
-      key: "edit",
-      width: 80,
-      align: "center",
-      render: (_, record) => (
-        <Button
-          size="small"
-          type={editingItem?._rowKey === record?._rowKey ? "primary" : "default"}
-          onClick={() => handleSelectEditItem(record)}
-        >
-          แก้ไข
-        </Button>
-      ),
-    },
-  ];
+  // ตารางรายการย่อย แก้ไข จำนวน/ราคา ได้ในตารางโดยตรง
+  const editableDetailColumns = detailColumns
+    .map((col) => {
+      if (col.key === "qty" || col.key === "price") {
+        return {
+          ...col,
+          render: (_, record) => (
+            <InputNumber
+              size="small"
+              min={0}
+              controls={false}
+              className="width-100"
+              disabled={isLockedStatus}
+              value={Number(record?.[col.key] ?? 0)}
+              onChange={(value) =>
+                handleEditDetailCell(record?._rowKey, col.key, value)
+              }
+            />
+          ),
+        };
+      }
+      return col;
+    })
+    .concat([
+      {
+        title: "บันทึก",
+        key: "save",
+        width: 90,
+        align: "center",
+        render: (_, record) => (
+          <Button
+            size="small"
+            type="primary"
+            loading={savingRowKey === record?._rowKey}
+            disabled={isLockedStatus || !record?._dirty}
+            onClick={() => handleSaveDetailRow(record)}
+          >
+            บันทึก
+          </Button>
+        ),
+      },
+    ]);
 
   const SectionCustomers = (
     <>
@@ -688,7 +604,7 @@ function BillingnoteManage() {
                   size="small"
                   pagination={false}
                   dataSource={record.detailRows}
-                  columns={detailColumns}
+                  columns={editableDetailColumns}
                   rowKey="_rowKey"
                 />
             ),
@@ -991,17 +907,6 @@ function BillingnoteManage() {
         ></ModalDeliverynoteBilling>
       )}
 
-      <ModalEditItem
-        open={openEditItemModal}
-        editingGroup={editingGroup}
-        editingItem={editingItem}
-        savingEditItem={savingEditItem}
-        editItemForm={editItemForm}
-        editItemColumns={editItemColumns}
-        onCancel={handleCloseEditItemModal}
-        onSaveEditItem={handleSaveEditItem}
-        onSelectEditItem={handleSelectEditItem}
-      />
     </div>
   );
 }

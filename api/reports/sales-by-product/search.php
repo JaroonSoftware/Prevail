@@ -12,7 +12,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     extract($_POST, EXTR_OVERWRITE, "_");
 
-    $socode = !empty($socode) ? "and a.socode like '%$socode%'" : "";
+    // คำนวณรายงานจากข้อมูล "ใบส่งของ" (dnmaster/dndetail) แทนใบขายสินค้า
+    $socode = !empty($socode) ? "and (a.dncode like '%$socode%' or b.socode like '%$socode%')" : "";
     $cuscode = !empty($cuscode) ? "and c.cuscode like '%$cuscode%'" : "";
     $cusname = !empty($cusname) ? "and c.cusname like '%$cusname%'" : "";
     $stcode = !empty($stcode) ? "and b.stcode like '%$stcode%'" : "";
@@ -20,14 +21,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $sodate = "";
 
     if (!empty($sodate_form) && !empty($sodate_to)) {
-        $sodate = "and date_format(a.sodate, '%Y-%m-%d') >= '$sodate_form' and date_format(a.sodate, '%Y-%m-%d') <= '$sodate_to'";
+        $sodate = "and date_format(a.dndate, '%Y-%m-%d') >= '$sodate_form' and date_format(a.dndate, '%Y-%m-%d') <= '$sodate_to'";
     }
 
     try {
         $sql = "
         SELECT
-            a.socode,
-            a.sodate,
+            IFNULL(b.socode, a.dncode) AS socode,
+            a.dncode,
+            a.dndate AS sodate,
             a.cuscode,
             c.cusname,
             b.stcode,
@@ -35,23 +37,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             b.qty,
             b.price,
             b.unit,
-            IFNULL(b.vat, IFNULL(i.vat, 0)) AS vat,
+            IFNULL(i.vat, 0) AS vat,
             a.remark,
-            a.deldate,
+            a.dndate AS deldate,
             (IFNULL(b.qty, 0) * IFNULL(b.price, 0)) AS line_subtotal,
-            ((IFNULL(b.qty, 0) * IFNULL(b.price, 0)) * (1 + (IFNULL(b.vat, IFNULL(i.vat, 0)) / 100))) AS line_net_total
-        FROM somaster a
-        LEFT JOIN sodetail b ON a.socode = b.socode
+            ((IFNULL(b.qty, 0) * IFNULL(b.price, 0)) * (1 + (IFNULL(i.vat, 0) / 100))) AS line_net_total
+        FROM dnmaster a
+        LEFT JOIN dndetail b ON a.dncode = b.dncode
         LEFT JOIN items i ON b.stcode = i.stcode
         LEFT JOIN customer c ON a.cuscode = c.cuscode
-        WHERE 1 = 1
+        WHERE a.doc_status != 'ยกเลิก'
         $socode
         $cuscode
         $cusname
         $stcode
         $stname
         $sodate
-        ORDER BY i.stname ASC, b.stcode ASC, a.sodate ASC, a.socode ASC;";
+        ORDER BY i.stname ASC, b.stcode ASC, a.dndate ASC, a.dncode ASC;";
 
         $stmt = $conn->prepare($sql);
         $stmt->execute();

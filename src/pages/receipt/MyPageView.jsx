@@ -105,8 +105,30 @@ export default function ReceiptView() {
       { label: "ผู้ติดต่อ", children: h?.contact || "" },
       { label: "เบอร์โทรลูกค้า", children: h?.tel || "" },
       {
-        label: "ยอดรวมรับเงิน",
+        label: "ยอดรวม",
         children: formatMoney(Number(h?.total_price ?? h?.price ?? 0), 2),
+      },
+      {
+        label: "ส่วนลด",
+        children: (
+          <Typography.Text type={Number(h?.discount ?? h?.total_discount ?? 0) > 0 ? "danger" : "secondary"}>
+            {formatMoney(Number(h?.discount ?? h?.total_discount ?? 0), 2)}
+          </Typography.Text>
+        ),
+      },
+      {
+        label: "ยอดสุทธิรับเงิน",
+        children: (
+          <Typography.Text strong type="success">
+            {formatMoney(
+              Number(
+                h?.grand_total_price ??
+                  Number(h?.total_price ?? 0) - Number(h?.discount ?? h?.total_discount ?? 0)
+              ),
+              2
+            )}
+          </Typography.Text>
+        ),
       },
       {
         label: "หมายเหตุ",
@@ -159,22 +181,57 @@ export default function ReceiptView() {
         scroll={{ x: "max-content" }}
         size="small"
         summary={(pageData) => {
+          // ยอดหลังหักส่วนลดของใบวางบิลแต่ละใบ
           const totalNet = (pageData || []).reduce((sum, r) => {
             return sum + (Number(r?.total_price || 0) - Number(r?.discount || 0));
           }, 0);
+          const rowDiscount = (pageData || []).reduce(
+            (sum, r) => sum + Number(r?.discount || 0), 0
+          );
+
+          // ส่วนลดท้ายบิล (จากหัวใบเสร็จ) = ส่วนลดรวม - ส่วนลดรายใบวางบิล
+          const headerDiscount = Number(master?.discount ?? master?.total_discount ?? 0);
+          const extraDiscount = Math.max(headerDiscount - rowDiscount, 0);
+          const grandTotal = Number(
+            master?.grand_total_price ?? (totalNet - extraDiscount)
+          );
 
           return (
-            <Table.Summary.Row>
-              <Table.Summary.Cell index={0} colSpan={3}></Table.Summary.Cell>
-              <Table.Summary.Cell index={1} align="end" className="!pe-2">
-                Grand Total
-              </Table.Summary.Cell>
-              <Table.Summary.Cell index={2} align="right" className="!pe-2">
-                <Typography.Text type="danger">
+            <>
+              <Table.Summary.Row>
+                <Table.Summary.Cell index={0} colSpan={3}></Table.Summary.Cell>
+                <Table.Summary.Cell index={1} align="end" className="!pe-2">
+                  Total
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={2} align="right" className="!pe-2">
                   {formatMoney(totalNet, 2)}
-                </Typography.Text>
-              </Table.Summary.Cell>
-            </Table.Summary.Row>
+                </Table.Summary.Cell>
+              </Table.Summary.Row>
+              {extraDiscount > 0 && (
+                <Table.Summary.Row>
+                  <Table.Summary.Cell index={0} colSpan={3}></Table.Summary.Cell>
+                  <Table.Summary.Cell index={1} align="end" className="!pe-2">
+                    ส่วนลดท้ายบิล
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={2} align="right" className="!pe-2">
+                    <Typography.Text type="danger">
+                      -{formatMoney(extraDiscount, 2)}
+                    </Typography.Text>
+                  </Table.Summary.Cell>
+                </Table.Summary.Row>
+              )}
+              <Table.Summary.Row>
+                <Table.Summary.Cell index={0} colSpan={3}></Table.Summary.Cell>
+                <Table.Summary.Cell index={1} align="end" className="!pe-2">
+                  Grand Total
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={2} align="right" className="!pe-2">
+                  <Typography.Text strong type="danger">
+                    {formatMoney(grandTotal, 2)}
+                  </Typography.Text>
+                </Table.Summary.Cell>
+              </Table.Summary.Row>
+            </>
           );
         }}
       />
@@ -376,7 +433,7 @@ export default function ReceiptView() {
             className="bn-center bn-success-outline"
             disabled={
               paymentData.reduce((s, r) => s + Number(r?.paid_amount || 0), 0) >=
-              Number(master?.total_price ?? master?.price ?? 0)
+              Number(master?.grand_total_price ?? master?.total_price ?? master?.price ?? 0)
             }
           >
             ชำระเงิน

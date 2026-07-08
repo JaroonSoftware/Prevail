@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 
-import { Modal, Card, Table, message, Form, Spin,Button } from "antd";
+import { Modal, Card, Table, message, Form, Spin,Button, Typography } from "antd";
+import { formatMoney } from '../../../utils/util';
 import { Row, Col, Space } from "antd";
 import { Input } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
@@ -139,12 +140,23 @@ export default function ModalBilling({show, close, values, selected, cuscode}) {
     }, [selected,show]);
 
 
+    // ยอดรวมเงินของใบวางบิลที่เลือก (total_price - discount)
+    const selectedTotal = customersData
+        .filter((d) => itemsRowKeySelect.includes(d.blcode))
+        .reduce((t, d) => t + (Number(d?.total_price || 0) - Number(d?.discount || 0)), 0);
+
     /** setting child component */
     const ButtonModal = (
         <Space direction="horizontal" size="middle" >
-            
+            <Typography.Text strong>
+                เลือก {itemsRowKeySelect.length} ใบ ยอดรวมเงิน{" "}
+                <Typography.Text strong type="success" style={{ fontSize: "1.05rem" }}>
+                    {formatMoney(selectedTotal, 2)}
+                </Typography.Text>{" "}
+                บาท
+            </Typography.Text>
             <Button onClick={() => handleClose() }>ปิด</Button>
-            <Button type='primary' onClick={() => handleConfirm() }>ยืนยันการเลือกสินค้า</Button>
+            <Button type='primary' onClick={() => handleConfirm() }>ยืนยันการเลือกใบวางบิล</Button>
         </Space>
     )
  

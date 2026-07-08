@@ -9,7 +9,7 @@ import {
   Typography,
   message,
 } from "antd";
-import { Card, Col, Divider, Flex, Row, Space, Table, InputNumber } from "antd";
+import { Card, Col, Divider, Flex, Row, Space, Table, InputNumber, Select } from "antd";
 
 import OptionService from "../../service/Options.service";
 import ReceiptService from "../../service/Receipt.service";
@@ -64,6 +64,10 @@ function ReceiptManage() {
 
   const [formDetail, setFormDetail] = useState(DEFALUT_CHECK_RECEIPT);
 
+  /** ส่วนลดท้ายบิล เลือกได้ทั้ง % และจำนวนเงิน (บาท) */
+  const [discountMode, setDiscountMode] = useState("baht"); // "percent" | "baht"
+  const [discountValue, setDiscountValue] = useState(0);
+
   const cardStyle = {
     backgroundColor: "#f0f0f0",
     height: "calc(100% - (25.4px + 1rem))",
@@ -82,6 +86,15 @@ function ReceiptManage() {
         setFormDetail(header);
         setListDetail(detail);
         setRECode(recode);
+
+        // แยกส่วนลดท้ายบิลออกจากส่วนลดของใบวางบิล (init เป็นจำนวนเงินบาท)
+        const billDiscount = (detail || []).reduce(
+          (a, v) => a + Number(v?.discount || 0), 0
+        );
+        setDiscountMode("baht");
+        setDiscountValue(
+          Math.max(Number(header?.discount || 0) - billDiscount, 0)
+        );
         form.setFieldsValue({
           ...header,
           redate: dayjs(redate),
@@ -114,7 +127,7 @@ function ReceiptManage() {
 
   useEffect(() => {
     if (listDetail) handleSummaryPrice();
-  }, [listDetail]);
+  }, [listDetail, discountMode, discountValue]);
 
   const handleSummaryPrice = () => {
     const newData = [...listDetail];
@@ -124,16 +137,23 @@ function ReceiptManage() {
       0
     );
 
-
-    const discount = newData.reduce(
+    // ส่วนลดจากใบวางบิลแต่ละใบ
+    const billDiscount = newData.reduce(
       (a, v) => (a += Number(v?.discount || 0)),
       0
     );
+
+    // ส่วนลดท้ายบิล แบบ % หรือ จำนวนเงิน
+    const extraDiscount =
+      discountMode === "percent"
+        ? (total_price * Number(discountValue || 0)) / 100
+        : Number(discountValue || 0);
+
+    const discount = billDiscount + extraDiscount;
     const grand_total_price = total_price - discount;
 
-
-    setFormDetail(() => ({
-      ...formDetail,
+    setFormDetail((state) => ({
+      ...state,
       total_price,
       discount,
       grand_total_price,
@@ -483,13 +503,11 @@ function ReceiptManage() {
                         className="!pe-4 text-end border-right-0"
                         style={{ borderRigth: "0px solid" }}
                       >
-                        <Typography.Text type="danger">
-                          {formatMoney(Number(formDetail?.grand_total_price || 0))}
-                        </Typography.Text>
+                        {formatMoney(Number(formDetail?.total_price || 0), 2)}
                       </Table.Summary.Cell>
                       <Table.Summary.Cell>Baht</Table.Summary.Cell>
                     </Table.Summary.Row>
-                    {/* <Table.Summary.Row>
+                    <Table.Summary.Row>
                       <Table.Summary.Cell
                         index={0}
                         colSpan={4}
@@ -505,7 +523,27 @@ function ReceiptManage() {
                         className="!pe-4 text-end"
                         style={{ borderRigth: "0px solid" }}
                       >
-                        {formatMoney(Number(formDetail?.discount || 0))}
+                        <Flex gap={6} justify="end" align="center">
+                          <InputNumber
+                            size="small"
+                            min={0}
+                            max={discountMode === "percent" ? 100 : undefined}
+                            controls={false}
+                            style={{ width: 100 }}
+                            value={discountValue}
+                            onChange={(v) => setDiscountValue(Number(v || 0))}
+                          />
+                          <Select
+                            size="small"
+                            style={{ width: 78 }}
+                            value={discountMode}
+                            onChange={(v) => setDiscountMode(v)}
+                            options={[
+                              { value: "percent", label: "%" },
+                              { value: "baht", label: "บาท" },
+                            ]}
+                          />
+                        </Flex>
                       </Table.Summary.Cell>
                       <Table.Summary.Cell>Baht</Table.Summary.Cell>
                     </Table.Summary.Row>
@@ -532,7 +570,7 @@ function ReceiptManage() {
                       <Table.Summary.Cell className="!pe-4 text-end">
                         Baht
                       </Table.Summary.Cell>
-                    </Table.Summary.Row> */}
+                    </Table.Summary.Row>
                   </>
                 )}
               </>
@@ -727,6 +765,8 @@ function ReceiptManage() {
           values={(v) => {
             handleChoosedCustomers(v);
           }}
+          fetchOptions={config?.action === "create" ? opservice.optionsCustomerPendingRE : undefined}
+          showPendingBL={config?.action === "create"}
         ></ModalCustomers>
       )}
 

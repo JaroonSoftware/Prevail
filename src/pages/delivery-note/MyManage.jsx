@@ -98,15 +98,10 @@ function DeliveryNoteManage() {
         // setTimeout( () => {  handleCalculatePrice(head?.valid_grand_total_price_until, head?.dated_grand_total_price_until) }, 200);
         // handleChoosedCustomers(head);
       } else {
-        const { data: code } = (
-          await dnservice.code().catch((e) => {
-            message.error("get Delivery Note code fail.");
-          })
-        ).data;
-        setDNCode(code);
+        // เลขที่ใบส่งของใช้เลขเดียวกับใบขายสินค้า จะถูกกำหนดตอนเลือกใบขายสินค้า
         const ininteial_value = {
           ...formDetail,
-          dncode: code,
+          dncode: null,
           dndate: dayjs(new Date()),
           doc_status: "รอจัดเตรียมสินค้า",
         };
@@ -262,12 +257,25 @@ function DeliveryNoteManage() {
     setListDetail([]);
   };
   const handleChoosedSO = (v) => {
+    if (!v || v.length < 1) return;
     let value = { detail: v };
     dnservice
       .getdetail_for_issue(value)
       .then((res) => {
         const { data } = res.data;
       setListDetail(data);
+      // ใช้เลขที่ใบขายสินค้าเป็นเลขที่ใบส่งของ (1 SO : 1 DN)
+      const socode = data?.[0]?.socode || v?.[0]?.socode || null;
+      if (socode) {
+        setDNCode(socode);
+        setFormDetail((state) => ({ ...state, dncode: socode }));
+      }
+      // ใช้วันที่ใบขายสินค้าเป็นวันที่ใบส่งของ
+      const sodate = v?.[0]?.sodate || null;
+      if (sodate) {
+        setFormDetail((state) => ({ ...state, dndate: dayjs(sodate) }));
+        form.setFieldValue("dndate", dayjs(sodate));
+      }
       // handleSummaryPrice();
       })
       .catch((err) => {

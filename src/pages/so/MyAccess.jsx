@@ -4,12 +4,14 @@ import { useNavigate } from 'react-router-dom';
 
 import { Card } from 'antd';
 import { Collapse, Form, Flex, Row, Col, Space } from 'antd';
-import { Input, Button, Table, message, DatePicker, Typography, Select } from 'antd';
-import { SearchOutlined, ClearOutlined, FileAddOutlined } from '@ant-design/icons'; 
+import { Input, Button, Table, message, DatePicker, Typography, Select, Modal } from 'antd';
+import { SearchOutlined, ClearOutlined, FileAddOutlined } from '@ant-design/icons';
+import { TfiTruck } from 'react-icons/tfi';
 import { accessColumn } from "./model";
 
 import dayjs from 'dayjs';
 import SOService from '../../service/SO.service';
+import DeliveryNoteService from '../../service/DeliveryNote.service';
 import {
     saveMyAccessSearchCookie,
     loadMyAccessSearchCookie,
@@ -17,7 +19,8 @@ import {
 } from '../../utils/myaccessSearchCookie';
 
 
-const soservice = SOService(); 
+const soservice = SOService();
+const dnservice = DeliveryNoteService();
 const mngConfig = {title:"", textOk:null, textCancel:null, action:"create", code:null};
 
 const RangePicker = DatePicker.RangePicker;
@@ -178,18 +181,107 @@ const MyAccess = () => {
         navigate("manage/edit", { state: { config: {...mngConfig, title:"แก้ไขใบขายสินค้า", action:"edit", code:data?.socode} }, replace:true } );
     }; 
 
-    const handlePrintsData = (code) => { 
+    const handlePrintsData = (code) => {
         const url = `/so-print/${code}`;
         const newWindow = window.open('', url, url);
         newWindow.location.href = url;
       }
+
+    // สร้างใบส่งของทันทีจากใบขายสินค้า (เลขเดียวกัน 1 SO : 1 DN ดึงรายการทั้งหมด)
+    const creatingDNRef = useRef(false);
+    const doCreateDN = async (record) => {
+        if (!record?.socode || creatingDNRef.current) return;
+        creatingDNRef.current = true;
+        try {
+            const res = await dnservice.getdetail_for_issue(
+                { detail: [{ socode: record.socode }] },
+                { ignoreLoading: true }
+            );
+            const rows = res?.data?.data || [];
+            if (rows.length < 1) throw new Error("ไม่พบรายการสินค้าในใบขายสินค้า");
+
+            const detail = rows.map((r) => ({
+                socode: r.socode,
+                stcode: r.stcode,
+                qty: Number(r?.qty || 0) - Number(r?.delamount || 0),
+                price: Number(r?.price || 0),
+                unit: r.unit,
+            }));
+
+            const total_price = detail.reduce(
+                (t, r) => t + Number(r.qty || 0) * Number(r.price || 0), 0
+            );
+
+            const header = {
+                // ใช้วันที่ใบขายสินค้าเป็นวันที่ใบส่งของ
+                dndate: record?.sodate
+                    ? dayjs(record.sodate).format("YYYY-MM-DD")
+                    : dayjs().format("YYYY-MM-DD"),
+                cuscode: record.cuscode,
+                total_price,
+                remark: "",
+            };
+
+            await dnservice.create({ header, detail });
+            message.success(`สร้างใบส่งของ ${record.socode} สำเร็จ`);
+            handleSearch();
+        } catch (err) {
+            console.warn(err);
+            message.error(err?.response?.data?.message || err?.message || "สร้างใบส่งของไม่สำเร็จ");
+        } finally {
+            creatingDNRef.current = false;
+        }
+    };
+
+    const handleCreateDN = (record) => {
+        if (!record?.socode) return;
+        Modal.confirm({
+            title: (
+                <Flex align="center" gap={8} className="text-green-700">
+                    <TfiTruck style={{ fontSize: "1.6rem" }} />
+                    <span>ยืนยันการเพิ่มไปส่งของ</span>
+                </Flex>
+            ),
+            icon: <></>,
+            content: (
+                <div style={{ paddingBlock: 8 }}>
+                    <div style={{ marginBottom: 8 }}>
+                        ต้องการสร้าง <b>ใบส่งของ</b> จากใบขายสินค้านี้ ใช่หรือไม่
+                    </div>
+                    <div
+                        style={{
+                            background: "#f6ffed",
+                            border: "1px solid #b7eb8f",
+                            borderRadius: 8,
+                            padding: "10px 14px",
+                            lineHeight: 1.9,
+                        }}
+                    >
+                        <div>เลขที่ใบขายสินค้า : <b>{record.socode}</b></div>
+                        <div>ลูกค้า : <b>{record.cusname || record.cuscode || "-"}</b></div>
+                        <div>เลขที่ใบส่งของ : <b>{record.socode}</b> (ใช้เลขเดียวกัน)</div>
+                    </div>
+                    <div style={{ marginTop: 8, color: "#8c8c8c", fontSize: 12 }}>
+                        ระบบจะดึงรายการสินค้าทั้งหมดของใบขายนี้ไปออกใบส่งของทันที
+                    </div>
+                </div>
+            ),
+            okText: "ยืนยัน สร้างใบส่งของ",
+            cancelText: "ยกเลิก",
+            okButtonProps: { style: { background: "#389e0d" } },
+            maskClosable: false,
+            centered: true,
+            width: 440,
+            onOk: () => doCreateDN(record),
+        });
+    };
 
       const handleView = (data) => {
         navigate("view", { state: { config: {...mngConfig, title:"View", code:data?.socode} }, replace:true } );
     };
     
 
-    const column = accessColumn( {handleEdit, handlePrintsData, handleView });
+    const column = accessColumn( {handleEdit, handlePrintsData, handleView, handleCreateDN });
 
     const handleTableChange = (pagination) => {
         const nextPagination = {

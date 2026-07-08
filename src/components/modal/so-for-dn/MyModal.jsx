@@ -57,6 +57,7 @@ export default function ModalDN({show, close,cuscode, values, selected}) {
             stcode:m.stcode,
             stname:m.stname,
             socode:m.socode,
+            sodate:m.sodate,
             kind_name:m.kind_name,
             price: Number(m?.price || 0),
             cost: Number(m?.amtprice || 0),
@@ -70,42 +71,29 @@ export default function ModalDN({show, close,cuscode, values, selected}) {
         // const rawdt = selected.filter( (item) =>  item?.socode !== "" );
         // console.log(itemsChoose, rawdt, trans); 
 
-        values([...selected, ...itemsChoose]);
-        
+        // 1 SO : 1 DN — ส่งเฉพาะใบขายสินค้าที่เลือก (แทนที่รายการเดิมทั้งหมด)
+        values([...itemsChoose]);
+
         setItemsList([]);
         close(false);
     }
 
     /** Config Conponent */
 
+    // เลือกได้ 1 ใบขายสินค้า ต่อ 1 ใบส่งของ เท่านั้น
     const itemSelection = {
         selectedRowKeys : itemsRowKeySelect,
-        type: "checkbox",
+        type: "radio",
         fixed: true,
-        hideSelectAll:true,
-        onChange: (selectedRowKeys, selectedRows) => { 
-            // setItemsRowKeySelect([...new Set([...selectedRowKeys, ...itemsRowKeySelect])]);
-            // setItemsList(selectedRows);
-            //setItemsRowKeySelect(selectedRowKeys);
+        onChange: (selectedRowKeys) => {
+            setItemsRowKeySelect(selectedRowKeys);
         },
-        getCheckboxProps: (record) => { 
+        getCheckboxProps: (record) => {
             return {
-                disabled: handleCheckDuplicate(record.socode), 
+                disabled: handleCheckDuplicate(record.socode),
                 name: record.socode,
             }
         },
-        onSelect: (record, selected, selectedRows, nativeEvent) => {
-            //console.log(record, selected, selectedRows, nativeEvent);
-            if( selected ){
-                setItemsRowKeySelect([...new Set([...itemsRowKeySelect, record.socode])]);
-            } else {
-                const ind = itemsRowKeySelect.findIndex( d => d === record.socode);
-                const tval = [...itemsRowKeySelect];
-                tval.splice(ind, 1);
-                setItemsRowKeySelect([...tval]);
-                //console.log(ind, itemsRowKeySelect);
-            }
-        }
     };
 
     /** End Config Component */

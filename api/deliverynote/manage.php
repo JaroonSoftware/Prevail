@@ -24,9 +24,25 @@ try {
         // $sql = "insert dnmaster (`dncode`, `dndate`, `cuscode`,`total_price`,`remark`,doc_status,created_by,updated_by) 
         // values (:dncode,:dndate,:cuscode,:total_price,:remark,'รอจัดเตรียมสินค้า',:action_user,:action_user)";
 
-        $dncode = request_dncode($conn);
+        // ใช้เลขที่ใบขายสินค้าเป็นเลขที่ใบส่งของ (1 SO : 1 DN เท่านั้น)
+        $socodes = array_values(array_unique(array_filter(array_map(function ($d) {
+            return ((object)$d)->socode ?? null;
+        }, $detail))));
 
-        $sql = "insert dnmaster (`dncode`, `dndate`, `cuscode`,`total_price`,`remark`,doc_status,created_by,updated_by) 
+        if (count($socodes) !== 1) {
+            throw new PDOException("ใบส่งของ 1 ใบ ต้องมาจากใบขายสินค้าเพียง 1 ใบเท่านั้น");
+        }
+        $dncode = $socodes[0];
+
+        // กันออกใบส่งของซ้ำจากใบขายสินค้าเดิม
+        $stmtChk = $conn->prepare("SELECT doc_status FROM dnmaster where dncode = :dncode");
+        $stmtChk->execute(['dncode' => $dncode]);
+        if ($stmtChk->rowCount() > 0) {
+            $chk = $stmtChk->fetch(PDO::FETCH_ASSOC);
+            throw new PDOException("ใบขายสินค้า $dncode ออกใบส่งของแล้ว (สถานะ: {$chk['doc_status']})");
+        }
+
+        $sql = "insert dnmaster (`dncode`, `dndate`, `cuscode`,`total_price`,`remark`,doc_status,created_by,updated_by)
         values (:dncode,:dndate,:cuscode,:total_price,:remark,'จัดเตรียมสินค้าแล้ว',:action_user,:action_user)";
 
         $stmt = $conn->prepare($sql);
@@ -46,7 +62,7 @@ try {
             die;
         }
         
-        update_dncode($conn);
+        // ไม่ต้อง update running number แล้ว เพราะใช้เลขที่ใบขายสินค้าโดยตรง
         $code = $conn->lastInsertId();
 
         $sql = "insert into dndetail (dncode,socode,stcode,qty,price,unit)

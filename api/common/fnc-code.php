@@ -234,20 +234,22 @@ function request_socode($pdo){
     $y = substr( date("Y")+543, -2);
     $m = date("m");
     $number = intval($res);
-    $prefix = "SO$y$m";
+    $prefix = "IV$y$m";
     while(true){
         $code = sprintf("%03s", ( $number) );
         $format = $prefix.$code;
-        $sql = "SELECT 1 r FROM somaster where socode = '$format'"; 
-        $stmt = $pdo->prepare($sql); 
-        $stmt->execute(); 
+        // เช็คซ้ำทั้งใบขายสินค้า (somaster) และใบส่งของ (dnmaster) เพราะใช้ prefix IV ร่วมกัน
+        $sql = "SELECT 1 r FROM somaster where socode = '$format'
+                UNION SELECT 1 FROM dnmaster where dncode = '$format'";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute();
         if ($stmt->rowCount() > 0){
             $number += 1;
             update_socode($pdo);
             continue;
         } else break;
-    } 
-    return $prefix.sprintf("%03s", ( $number) );   
+    }
+    return $prefix.sprintf("%03s", ( $number) );
 }
 
 function request_dncode($pdo){
@@ -277,16 +279,18 @@ function request_dncode($pdo){
     while(true){
         $code = sprintf("%03s", ( $number) );
         $format = $prefix.$code;
-        $sql = "SELECT 1 r FROM somaster where socode = '$format'"; 
-        $stmt = $pdo->prepare($sql); 
-        $stmt->execute(); 
+        // เช็คซ้ำทั้งใบขายสินค้า (somaster) และใบส่งของ (dnmaster) เพราะใช้ prefix IV ร่วมกัน
+        $sql = "SELECT 1 r FROM somaster where socode = '$format'
+                UNION SELECT 1 FROM dnmaster where dncode = '$format'";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute();
         if ($stmt->rowCount() > 0){
             $number += 1;
             update_dncode($pdo);
             continue;
         } else break;
-    } 
-    return $prefix.sprintf("%03s", ( $number) );   
+    }
+    return $prefix.sprintf("%03s", ( $number) );
 }
 
 function request_blcode($pdo){
