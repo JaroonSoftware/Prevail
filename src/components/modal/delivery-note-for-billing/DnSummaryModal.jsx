@@ -148,7 +148,7 @@ export default function DnSummaryModal({ show, close, values, selected, dnData, 
     const ButtonDnSummaryModal = (
         <Space direction="horizontal" size="middle" >
             <Button onClick={() => close(false) }>ปิด</Button>
-            <Button type='primary' onClick={() => handleConfirm() }>ถัดไปเลือกรายการสินค้า</Button>
+            <Button type='primary' onClick={() => handleConfirm() }>ยืนยันเลือกใบส่งของ</Button>
         </Space>
     );
 

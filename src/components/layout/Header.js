@@ -35,7 +35,7 @@ function Header({
   const [userInfo, setUserInfo] = useState(null);
   const [openResetPassword, setOpenResetPassword] = useState(false);
   useEffect(() => {
-    return window.scrollTo(0, 0);
+    window.scrollTo(0, 0);
   }, []);
   useEffect(() => {
     const users = authService.getUserInfo();
