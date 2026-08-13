@@ -1,7 +1,7 @@
 import React from "react";
 import { Modal, Button } from "antd";
 import { PrinterFilled } from "@ant-design/icons";
-import FormPKBarcode from "./FormPKBarcode";
+import FormPKBarcode, { PK_LABEL_STYLE } from "./FormPKBarcode";
 import { useReactToPrint } from "react-to-print";
 
 export default function ModalPreviewPKBarcode({ show, close, printRef, printData }) {
@@ -20,24 +20,14 @@ export default function ModalPreviewPKBarcode({ show, close, printRef, printData
         margin: 0 !important;
         padding: 0 !important;
       }
-      .ant-card.pkqrcode {
-        width: 100mm !important;
-        height: 50mm !important;
-        box-sizing: border-box !important;
-        border: none !important;
-        border-radius: 0 !important;
-        box-shadow: none !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        page-break-after: always;
-        overflow: hidden;
+      #pk-print-root {
+        display: block !important;
+        width: 100mm;
+        margin: 0;
+        padding: 0;
       }
-      .ant-card.pkqrcode .ant-card-body {
-        padding: 6px 8px !important;
-        width: 100% !important;
-        height: 100% !important;
-        box-sizing: border-box !important;
-      }
+      ${PK_LABEL_STYLE}
+      .pk-label { box-shadow: none !important; }
     `,
   });
 
