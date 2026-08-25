@@ -14,7 +14,7 @@ try {
         $_POST = json_decode($rest_json, true);
         extract($_POST, EXTR_OVERWRITE, "_");
 
-        $listbarcode;
+        $listbarcode = [];
 
         foreach ($detail as $ind => $val) {
 
@@ -26,12 +26,17 @@ try {
             $res = $stmt->fetch(PDO::FETCH_ASSOC);
             extract($res, EXTR_OVERWRITE, "_");
             if ($num==0) {
-                $strSQL = "SELECT a.cuscode FROM somaster as a 
+                /* ต้อง join customer ด้วย: $val มาจาก sodetail ฝั่งหน้าจอ ซึ่งไม่มี
+                   cusname/cuscode ติดมา (ดู query GET ใน package/manage.php)
+                   ถ้าไม่ดึงจาก DB ตรงนี้ ปริ้นครั้งแรกชื่อลูกค้าจะว่างเสมอ */
+                $strSQL = "SELECT a.cuscode, CONCAT(COALESCE(c.prename,''),' ',COALESCE(c.cusname,'')) as cusname
+                FROM somaster as a
+                inner join customer as c on (a.cuscode = c.cuscode)
                 where a.socode = :socode  ";
                 $stmt5 = $conn->prepare($strSQL);
                 if (!$stmt5) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
-                $stmt5->bindParam(":socode", $val['socode'], PDO::PARAM_STR);
+                $stmt5->bindValue(":socode", $val['socode'], PDO::PARAM_STR);
 
                 if (!$stmt5->execute()) {
                     $error = $conn->errorInfo();
@@ -39,10 +44,20 @@ try {
                     die;
                 }
 
-                $res = $stmt5->fetch(PDO::FETCH_ASSOC);
-                extract($res, EXTR_OVERWRITE, "_");
+                /* กำหนดตัวแปรตรงๆ ไม่ใช้ extract() เพราะ extract ตัวอื่นในลูป
+                   ทับค่าเหล่านี้ได้ง่าย */
+                $res     = $stmt5->fetch(PDO::FETCH_ASSOC);
+                $cuscode = $res['cuscode'] ?? '';
+                $cusname = trim($res['cusname'] ?? '');
 
-                for ($count = 0; $count < intval($val['qty'] / $val['packing_weight']); $count++) {
+                /* ต้องคิดแบบทศนิยม: % ของ PHP เป็น modulo จำนวนเต็ม
+                   ทำให้ qty 0.30 / ถุงละ 1.00 ได้ 0 % 1 = 0 -> ไม่เกิดถุงเลย */
+                $qty_f    = (float) $val['qty'];
+                $pack_f   = (float) $val['packing_weight'];
+                $full_bag = $pack_f > 0 ? (int) floor($qty_f / $pack_f) : 0;
+                $remain   = $pack_f > 0 ? fmod($qty_f, $pack_f) : $qty_f;
+
+                for ($count = 0; $count < $full_bag; $count++) {
                     $sql = "INSERT INTO package_barcode
                     (so_weight,sup_weight,weight, socode, stcode, created_date)
                     VALUES(:so_weight,:sup_weight,0, :socode, :stcode, current_timestamp())";
@@ -50,8 +65,11 @@ try {
                     $stmt = $conn->prepare($sql);
                     if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
-                    $stmt->bindParam(":so_weight", number_format($val['qty'], 2), PDO::PARAM_STR);
-                    $stmt->bindValue(":sup_weight", number_format($val['packing_weight'], 2), PDO::PARAM_STR);
+                    /* ใช้ bindValue: bindParam ต้องรับตัวแปรแบบ by-reference
+                       ส่งค่าที่ได้จากฟังก์ชันตรงๆ จะ fatal ใน PHP 8
+                       และ number_format ต้องไม่ใส่ , คั่นหลักพัน ไม่งั้น insert เพี้ยน */
+                    $stmt->bindValue(":so_weight", number_format($qty_f, 2, '.', ''), PDO::PARAM_STR);
+                    $stmt->bindValue(":sup_weight", number_format($pack_f, 2, '.', ''), PDO::PARAM_STR);
                     $stmt->bindValue(":socode", $val['socode'], PDO::PARAM_STR);
                     $stmt->bindValue(":stcode", $val['stcode'], PDO::PARAM_STR);
 
@@ -63,16 +81,17 @@ try {
                     $package_id = str_pad($conn->lastInsertId(), 10, "0", STR_PAD_LEFT);
 
                     $listbarcode[$ind][$count]['stcode'] = $val['stcode'];
-                    $listbarcode[$ind][$count]['sup_weight'] = number_format($val['packing_weight'], 2);
+                    $listbarcode[$ind][$count]['sup_weight'] = number_format($pack_f, 2, '.', '');
                     $listbarcode[$ind][$count]['package_id'] = $package_id;
                     $listbarcode[$ind][$count]['stname'] = $val['stname'];
                     $listbarcode[$ind][$count]['socode'] = $val['socode'];
-                    $listbarcode[$ind][$count]['cusname'] = $val['cusname'];
+                    $listbarcode[$ind][$count]['cusname'] = $cusname;
                     $listbarcode[$ind][$count]['cuscode'] = $cuscode;
                     
                 }
 
-                if ($val['qty'] % $val['packing_weight']) {
+                /* เทียบกับ epsilon กันปัญหาปัดเศษของ float */
+                if ($remain > 0.0001) {
                     $sql = "INSERT INTO package_barcode
                     (so_weight,sup_weight, socode, stcode, created_date)
                     VALUES(:so_weight,:sup_weight, :socode, :stcode, current_timestamp())";
@@ -80,8 +99,8 @@ try {
                     $stmt = $conn->prepare($sql);
                     if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
-                    $stmt->bindParam(":so_weight", number_format($val['qty'], 2), PDO::PARAM_STR);
-                    $stmt->bindValue(":sup_weight", number_format($val['qty']%$val['packing_weight'], 2), PDO::PARAM_STR);
+                    $stmt->bindValue(":so_weight", number_format($qty_f, 2, '.', ''), PDO::PARAM_STR);
+                    $stmt->bindValue(":sup_weight", number_format($remain, 2, '.', ''), PDO::PARAM_STR);
                     $stmt->bindValue(":socode", $val['socode'], PDO::PARAM_STR);
                     $stmt->bindValue(":stcode", $val['stcode'], PDO::PARAM_STR);
 
@@ -90,15 +109,16 @@ try {
                         throw new PDOException("Insert data error => $error");
                         die;
                     }
-                    $package_id = $conn->lastInsertId();
+                    /* ต้อง pad ให้เหมือนถุงเต็ม ไม่งั้น Lot No./QR คนละรูปแบบกัน */
+                    $package_id = str_pad($conn->lastInsertId(), 10, "0", STR_PAD_LEFT);
 
                     $listbarcode[$ind][$count]['stcode'] = $val['stcode'];
-                    $listbarcode[$ind][$count]['sup_weight'] = number_format($val['qty'] % $val['packing_weight'], 2);
+                    $listbarcode[$ind][$count]['sup_weight'] = number_format($remain, 2, '.', '');
                     $listbarcode[$ind][$count]['package_id'] = $package_id;
                     $listbarcode[$ind][$count]['stname'] = $val['stname'];
                     $listbarcode[$ind][$count]['socode'] = $val['socode'];
-                    $listbarcode[$ind][$count]['cusname'] = $val['cusname'];
-                    $listbarcode[$ind][$count]['cuscode'] = $val['cuscode'];
+                    $listbarcode[$ind][$count]['cusname'] = $cusname;
+                    $listbarcode[$ind][$count]['cuscode'] = $cuscode;
                 }
 
                 $sql = "update sodetail
@@ -183,6 +203,9 @@ try {
 
         $conn->commit();
         http_response_code(200);
+        /* array_values กัน index ขาดช่วง (เช่นบางรายการไม่มีถุง) ทำให้ json_encode
+           กลายเป็น object แทน array แล้วฝั่ง React map ไม่ได้ -> ฉลากหายทั้งชุด */
+        $listbarcode = array_values(array_map('array_values', $listbarcode));
         echo json_encode(array("data" => $listbarcode));
 
     } else {
