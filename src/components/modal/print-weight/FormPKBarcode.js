@@ -58,7 +58,13 @@ export const PK_LABEL_STYLE = `
     box-sizing: border-box;
     /* เว้นขอบเล็กน้อย ไม่ให้เส้นกรอบไปชนรอยไดคัทจนโดนตัด */
     padding: 0.8mm;
-    font-family: "Sarabun", "TH Sarabun New", Tahoma, sans-serif;
+    /* Tahoma มาก่อน: เส้นหนาทึบ อ่านชัดบนหัวพิมพ์ความร้อน และติดมากับ Windows ทุกเครื่อง
+       ห้ามใส่ Sarabun/TH Sarabun New ไว้หน้า — เส้นบางมาก พิมพ์ออกมาจางและขาดเป็นช่วง
+       (โปรเจกต์นี้ไม่ได้โหลดฟอนต์ Sarabun มาด้วยซ้ำ ดู public/index.html) */
+    font-family: Tahoma, "Leelawadee UI", "Segoe UI", sans-serif;
+    /* ตัวหนาทั้งฟอร์มเป็นค่าเริ่มต้น — หัวพิมพ์ความร้อนพิมพ์เส้นบางได้ไม่ดี
+       ตัวไหนต้องหนากว่านี้ค่อยกำหนด 800 ทับเป็นรายตัว */
+    font-weight: 700;
     color: #000;
   }
 
@@ -105,15 +111,18 @@ export const PK_LABEL_STYLE = `
     min-width: 0;
   }
   .pk-cus-sm {
-    font-size: 13pt;
+    font-size: 17.5pt;
     font-weight: 800;
     line-height: 1;
   }
   .pk-name {
     margin-top: auto;
-    font-size: 19pt;
-    font-weight: 700;
+    font-size: 25pt;
+    font-weight: 800;
     line-height: 1.1;
+    /* กันพื้นที่ไว้ 2 บรรทัดเสมอ ชื่อสั้นหรือยาว "ถุงที่" ก็อยู่ระดับเดียวกัน
+       ไม่กระโดดขึ้นลงตามความยาวชื่อสินค้า */
+    min-height: 2.2em;
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -121,8 +130,21 @@ export const PK_LABEL_STYLE = `
     word-break: break-word;
   }
   .pk-bag {
-    font-size: 11pt;
+    margin-top: 1mm;
+    font-size: 18pt;
+    font-weight: 800;
     line-height: 1.3;
+  }
+
+  /* ---- ตัวอักษรขนาดเล็กบนหัวพิมพ์ความร้อน ----
+     ต่อให้หนา 800 แล้ว เส้นก็ยังบางจนพิมพ์ออกมาขาดเป็นช่วง
+     เติมเส้นขอบสีเดียวกับตัวอักษรเพื่อถมให้อ้วนขึ้นอีกนิด
+     paint-order ให้วาดเส้นขอบก่อนแล้วค่อยถมข้างใน หัวและสระไทยจะไม่ตัน */
+  .pk-bag,
+  .pk-brand,
+  .pk-foot {
+    -webkit-text-stroke: 0.3px currentColor;
+    paint-order: stroke fill;
   }
   .pk-weight {
     margin-top: auto;
@@ -131,8 +153,8 @@ export const PK_LABEL_STYLE = `
     gap: 2mm;
     line-height: 1;
   }
-  .pk-weight .num { font-size: 30pt; font-weight: 700; }
-  .pk-weight .unit { font-size: 18pt; font-weight: 700; }
+  .pk-weight .num { font-size: 34.5pt; font-weight: 800; }
+  .pk-weight .unit { font-size: 22.5pt; font-weight: 800; }
 
   /* ---- คอลัมน์ขวา ---- */
   .pk-right {
@@ -148,15 +170,15 @@ export const PK_LABEL_STYLE = `
     border: 2.5pt solid #000;
     text-align: center;
     padding: 1mm 1mm 1.4mm 1mm;
-    font-size: 22pt;
+    font-size: 26.5pt;
     font-weight: 800;
     line-height: 1.05;
     word-break: break-all;
   }
   .pk-brand {
     margin-top: 1mm;
-    font-size: 10pt;
-    font-weight: 600;
+    font-size: 13pt;
+    font-weight: 700;
     letter-spacing: 1.2pt;
     text-align: center;
   }
@@ -177,9 +199,10 @@ export const PK_LABEL_STYLE = `
     align-items: baseline;
     justify-content: flex-end;
     gap: 4mm;
-    font-size: 11pt;
+    font-size: 17pt;
+    font-weight: 800;
   }
-  .pk-foot .vl { font-weight: 700; }
+  .pk-foot .vl { font-weight: 800; }
 
   /* ---- ความต่างระหว่างจอกับกระดาษ มีได้แค่ตรงนี้ (ไม่กระทบ layout ในดวง) ---- */
   @media screen {
