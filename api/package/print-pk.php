@@ -87,6 +87,8 @@ try {
                     $listbarcode[$ind][$count]['socode'] = $val['socode'];
                     $listbarcode[$ind][$count]['cusname'] = $cusname;
                     $listbarcode[$ind][$count]['cuscode'] = $cuscode;
+                    /* หน่วยสินค้าตามที่ระบุในใบขายสินค้า (sodetail.unit) */
+                    $listbarcode[$ind][$count]['unit'] = $val['unit'] ?? '';
                     
                 }
 
@@ -119,6 +121,8 @@ try {
                     $listbarcode[$ind][$count]['socode'] = $val['socode'];
                     $listbarcode[$ind][$count]['cusname'] = $cusname;
                     $listbarcode[$ind][$count]['cuscode'] = $cuscode;
+                    /* หน่วยสินค้าตามที่ระบุในใบขายสินค้า (sodetail.unit) */
+                    $listbarcode[$ind][$count]['unit'] = $val['unit'] ?? '';
                 }
 
                 $sql = "update sodetail
@@ -141,7 +145,13 @@ try {
             }
             else
             {
-                $strSQL = "SELECT a.stcode,a.sup_weight,a.weight,a.package_id,i.stname,a.socode,c.cusname,c.cuscode FROM `package_barcode` as a
+                /* unit ดึงด้วย subquery ไม่ใช้ join กับ sodetail
+                   เพราะถ้า sodetail มีหลายแถวของ socode+stcode เดียวกัน
+                   join จะทำให้ผลลัพธ์คูณจำนวนแถวขึ้นมา ปริ้นได้ฉลากเกิน */
+                $strSQL = "SELECT a.stcode,a.sup_weight,a.weight,a.package_id,i.stname,a.socode,c.cusname,c.cuscode,
+                (select sd.unit from `sodetail` as sd
+                 where sd.socode = a.socode and sd.stcode = a.stcode limit 1) as unit
+                FROM `package_barcode` as a
                 inner join items as i on (a.stcode=i.stcode)
                 inner join somaster as s on (a.socode=s.socode)
                 inner join customer as c on (s.cuscode=c.cuscode)
