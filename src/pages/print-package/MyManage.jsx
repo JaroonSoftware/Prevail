@@ -170,15 +170,27 @@ function MyManage() {
 
     let obj = { detail: selectedData };
 
+    /* หน่วยสินค้ามีอยู่ในตารางหน้าจอแล้ว (sodetail.unit)
+       เติมกลับเข้าไปในผลลัพธ์เอง ไม่ต้องรอ API ส่งมา
+       ทำให้ฉลากแสดงหน่วยถูกต้องแม้ backend ยังเป็นเวอร์ชันเก่า */
+    const unitByItem = new Map(
+      selectedData.map((it) => [`${it.socode}::${it.stcode}`, it.unit])
+    );
+
     pkservice
       .printpackage(obj)
       .then((r) => {
-        // console.log(r.data)
-        setResultData(r.data.data)
-        // message.success("สร้าง QRC เรียบร้อย!");
+        const groups = Array.isArray(r?.data?.data) ? r.data.data : [];
+        const withUnit = groups.map((group) =>
+          (Array.isArray(group) ? group : []).map((item) => ({
+            ...item,
+            unit:
+              item?.unit || unitByItem.get(`${item?.socode}::${item?.stcode}`) || "",
+          }))
+        );
+
+        setResultData(withUnit);
         setOpenPrint(true);
-        // printProcess();
-        // reFetchAfterPrint();
       })
       .catch(() => message.error("Something went wrong !"));
   };

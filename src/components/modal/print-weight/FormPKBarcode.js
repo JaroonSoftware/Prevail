@@ -268,7 +268,9 @@ const FormPKBarcode = forwardRef(
 
                     <div className="pk-weight">
                       <span className="num">{fmtWeight(data?.sup_weight)}</span>
-                      <span className="unit">{data?.unit || "กก."}</span>
+                      {/* ไม่ fallback เป็น "กก." เพราะถ้าหน่วยหายจะพิมพ์ผิดแบบเงียบๆ
+                          (เคยเจอสินค้าหน่วย "ลูก" แต่ออกมาเป็น กก.) */}
+                      <span className="unit">{data?.unit}</span>
                     </div>
                   </div>
 
