@@ -76,7 +76,15 @@ function MyManage() {
         } = res.data;
         const { socode, sodate } = header;
         setFormDetail(header);
-        setListDetail(detail);
+        /* ติด _rowKey ที่ไม่ซ้ำให้ทุกแถวตั้งแต่ตอนโหลด
+           ใช้ stcode เป็น rowKey ไม่ได้ เพราะใบขายเดียวกันใส่สินค้าตัวเดียวกัน
+           ซ้ำหลายบรรทัดได้ (คนละราคา/คนละหน่วย) แล้วติ๊กทีเดียวจะเลือกติดกันหมด */
+        setListDetail(
+          (detail || []).map((item, i) => ({
+            ...item,
+            _rowKey: `${item?.socode ?? ""}::${item?.stcode ?? ""}::${i}`,
+          }))
+        );
         setSOCode(socode);
         form.setFieldsValue({ ...header, sodate: dayjs(sodate) });
 
@@ -161,38 +169,84 @@ function MyManage() {
   };
 
   const handleItemsChoosed = (value) => {
-    // console.log(value)
-    setListDetail(value);
+    /* ติด _rowKey ให้รายการที่เลือกใหม่ด้วย ไม่งั้นตารางจะไม่มี key ที่ไม่ซ้ำ */
+    setListDetail(
+      (value || []).map((item, i) => ({
+        ...item,
+        _rowKey: item?._rowKey || `${item?.socode ?? ""}::${item?.stcode ?? ""}::${i}`,
+      }))
+    );
     handleSummaryPrice();
   };
 
   const handlePrint = () => {
+    /* รวมบรรทัดที่รหัสสินค้าซ้ำกันให้เหลือรายการเดียวก่อนส่ง
 
-    let obj = { detail: selectedData };
+       ฝั่ง backend ผูก package_barcode ไว้กับ socode + stcode เท่านั้น
+       ไม่มีตัวระบุว่าเป็นบรรทัดไหนของใบขาย ถ้าส่งสินค้าตัวเดียวกันไป
+       หลายบรรทัด จะเกิดปัญหาต่อกันเป็นทอด:
+         1. บรรทัดแรกสร้างถุง แล้วสั่ง update packing_status
+            ด้วยเงื่อนไข socode+stcode ซึ่งไปโดนบรรทัดที่ซ้ำกันทั้งหมด
+         2. พอวนมาบรรทัดที่ 2 ระบบเห็นว่า "ปริ้นแล้ว" เลยข้ามการสร้างถุง
+            แล้วไปดึงถุงของบรรทัดแรกมาแสดงซ้ำ
+         -> ได้ฉลากซ้ำ จำนวนถุงขาด และน้ำหนักไม่ตรงกับที่สั่ง
 
-    /* หน่วยสินค้ามีอยู่ในตารางหน้าจอแล้ว (sodetail.unit)
-       เติมกลับเข้าไปในผลลัพธ์เอง ไม่ต้องรอ API ส่งมา
-       ทำให้ฉลากแสดงหน่วยถูกต้องแม้ backend ยังเป็นเวอร์ชันเก่า */
-    const unitByItem = new Map(
-      selectedData.map((it) => [`${it.socode}::${it.stcode}`, it.unit])
-    );
+       รวมจำนวนเข้าด้วยกันก่อนจึงถูกต้องกว่า เพราะถุงเป็นของจริงทางกายภาพ
+       สินค้าตัวเดียวกันย่อมใช้ packing_weight เดียวกัน (มาจากตาราง items) */
+    const mergedMap = new Map();
+    selectedData.forEach((it) => {
+      const key = `${it?.socode ?? ""}::${it?.stcode ?? ""}`;
+      const prev = mergedMap.get(key);
+      if (prev) {
+        prev.qty = Number(prev.qty || 0) + Number(it?.qty || 0);
+      } else {
+        mergedMap.set(key, { ...it, qty: Number(it?.qty || 0) });
+      }
+    });
+    const chosen = [...mergedMap.values()];
+
+    let obj = { detail: chosen };
 
     pkservice
       .printpackage(obj)
       .then((r) => {
-        const groups = Array.isArray(r?.data?.data) ? r.data.data : [];
-        const withUnit = groups.map((group) =>
+        const raw = r?.data?.data;
+
+        /* backend เวอร์ชันเก่าอาจคืนเป็น object เมื่อ index ขาดช่วง
+           (เช่น {"0":[...],"2":[...]}) แทนที่จะเป็น array แปลงให้รองรับทั้งสองแบบ */
+        const groups = Array.isArray(raw)
+          ? raw
+          : raw && typeof raw === "object"
+          ? Object.values(raw)
+          : [];
+
+        const withUnit = groups.map((group, gi) =>
           (Array.isArray(group) ? group : []).map((item) => ({
             ...item,
-            unit:
-              item?.unit || unitByItem.get(`${item?.socode}::${item?.stcode}`) || "",
+            unit: item?.unit || chosen[gi]?.unit || "",
           }))
         );
+
+        const total = withUnit.reduce((n, g) => n + g.length, 0);
+        if (total < 1) {
+          /* ไม่เปิด modal เปล่าๆ ให้งง บอกไปเลยว่าไม่มีฉลากถูกสร้าง */
+          console.warn("print-pk.php ตอบกลับ:", raw);
+          message.warning(
+            "ไม่มีฉลากถูกสร้าง — รายการนี้อาจถูกมาร์คว่าปริ้นแล้ว แต่ไม่มีข้อมูลถุงใน package_barcode"
+          );
+          return;
+        }
 
         setResultData(withUnit);
         setOpenPrint(true);
       })
-      .catch(() => message.error("Something went wrong !"));
+      .catch((err) => {
+        /* แสดงข้อความจริงจาก API แทนข้อความรวมๆ จะได้รู้ว่าพังตรงไหน */
+        const msg =
+          err?.response?.data?.message || err?.message || "Something went wrong !";
+        console.error("print-pk.php error:", err?.response?.data ?? err);
+        message.error(msg);
+      });
   };
 
   const handleRemove = (record) => {
@@ -214,7 +268,9 @@ function MyManage() {
       const itemDetail = [...listDetail];
       const newData = [...itemDetail];
 
-      const ind = newData.findIndex((item) => r?.stcode === item?.stcode);
+      /* หาแถวด้วย _rowKey ไม่ใช่ stcode ไม่งั้นถ้าสินค้าซ้ำกันหลายบรรทัด
+         การแก้บรรทัดล่างจะไปเขียนทับบรรทัดแรกที่เจอแทน */
+      const ind = newData.findIndex((item) => r?._rowKey === item?._rowKey);
       if (ind < 0) return itemDetail;
       const item = newData[ind];
       newData.splice(ind, 1, {
@@ -365,7 +421,7 @@ function MyManage() {
           dataSource={listDetail}
           columns={prodcolumns}
           pagination={false}
-          rowKey="stcode"
+          rowKey="_rowKey"
           scroll={{ x: "max-content" }}
           locale={{
             emptyText: <span>No data available, please add some data.</span>,
@@ -388,7 +444,7 @@ function MyManage() {
           dataSource={listDetail}
           columns={prodcolumnsincollape}
           pagination={false}
-          rowKey="stcode"
+          rowKey="_rowKey"
           scroll={{ x: "max-content" }}
           locale={{
             emptyText: <span>No data available, please add some data.</span>,
