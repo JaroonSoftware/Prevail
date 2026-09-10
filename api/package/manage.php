@@ -170,7 +170,9 @@ try {
         }
         $header = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT a.socode,a.stcode, a.price, a.unit, a.qty,i.stname,i.packing_weight,a.vat ";
+        /* ต้องดึง packing_status มาด้วย: หน้าจอใช้ตัดสินว่าแถวนี้ยังไม่เคยปริ้น
+           จึงจะยอมให้แก้ "น้ำหนักสูงสุดต่อถุง" เฉพาะเคสนี้ได้ */
+        $sql = "SELECT a.socode,a.stcode, a.price, a.unit, a.qty,i.stname,i.packing_weight,a.vat,a.packing_status ";
         $sql .= " FROM `sodetail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
         $sql .= " where a.socode = :code";
         $sql .= " order by i.seq";

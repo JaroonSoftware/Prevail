@@ -222,6 +222,15 @@ export const productColumn = ({ handleRemove, handleSelectChange }) => [
   },
 ];
 
+/** แถวนี้ปริ้นหน้าถุงไปแล้วหรือยัง
+ *  ยึดเกณฑ์เดียวกับ api/package/print-pk.php: ถือว่า "ยังไม่ปริ้น" เมื่อ
+ *  packing_status ว่าง/null หรือเป็น 'ยังไม่ปริ้นหน้าถุง'
+ *  (ปริ้นแล้วถุงถูกสร้างใน package_barcode ไปแล้ว แก้น้ำหนักย้อนหลังไม่ได้) */
+export const isPackedPrinted = (rec) => {
+  const st = rec?.packing_status;
+  return !!st && st !== "ยังไม่ปริ้นหน้าถุง";
+};
+
 export const columnsParametersEditable = (
   handleEditCell,
   optionsItems,
@@ -237,7 +246,12 @@ export const columnsParametersEditable = (
         // console.log(record);
         return {
           record,
-          editable: col.editable,
+          /* ล็อกช่องเมื่อปริ้นไปแล้ว — ถุงถูกสร้างจริงไปแล้ว แก้ตัวเลขตอนนี้
+             ไม่มีผลกับฉลากที่ backend จะดึงของเดิมมาปริ้นซ้ำ */
+          editable:
+            col.dataIndex === "packing_weight"
+              ? !isPackedPrinted(record)
+              : col.editable,
           dataIndex: col.dataIndex,
           title: col.title,
           // required: !!col?.required,
@@ -283,6 +297,8 @@ export const productColumnInCollape = () => [
     render: (_, rec) => <>{comma(Number(rec?.qty || 0), 2, 2)}</>,
   },
   {
+    /* แก้ได้เฉพาะแถวที่ "ยังไม่ปริ้นหน้าถุง" (ดูเงื่อนไขใน columnsParametersEditable)
+       ค่าที่แก้มีผลแค่การปริ้นครั้งนี้ ไม่ได้เขียนกลับตาราง items */
     title: "น้ำหนักสูงสุดต่อถุง",
     dataIndex: "packing_weight",
     key: "packing_weight",
@@ -290,6 +306,9 @@ export const productColumnInCollape = () => [
     align: "right",
     className: "!pe-3",
     required: true,
+    editable: true,
+    type: "number",
+    render: (_, rec) => <>{comma(Number(rec?.packing_weight || 0), 2, 2)}</>,
   },
   {
     title: "หน่วยสินค้า",

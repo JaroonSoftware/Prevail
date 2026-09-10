@@ -193,8 +193,14 @@ function MyManage() {
 
        รวมจำนวนเข้าด้วยกันก่อนจึงถูกต้องกว่า เพราะถุงเป็นของจริงทางกายภาพ
        สินค้าตัวเดียวกันย่อมใช้ packing_weight เดียวกัน (มาจากตาราง items) */
+    /* selectedData เป็นภาพ ณ ตอนติ๊กเลือก ถ้าผู้ใช้ติ๊กก่อนแล้วค่อยแก้
+       "น้ำหนักสูงสุดต่อถุง" ค่าที่แก้จะไม่ติดมาด้วย ดึงแถวล่าสุดจาก
+       listDetail ด้วย _rowKey ทุกครั้งก่อนส่ง */
+    const latestByKey = new Map(listDetail.map((it) => [it?._rowKey, it]));
+    const picked = selectedData.map((it) => latestByKey.get(it?._rowKey) || it);
+
     const mergedMap = new Map();
-    selectedData.forEach((it) => {
+    picked.forEach((it) => {
       const key = `${it?.socode ?? ""}::${it?.stcode ?? ""}`;
       const prev = mergedMap.get(key);
       if (prev) {
@@ -204,6 +210,16 @@ function MyManage() {
       }
     });
     const chosen = [...mergedMap.values()];
+
+    /* กันส่งค่าที่แบ่งถุงไม่ได้ไปให้ backend (0 หรือติดลบ = ไม่เกิดถุงเลย
+       หรือวนสร้างถุงไม่รู้จบ) เช็คตั้งแต่หน้าจอจะบอกได้ตรงกว่า */
+    const bad = chosen.find((it) => !(Number(it?.packing_weight) > 0));
+    if (bad) {
+      message.error(
+        `กรุณากรอกน้ำหนักสูงสุดต่อถุงของ ${bad?.stcode ?? ""} ให้มากกว่า 0`
+      );
+      return;
+    }
 
     let obj = { detail: chosen };
 

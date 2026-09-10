@@ -53,7 +53,22 @@ try {
                 /* ต้องคิดแบบทศนิยม: % ของ PHP เป็น modulo จำนวนเต็ม
                    ทำให้ qty 0.30 / ถุงละ 1.00 ได้ 0 % 1 = 0 -> ไม่เกิดถุงเลย */
                 $qty_f    = (float) $val['qty'];
-                $pack_f   = (float) $val['packing_weight'];
+
+                /* น้ำหนักต่อถุง: ยอมให้หน้าจอส่งค่าที่แก้เฉพาะการปริ้นครั้งนี้มาได้
+                   (แก้ได้เฉพาะรายการที่ยังไม่เคยปริ้น ซึ่งก็คือกิ่งนี้)
+                   ค่านี้ใช้แค่คำนวณ + เก็บลง package_barcode.sup_weight
+                   ไม่มีการเขียนกลับ items.packing_weight = ไม่แตะ master data
+                   ถ้าค่าที่ส่งมาใช้ไม่ได้ (ว่าง/0/ติดลบ) ให้ถอยไปใช้ค่า master */
+                $pack_f = isset($val['packing_weight']) ? (float) $val['packing_weight'] : 0;
+                if (!($pack_f > 0)) {
+                    $stmt6 = $conn->prepare("SELECT packing_weight FROM `items` WHERE stcode = :stcode LIMIT 1");
+                    $stmt6->bindValue(":stcode", $val['stcode'], PDO::PARAM_STR);
+                    $stmt6->execute();
+                    $pack_f = (float) ($stmt6->fetchColumn() ?: 0);
+                }
+                if (!($pack_f > 0)) {
+                    throw new Exception("สินค้า {$val['stcode']} ไม่มีน้ำหนักสูงสุดต่อถุงที่ใช้ได้ กรุณากรอกก่อนปริ้น");
+                }
                 $full_bag = $pack_f > 0 ? (int) floor($qty_f / $pack_f) : 0;
                 $remain   = $pack_f > 0 ? fmod($qty_f, $pack_f) : $qty_f;
 
