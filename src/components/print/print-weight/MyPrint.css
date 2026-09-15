@@ -1,7 +1,14 @@
 @media print {
-  @page {
+  /* named page เฉพาะฟอร์มชั่งน้ำหนัก — ดูเหตุผลแบบเต็มใน print/delivery/delivery.css */
+  @page pw {
     size: A4;
-    font-family: "Angsana New"; 
+    font-family: "Angsana New";
+  }
+  /* ผูกทั้งสองคลาส: ไฟล์นี้เขียนกฎไว้ให้ .del-pages แต่ MyPrintPreview.jsx
+     ใช้ .rec-pages จริง (ของเก่าที่ยังไม่ได้ไล่เก็บ) ผูกไว้ทั้งคู่กันพลาด */
+  .rec-pages,
+  .del-pages {
+    page: pw;
   }
   #del.page-show {
     visibility: visible;

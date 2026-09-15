@@ -3,6 +3,9 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useReactToPrint } from "react-to-print";
 import "../delivery/delivery.css";
+/* ต้องอยู่หลัง delivery.css เสมอ — ทับขนาดหน้ากระดาษเป็น 9 x 11 นิ้ว
+   เฉพาะฟอร์มใบขายสินค้า ไม่กระทบใบส่งของ/ใบเสนอราคาที่ใช้ CSS ก้อนเดียวกัน */
+import "./so.css";
 import { Authenticate } from "../../../service/Authenticate.service";
 import { Button, Flex, Table, Typography, message } from "antd";
 import { column } from "../delivery/delivery.model";
@@ -14,6 +17,20 @@ import { Spin } from "antd";
 import SOService from "../../../service/SO.service";
 
 const soservice = SOService();
+
+/* ---- บังคับให้ช่อง "ขนาดกระดาษ" ใน dialog ปริ้นของ Chrome เด้งเป็น 9x11 เอง ----
+
+   named page (@page so ใน so.css) คุมได้แค่ "กล่องหน้ากระดาษ" ตอน layout
+   Chrome ไม่ได้เอาขนาดของ named page ไปตั้งค่าเริ่มต้นใน dialog ให้
+   ค่าที่ dialog ใช้มาจาก @page แบบไม่มีชื่อ (ของทั้งเอกสาร) เท่านั้น
+   ผู้ใช้เลยต้องไปเลือกขนาดกระดาษเองทุกครั้ง
+
+   ทางออกคือแทรก @page ไม่มีชื่อ "เฉพาะตอนที่หน้าใบขายสินค้าเปิดอยู่"
+   แล้วถอดออกตอน unmount จึงไม่รั่วไปหาฟอร์มอื่นเหมือน @page ใน CSS รวม
+   ต้อง append ท้าย <head> ด้วย: react-to-print ก๊อป stylesheet ตามลำดับ
+   ตัวที่มาทีหลังจึงชนะ */
+const SO_PAGE_STYLE_ID = "so-print-page-size";
+const SO_PAGE_STYLE = `@media print { @page { size: 9in 11in; margin: 0; } }`;
 
 export default function SOPrintPreview() {
   const { code } = useParams();
@@ -57,6 +74,23 @@ export default function SOPrintPreview() {
 
     init();
     return () => {};
+  }, []);
+
+  useEffect(() => {
+    /* กันซ้ำ เผื่อ StrictMode เรียก effect สองรอบตอน dev */
+    let el = document.getElementById(SO_PAGE_STYLE_ID);
+    if (!el) {
+      el = document.createElement("style");
+      el.id = SO_PAGE_STYLE_ID;
+      el.appendChild(document.createTextNode(SO_PAGE_STYLE));
+      document.head.appendChild(el);
+    }
+    return () => {
+      /* ออกจากหน้านี้เมื่อไหร่ต้องเอาออกทันที ไม่งั้นฟอร์มอื่น
+         ที่เปิดต่อใน SPA เดียวกันจะติดกระดาษ 9x11 ไปด้วย */
+      const cur = document.getElementById(SO_PAGE_STYLE_ID);
+      if (cur && cur.parentNode) cur.parentNode.removeChild(cur);
+    };
   }, []);
 
   useEffect(() => {
@@ -288,7 +322,10 @@ export default function SOPrintPreview() {
     );
   };
 
-  const ROWS_PER_PAGE = 16;
+  /* กระดาษ 9 x 11 นิ้ว เตี้ยกว่า A4 ราว 17.6 มม. = ราว 4 บรรทัด
+     (ROW_HEIGHT 17px ~ 4.5 มม.) เดิม A4 ใส่ได้ 16 จึงเหลือ 12
+     ถ้าพิมพ์จริงแล้วยังเหลือที่ว่างหรือแถวล้น ปรับตัวเลขนี้ตัวเดียวพอ */
+  const ROWS_PER_PAGE = 12;
   const ROW_HEIGHT = 17;
 
   const pages = useMemo(() => {
@@ -404,7 +441,8 @@ export default function SOPrintPreview() {
 
   return (
     <>
-      <div className="page-show" id="dnpv">
+      {/* so-9x11 คือสวิตช์ขนาดกระดาษของฟอร์มนี้ (ดู so.css) */}
+      <div className="page-show so-9x11" id="dnpv">
         {loading && <Spin fullscreen indicator={<LoadingOutlined />} />}
         <div className="title-preview">
           <Button

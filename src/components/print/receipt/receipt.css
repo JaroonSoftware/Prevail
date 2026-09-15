@@ -1,7 +1,11 @@
 @media print {
-  @page {
+  /* named page เฉพาะใบเสร็จ — ดูเหตุผลแบบเต็มใน print/delivery/delivery.css */
+  @page rcp {
     size: A4;
-    font-family: open sans, Helvetica, Arial, sans-serif; 
+    font-family: open sans, Helvetica, Arial, sans-serif;
+  }
+  .repv-pages {
+    page: rcp;
   }
   #repv.page-show {
     visibility: visible;

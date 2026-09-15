@@ -1,8 +1,15 @@
 @media print {
-  @page {
-    size: 210mm 297mm !important;
-    margin: 0 !important;
+  /* named page เฉพาะใบวางบิล — ดูเหตุผลแบบเต็มใน print/delivery/delivery.css
+     เอา !important ออกแล้ว: สเปกไม่อนุญาตให้ใช้กับ descriptor ใน @page
+     Chrome ทิ้งทั้งบรรทัดอยู่ดี (เดิมใส่ไว้เพื่อสู้กับ @page ของฟอร์มอื่น
+     ซึ่งตอนนี้ไม่จำเป็นแล้ว เพราะแยก named page กันหมดทุกฟอร์ม) */
+  @page bl {
+    size: 210mm 297mm;
+    margin: 0;
     font-family: open sans, Helvetica, Arial, sans-serif;
+  }
+  .bl-pages {
+    page: bl;
   }
   #bl.page-show {
     visibility: visible;

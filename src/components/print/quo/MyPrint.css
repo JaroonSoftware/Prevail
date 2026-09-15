@@ -1,7 +1,11 @@
 @media print {
-  @page {
+  /* named page เฉพาะใบเสนอราคา — ดูเหตุผลแบบเต็มใน print/delivery/delivery.css */
+  @page quo {
     size: A4;
-    font-family: "Angsana New"; 
+    font-family: "Angsana New";
+  }
+  .quopv-pages {
+    page: quo;
   }
   #quo.page-show {
     visibility: visible;

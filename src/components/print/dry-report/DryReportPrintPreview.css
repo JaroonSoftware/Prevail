@@ -310,9 +310,19 @@
   display: none;
 }
 
-@page {
+/* named page เฉพาะรายงานแนวนอน — ดูเหตุผลแบบเต็มใน print/delivery/delivery.css
+   เดิมเป็น @page ไม่มีชื่อ และอยู่นอก @media print ด้วย
+   ไฟล์นี้ถูก import โดยรายงานหลายตัว (best-selling, outstanding, profit,
+   purchase, sales-by-*) ทุกตัวใช้กล่องหน้า .dry-report-paper เหมือนกัน
+   ผูกชื่อไว้ที่คลาสนั้นทีเดียว รายงานทุกตัวจึงยังได้ A4 แนวนอนเหมือนเดิม
+   แต่ไม่ไปทับกระดาษของใบส่งของ/ใบขาย/ใบปะหน้าถุงอีก */
+@page dryrpt {
   size: A4 landscape;
   margin: 10mm;
+}
+
+.dry-report-paper {
+  page: dryrpt;
 }
 
 @media print {
