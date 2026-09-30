@@ -3,12 +3,14 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useReactToPrint } from "react-to-print";
 import "../delivery/delivery.css";
-/* ต้องอยู่หลัง delivery.css เสมอ — ทับขนาดหน้ากระดาษเป็น 9 x 11 นิ้ว
+/* ต้องอยู่หลัง delivery.css เสมอ — ทับขนาดหน้ากระดาษเป็น Letter Fanfold 8.5 x 11 นิ้ว
    เฉพาะฟอร์มใบขายสินค้า ไม่กระทบใบส่งของ/ใบเสนอราคาที่ใช้ CSS ก้อนเดียวกัน */
 import "./so.css";
 import { Authenticate } from "../../../service/Authenticate.service";
 import { Button, Flex, Table, Typography, message } from "antd";
-import { column } from "../delivery/delivery.model";
+/* คอลัมน์ของใบขายสินค้าโดยเฉพาะ — ห้ามใช้ delivery.model ตรงๆ
+   เพราะไฟล์นั้นใช้ร่วมกับใบส่งของ แก้แล้วกระทบทั้งคู่ */
+import { column } from "./so.model";
 import thaiBahtText from "thai-baht-text";
 import dayjs from "dayjs";
 import { PiPrinterFill } from "react-icons/pi";
@@ -18,7 +20,7 @@ import SOService from "../../../service/SO.service";
 
 const soservice = SOService();
 
-/* ---- บังคับให้ช่อง "ขนาดกระดาษ" ใน dialog ปริ้นของ Chrome เด้งเป็น 9x11 เอง ----
+/* ---- บังคับให้ช่อง "ขนาดกระดาษ" ใน dialog ปริ้นของ Chrome เด้งเป็น Letter Fanfold 8.5x11 เอง ----
 
    named page (@page so ใน so.css) คุมได้แค่ "กล่องหน้ากระดาษ" ตอน layout
    Chrome ไม่ได้เอาขนาดของ named page ไปตั้งค่าเริ่มต้นใน dialog ให้
@@ -30,7 +32,9 @@ const soservice = SOService();
    ต้อง append ท้าย <head> ด้วย: react-to-print ก๊อป stylesheet ตามลำดับ
    ตัวที่มาทีหลังจึงชนะ */
 const SO_PAGE_STYLE_ID = "so-print-page-size";
-const SO_PAGE_STYLE = `@media print { @page { size: 9in 11in; margin: 0; } }`;
+/* @page ไม่มีชื่อ = ค่าที่ Chrome ใช้ตั้งต้นให้ dialog
+   ต้องประกาศ Tabloid ตรงนี้ด้วย ไม่งั้น dialog จะตกกลับไปใช้ A4 */
+const SO_PAGE_STYLE = `@media print { @page { size: 11in 17in; margin: 0; } }`;
 
 export default function SOPrintPreview() {
   const { code } = useParams();
@@ -87,7 +91,7 @@ export default function SOPrintPreview() {
     }
     return () => {
       /* ออกจากหน้านี้เมื่อไหร่ต้องเอาออกทันที ไม่งั้นฟอร์มอื่น
-         ที่เปิดต่อใน SPA เดียวกันจะติดกระดาษ 9x11 ไปด้วย */
+         ที่เปิดต่อใน SPA เดียวกันจะติดกระดาษ 8.5x11 ไปด้วย */
       const cur = document.getElementById(SO_PAGE_STYLE_ID);
       if (cur && cur.parentNode) cur.parentNode.removeChild(cur);
     };
@@ -307,8 +311,8 @@ export default function SOPrintPreview() {
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                   วันที่ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                   {hData?.sodate
-                    ? dayjs(hData.sodate).format("DD/MM/YYYY  HH:mm:ss")
-                    : dayjs().format("DD/MM/YYYY  HH:mm:ss")}
+                    ? dayjs(hData.sodate).format("DD/MM/YYYY")
+                    : dayjs().format("DD/MM/YYYY")}
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; บันทึกโดย {userInfo?.firstname}{" "}
@@ -322,10 +326,13 @@ export default function SOPrintPreview() {
     );
   };
 
-  /* กระดาษ 9 x 11 นิ้ว เตี้ยกว่า A4 ราว 17.6 มม. = ราว 4 บรรทัด
-     (ROW_HEIGHT 17px ~ 4.5 มม.) เดิม A4 ใส่ได้ 16 จึงเหลือ 12
-     ถ้าพิมพ์จริงแล้วยังเหลือที่ว่างหรือแถวล้น ปรับตัวเลขนี้ตัวเดียวพอ */
-  const ROWS_PER_PAGE = 12;
+  /* จำนวนแถวต่อหน้า — ตั้งให้ตารางยืดเต็มความสูงที่ใช้ได้ (16.5 นิ้ว)
+     ส่วนสรุปยอด/ลายเซ็นจะได้ไปอยู่ล่างสุดของหน้า ไม่ลอยค้างกลางกระดาษ
+     ต้องหารด้วย zoom 1.35 ใน so.css ด้วย เพราะ zoom ขยายแนวตั้งไปพร้อมกัน
+     (16.5in = 1584px, หารด้วย 1.35 เหลือ ~1130px ลบหัวเอกสาร/ท้ายใบ/ขอบ
+      เหลือพื้นที่แถวราว 670px, แถวสูงราว 22px -> ~30 แถว เผื่อไว้ 28)
+     ถ้าพิมพ์จริงแล้วล้นไปหน้า 2 ให้ลดตัวเลขนี้ ถ้ายังเหลือที่ว่างให้เพิ่ม */
+  const ROWS_PER_PAGE = 28;
   const ROW_HEIGHT = 17;
 
   const pages = useMemo(() => {
@@ -421,7 +428,11 @@ export default function SOPrintPreview() {
 
   const PrintablePages = () => {
     return (
-      <div ref={componentRef}>
+      /* ต้องมี so-9x11 ที่ตัวนี้ด้วย: react-to-print โคลนเฉพาะ element ที่
+       componentRef ชี้ ตัว #dnpv ที่ถือคลาสนี้อยู่ข้างนอกไม่ถูกโคลนไปด้วย
+       กฎ #dnpv.so-9x11 ... จึงไม่ match อะไรเลยใน iframe ที่ใช้พิมพ์
+       แล้วตกกลับไปใช้ .dnpv-pages ของ delivery.css ซึ่งเป็น A4 */
+    <div ref={componentRef} className="so-9x11">
         {pages.map((p, idx) => {
           const isLast = idx === totalPages - 1;
           return (
