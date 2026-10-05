@@ -14,7 +14,11 @@ import { Spin } from "antd";
 import BillingNoteService from "../../../service/BillingNote.Service";
 
 const blservice = BillingNoteService();
-const ROWS_PER_PAGE = 34;
+/* เดิม 34 แถว = เต็มหน้า A4 ตอนนี้กระดาษสูง 15 นิ้ว (ดู bl.css)
+   พื้นที่แถวเพิ่มราว 1.4 เท่า จึงได้ราว 47 แถว ตั้ง 44 เผื่อไว้
+   สำคัญ: กล่องหน้าใช้ overflow:hidden ถ้าตั้งเกินที่ใส่ได้จริง
+   แถวท้ายๆ จะถูกตัดหายเงียบๆ ไม่ได้ขึ้นหน้าใหม่ ตั้งน้อยไว้ปลอดภัยกว่า */
+const ROWS_PER_PAGE = 44;
 
 function BLPrintPreview() {
   const { code } = useParams();

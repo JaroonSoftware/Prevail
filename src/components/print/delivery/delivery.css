@@ -8,7 +8,7 @@
      หมายเหตุ: ห้ามใส่ !important กับ descriptor ใน @page
      สเปกไม่อนุญาต Chrome จะทิ้งทั้งบรรทัดแล้วตกไปใช้กระดาษเริ่มต้น */
   @page dn {
-    size: A4;
+    size: 11in 17in;
     margin: 0;
   }
 
@@ -39,8 +39,13 @@
   .dnpv-pages { 
     --dnpv-table-border-color: #000;
     letter-spacing: 0;
-    width: 210mm; /* A4 width */
-    height: 297mm; /* A4 height */
+    /* ---- กระดาษ Tabloid 11 x 17 นิ้ว ตัดขึ้นหน้าใหม่ที่ 15.5 นิ้ว ----
+       height อย่างเดียว ไม่ใส่ min-height: min-height ยอมให้กล่องยืดเกิน
+       15.5 นิ้วเมื่อเนื้อหาล้น แล้วส่วนเกินจะไหลไปกินหัวกระดาษแผ่นถัดไป
+       ตรึงเป็น height เป๊ะ + max-height + overflow:hidden แทน */
+    width: 11in;
+    height: 15.5in;
+    max-height: 15.5in;
     box-sizing: border-box; /* include padding within A4 size */
     /* margin: 0px !important; */
     /* padding: 0px !important; */
@@ -129,13 +134,13 @@
   }
 
   #dnpv .title-preview { 
-    width: calc( 21cm + (var(---width-padding-param) * 2) ); /* A4 width */
+    width: calc( 11in + (var(---width-padding-param) * 2) ); /* Tabloid width */
     box-sizing: border-box;
   }
 
   #dnpv .layout-preview {
     padding: var(---width-padding-param);
-    width: calc( 21cm + (var(---width-padding-param) * 2) ); /* A4 width */
+    width: calc( 11in + (var(---width-padding-param) * 2) ); /* Tabloid width */
     /* min-height: 29.7cm;*/
     height: auto; 
     /* min-height: 29.7cm; */
@@ -152,8 +157,8 @@
     ---color--1 : #508ecc;
     --dnpv-table-border-color: #d9d9d9;
     position: relative;
-    width: 21cm;
-    min-height: 29.7cm;
+    width: 11in;
+    min-height: 15.5in;
     background-color: #fff;
     box-shadow: 1px 1px 2px 1px #c5c7c5;
     border-radius: 4px;

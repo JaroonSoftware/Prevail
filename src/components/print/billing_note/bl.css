@@ -4,7 +4,7 @@
      Chrome ทิ้งทั้งบรรทัดอยู่ดี (เดิมใส่ไว้เพื่อสู้กับ @page ของฟอร์มอื่น
      ซึ่งตอนนี้ไม่จำเป็นแล้ว เพราะแยก named page กันหมดทุกฟอร์ม) */
   @page bl {
-    size: 210mm 297mm;
+    size: 11in 17in;
     margin: 0;
     font-family: open sans, Helvetica, Arial, sans-serif;
   }
@@ -19,8 +19,14 @@
   }
   .bl-pages {
     letter-spacing: .48px;
-    width: 21cm; /* A4 width */
-    height: 29.7cm; /* A4 height */
+    /* ---- กระดาษ Tabloid 11 x 17 นิ้ว ตัดขึ้นหน้าใหม่ที่ 15 นิ้ว ----
+       height อย่างเดียว ไม่ใส่ min-height: min-height ยอมให้กล่องยืดเกิน
+       15 นิ้วเมื่อเนื้อหาล้น แล้วส่วนเกินจะไหลไปกินหัวกระดาษแผ่นถัดไป
+       ตรึงเป็น height เป๊ะ + max-height + overflow:hidden แทน */
+    width: 11in;
+    height: 15in;
+    max-height: 15in;
+    overflow: hidden;
     /* margin: 0px !important; */
     /* padding: 0px !important; */
     padding-inline: 0.15in;
@@ -67,13 +73,13 @@
   }
 
   #bl .title-preview { 
-    width: calc( 21cm + (var(---width-padding-param) * 2) ); /* A4 width */
+    width: calc( 11in + (var(---width-padding-param) * 2) ); /* Tabloid width */
     box-sizing: border-box;
   }
 
   #bl .layout-preview {
     padding: var(---width-padding-param);
-    width: calc( 21cm + (var(---width-padding-param) * 2) ); /* A4 width */
+    width: calc( 11in + (var(---width-padding-param) * 2) ); /* Tabloid width */
     /* min-height: 29.7cm;*/
     height: auto; 
     /* min-height: 29.7cm; */
@@ -95,8 +101,8 @@
   .bl-pages {
     ---color--1 : #508ecc;
     position: relative;
-    width: 21cm;
-    min-height: 29.7cm;
+    width: 11in;
+    min-height: 15in;
   }
 
   .bl-pages .print-logo {

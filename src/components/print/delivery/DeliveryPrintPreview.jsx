@@ -290,9 +290,9 @@ export default function DeliveryPrintPreview(props) {
                   พิมพ์โดย
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                   วันที่ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                  {printDate
-                    ? dayjs(printDate).format("DD/MM/YYYY  HH:mm:ss")
-                    : dayjs().format("DD/MM/YYYY  HH:mm:ss")}
+                  {/* เวลาที่กดพิมพ์จริง ไม่ใช่ ivdate/dndate:
+                      สองค่านั้นเก็บแค่วันที่ เวลาจึงออกมาเป็น 00:00:00 เสมอ */}
+                  {dayjs().format("DD/MM/YYYY  HH:mm:ss")}
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; บันทึกโดย{" "}
@@ -307,7 +307,11 @@ export default function DeliveryPrintPreview(props) {
   };
 
   // จำกัดรายการ 16/หน้า (ให้เหมาะกับแบบฟอร์ม)
-  const ROWS_PER_PAGE = 16;
+  /* เดิม 16 แถว = เต็มหน้า A4 ตอนนี้กระดาษสูง 15 นิ้ว (ดู delivery.css)
+     พื้นที่แถวเพิ่มจาก ~350px เป็น ~670px จึงได้ราว 30 แถว ตั้ง 28 เผื่อไว้
+     สำคัญ: กล่องหน้าใช้ overflow:hidden ถ้าตั้งเกินที่ใส่ได้จริง
+     แถวท้ายๆ จะถูกตัดหายเงียบๆ ไม่ได้ขึ้นหน้าใหม่ ตั้งน้อยไว้ปลอดภัยกว่า */
+  const ROWS_PER_PAGE = 28;
   const ROW_HEIGHT = 17;
 
   const pages = useMemo(() => {

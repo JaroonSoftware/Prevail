@@ -1,4 +1,5 @@
 import { Typography } from "antd";
+import { comma } from "../../../utils/util";
 
 export const column = [
   {
@@ -45,26 +46,26 @@ export const column = [
    
   },
   {
-    title: (
-      <div style={{ textAlign: "center" }}>
-     หน่วยละ
-      </div>
-    ),
-    align: "center",
+    /* "หน่วยละ" = ราคาต่อหน่วย เดิมผูกกับ dataIndex "unit" ซึ่งแสดง KG / ลูก
+       ไม่ตรงกับชื่อคอลัมน์ หัวคอลัมน์จัดชิดขวาให้ตรงแนวกับตัวเลข */
+    title: <div style={{ textAlign: "right" }}>หน่วยละ</div>,
+    align: "right",
+    className: "!pe-3",
     key: "unit",
-    dataIndex: "unit",
+    dataIndex: "price",
     width: "10%",
+    render: (_, rec) => comma(Number(rec?.price || 0), 2, 2),
   },
   {
-    title: (
-      <div style={{ textAlign: "center" }}>
-       จำนวนเงิน
-      </div>
-    ),
-    align: "center",
+    /* "จำนวนเงิน" = จำนวน x ราคา เดิมแสดง price เฉยๆ ซึ่งซ้ำกับคอลัมน์ก่อนหน้า */
+    title: <div style={{ textAlign: "right" }}>จำนวนเงิน</div>,
+    align: "right",
+    className: "!pe-3",
     width: "10%",
     key: "price",
     dataIndex: "price",
+    render: (_, rec) =>
+      comma(Number(rec?.qty || 0) * Number(rec?.price || 0), 2, 2),
     onCell: () => ({
       style: {
         borderRight: "1px solid ",

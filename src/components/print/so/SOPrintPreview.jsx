@@ -306,18 +306,34 @@ export default function SOPrintPreview() {
                   paddingTop: 7,
                 }}
               >
-                <p>
-                  พิมพ์โดย
-                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                  วันที่ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                  {hData?.sodate
-                    ? dayjs(hData.sodate).format("DD/MM/YYYY")
-                    : dayjs().format("DD/MM/YYYY")}
-                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; บันทึกโดย {userInfo?.firstname}{" "}
-                  {userInfo?.lastname}
-                </p>
+                {/* จัดด้วย flex + ความกว้างป้ายกำกับคงที่ แทนการเคาะ &nbsp;
+                    เรียงเป็น 2 บรรทัด ป้ายกับค่าตรงแนวกันทั้งคู่
+                    วันที่มีเวลาต่อท้ายตามที่ลูกค้าขอ */}
+                <div style={{ display: "flex", gap: 24 }}>
+                  <div>
+                    <div style={{ display: "flex", marginBottom: 4 }}>
+                      <span style={{ width: 85 }}>พิมพ์โดย</span>
+                      <span>
+                        {userInfo?.firstname} {userInfo?.lastname}
+                      </span>
+                    </div>
+                    <div style={{ display: "flex" }}>
+                      <span style={{ width: 85 }}>บันทึกโดย</span>
+                      <span>
+                        {userInfo?.firstname} {userInfo?.lastname}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    {/* เวลาที่กดพิมพ์จริง ไม่ใช่ sodate:
+                        sodate ในฐานข้อมูลเก็บแค่วันที่ เวลาจึงออกมาเป็น
+                        00:00:00 เสมอ ซึ่งไม่ได้บอกอะไร */}
+                    <div style={{ display: "flex", marginBottom: 4 }}>
+                      <span style={{ width: 80 }}>วันที่</span>
+                      <span>{dayjs().format("DD/MM/YYYY  HH:mm:ss")}</span>
+                    </div>
+                  </div>
+                </div>
               </Typography.Text>
             </Flex>
           </Table.Summary.Cell>
@@ -326,13 +342,10 @@ export default function SOPrintPreview() {
     );
   };
 
-  /* จำนวนแถวต่อหน้า — ตั้งให้ตารางยืดเต็มความสูงที่ใช้ได้ (16.5 นิ้ว)
-     ส่วนสรุปยอด/ลายเซ็นจะได้ไปอยู่ล่างสุดของหน้า ไม่ลอยค้างกลางกระดาษ
-     ต้องหารด้วย zoom 1.35 ใน so.css ด้วย เพราะ zoom ขยายแนวตั้งไปพร้อมกัน
-     (16.5in = 1584px, หารด้วย 1.35 เหลือ ~1130px ลบหัวเอกสาร/ท้ายใบ/ขอบ
-      เหลือพื้นที่แถวราว 670px, แถวสูงราว 22px -> ~30 แถว เผื่อไว้ 28)
+  /* จำนวนแถวต่อหน้า — ตัวเลขนี้กำหนดโดยผู้ใช้ ไม่ได้คำนวณจากความสูง
+     ความสูงที่ใช้ได้ตอนนี้คือ 11 นิ้ว (ดู height ใน so.css)
      ถ้าพิมพ์จริงแล้วล้นไปหน้า 2 ให้ลดตัวเลขนี้ ถ้ายังเหลือที่ว่างให้เพิ่ม */
-  const ROWS_PER_PAGE = 28;
+  const ROWS_PER_PAGE = 30;
   const ROW_HEIGHT = 17;
 
   const pages = useMemo(() => {
