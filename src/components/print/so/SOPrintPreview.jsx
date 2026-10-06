@@ -216,7 +216,11 @@ export default function SOPrintPreview() {
       <>
         <Table.Summary.Row className="dnpv-footer">
           <Table.Summary.Cell
-            colSpan={4}
+            /* ตารางมี 5 คอลัมน์ (No./รายละเอียด/จำนวน/หน่วยละ/จำนวนเงิน)
+               ผลรวม colSpan ของแถวสรุปต้องเท่ากับ 5 พอดี
+               ถ้าไม่เท่า antd จะคำนวณความกว้างคอลัมน์ของ "หน้าที่มีแถวสรุป"
+               ต่างจากหน้าอื่น -> หน้าสุดท้ายตารางหดเล็กลงกว่าหน้าแรก */
+            colSpan={3}
             className="!align-top !ps-0 !pe-0"
             style={{ height: 20 }}
           >
@@ -266,7 +270,7 @@ export default function SOPrintPreview() {
           </Table.Summary.Cell>
         </Table.Summary.Row>
         <Table.Summary.Row className="dnpv-footer">
-          <Table.Summary.Cell colSpan={8} className="!align-top !ps-0 !pe-0">
+          <Table.Summary.Cell colSpan={5} className="!align-top !ps-0 !pe-0">
             <Flex
               style={{
                 borderTop: "1px dashed",
