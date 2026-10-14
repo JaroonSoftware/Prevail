@@ -147,65 +147,84 @@ export default function SOPrintPreview() {
     );
   };
 
+  /* หัวเอกสารท่อนที่สอง: ซ้าย = ข้อมูลลูกค้า / ขวา = ข้อมูลเอกสาร
+
+     ของเดิมดันค่าด้วย paddingLeft รายบรรทัด (65, 70, 33, 25, 35) ซึ่งต้อง
+     ไล่เดาทีละบรรทัดและไม่เคยตรงกันจริง เปลี่ยนมาใช้ flex + ป้ายกำกับ
+     ความกว้างคงที่ ค่าทุกบรรทัดจึงเริ่มที่เส้นเดียวกันเสมอ */
+  const HeadRow = ({ label, labelWidth, children }) => (
+    <div style={{ display: "flex", minHeight: 21 }}>
+      {/* minWidth ไม่ใช่ width: ป้ายสั้น ๆ จะเรียงตรงกันที่ labelWidth
+          ส่วนป้ายยาวอย่าง "เลขประจำตัวผู้เสียภาษี" ดันค่าของตัวเองไปทางขวา
+          แทนที่จะบังคับให้ทุกบรรทัดเว้นห่างตามป้ายที่ยาวที่สุด */}
+      <span
+        style={{
+          minWidth: labelWidth,
+          flex: "0 0 auto",
+          whiteSpace: "nowrap",
+          paddingRight: 12,
+        }}
+      >
+        {label}
+      </span>
+      <span>{children}</span>
+    </div>
+  );
+
   const ContentHead2 = () => {
+    /* ความกว้างป้ายกำกับขั้นต่ำของแต่ละฝั่ง
+       ซ้าย 55: อิง "ลูกค้า" ซึ่งเป็นป้ายที่สั้นที่สุด เพื่อให้
+       รหัสลูกค้า/ชื่อ/ที่อยู่ ชิดซ้ายมากที่สุดเท่าที่ทำได้ ตามที่ลูกค้าขอ
+       ป้ายที่ยาวกว่า ("ผู้ติดต่อ", "เลขประจำตัวผู้เสียภาษี") จะดันค่าของ
+       ตัวเองไปทางขวาแทน
+       ขวา 95: อิง "วันที่นัดส่ง" ซึ่งเป็นป้ายที่ยาวสุดฝั่งขวา */
+    const LW = 55;
+    const RW = 95;
+
     return (
       <div className="content-head in-sample flex flex-col dnpv-header">
         <div className="print-title flex pb-2">
           <Flex className="flex ps-3 grow-0" style={{ width: "60%" }}>
-            <Flex vertical>
-              <Typography.Text className="tx-info">
-                ลูกค้า
-                <span style={{ paddingLeft: 22 }}>{hData?.cuscode}</span>
-              </Typography.Text>
-              <Typography.Text className="tx-info">
-                <span>
-                  {hData?.prename} {hData?.cusname}
-                </span>
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ height: 21 }}>
-                <span>{hData?.address}</span>
-              </Typography.Text>
-              <Typography.Text className="tx-info">
-                <span>
-                  <br></br>
-                </span>
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ height: 21 }}>
-                เลขประจำตัวผู้เสียภาษี
-                <span style={{ paddingLeft: 20 }}>{hData?.idno || "-"}</span>
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ height: 21 }}>
-                ผู้ติดต่อ
-                <span style={{ paddingLeft: 41 }}>{hData?.contact || "-"}</span>
-              </Typography.Text>
+            <Flex vertical className="tx-info">
+              <HeadRow label="ลูกค้า" labelWidth={LW}>
+                {hData?.cuscode}
+              </HeadRow>
+              <HeadRow label="" labelWidth={LW}>
+                {hData?.prename} {hData?.cusname}
+              </HeadRow>
+              <HeadRow label="" labelWidth={LW}>
+                {hData?.address}
+              </HeadRow>
+              {/* เอาบรรทัดว่างคั่นออก ให้เลขผู้เสียภาษีขึ้นมาติดกับที่อยู่ */}
+              {/* ใช้ taxnumber: c.idno คือบ้านเลขที่ ซึ่งถูกเอาไปประกอบ address
+                  อยู่แล้ว ของเดิมดึง idno มาแสดงตรงนี้จึงขึ้น "-" ตลอด */}
+              <HeadRow label="เลขประจำตัวผู้เสียภาษี" labelWidth={LW}>
+                {hData?.taxnumber || "-"}
+              </HeadRow>
+              <HeadRow label="ผู้ติดต่อ" labelWidth={LW}>
+                {hData?.contact || "-"}
+              </HeadRow>
             </Flex>
           </Flex>
           <Flex className="flex ps-3 grow-0" style={{ width: "40%" }}>
-            <Flex vertical>
-              <Typography.Text className="tx-info">
-                เลขที่
-                <span style={{ paddingLeft: 65 }}>{hData?.socode}</span>
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ height: 21 }}>
-                วันที่
-                <span style={{ paddingLeft: 70 }}>
-                  {hData?.sodate ? dayjs(hData.sodate).format("DD/MM/YYYY") : "-"}
-                </span>
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ height: 21 }}>
-                PO ลูกค้า
-                <span style={{ paddingLeft: 33 }}>{hData?.customer_po || "-"}</span>
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ height: 21 }}>
-                วันที่นัดส่ง
-                <span style={{ paddingLeft: 25 }}>
-                  {hData?.deldate ? dayjs(hData.deldate).format("DD/MM/YYYY") : "-"}
-                </span>
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ height: 21 }}>
-                ห้องครัว
-                <span style={{ paddingLeft: 35 }}>{hData?.del_room || "-"}</span>
-              </Typography.Text>
+            <Flex vertical className="tx-info">
+              <HeadRow label="เลขที่" labelWidth={RW}>
+                {hData?.socode}
+              </HeadRow>
+              <HeadRow label="วันที่" labelWidth={RW}>
+                {hData?.sodate ? dayjs(hData.sodate).format("DD/MM/YYYY") : "-"}
+              </HeadRow>
+              <HeadRow label="PO ลูกค้า" labelWidth={RW}>
+                {hData?.customer_po || "-"}
+              </HeadRow>
+              <HeadRow label="วันที่นัดส่ง" labelWidth={RW}>
+                {hData?.deldate
+                  ? dayjs(hData.deldate).format("DD/MM/YYYY")
+                  : "-"}
+              </HeadRow>
+              <HeadRow label="ห้องครัว" labelWidth={RW}>
+                {hData?.del_room || "-"}
+              </HeadRow>
             </Flex>
           </Flex>
         </div>
@@ -285,7 +304,9 @@ export default function SOPrintPreview() {
                 style={{
                   fontSize: 15,
                   paddingLeft: 5,
-                  lineHeight: "1em",
+                  /* 1em ทำให้สองบรรทัดชิดกันจนดูอึดอัด โดยเฉพาะสระบน-ล่างไทย
+                     ที่เกือบชนกัน 1.7em กำลังอ่านสบาย */
+                  lineHeight: "1.7em",
                   paddingTop: 7,
                 }}
               >

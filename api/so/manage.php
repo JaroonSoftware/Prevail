@@ -168,7 +168,7 @@ try {
         $code = $_GET["code"];
         $sql = "SELECT a.socode,a.sodate,a.deldate,a.customer_po,a.del_room,a.cuscode,
         CONCAT(c.prename,' ',c.cusname) as cusname,CONCAT(COALESCE(c.idno, '') ,' ', COALESCE(c.road, ''),' ', COALESCE(c.subdistrict, ''),' ', COALESCE(c.district, ''),' ', COALESCE(c.province, ''),' ',COALESCE(c.zipcode, '') ) as address
-        ,c.zipcode,c.contact,c.tel,c.fax,a.total_price,a.remark,a.active_status,a.doc_status, a.print_status,a.created_date,a.updated_date,
+        ,c.zipcode,c.contact,c.tel,c.fax,c.taxnumber,a.total_price,a.remark,a.active_status,a.doc_status, a.print_status,a.created_date,a.updated_date,
         concat(IFNULL(u.firstname, ''), ' ', IFNULL(u.lastname, '')) as created_by,
         concat(IFNULL(u2.firstname, ''), ' ', IFNULL(u2.lastname, '')) as updated_by ";
         $sql .= " FROM `somaster` as a ";
