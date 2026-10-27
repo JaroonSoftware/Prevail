@@ -1,0 +1,2 @@
+# ไลบรารีภายใน ถูก include จาก endpoint เท่านั้น ห้ามเรียกตรง
+Require all denied

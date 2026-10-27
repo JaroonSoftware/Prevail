@@ -196,6 +196,25 @@ function PurchaseOrderManage() {
     handleSummaryPrice();
   };
 
+  /* ===== AI : เติมข้อมูลจากบิล/ใบส่งของที่อ่านด้วย AI (เมนู ใบสั่งซื้ออ่านค่าจาก AI) ===== */
+  const aiPrefill = location.state?.aiPrefill;
+  const aiPrefillDone = React.useRef(false);
+  useEffect(() => {
+    if (!aiPrefill || aiPrefillDone.current) return;
+    if (config?.action !== "create" || !poCode) return;
+    aiPrefillDone.current = true;
+    if (aiPrefill.supplier) handleChoosedSupplier(aiPrefill.supplier);
+    /* ตั้งรายการตรง ๆ — ยอดรวมคำนวณใหม่เองจาก useEffect ของ listDetail */
+    if (Array.isArray(aiPrefill.items)) setListDetail(aiPrefill.items.map((it) => ({ ...it })));
+    const d = aiPrefill.podate ? dayjs(aiPrefill.podate) : null;
+    form.setFieldsValue({
+      ...(d ? { podate: d, deldate: d } : {}),
+      remark: aiPrefill.remark || form.getFieldValue("remark"),
+    });
+    message.info("เติมข้อมูลจากเอกสารผู้ขายแล้ว กรุณาตรวจสอบก่อนบันทึก (บันทึกแล้วเข้าสต๊อกทันที)");
+  }, [poCode]);
+  /* ===== /AI ===== */
+
   const handleConfirm = () => {
     form
       .validateFields()

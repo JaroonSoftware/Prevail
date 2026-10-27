@@ -38,3 +38,6 @@ README.md
 
 /vendor
 /api/conn.php
+
+# AI อ่านบิล — API key ห้ามขึ้น git
+/api/ai/.env.ai

@@ -8,6 +8,7 @@ import {
   TrophyOutlined,
   TeamOutlined,
   WalletOutlined,
+  RobotOutlined,
 } from "@ant-design/icons";
 import { TbReportMoney } from "react-icons/tb";
 import { RiTeamFill } from "react-icons/ri";
@@ -163,6 +164,12 @@ let _nav = [
     title: "ใบสั่งซื้อ",
     icon: <FileTextFilled className="nav-ico" />, 
     to: "/purchase-order",
+    hiddenRoles: ["พนักงานขาย","พนักงานส่งสินค้า"],
+  },
+  {
+    title: "ใบสั่งซื้ออ่านค่าจาก AI (ทดสอบ)",
+    icon: <RobotOutlined className="nav-ico" />,
+    to: "/ai-purchase-order",
     hiddenRoles: ["พนักงานขาย","พนักงานส่งสินค้า"],
   },
   // {

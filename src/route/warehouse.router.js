@@ -9,7 +9,7 @@ import {
   QuotationView,
 } from "../pages/quotation";
 
-import { PurchaseOrder, PurchaseOrderAccess, PurchaseOrderManage,PurchaseOrderView } from "../pages/purchase-order";
+import { PurchaseOrder, PurchaseOrderAccess, PurchaseOrderManage,PurchaseOrderView, PurchaseOrderAiScan } from "../pages/purchase-order";
 
 import { GoodsReceipt, GoodsReceiptAccess, GoodsReceiptManage } from "../pages/goods-receipt";
 
@@ -41,6 +41,9 @@ export const WarehouseRouter = (
       <Route path="manage/:action" element={<PurchaseOrderManage />} />
       <Route path="view" element={<PurchaseOrderView />} />
     </Route>
+
+    {/* ใบสั่งซื้ออ่านค่าจาก AI (ทดสอบ) — แยก path ไม่ให้เมนูใบสั่งซื้อไฮไลต์ซ้อน */}
+    <Route path="/ai-purchase-order" element={<PurchaseOrderAiScan />} />
 
     <Route path="/goods-receipt/" exact element={<GoodsReceipt />}>
       <Route index element={<GoodsReceiptAccess />} />
