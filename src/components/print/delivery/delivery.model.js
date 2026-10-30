@@ -1,49 +1,39 @@
 import { Typography } from "antd";
 import { comma } from "../../../utils/util";
 
+/* คอลัมน์ตารางของ "ใบส่งสินค้า/ใบแจ้งหนี้"
+   จัดตามฟอร์มตัวอย่างที่ลูกค้าส่งมา: No. / รายละเอียด / จำนวน / หน่วยละ / จำนวนเงิน
+   (ไม่มีคอลัมน์เลขที่ใบขายสินค้าแล้ว เพราะเลขที่เอกสารอยู่บนหัวใบ)
+
+   ไฟล์นี้ถูก so.model.js ยืมไปใช้ด้วย ถ้าแก้ตรงนี้ให้เช็คใบขายสินค้าด้วยเสมอ */
 export const column = [
   {
-    title: (
-      <>
-        No.
-      </>
-    ),
+    title: <>No.</>,
     key: "index",
     align: "center",
-    width: "5%",
+    width: "8%",
     render: (_, record, idx) => (
       <Typography.Text className="tx-info">{idx + 1}</Typography.Text>
     ),
   },
   {
-    title: "ใบขายสินค้า",
-    dataIndex: "socode",
-    key: "socode",
-    width: "15%",
-    align: "center",
-  },
-  {
-    title: (
-      <div style={{ textAlign: "center" }}>
-        รายละเอียด
-      </div>
-    ),
+    title: <div style={{ textAlign: "center" }}>รายละเอียด</div>,
     align: "left",
-    width: "15%",
+    width: "42%",
     key: "stname",
     dataIndex: "stname",
   },
   {
-    title: (
-      <div style={{ textAlign: "center" }}>
-     จำนวน
-      </div>
-    ),
-    align: "center",
+    /* ตามฟอร์มตัวอย่าง: จำนวนทศนิยม 3 ตำแหน่ง ตามด้วยหน่วย เช่น "1.000 Kg."
+       ใบขายสินค้าไม่เอารูปแบบนี้ จึงทับกลับใน so.model.js */
+    title: <div style={{ textAlign: "right" }}>จำนวน</div>,
+    align: "right",
+    className: "!pe-3",
     key: "qty",
-    width: "10%",
+    width: "16%",
     dataIndex: "qty",
-   
+    render: (_, rec) =>
+      `${comma(Number(rec?.qty || 0), 3, 3)} ${rec?.unit || ""}`.trim(),
   },
   {
     /* "หน่วยละ" = ราคาต่อหน่วย เดิมผูกกับ dataIndex "unit" ซึ่งแสดง KG / ลูก
@@ -53,7 +43,7 @@ export const column = [
     className: "!pe-3",
     key: "unit",
     dataIndex: "price",
-    width: "10%",
+    width: "16%",
     render: (_, rec) => comma(Number(rec?.price || 0), 2, 2),
   },
   {
@@ -61,15 +51,10 @@ export const column = [
     title: <div style={{ textAlign: "right" }}>จำนวนเงิน</div>,
     align: "right",
     className: "!pe-3",
-    width: "10%",
+    width: "18%",
     key: "price",
     dataIndex: "price",
     render: (_, rec) =>
       comma(Number(rec?.qty || 0) * Number(rec?.price || 0), 2, 2),
-    onCell: () => ({
-      style: {
-        borderRight: "1px solid ",
-      },
-    }),
   },
 ];

@@ -12,7 +12,7 @@ import {
   InputNumber,
 } from "antd";
 import { Row, Col, Space } from "antd";
-import { SaveFilled } from "@ant-design/icons";
+import { SaveFilled, PlusOutlined, MinusCircleOutlined } from "@ant-design/icons";
 import { ButtonBack } from "../../components/button";
 import { Items } from "./model";
 import { useLocation, useNavigate } from "react-router";
@@ -147,6 +147,38 @@ const ItemsManage = () => {
             rules={[{ required: true, message: "โปรดกรอกข้อมูล" }]}
           >
             <Input placeholder="กรอกชื่อสินค้าภาษาอังกฤษ" />
+          </Form.Item>
+        </Col>
+        {/* ชื่อย่อย (ชื่อเรียกอื่น) ของสินค้า เพิ่มได้ไม่จำกัด ไม่บังคับกรอก
+            ใช้ให้ AI อ่านบิลจับคู่ชื่อที่เขียนไม่ตรงกับชื่อในระบบ
+            เช่น ภาษาอื่น ชื่อย่อ ชื่อยี่ห้อ หรือสะกดต่างไป */}
+        <Col xs={24}>
+          <Form.Item label="ชื่อย่อย (ชื่อเรียกอื่นของสินค้า)">
+            <Form.List name="aliases">
+              {(fields, { add, remove }) => (
+                <Flex vertical gap={8}>
+                  {fields.map((field, i) => (
+                    <Flex key={field.key} gap={8} align="center">
+                      <Form.Item {...field} noStyle>
+                        <Input placeholder={`ชื่อย่อย ${i + 1}`} />
+                      </Form.Item>
+                      <Button
+                        icon={<MinusCircleOutlined />}
+                        onClick={() => remove(field.name)}
+                      />
+                    </Flex>
+                  ))}
+                  <Button
+                    type="dashed"
+                    icon={<PlusOutlined />}
+                    onClick={() => add("")}
+                    style={{ width: "fit-content" }}
+                  >
+                    เพิ่มชื่อย่อย
+                  </Button>
+                </Flex>
+              )}
+            </Form.List>
           </Form.Item>
         </Col>
         <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={4}>

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import {
   Form,
   Input,
+  InputNumber,
   Button,
   Flex,
   message,
@@ -201,8 +202,25 @@ const ItemsManage = () => {
           </Form.Item>
         </Col>
         <Col xs={24} sm={24} md={24} lg={24} xl={8} xxl={8}>
+          {/* ใช้แสดงบนใบส่งสินค้า/ใบแจ้งหนี้ ไม่บังคับกรอก */}
+          <Form.Item label="ชื่อลูกค้า (อังกฤษ)" name="cusname_en">
+            <Input placeholder="กรอกชื่อลูกค้าภาษาอังกฤษ" />
+          </Form.Item>
+        </Col>
+        <Col xs={24} sm={24} md={24} lg={24} xl={8} xxl={8}>
           <Form.Item label="เลขที่ผู้เสียภาษี" name="taxnumber">
             <Input placeholder="กรอกเลขที่ผู้เสียภาษี" />
+          </Form.Item>
+        </Col>
+        <Col xs={24} sm={24} md={24} lg={24} xl={8} xxl={8}>
+          {/* เว้นว่าง = ไม่มีเครดิต ใบส่งสินค้าจะคำนวณวันครบกำหนดจากค่านี้ */}
+          <Form.Item label="เครดิต (วัน)" name="credit_day">
+            <InputNumber
+              className="width-100"
+              min={0}
+              precision={0}
+              placeholder="เช่น 30"
+            />
           </Form.Item>
         </Col>     
         <Col xs={24} sm={24} md={24} lg={24} xl={8}>

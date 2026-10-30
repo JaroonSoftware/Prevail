@@ -29,7 +29,11 @@ try {
             c.contact,
             c.tel,
             c.fax,
+            c.taxnumber,
+            c.cusname_en,
+            c.credit_day,
             co.county_name,
+            sm.customer_po,
             dd.code,
             dd.socode,
             dd.stcode,
@@ -47,11 +51,13 @@ try {
         $sql .= " LEFT JOIN dndetail as dd on dm.dncode = dd.dncode ";
         $sql .= " LEFT JOIN items as i on dd.stcode = i.stcode ";
         $sql .= " LEFT JOIN sodetail as sd on dd.socode = sd.socode and dd.stcode = sd.stcode ";
+        /* ดึงเลข PO ของลูกค้ามาแสดงช่อง "อ้างอิง" ตามฟอร์มตัวอย่าง */
+        $sql .= " LEFT JOIN somaster as sm on dd.socode = sm.socode ";
         $sql .= " WHERE dm.dncode = :code ";
         $sql .= " GROUP BY 
             dm.dncode, dm.dndate, dm.total_price, dm.remark, dm.cuscode,
             c.prename, c.cusname, c.idno, c.road, c.subdistrict, c.district, c.province, c.zipcode,
-            c.contact, c.tel, c.fax, co.county_name,
+            c.contact, c.tel, c.fax, c.taxnumber, c.cusname_en, c.credit_day, co.county_name, sm.customer_po,
             dd.code, dd.socode, dd.stcode, i.stname, sd.qty, dd.price, sd.unit ";
         $sql .= " ORDER BY dd.socode, i.seq, dd.stcode ";
 
@@ -79,6 +85,10 @@ try {
                 "contact" => $first["contact"],
                 "tel" => $first["tel"],
                 "fax" => $first["fax"],
+                "taxnumber" => $first["taxnumber"],
+                "cusname_en" => $first["cusname_en"],
+                "credit_day" => $first["credit_day"],
+                "customer_po" => $first["customer_po"],
                 "remark" => $first["remark"],
                 "payment" => null,
                 "county_name" => $first["county_name"],

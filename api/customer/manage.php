@@ -18,10 +18,12 @@ try {
 
         // var_dump($_POST);
         
-        $sql = "INSERT INTO customer (`cuscode`, `prename`, `cusname`, `taxnumber`,`county_code`, `idno`,`road`, `province`, 
+        /* cusname_en = ชื่อลูกค้าภาษาอังกฤษ (ใช้บนใบส่งสินค้า)
+           credit_day  = จำนวนวันเครดิตของลูกค้ารายนี้ ใช้คำนวณวันครบกำหนด */
+        $sql = "INSERT INTO customer (`cuscode`, `prename`, `cusname`, `cusname_en`, `credit_day`, `taxnumber`,`county_code`, `idno`,`road`, `province`, 
         `subdistrict`,`district`,`zipcode`, `delidno`,`delroad`, `delprovince`, 
         `delsubdistrict`,`deldistrict`,`delzipcode`, `tel`, `fax`,`contact`, `email`,`remark`, `active_status`, created_by, created_date) 
-        values (:cuscode,:prename,:cusname,:taxnumber,:county_code,:idno,:road,:province,:subdistrict,:district,:zipcode,
+        values (:cuscode,:prename,:cusname,:cusname_en,:credit_day,:taxnumber,:county_code,:idno,:road,:province,:subdistrict,:district,:zipcode,
         :delidno,:delroad,:delprovince,:delsubdistrict,:deldistrict,:delzipcode,
         :tel,:fax,:contact,:email,:remark,'Y',:action_user,:action_date)";
         
@@ -31,6 +33,9 @@ try {
         $stmt->bindParam(":cuscode", $cuscode, PDO::PARAM_STR);
         $stmt->bindParam(":prename", $prename, PDO::PARAM_STR);
         $stmt->bindParam(":cusname", $cusname, PDO::PARAM_STR); 
+        $stmt->bindValue(":cusname_en", $cusname_en ?? null, PDO::PARAM_STR);
+        /* ว่าง = ไม่มีเครดิต เก็บเป็น NULL ไม่ใช่ 0 จะได้แยกออกจาก "เครดิต 0 วัน" */
+        $stmt->bindValue(":credit_day", (isset($credit_day) && $credit_day !== "") ? (int) $credit_day : null, PDO::PARAM_INT);
         $stmt->bindParam(":county_code", $county_code, PDO::PARAM_STR);    
         $stmt->bindParam(":taxnumber", $taxnumber, PDO::PARAM_STR);
         $stmt->bindParam(":idno", $idno, PDO::PARAM_STR); 
@@ -106,6 +111,8 @@ try {
         cuscode = :cuscode,
         prename = :prename,
         cusname = :cusname,
+        cusname_en = :cusname_en,
+        credit_day = :credit_day,
         county_code = :county_code,
         taxnumber = :taxnumber,
         idno = :idno,
@@ -137,6 +144,8 @@ try {
         $stmt->bindParam(":cuscode", $cuscode, PDO::PARAM_STR);
         $stmt->bindParam(":prename", $prename, PDO::PARAM_STR);
         $stmt->bindParam(":cusname", $cusname, PDO::PARAM_STR);   
+        $stmt->bindValue(":cusname_en", $cusname_en ?? null, PDO::PARAM_STR);
+        $stmt->bindValue(":credit_day", (isset($credit_day) && $credit_day !== "") ? (int) $credit_day : null, PDO::PARAM_INT);
         $stmt->bindParam(":county_code", $county_code, PDO::PARAM_STR);  
         $stmt->bindParam(":taxnumber", $taxnumber, PDO::PARAM_STR);
         $stmt->bindParam(":idno", $idno, PDO::PARAM_STR); 

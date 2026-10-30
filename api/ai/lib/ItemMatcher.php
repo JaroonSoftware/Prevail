@@ -98,23 +98,42 @@ final class ItemMatcher
     public function catalog(): array
     {
         if ($this->catalog !== null) return $this->catalog;
-        $sqlEn = "SELECT i.stcode, i.stname, i.stnameEN, i.unit, i.buyprice, i.vat, t.typename
-                  FROM items i LEFT OUTER JOIN itemtype t ON i.typecode = t.typecode
-                  WHERE i.active_status = 'Y' ORDER BY i.seq, i.stcode";
-        try {
-            $rows = $this->conn->query($sqlEn)->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            /* บางฐานข้อมูลยังไม่มี stnameEN */
-            $rows = $this->conn->query(str_replace('i.stnameEN,', "NULL AS stnameEN,", $sqlEn))->fetchAll(PDO::FETCH_ASSOC);
+
+        /* เช็กก่อน: ฐานข้อมูลบางที่ยังไม่มี stnameEN หรือยังไม่ได้รัน SQL
+           ตารางชื่อย่อย (sql/2026-10-30_items_add_alias.sql) ก็ยังทำงานได้ */
+        $hasEn = $this->hasColumn('items', 'stnameEN');
+        $cols = "i.stcode, i.stname, " . ($hasEn ? "i.stnameEN" : "NULL AS stnameEN");
+
+        /* ชื่อย่อยทั้งหมด ดึงครั้งเดียวแล้วจัดกลุ่มตามรหัสสินค้า */
+        $aliasMap = array();
+        if ($this->conn->query("SHOW TABLES LIKE 'items_alias'")->fetch()) {
+            $ar = $this->conn->query("SELECT stcode, alias_name FROM items_alias ORDER BY stcode, seq, alias_id")
+                ->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($ar as $a) $aliasMap[(string)$a['stcode']][] = (string)$a['alias_name'];
         }
+        $rows = $this->conn->query(
+            "SELECT $cols, i.unit, i.buyprice, i.vat, t.typename
+             FROM items i LEFT OUTER JOIN itemtype t ON i.typecode = t.typecode
+             WHERE i.active_status = 'Y' ORDER BY i.seq, i.stcode"
+        )->fetchAll(PDO::FETCH_ASSOC);
+
         $out = array();
         foreach ($rows as $r) {
             $code = (string)$r['stcode'];
             if ($code === '' || isset($out[$code])) continue;
+
+            /* ชื่อย่อยที่กรอกไว้ ตัดช่องว่าง ตัดซ้ำ */
+            $aliases = array();
+            foreach (($aliasMap[$code] ?? array()) as $a) {
+                $a = trim($a);
+                if ($a !== '' && !in_array($a, $aliases, true)) $aliases[] = $a;
+            }
+
             $out[$code] = array(
                 'stcode' => $code,
                 'stname' => (string)$r['stname'],
                 'stnameEN' => $r['stnameEN'] !== null && trim((string)$r['stnameEN']) !== '' ? trim((string)$r['stnameEN']) : null,
+                'aliases' => $aliases,
                 'unit' => $r['unit'],
                 'buyprice' => (float)($r['buyprice'] ?? 0),
                 'vat' => (float)($r['vat'] ?? 0),
@@ -122,6 +141,13 @@ final class ItemMatcher
             );
         }
         return $this->catalog = array_values($out);
+    }
+
+    private function hasColumn(string $table, string $column): bool
+    {
+        $st = $this->conn->prepare("SHOW COLUMNS FROM `$table` LIKE :c");
+        $st->execute(array('c' => $column));
+        return (bool)$st->fetch();
     }
 
     /** รหัสสินค้าที่ผูกกับผู้ขายรายนี้ (ข้อมูลผู้ขาย > รายการสินค้า) */
@@ -156,7 +182,8 @@ final class ItemMatcher
         $byCode = array();
         foreach ($catalog as $idx => $it) {
             $ps = array();
-            foreach (array($it['stname'], $it['stnameEN']) as $n) {
+            /* เทียบกับชื่อไทย ชื่ออังกฤษ และชื่อย่อยทุกชื่อ แล้วเอาคะแนนสูงสุด */
+            foreach (array_merge(array($it['stname'], $it['stnameEN']), $it['aliases']) as $n) {
                 $nn = AiText::norm($n);
                 if ($nn !== '') $ps[] = AiText::profile($nn);
             }
@@ -251,6 +278,8 @@ final class ItemMatcher
             $pool[] = array(
                 'code' => $it['stcode'],
                 'name' => $it['stname'] . ($it['stnameEN'] ? ' / ' . $it['stnameEN'] : ''),
+                /* ชื่อเรียกอื่นที่ผู้ใช้กรอกไว้ ให้ AI เห็นด้วยตอนช่วยจับคู่ */
+                'aka' => $it['aliases'],
                 'unit' => $it['unit'],
                 'type' => $it['typename'],
             );

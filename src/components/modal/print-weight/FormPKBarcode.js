@@ -66,6 +66,14 @@ export const PK_LABEL_STYLE = `
        ตัวไหนต้องหนากว่านี้ค่อยกำหนด 800 ทับเป็นรายตัว */
     font-weight: 700;
     color: #000;
+    /* หัวพิมพ์ความร้อนพิมพ์ได้แค่ขาว/ดำ ขอบตัวอักษรที่ถูกทำให้นุ่ม (สีเทา)
+       จะโดนแปลงเป็นจุดกระจาย ตัวหนังสือเลยดูเบลอ บังคับให้ขอบคม
+       และสีออกมาตรงตามจริงทุกจุด */
+    -webkit-font-smoothing: none;
+    font-smooth: never;
+    text-rendering: geometricPrecision;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   /* ---- หมุนทั้งฟอร์ม 90 องศา ----
@@ -88,7 +96,7 @@ export const PK_LABEL_STYLE = `
     width: 100%;
     height: 100%;
     box-sizing: border-box;
-    border: 1.5pt solid #000;
+    border: 2pt solid #000;
     border-radius: 3mm;
     padding: 2.5mm 3mm;
     display: flex;
@@ -143,7 +151,17 @@ export const PK_LABEL_STYLE = `
   .pk-bag,
   .pk-brand,
   .pk-foot {
-    -webkit-text-stroke: 0.3px currentColor;
+    -webkit-text-stroke: 0.5px currentColor;
+    paint-order: stroke fill;
+  }
+
+  /* ตัวใหญ่ก็ถมด้วย: ลูกค้าบอกฉลากยังไม่ชัด หัวพิมพ์ความร้อนพิมพ์ขอบ
+     ตัวอักษรจาง ถมเส้นขอบให้ทึบขึ้นอีกระดับ (ตัวใหญ่ทนเส้นหนากว่าได้) */
+  .pk-cus-sm,
+  .pk-name,
+  .pk-weight,
+  .pk-cus-box {
+    -webkit-text-stroke: 0.7px currentColor;
     paint-order: stroke fill;
   }
   .pk-weight {
@@ -278,9 +296,12 @@ const FormPKBarcode = forwardRef(
                     <div className="pk-cus-box">{data?.cuscode}</div>
                     <div className="pk-brand">PREVAIL</div>
                     <div className="pk-qr">
+                      {/* crispEdges: ไม่ให้เบราว์เซอร์ทำขอบช่อง QR นุ่ม
+                          ไม่งั้นพิมพ์ออกมามีเส้นเทาบางๆ คั่น สแกนติดยากขึ้น */}
                       <QRCodeSVG
                         size={256}
                         level="M"
+                        shapeRendering="crispEdges"
                         value={String(data?.package_id ?? "")}
                       />
                     </div>

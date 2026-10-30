@@ -1,0 +1,143 @@
+/* ============================================================
+   ใบส่งสินค้า/ใบแจ้งหนี้ — เลย์เอาต์ตามฟอร์มตัวอย่างของลูกค้า (IV0370526.pdf)
+
+   ทำไมเขียนใหม่ทั้งชุด ไม่ใช้ antd Table แบบเดิม:
+   - ฟอร์มตัวอย่างเป็น "ข้อความล้วน" ฟอนต์ตัวพิมพ์ดีด (monospace) คั่นด้วย
+     เส้นประเต็มความกว้าง ไม่มีกรอบตาราง antd ใส่กรอบ/พื้นหลัง/padding ของมันเอง
+     ปรับให้เหมือนได้ยากและพังง่ายเวลา antd อัปเดต
+   - ส่วนท้าย (ยอดรวม/ผู้รับสินค้า/วันที่พิมพ์) ต้องอยู่ "ล่างสุดของหน้า" เสมอ
+     ไม่ลอยตามจำนวนแถว ใช้ flex ดันลงไปง่ายกว่าเติมแถวว่างแบบเดิม
+
+   ทุกกฎผูกกับ .dnf ไม่ไปกระทบใบขายสินค้าที่ใช้ delivery.css ร่วมกัน
+============================================================ */
+
+.dnf {
+  /* ตัวอักษรละติน/ตัวเลขเป็นแบบพิมพ์ดีดตามตัวอย่าง ภาษาไทยจะ fallback
+     ไปฟอนต์ไทยของเครื่องเอง (Courier New ไม่มีอักษรไทย) */
+  font-family: "Courier New", Courier, "Tahoma", monospace;
+  font-size: 17px;
+  line-height: 1.75;
+  color: #000;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 100%;
+  box-sizing: border-box;
+  padding: 0.35in 0.45in 0.6in 0.45in;
+}
+
+/* ---------- เส้นประเต็มความกว้าง ---------- */
+.dnf-rule {
+  border-top: 1px dashed #000;
+  height: 0;
+}
+
+/* ---------- หัวบริษัท ---------- */
+.dnf-head {
+  position: relative;
+}
+.dnf-co-th {
+  font-weight: 700;
+  font-size: 1.12em;
+  /* ตัวอย่างพิมพ์ชื่อบริษัทแบบเว้นช่องไฟระหว่างตัวอักษร */
+  letter-spacing: 0.32em;
+}
+.dnf-title {
+  position: absolute;
+  right: 0;
+  /* อยู่ระดับบรรทัด "โทร" ค่อนขึ้นไปนิดตามตัวอย่าง */
+  top: 4.6em;
+  font-weight: 700;
+  font-size: 1.12em;
+  letter-spacing: 0.18em;
+}
+.dnf-tax-branch {
+  margin-left: 3em;
+}
+
+/* ---------- ข้อมูลลูกค้า (ซ้าย) / ข้อมูลเอกสาร (ขวา) ---------- */
+.dnf-info {
+  display: flex;
+  margin-top: 0.6em;
+  margin-bottom: 0.2em;
+}
+.dnf-cus {
+  width: 58%;
+  padding-right: 1em;
+}
+.dnf-doc {
+  flex: 1 1 auto;
+  display: grid;
+  /* คอลัมน์ป้ายกว้างพอให้ "เครดิต 30 วัน" อยู่ในช่องป้ายได้ตามตัวอย่าง */
+  grid-template-columns: 7.2em 1fr;
+  align-content: start;
+}
+.dnf-gap {
+  margin-left: 1em;
+}
+
+/* ---------- ตารางรายการ ---------- */
+.dnf-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.dnf-table th,
+.dnf-table td {
+  padding: 0 0.4em;
+  font-weight: 400;
+  vertical-align: top;
+  background: transparent;
+}
+.dnf-table thead th {
+  border-top: 1px dashed #000;
+  border-bottom: 1px dashed #000;
+  padding-top: 0.25em;
+  padding-bottom: 0.25em;
+}
+.dnf-table tbody tr:first-child td {
+  padding-top: 0.35em;
+}
+.dnf-c { text-align: center; }
+.dnf-r { text-align: right; }
+.dnf-l { text-align: left; }
+
+/* พื้นที่รายการยืดเต็มหน้า ดันส่วนท้ายลงไปล่างสุด */
+.dnf-body {
+  flex: 1 1 auto;
+}
+
+/* ---------- ส่วนท้าย ---------- */
+.dnf-total {
+  display: grid;
+  /* เรียงตามคอลัมน์ตาราง: [ตัวหนังสือบาท] [รวมเป็นเงิน] [ยอด] */
+  grid-template-columns: 1fr 14em 9em;
+  padding: 0.35em 0;
+}
+.dnf-total-amt {
+  text-align: right;
+}
+.dnf-recv {
+  padding: 0.6em 0 0.6em 1em;
+  line-height: 2;
+}
+.dnf-printed {
+  padding: 0.35em 0 0 1em;
+  font-size: 0.88em;
+}
+.dnf-printed .lb {
+  margin-right: 1.5em;
+}
+
+/* ---------- พิมพ์จริง ---------- */
+@media print {
+  .dnf {
+    /* กล่องหน้า (.dnpv-pages) สูงตายตัวตอนพิมพ์ ใช้ความสูงเต็มกล่อง */
+    height: 100%;
+  }
+  .dnf,
+  .dnf * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

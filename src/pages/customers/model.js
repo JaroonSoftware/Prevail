@@ -96,6 +96,9 @@ export const Items = {
   tel: null,
   fax: null,
   taxnumber: null,
+  /* ชื่อภาษาอังกฤษ (ใช้บนใบส่งสินค้า) และจำนวนวันเครดิตของลูกค้า */
+  cusname_en: null,
+  credit_day: null,
   email: null,
   active_status: "Y",
 };

@@ -4,13 +4,14 @@ import { useParams } from "react-router-dom";
 // import ReactDOMServer from "react-dom/server";
 import { useReactToPrint } from "react-to-print";
 import "./delivery.css";
+/* เลย์เอาต์ฟอร์มตามตัวอย่างลูกค้า ต้องอยู่หลัง delivery.css */
+import "./delivery-form.css";
 import { Authenticate } from "../../../service/Authenticate.service";
 // import logo from "../../../assets/images/QRCODEDN.jpg";
-import { Button, Flex, Table, Typography, message } from "antd";
-import { column } from "./delivery.model";
+import { Button, message } from "antd";
 import thaiBahtText from "thai-baht-text";
 import dayjs from "dayjs";
-import { comma,formatMoney } from "../../../utils/util";
+import { comma, formatMoney } from "../../../utils/util";
 import { PiPrinterFill } from "react-icons/pi";
 import { LoadingOutlined } from "@ant-design/icons";
 import { Spin } from "antd";
@@ -33,7 +34,6 @@ export default function DeliveryPrintPreview(props) {
   const [hData, setHData] = useState({});
   const [details, setDetails] = useState([]);
 
-  const columnDesc = column;
 
   const [loading] = useState(false);
 
@@ -82,228 +82,12 @@ export default function DeliveryPrintPreview(props) {
 
   const printDate = hData?.ivdate || hData?.dndate;
 
-  const ContentHead = ({ page }) => {
-    return (
-      <div className="content-head in-sample flex flex-col dnpv-header">
-        <div className="print-title flex pb-2">
-          <div className="flex ps-3 grow-0" style={{ width: "80%" }}>
-            <Flex className="mb-1.5" vertical>
-              <Typography.Text
-                className="tx-title min-w-80 weight600"
-                strong
-                style={{ fontSize: 24 }}
-              >
-                บริษัท พรีเวล อินเตอร์เนชั่นแนล ฟู้ด จำกัด
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ fontSize: 14 }}>
-                60/3 ถ.กระ ต.ตลาดใหญ่ อ.เมือง จ.ภูเก็ต 83000
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ fontSize: 14 }}>
-                TEL: 076 641 117, 098 192 9391
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ fontSize: 14 }}>
-                เลขประจำตัวผู้เสียภาษี 083556101164 สำนักงานใหญ่
-              </Typography.Text>
-            </Flex>
-          </div>
-
-          <div className="flex ps-3 grow" style={{ float: "right" }}>
-            <Flex className="mb-1.5" vertical style={{ paddingLeft: 0 }}>
-              <Typography.Text
-                className="tx-title min-w-48"
-                style={{ textAlign: "right", fontSize: 17 }}
-                strong
-              >
-                ใบส่งสินค้า/ใบวางบิล
-              </Typography.Text>
-            </Flex>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const ContentHead2 = () => {
-    return (
-      <div className="content-head in-sample flex flex-col dnpv-header">
-        <div className="print-title flex pb-2">
-          <Flex className="flex ps-3 grow-0" style={{ width: "60%" }}>
-            <Flex vertical>
-              <Typography.Text className="tx-info">
-                ลูกค้า
-                <span style={{ paddingLeft: 22 }}>{hData?.cuscode}</span>
-              </Typography.Text>
-              <Typography.Text className="tx-info">
-                <span>
-                  {hData?.prename} {hData?.cusname}
-                </span>
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ height: 21 }}>
-                <span>{hData?.address}</span>
-              </Typography.Text>
-              <Typography.Text className="tx-info">
-                <span>
-                  <br></br>
-                </span>
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ height: 21 }}>
-                เลขประตัวผู้เสียภาษี
-                <span style={{ paddingLeft: 20 }}>{hData?.remark}</span>
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ height: 21 }}>
-                ขนส่งโดย ส่งให้ลูกค้า
-                {/* <span style={{ paddingLeft: 20 }}>{hData?.remark}</span> */}
-              </Typography.Text>
-            </Flex>
-          </Flex>
-          <Flex className="flex ps-3 grow-0" style={{ width: "40%" }}>
-            <Flex vertical>
-              <Typography.Text className="tx-info">
-                เลขที่
-                <span style={{ paddingLeft: 65 }}>{hData?.dncode}</span>
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ height: 21 }}>
-                วันที่
-                <span style={{ paddingLeft: 70 }}>
-                  {printDate ? dayjs(printDate).format("DD/MM/YYYY") : "-"}
-                </span>
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ height: 21 }}>
-                อ้างอิง
-                <span style={{ paddingLeft: 60 }}>{hData?.remark}</span>
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ height: 21 }}>
-                เครดิต
-                <span style={{ paddingLeft: 60 }}>{hData?.payment}</span>
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ height: 21 }}>
-                เขตการขาย
-                <span style={{ paddingLeft: 20 }}>{hData?.county_name}</span>
-              </Typography.Text>
-            </Flex>
-          </Flex>
-        </div>
-      </div>
-    );
-  };
-
-  const ReceiptFooter = ({ totalAmount = 0 }) => {
-    return (
-      <>
-        <Table.Summary.Row className="dnpv-footer" style={{}}>
-          <Table.Summary.Cell
-            colSpan={4}
-            className="!align-top !ps-0 !pe-0"
-            style={{ height: 20 }}
-          >
-            <Flex
-              style={{
-                borderTop: "1px dashed",
-              }}
-            >
-              <Typography.Text
-                className="tx-info"
-                style={{ fontSize: 18, marginLeft: 10 }}
-                strong
-              >
-                ({thaiBahtText(totalAmount || 0, 2, 2)}).
-              </Typography.Text>
-            </Flex>
-          </Table.Summary.Cell>
-          <Table.Summary.Cell colSpan={1} className="!align-top !ps-0 !pe-0">
-            <Flex
-              style={{
-                borderTop: "1px dashed",
-              }}
-            >
-              <Typography.Text
-                className="tx-info"
-                style={{ fontSize: 15, marginLeft: 10, marginTop: 4 ,textAlign:"right", paddingRight: 20}}
-                strong
-              >
-                รวมเป็นเงิน
-              </Typography.Text>
-            </Flex>
-          </Table.Summary.Cell>
-          <Table.Summary.Cell colSpan={1} className="!align-top !ps-0 !pe-0">
-            <Flex
-              style={{
-                borderTop: "1px dashed",
-              }}
-            >
-              <Typography.Text
-                className="tx-info"
-                style={{ fontSize: 15, marginLeft: 10, marginTop: 4 ,textAlign:"right", paddingRight: 30}}
-                strong
-              >
-                {formatMoney(totalAmount || 0, 2, 2)}
-              </Typography.Text>
-            </Flex>
-          </Table.Summary.Cell>
-        </Table.Summary.Row>
-        <Table.Summary.Row className="dnpv-footer">
-          <Table.Summary.Cell colSpan={6} className="!align-top !ps-0 !pe-0">
-            <Flex
-              style={{
-                borderTop: "1px dashed",
-                padding: 3,
-                height: 70,
-              }}
-            >
-              <Typography.Text
-                className="tx-info"
-                style={{
-                  fontSize: 15,
-                  paddingLeft: 5,
-                  lineHeight: "1em",
-                  paddingTop: 7,
-                }}
-              >
-                <p>ได้รับสินค้าตามรายการข้างบนนี้ไว้ถูกต้อง</p>
-                <p>
-                  Received by/ผู้รับสินค้า _____________________ วันที่
-                  ____/____/____
-                </p>
-              </Typography.Text>
-            </Flex>
-          </Table.Summary.Cell>
-        </Table.Summary.Row>
-        <Table.Summary.Row className="dnpv-footer">
-          <Table.Summary.Cell colSpan={6} className="!align-top !ps-0 !pe-0">
-            <Flex
-              style={{
-                borderTop: "1px dashed",
-                padding: 3,
-                height: 70,
-              }}
-            >
-              <Typography.Text
-                className="tx-info"
-                style={{
-                  fontSize: 15,
-                  paddingLeft: 5,
-                  lineHeight: "1em",
-                  paddingTop: 7,
-                }}
-              >
-                <p>
-                  พิมพ์โดย
-                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                  วันที่ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                  {/* เวลาที่กดพิมพ์จริง ไม่ใช่ ivdate/dndate:
-                      สองค่านั้นเก็บแค่วันที่ เวลาจึงออกมาเป็น 00:00:00 เสมอ */}
-                  {dayjs().format("DD/MM/YYYY  HH:mm:ss")}
-                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; บันทึกโดย{" "}
-                  {userInfo?.firstname} {userInfo?.lastname}
-                </p>
-              </Typography.Text>
-            </Flex>
-          </Table.Summary.Cell>
-        </Table.Summary.Row>
-      </>
-    );
+  /* ฟอร์มตัวอย่างใช้วันที่แบบ dd/mm/ปี พ.ศ. สองหลัก เช่น 02/11/69 */
+  const formatBE = (d) => {
+    if (!d) return "-";
+    const v = dayjs(d);
+    if (!v.isValid()) return "-";
+    return `${v.format("DD/MM/")}${String((v.year() + 543) % 100).padStart(2, "0")}`;
   };
 
   // จำกัดรายการ 16/หน้า (ให้เหมาะกับแบบฟอร์ม)
@@ -312,7 +96,6 @@ export default function DeliveryPrintPreview(props) {
      สำคัญ: กล่องหน้าใช้ overflow:hidden ถ้าตั้งเกินที่ใส่ได้จริง
      แถวท้ายๆ จะถูกตัดหายเงียบๆ ไม่ได้ขึ้นหน้าใหม่ ตั้งน้อยไว้ปลอดภัยกว่า */
   const ROWS_PER_PAGE = 28;
-  const ROW_HEIGHT = 17;
 
   const pages = useMemo(() => {
     const list = Array.isArray(details) ? details : [];
@@ -392,106 +175,162 @@ export default function DeliveryPrintPreview(props) {
 
   const totalPages = pages.length || 1;
 
-  const padRows = (rows, pageIndex, reserveRows = 0) => {
-    const out = Array.isArray(rows) ? [...rows] : [];
-    for (let i = out.length; i < ROWS_PER_PAGE - reserveRows; i++) {
-      out.push({ _empty: true, key: `empty-${pageIndex}-${i}` });
-    }
-    return out;
-  };
+  /* null = ลูกค้ารายนี้ไม่มีเครดิต (ต่างจาก 0 วัน) */
+  const creditDay =
+    hData?.credit_day === null ||
+    hData?.credit_day === undefined ||
+    hData?.credit_day === ""
+      ? null
+      : Number(hData.credit_day);
 
-  // map columnDesc เพื่อไม่ให้แสดงข้อมูลและหมายเลขเมื่อเป็นแถวว่าง
-  const renderedColumns = useMemo(() => {
-    return (columnDesc || []).map((col) => {
-      const originalRender = col.render;
-      return {
-        ...col,
-        render: (text, record, idx) => {
-          if (record && record._empty) return ""; // blank for empty row
-          // ทำให้เลขลำดับ No. ต่อเนื่องข้ามหน้า
-          if (col.key === "index" && typeof originalRender === "function") {
-            const rowNo = Number(record?.__rowNo);
-            if (Number.isFinite(rowNo)) {
-              return originalRender(text, record, rowNo - 1);
-            }
-          }
-          return originalRender ? originalRender(text, record, idx) : text;
-        },
-      };
-    });
-  }, [columnDesc]);
-
-  const ContentBody = ({
-    rows,
-    pageIndex,
-    showGroupSummary,
-    groupTotal,
-    socode,
-  }) => {
-    const pageTotal = Number(groupTotal || 0);
-    const paddedRows = padRows(rows, pageIndex, showGroupSummary ? 1 : 0);
-    return (
-      <div
-        className="dnpv-table-wrap"
-        style={{
-          "--dnpv-empty-row-height": `${ROW_HEIGHT}px`,
-          "--dnpv-row-height": `${ROW_HEIGHT}px`,
-        }}
-      >
-        <Table
-          className="dnpv-table"
-          size="small"
-          dataSource={paddedRows}
-          columns={renderedColumns}
-          pagination={false}
-          rowKey={(rec) => {
-            if (rec?._empty) return rec.key;
-            const base = rec?.id || rec?.rowid || rec?.stcode || "row";
-            const rowNo = rec?.__rowNo ? `-${rec.__rowNo}` : "";
-            return `${base}${rowNo}`;
-          }}
-          bordered={false}
-          locale={{
-            emptyText: <span>No data available, please add some data.</span>,
-          }}
-          onRow={(record) => {
-            return { className: record._empty ? "dnpv-empty-row" : "r-sub" };
-          }}
-          summary={() => <ReceiptFooter totalAmount={pageTotal} />}
-        />
+  /* ---------- หัวบริษัท + ข้อมูลลูกค้า/เอกสาร (ทุกหน้า) ---------- */
+  const SheetHead = () => (
+    <>
+      <div className="dnf-head">
+        <div className="dnf-co-th">บริษัท พรีเวล อินเตอร์เนชั่นแนล ฟู้ด จำกัด</div>
+        <div>Prevail International Food Co.,Ltd</div>
+        <div>60/3 ถ.กระ ต.ตลาดใหญ่ อ.เมือง จ.ภูเก็ต 83000</div>
+        <div>โทร : 098 192 9391</div>
+        <div>
+          เลขประจำตัวผู้เสียภาษี 0835561011645
+          <span className="dnf-tax-branch">สำนักงานใหญ่</span>
+        </div>
+        <div className="dnf-title">ใบส่งสินค้า/ใบแจ้งหนี้</div>
       </div>
-    );
-  };
 
-  const ContentData = ({ children, pageNum = 1, total = 1 }) => {
-    return (
-      <div className="dnpv-pages flex flex-col">
-        <div className="print-content">{children}</div>
+      <div className="dnf-info">
+        <div className="dnf-cus">
+          {/* ชื่ออังกฤษอยู่บรรทัดเดียวกับ "ลูกค้า" ตามตัวอย่าง
+              ยังไม่ได้กรอกชื่ออังกฤษก็ใช้รหัสลูกค้าแทน */}
+          <div>
+            ลูกค้า<span className="dnf-gap">{hData?.cusname_en || hData?.cuscode}</span>
+          </div>
+          <div>
+            {hData?.prename} {hData?.cusname}
+          </div>
+          <div>{hData?.address}</div>
+          <div>
+            เลขประจำตัวผู้เสียภาษี
+            {hData?.taxnumber ? <span className="dnf-gap">{hData.taxnumber}</span> : null}
+          </div>
+          <div>
+            Tel.{hData?.tel || ""} Attn: {hData?.contact || ""}
+          </div>
+          <div>
+            ขนส่งโดย<span className="dnf-gap">ส่งให้ลูกค้า</span>
+          </div>
+        </div>
+
+        <div className="dnf-doc">
+          <div>เลขที่</div>
+          <div>{hData?.dncode}</div>
+
+          <div>วันที่</div>
+          <div>{formatBE(printDate)}</div>
+
+          <div>อ้างอิง</div>
+          <div>{hData?.customer_po ? `PO ${hData.customer_po}` : ""}</div>
+
+          {/* ตามตัวอย่าง: "เครดิต 30 วัน" อยู่ช่องป้าย, "ครบกำหนด ..." อยู่ช่องค่า */}
+          <div>{creditDay !== null ? `เครดิต ${creditDay} วัน` : "เครดิต"}</div>
+          <div>
+            {creditDay !== null
+              ? `ครบกำหนด ${formatBE(dayjs(printDate).add(creditDay, "day"))}`
+              : ""}
+          </div>
+
+          <div>เขตการขาย</div>
+          <div>{hData?.county_name && hData.county_name !== "-" ? hData.county_name : ""}</div>
+        </div>
       </div>
-    );
-  };
+    </>
+  );
+
+  /* ---------- ตารางรายการ ---------- */
+  const SheetTable = ({ rows }) => (
+    <table className="dnf-table">
+      <colgroup>
+        <col style={{ width: "7%" }} />
+        <col />
+        <col style={{ width: "16%" }} />
+        <col style={{ width: "12%" }} />
+        <col style={{ width: "13%" }} />
+      </colgroup>
+      <thead>
+        <tr>
+          <th className="dnf-c">No.</th>
+          <th className="dnf-c">รายละเอียด</th>
+          <th className="dnf-r">จำนวน</th>
+          <th className="dnf-r">หน่วยละ</th>
+          <th className="dnf-r">จำนวนเงิน</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r, i) => {
+          const qty = Number(r?.qty || 0);
+          const price = Number(r?.price || 0);
+          return (
+            <tr key={`${r?.stcode || "row"}-${r?.__rowNo ?? i}`}>
+              <td className="dnf-c">{r?.__rowNo ?? i + 1}</td>
+              <td className="dnf-l">{r?.stname}</td>
+              {/* ตามตัวอย่าง: ทศนิยม 3 ตำแหน่ง ตามด้วยหน่วย เช่น "1.000 Kg." */}
+              <td className="dnf-r">
+                {`${comma(qty, 3, 3)} ${r?.unit || ""}`.trim()}
+              </td>
+              <td className="dnf-r">{comma(price, 2, 2)}</td>
+              <td className="dnf-r">{comma(qty * price, 2, 2)}</td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  );
+
+  /* ---------- ส่วนท้าย (เฉพาะหน้าสุดท้ายของแต่ละใบขาย) ---------- */
+  const SheetFoot = ({ total }) => (
+    <>
+      <div className="dnf-rule" />
+      <div className="dnf-total">
+        <span>({thaiBahtText(total || 0, 2, 2)}).</span>
+        <span>รวมเป็นเงิน</span>
+        <span className="dnf-total-amt">{formatMoney(total || 0, 2, 2)}</span>
+      </div>
+      <div className="dnf-rule" />
+      <div className="dnf-recv">
+        <div>ได้รับสินค้าตามรายการข้างบนนี้ไว้ถูกต้อง</div>
+        <div>Received by/ผู้รับสินค้า ________________ วันที่ ___/___/___</div>
+      </div>
+      <div className="dnf-rule" />
+      {/* เวลาที่กดพิมพ์จริง ไม่ใช่ ivdate/dndate ที่เก็บแค่วันที่ */}
+      <div className="dnf-printed">
+        <span className="lb">วันที่พิมพ์</span>
+        {`${formatBE(dayjs())} ${dayjs().format("HH:mm:ss")}`}
+      </div>
+    </>
+  );
 
   const PrintablePages = () => {
     return (
       <div ref={componentRef}>
-        {pages.map((p, idx) => {
-          return (
-            <React.Fragment key={`page-${idx}`}>
-              <ContentData pageNum={idx + 1} total={totalPages}>
-                <ContentHead page={`${idx + 1} of ${totalPages}`} />
-                <ContentHead2 />
-                <ContentBody
-                  rows={p.rows}
-                  pageIndex={idx}
-                  showGroupSummary={p.showGroupSummary}
-                  groupTotal={p.groupTotal}
-                  socode={p.socode}
-                />
-              </ContentData>
-              {idx < totalPages - 1 && <div className="page-break" />}
-            </React.Fragment>
-          );
-        })}
+        {pages.map((p, idx) => (
+          <React.Fragment key={`page-${idx}`}>
+            <div className="dnpv-pages flex flex-col">
+              <div className="dnf">
+                <SheetHead />
+                <div className="dnf-body">
+                  <SheetTable rows={p.rows} />
+                </div>
+                {p.showGroupSummary ? (
+                  <SheetFoot total={p.groupTotal} />
+                ) : (
+                  /* หน้ากลางของใบขายที่ยาวหลายหน้า ปิดท้ายด้วยเส้นประเฉยๆ */
+                  <div className="dnf-rule" />
+                )}
+              </div>
+            </div>
+            {idx < totalPages - 1 && <div className="page-break" />}
+          </React.Fragment>
+        ))}
       </div>
     );
   };

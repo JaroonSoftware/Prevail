@@ -3,6 +3,37 @@ ob_start();
 include_once(dirname(__FILE__, 2) . "/onload.php");
 include_once(dirname(__FILE__, 2) . "/common/fnc-code.php");
 
+/* ชื่อย่อย (ชื่อเรียกอื่น) ของสินค้า เพิ่มได้ไม่จำกัด เก็บในตาราง items_alias
+   บันทึกแบบลบของเดิมแล้วใส่ใหม่ทั้งชุด ลำดับตามที่กรอกในหน้าจอ
+   ถ้ายังไม่ได้รัน SQL (ไม่มีตาราง) จะข้ามไปเงียบๆ ไม่ให้บันทึกสินค้าพัง */
+function save_item_aliases(PDO $conn, string $stcode, $aliases): void
+{
+    if (!is_array($aliases)) return;
+    $has = $conn->query("SHOW TABLES LIKE 'items_alias'")->fetch();
+    if (!$has) return;
+
+    $conn->prepare("DELETE FROM items_alias WHERE stcode = :s")->execute(array('s' => $stcode));
+
+    $ins = $conn->prepare("INSERT INTO items_alias (stcode, alias_name, seq) VALUES (:s, :a, :q)");
+    $seen = array();
+    $seq = 0;
+    foreach ($aliases as $a) {
+        $a = is_string($a) ? trim($a) : '';
+        if ($a === '' || isset($seen[mb_strtolower($a)])) continue;
+        $seen[mb_strtolower($a)] = true;
+        $ins->execute(array('s' => $stcode, 'a' => mb_substr($a, 0, 255), 'q' => ++$seq));
+    }
+}
+
+function load_item_aliases(PDO $conn, string $stcode): array
+{
+    $has = $conn->query("SHOW TABLES LIKE 'items_alias'")->fetch();
+    if (!$has) return array();
+    $st = $conn->prepare("SELECT alias_name FROM items_alias WHERE stcode = :s ORDER BY seq, alias_id");
+    $st->execute(array('s' => $stcode));
+    return $st->fetchAll(PDO::FETCH_COLUMN);
+}
+
 $db = new DbConnect;
 $conn = $db->connect();
 $conn->beginTransaction();
@@ -71,6 +102,8 @@ try {
             die;
         }    
 
+        save_item_aliases($conn, (string)$stcode, $aliases ?? null);
+
         $conn->commit();
         http_response_code(200);
         echo json_encode(array("data" => array("id" => "ok")));
@@ -124,6 +157,8 @@ try {
             die;
         }
 
+        save_item_aliases($conn, (string)$stcode, $aliases ?? null);
+
         $conn->commit();
         http_response_code(200);
         echo json_encode(array("data" => array("id" => $_PUT)));
@@ -140,6 +175,7 @@ try {
             throw new PDOException("Geting data error => $error");
         }
         $res = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($res) $res['aliases'] = load_item_aliases($conn, (string)$code);
 
         $sql2 = "SELECT * FROM `items_img` ";
         $sql2 .= " where stcode = :code ";
