@@ -15,15 +15,18 @@
   /* ตัวอักษรละติน/ตัวเลขเป็นแบบพิมพ์ดีดตามตัวอย่าง ภาษาไทยจะ fallback
      ไปฟอนต์ไทยของเครื่องเอง (Courier New ไม่มีอักษรไทย) */
   font-family: "Courier New", Courier, "Tahoma", monospace;
-  font-size: 17px;
-  line-height: 1.75;
+  font-size: 19px;
+  line-height: 1.3;
+  font-weight: 700;
+  -webkit-font-smoothing: none;
+  -webkit-text-stroke: 0.3px #000;
   color: #000;
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 100%;
   box-sizing: border-box;
-  padding: 0.35in 0.45in 0.6in 0.45in;
+  padding: 0.2in 0.25in 0.2in 0.25in;
 }
 
 /* ---------- เส้นประเต็มความกว้าง ---------- */
@@ -40,7 +43,7 @@
   font-weight: 700;
   font-size: 1.12em;
   /* ตัวอย่างพิมพ์ชื่อบริษัทแบบเว้นช่องไฟระหว่างตัวอักษร */
-  letter-spacing: 0.32em;
+  letter-spacing: 0.15em;
 }
 .dnf-title {
   position: absolute;
@@ -85,7 +88,7 @@
 .dnf-table th,
 .dnf-table td {
   padding: 0 0.4em;
-  font-weight: 400;
+  font-weight: 700;
   vertical-align: top;
   background: transparent;
 }
@@ -119,7 +122,7 @@
 }
 .dnf-recv {
   padding: 0.6em 0 0.6em 1em;
-  line-height: 2;
+  line-height: 1.4;
 }
 .dnf-printed {
   padding: 0.35em 0 0 1em;
@@ -140,4 +143,21 @@
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
+}
+
+/* บรรทัดผู้พิมพ์ของใบขายสินค้า: พิมพ์โดย / วันที่ / บันทึกโดย อยู่บรรทัดเดียว
+   ช่องระหว่างป้ายกับค่าแคบ, ระหว่างกลุ่มเว้นกว้างกว่าเพื่อแยกให้ออก */
+.dnf-printed.so-printed .lb {
+  margin-right: 0.6em;
+}
+.dnf-printed.so-printed .lb.grp {
+  margin-left: 2.5em;
+}
+
+/* ข้อมูลเอกสาร (เลขที่/วันที่/อ้างอิง/เครดิต) ให้เริ่มแนวเดียวกับหัว
+   "ใบส่งสินค้า/ใบแจ้งหนี้" / "ใบขายสินค้า" ที่ชิดขวา (ตามรูปลูกค้า) */
+.dnf-cus { width: 68%; }
+.dnf-doc {
+  grid-template-columns: 5em 1fr;
+  white-space: nowrap;
 }

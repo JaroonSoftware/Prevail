@@ -95,7 +95,7 @@ export default function DeliveryPrintPreview(props) {
      พื้นที่แถวเพิ่มจาก ~350px เป็น ~670px จึงได้ราว 30 แถว ตั้ง 28 เผื่อไว้
      สำคัญ: กล่องหน้าใช้ overflow:hidden ถ้าตั้งเกินที่ใส่ได้จริง
      แถวท้ายๆ จะถูกตัดหายเงียบๆ ไม่ได้ขึ้นหน้าใหม่ ตั้งน้อยไว้ปลอดภัยกว่า */
-  const ROWS_PER_PAGE = 28;
+  const ROWS_PER_PAGE = 16;
 
   const pages = useMemo(() => {
     const list = Array.isArray(details) ? details : [];

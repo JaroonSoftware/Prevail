@@ -3,15 +3,12 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useReactToPrint } from "react-to-print";
 import "../delivery/delivery.css";
-/* ต้องอยู่หลัง delivery.css เสมอ — ทับขนาดหน้ากระดาษเป็น Letter Fanfold 8.5 x 11 นิ้ว
-   เฉพาะฟอร์มใบขายสินค้า ไม่กระทบใบส่งของ/ใบเสนอราคาที่ใช้ CSS ก้อนเดียวกัน */
-import "./so.css";
+/* ใช้เลย์เอาต์ชุดเดียวกับใบส่งสินค้า ขนาด/ฟอนต์/เส้นประเท่ากันทุกอย่าง */
+import "../delivery/delivery-form.css";
 import { Authenticate } from "../../../service/Authenticate.service";
-import { Button, Flex, Table, Typography, message } from "antd";
-/* คอลัมน์ของใบขายสินค้าโดยเฉพาะ — ห้ามใช้ delivery.model ตรงๆ
-   เพราะไฟล์นั้นใช้ร่วมกับใบส่งของ แก้แล้วกระทบทั้งคู่ */
-import { column } from "./so.model";
+import { Button, message } from "antd";
 import thaiBahtText from "thai-baht-text";
+import { comma, formatMoney } from "../../../utils/util";
 import dayjs from "dayjs";
 import { PiPrinterFill } from "react-icons/pi";
 import { LoadingOutlined } from "@ant-design/icons";
@@ -34,7 +31,7 @@ const soservice = SOService();
 const SO_PAGE_STYLE_ID = "so-print-page-size";
 /* @page ไม่มีชื่อ = ค่าที่ Chrome ใช้ตั้งต้นให้ dialog
    ต้องประกาศ Tabloid ตรงนี้ด้วย ไม่งั้น dialog จะตกกลับไปใช้ A4 */
-const SO_PAGE_STYLE = `@media print { @page { size: 11in 17in; margin: 0; } }`;
+const SO_PAGE_STYLE = `@media print { @page { size: 9in 11in; margin: 0; } }`;
 
 export default function SOPrintPreview() {
   const { code } = useParams();
@@ -50,8 +47,6 @@ export default function SOPrintPreview() {
 
   const [hData, setHData] = useState({});
   const [details, setDetails] = useState([]);
-
-  const columnDesc = column;
 
   const [loading] = useState(false);
 
@@ -104,398 +99,181 @@ export default function SOPrintPreview() {
     return () => {};
   }, []);
 
-  const ContentHead = () => {
-    return (
-      <div className="content-head in-sample flex flex-col dnpv-header">
-        <div className="print-title flex pb-2">
-          <div className="flex ps-3 grow-0" style={{ width: "80%" }}>
-            <Flex className="mb-1.5" vertical>
-              <Typography.Text
-                className="tx-title min-w-80 weight600"
-                strong
-                /* nowrap: ชื่อบริษัทยาวจนตกบรรทัด "จำกัด" ไปอยู่บรรทัดสอง
-                   ลดขนาดลงหน่อยให้พอดีความกว้างคอลัมน์ซ้าย (80%) */
-                style={{ fontSize: 21, whiteSpace: "nowrap" }}
-              >
-                บริษัท พรีเวล อินเตอร์เนชั่นแนล ฟู้ด จำกัด
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ fontSize: 14 }}>
-                60/3 ถ.กระ ต.ตลาดใหญ่ อ.เมือง จ.ภูเก็ต 83000
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ fontSize: 14 }}>
-                TEL: 076 641 117, 098 192 9391
-              </Typography.Text>
-              <Typography.Text className="tx-info" style={{ fontSize: 14 }}>
-                เลขประจำตัวผู้เสียภาษี 083556101164 สำนักงานใหญ่
-              </Typography.Text>
-            </Flex>
-          </div>
+  /* ---------- หัวบริษัท + ข้อมูลลูกค้า/เอกสาร (ทุกหน้า) ----------
+     ใช้คลาส .dnf ชุดเดียวกับใบส่งสินค้า (delivery-form.css)
+     ขนาดตัวอักษร ระยะบรรทัด เส้นประ และขนาดหน้าจึงเท่ากันเป๊ะ */
+  const fmtDate = (d) => (d ? dayjs(d).format("DD/MM/YYYY") : "-");
 
-          <div className="flex ps-3 grow" style={{ float: "right" }}>
-            <Flex className="mb-1.5" vertical style={{ paddingLeft: 0 }}>
-              <Typography.Text
-                className="tx-title min-w-48"
-                style={{ textAlign: "right", fontSize: 17 }}
-                strong
-              >
-                ใบขายสินค้า
-              </Typography.Text>
-            </Flex>
-          </div>
+  const SheetHead = ({ pageNo, pageTotal }) => (
+    <>
+      <div className="dnf-head">
+        <div className="dnf-co-th">บริษัท พรีเวล อินเตอร์เนชั่นแนล ฟู้ด จำกัด</div>
+        <div>Prevail International Food Co.,Ltd</div>
+        <div>60/3 ถ.กระ ต.ตลาดใหญ่ อ.เมือง จ.ภูเก็ต 83000</div>
+        <div>โทร : 098 192 9391</div>
+        <div>
+          เลขประจำตัวผู้เสียภาษี 0835561011645
+          <span className="dnf-tax-branch">สำนักงานใหญ่</span>
+        </div>
+        <div className="dnf-title">
+          ใบขายสินค้า{pageTotal > 1 ? ` (${pageNo}/${pageTotal})` : ""}
         </div>
       </div>
-    );
-  };
 
-  /* หัวเอกสารท่อนที่สอง: ซ้าย = ข้อมูลลูกค้า / ขวา = ข้อมูลเอกสาร
+      <div className="dnf-info">
+        <div className="dnf-cus">
+          <div>
+            ลูกค้า<span className="dnf-gap">{hData?.cuscode}</span>
+          </div>
+          <div>
+            {hData?.prename} {hData?.cusname}
+          </div>
+          <div>{hData?.address}</div>
+          <div>
+            เลขประจำตัวผู้เสียภาษี
+            {hData?.taxnumber ? <span className="dnf-gap">{hData.taxnumber}</span> : null}
+          </div>
+          <div>
+            ผู้ติดต่อ<span className="dnf-gap">{hData?.contact || "-"}</span>
+          </div>
+        </div>
 
-     ของเดิมดันค่าด้วย paddingLeft รายบรรทัด (65, 70, 33, 25, 35) ซึ่งต้อง
-     ไล่เดาทีละบรรทัดและไม่เคยตรงกันจริง เปลี่ยนมาใช้ flex + ป้ายกำกับ
-     ความกว้างคงที่ ค่าทุกบรรทัดจึงเริ่มที่เส้นเดียวกันเสมอ */
-  const HeadRow = ({ label, labelWidth, children }) => (
-    <div style={{ display: "flex", minHeight: 21 }}>
-      {/* minWidth ไม่ใช่ width: ป้ายสั้น ๆ จะเรียงตรงกันที่ labelWidth
-          ส่วนป้ายยาวอย่าง "เลขประจำตัวผู้เสียภาษี" ดันค่าของตัวเองไปทางขวา
-          แทนที่จะบังคับให้ทุกบรรทัดเว้นห่างตามป้ายที่ยาวที่สุด */}
-      <span
-        style={{
-          minWidth: labelWidth,
-          flex: "0 0 auto",
-          whiteSpace: "nowrap",
-          paddingRight: 12,
-        }}
-      >
-        {label}
-      </span>
-      <span>{children}</span>
-    </div>
+        <div className="dnf-doc">
+          <div>เลขที่</div>
+          <div>{hData?.socode}</div>
+
+          <div>วันที่</div>
+          <div>{fmtDate(hData?.sodate)}</div>
+
+          <div>PO ลูกค้า</div>
+          <div>{hData?.customer_po || "-"}</div>
+
+          <div>วันที่นัดส่ง</div>
+          <div>{fmtDate(hData?.deldate)}</div>
+
+          <div>ห้องครัว</div>
+          <div>{hData?.del_room || "-"}</div>
+        </div>
+      </div>
+    </>
   );
 
-  const ContentHead2 = () => {
-    /* ความกว้างป้ายกำกับขั้นต่ำของแต่ละฝั่ง
-       ซ้าย 55: อิง "ลูกค้า" ซึ่งเป็นป้ายที่สั้นที่สุด เพื่อให้
-       รหัสลูกค้า/ชื่อ/ที่อยู่ ชิดซ้ายมากที่สุดเท่าที่ทำได้ ตามที่ลูกค้าขอ
-       ป้ายที่ยาวกว่า ("ผู้ติดต่อ", "เลขประจำตัวผู้เสียภาษี") จะดันค่าของ
-       ตัวเองไปทางขวาแทน
-       ขวา 95: อิง "วันที่นัดส่ง" ซึ่งเป็นป้ายที่ยาวสุดฝั่งขวา */
-    const LW = 55;
-    const RW = 95;
+  /* ---------- ตารางรายการ ---------- */
+  const SheetTable = ({ rows }) => (
+    <table className="dnf-table">
+      <colgroup>
+        <col style={{ width: "7%" }} />
+        <col />
+        <col style={{ width: "14%" }} />
+        <col style={{ width: "13%" }} />
+        <col style={{ width: "15%" }} />
+      </colgroup>
+      <thead>
+        <tr>
+          <th className="dnf-c">No.</th>
+          <th className="dnf-c">รายละเอียด</th>
+          <th className="dnf-r">จำนวน</th>
+          <th className="dnf-r">หน่วยละ</th>
+          <th className="dnf-r">จำนวนเงิน</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r, i) => {
+          const qty = Number(r?.qty || 0);
+          const price = Number(r?.price || 0);
+          return (
+            <tr key={`${r?.stcode || "row"}-${r?.__rowNo ?? i}`}>
+              <td className="dnf-c">{r?.__rowNo ?? i + 1}</td>
+              <td className="dnf-l">{r?.stname}</td>
+              {/* ใบขายสินค้าแสดงจำนวน 2 ตำแหน่ง ไม่มีหน่วย (ต่างจากใบส่งสินค้า) */}
+              <td className="dnf-r">{comma(qty, 2, 2)}</td>
+              <td className="dnf-r">{comma(price, 2, 2)}</td>
+              <td className="dnf-r">{comma(qty * price, 2, 2)}</td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  );
 
-    return (
-      <div className="content-head in-sample flex flex-col dnpv-header">
-        <div className="print-title flex pb-2">
-          <Flex className="flex ps-3 grow-0" style={{ width: "60%" }}>
-            <Flex vertical className="tx-info">
-              <HeadRow label="ลูกค้า" labelWidth={LW}>
-                {hData?.cuscode}
-              </HeadRow>
-              <HeadRow label="" labelWidth={LW}>
-                {hData?.prename} {hData?.cusname}
-              </HeadRow>
-              <HeadRow label="" labelWidth={LW}>
-                {hData?.address}
-              </HeadRow>
-              {/* เอาบรรทัดว่างคั่นออก ให้เลขผู้เสียภาษีขึ้นมาติดกับที่อยู่ */}
-              {/* ใช้ taxnumber: c.idno คือบ้านเลขที่ ซึ่งถูกเอาไปประกอบ address
-                  อยู่แล้ว ของเดิมดึง idno มาแสดงตรงนี้จึงขึ้น "-" ตลอด */}
-              <HeadRow label="เลขประจำตัวผู้เสียภาษี" labelWidth={LW}>
-                {hData?.taxnumber || "-"}
-              </HeadRow>
-              <HeadRow label="ผู้ติดต่อ" labelWidth={LW}>
-                {hData?.contact || "-"}
-              </HeadRow>
-            </Flex>
-          </Flex>
-          <Flex className="flex ps-3 grow-0" style={{ width: "40%" }}>
-            <Flex vertical className="tx-info">
-              <HeadRow label="เลขที่" labelWidth={RW}>
-                {hData?.socode}
-              </HeadRow>
-              <HeadRow label="วันที่" labelWidth={RW}>
-                {hData?.sodate ? dayjs(hData.sodate).format("DD/MM/YYYY") : "-"}
-              </HeadRow>
-              <HeadRow label="PO ลูกค้า" labelWidth={RW}>
-                {hData?.customer_po || "-"}
-              </HeadRow>
-              <HeadRow label="วันที่นัดส่ง" labelWidth={RW}>
-                {hData?.deldate
-                  ? dayjs(hData.deldate).format("DD/MM/YYYY")
-                  : "-"}
-              </HeadRow>
-              <HeadRow label="ห้องครัว" labelWidth={RW}>
-                {hData?.del_room || "-"}
-              </HeadRow>
-            </Flex>
-          </Flex>
-        </div>
-      </div>
-    );
-  };
-
-  const ReceiptSummary = () => {
+  /* ---------- ส่วนท้าย (หน้าสุดท้าย) ---------- */
+  const SheetFoot = () => {
+    const total = Number(hData?.total_price || 0);
+    const who = `${userInfo?.firstname || ""} ${userInfo?.lastname || ""}`.trim();
     return (
       <>
-        <Table.Summary.Row className="dnpv-footer">
-          <Table.Summary.Cell
-            /* ตารางมี 5 คอลัมน์ (No./รายละเอียด/จำนวน/หน่วยละ/จำนวนเงิน)
-               ผลรวม colSpan ของแถวสรุปต้องเท่ากับ 5 พอดี
-               ถ้าไม่เท่า antd จะคำนวณความกว้างคอลัมน์ของ "หน้าที่มีแถวสรุป"
-               ต่างจากหน้าอื่น -> หน้าสุดท้ายตารางหดเล็กลงกว่าหน้าแรก */
-            colSpan={3}
-            className="!align-top !ps-0 !pe-0"
-            style={{ height: 20 }}
-          >
-            <Flex
-              style={{
-                borderTop: "1px dashed",
-              }}
-            >
-              <Typography.Text
-                className="tx-info"
-                style={{ fontSize: 18, marginLeft: 10 }}
-                strong
-              >
-                ({thaiBahtText(hData?.total_price || 0, 2, 2)}).
-              </Typography.Text>
-            </Flex>
-          </Table.Summary.Cell>
-          <Table.Summary.Cell colSpan={1} className="!align-top !ps-0 !pe-0">
-            <Flex
-              style={{
-                borderTop: "1px dashed",
-              }}
-            >
-              <Typography.Text
-                className="tx-info"
-                style={{ fontSize: 15, marginLeft: 10, marginTop: 4 }}
-                strong
-              >
-                รวมเป็นเงิน
-              </Typography.Text>
-            </Flex>
-          </Table.Summary.Cell>
-          <Table.Summary.Cell colSpan={1} className="!align-top !ps-0 !pe-0">
-            <Flex
-              style={{
-                borderTop: "1px dashed",
-              }}
-            >
-              <Typography.Text
-                className="tx-info"
-                style={{ fontSize: 15, marginLeft: 10, marginTop: 4 }}
-                strong
-              >
-                {hData?.total_price}
-              </Typography.Text>
-            </Flex>
-          </Table.Summary.Cell>
-        </Table.Summary.Row>
-        <Table.Summary.Row className="dnpv-footer">
-          <Table.Summary.Cell colSpan={5} className="!align-top !ps-0 !pe-0">
-            <Flex
-              style={{
-                borderTop: "1px dashed",
-                padding: 3,
-                height: 70,
-              }}
-            >
-              <Typography.Text
-                className="tx-info"
-                style={{
-                  fontSize: 15,
-                  paddingLeft: 5,
-                  /* 1em ทำให้สองบรรทัดชิดกันจนดูอึดอัด โดยเฉพาะสระบน-ล่างไทย
-                     ที่เกือบชนกัน 1.7em กำลังอ่านสบาย */
-                  lineHeight: "1.7em",
-                  paddingTop: 7,
-                }}
-              >
-                <p>ยืนยันรายการใบขายสินค้าตามรายละเอียดข้างต้น</p>
-                <p>
-                  Confirmed by/ผู้ยืนยัน _____________________ วันที่
-                  ____/____/____
-                </p>
-              </Typography.Text>
-            </Flex>
-            <Flex
-              style={{
-                borderTop: "1px dashed",
-                padding: 3,
-                height: 70,
-              }}
-            >
-              <Typography.Text
-                className="tx-info"
-                style={{
-                  fontSize: 15,
-                  paddingLeft: 5,
-                  lineHeight: "1em",
-                  paddingTop: 7,
-                }}
-              >
-                {/* จัดด้วย flex + ความกว้างป้ายกำกับคงที่ แทนการเคาะ &nbsp;
-                    เรียงเป็น 2 บรรทัด ป้ายกับค่าตรงแนวกันทั้งคู่
-                    วันที่มีเวลาต่อท้ายตามที่ลูกค้าขอ */}
-                <div style={{ display: "flex", gap: 24 }}>
-                  <div>
-                    <div style={{ display: "flex", marginBottom: 4 }}>
-                      <span style={{ width: 85 }}>พิมพ์โดย</span>
-                      <span>
-                        {userInfo?.firstname} {userInfo?.lastname}
-                      </span>
-                    </div>
-                    <div style={{ display: "flex" }}>
-                      <span style={{ width: 85 }}>บันทึกโดย</span>
-                      <span>
-                        {userInfo?.firstname} {userInfo?.lastname}
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    {/* เวลาที่กดพิมพ์จริง ไม่ใช่ sodate:
-                        sodate ในฐานข้อมูลเก็บแค่วันที่ เวลาจึงออกมาเป็น
-                        00:00:00 เสมอ ซึ่งไม่ได้บอกอะไร */}
-                    <div style={{ display: "flex", marginBottom: 4 }}>
-                      <span style={{ width: 80 }}>วันที่</span>
-                      <span>{dayjs().format("DD/MM/YYYY  HH:mm:ss")}</span>
-                    </div>
-                  </div>
-                </div>
-              </Typography.Text>
-            </Flex>
-          </Table.Summary.Cell>
-        </Table.Summary.Row>
+        <div className="dnf-rule" />
+        <div className="dnf-total">
+          <span>({thaiBahtText(total, 2, 2)}).</span>
+          <span>รวมเป็นเงิน</span>
+          <span className="dnf-total-amt">{formatMoney(total, 2, 2)}</span>
+        </div>
+        <div className="dnf-rule" />
+        <div className="dnf-recv">
+          <div>ยืนยันรายการใบขายสินค้าตามรายละเอียดข้างต้น</div>
+          <div>Confirmed by/ผู้ยืนยัน ________________ วันที่ ___/___/___</div>
+        </div>
+        <div className="dnf-rule" />
+        {/* เวลาที่กดพิมพ์จริง (sodate เก็บแค่วันที่ เวลาจะเป็น 00:00:00 เสมอ) */}
+        {/* บรรทัดเดียว: พิมพ์โดย / วันที่ / บันทึกโดย ตามที่ลูกค้าขอ
+            ช่องระหว่างป้ายกับค่าแคบลง (เดิมเว้นกว้างเกิน ดูห่างกัน) */}
+        <div className="dnf-printed so-printed">
+          <span className="lb">พิมพ์โดย</span>
+          <span>{who}</span>
+          <span className="lb grp">วันที่</span>
+          <span>{dayjs().format("DD/MM/YYYY HH:mm:ss")}</span>
+          <span className="lb grp">บันทึกโดย</span>
+          <span>{who}</span>
+        </div>
       </>
     );
   };
 
-  /* จำนวนแถวต่อหน้า — ต้องลดตาม zoom ใน so.css ที่เพิ่งเพิ่มเป็น 1.55
-     เพราะ zoom ขยายแนวตั้งไปพร้อมกัน พื้นที่ใส่แถวจึงลดลงราว 13%
-     (30 แถวที่ zoom 1.35 -> ราว 26 แถวที่ zoom 1.55)
-     ถ้าพิมพ์จริงแล้วแถวท้ายหายหรือยอดรวมหลุดหน้า ให้ลดตัวเลขนี้
-     ถ้ายังเหลือที่ว่างท้ายใบให้เพิ่ม */
-  const ROWS_PER_PAGE = 26;
-  const ROW_HEIGHT = 17;
+  /* แถวต่อหน้าเท่าใบส่งสินค้า (กล่องหน้าเดียวกัน 11 x 15.5 นิ้ว ดู delivery.css) */
+  const ROWS_PER_PAGE = 16;
 
   const pages = useMemo(() => {
     const list = Array.isArray(details) ? details : [];
+    if (list.length === 0) return [{ rows: [] }];
     const out = [];
-    if (list.length === 0) {
-      out.push({ rows: [], pageIndex: 0 });
-      return out;
-    }
-
     for (let start = 0; start < list.length; start += ROWS_PER_PAGE) {
-      const slice = list.slice(start, start + ROWS_PER_PAGE);
-      const withRowNo = slice.map((row, idx) => ({
-        ...row,
-        __rowNo: start + idx + 1,
-      }));
-      out.push({ rows: withRowNo, pageIndex: out.length });
+      out.push({
+        rows: list
+          .slice(start, start + ROWS_PER_PAGE)
+          .map((row, idx) => ({ ...row, __rowNo: start + idx + 1 })),
+      });
     }
     return out;
   }, [details]);
 
   const totalPages = pages.length || 1;
 
-  const padRows = (rows, pageIndex) => {
-    const out = Array.isArray(rows) ? [...rows] : [];
-    for (let i = out.length; i < ROWS_PER_PAGE; i++) {
-      out.push({ _empty: true, key: `empty-${pageIndex}-${i}` });
-    }
-    return out;
-  };
-
-  const renderedColumns = useMemo(() => {
-    return (columnDesc || []).map((col) => {
-      const originalRender = col.render;
-      return {
-        ...col,
-        render: (text, record, idx) => {
-          if (record && record._empty) return "";
-          if (col.key === "index" && typeof originalRender === "function") {
-            const rowNo = Number(record?.__rowNo);
-            if (Number.isFinite(rowNo)) {
-              return originalRender(text, record, rowNo - 1);
-            }
-          }
-          return originalRender ? originalRender(text, record, idx) : text;
-        },
-      };
-    });
-  }, [columnDesc]);
-
-  const ContentBody = ({ rows, showSummary, pageIndex }) => {
-    const paddedRows = padRows(rows, pageIndex);
-    return (
-      <div
-        className="dnpv-table-wrap"
-        style={{
-          "--dnpv-empty-row-height": `${ROW_HEIGHT}px`,
-          "--dnpv-row-height": `${ROW_HEIGHT}px`,
-        }}
-      >
-        <Table
-          className="dnpv-table"
-          size="small"
-          dataSource={paddedRows}
-          columns={renderedColumns}
-          pagination={false}
-          rowKey={(rec) => {
-            if (rec?._empty) return rec.key;
-            const base = rec?.id || rec?.rowid || rec?.stcode || "row";
-            const rowNo = rec?.__rowNo ? `-${rec.__rowNo}` : "";
-            return `${base}${rowNo}`;
-          }}
-          bordered={false}
-          locale={{
-            emptyText: <span>No data available, please add some data.</span>,
-          }}
-          onRow={(record) => {
-            return { className: record._empty ? "dnpv-empty-row" : "r-sub" };
-          }}
-          summary={showSummary ? ReceiptSummary : undefined}
-        />
-      </div>
-    );
-  };
-
-  const ContentData = ({ children }) => {
-    return (
-      <div className="dnpv-pages flex flex-col">
-        <div className="print-content">{children}</div>
-      </div>
-    );
-  };
-
-  const PrintablePages = () => {
-    return (
-      /* ต้องมี so-9x11 ที่ตัวนี้ด้วย: react-to-print โคลนเฉพาะ element ที่
-       componentRef ชี้ ตัว #dnpv ที่ถือคลาสนี้อยู่ข้างนอกไม่ถูกโคลนไปด้วย
-       กฎ #dnpv.so-9x11 ... จึงไม่ match อะไรเลยใน iframe ที่ใช้พิมพ์
-       แล้วตกกลับไปใช้ .dnpv-pages ของ delivery.css ซึ่งเป็น A4 */
-    <div ref={componentRef} className="so-9x11">
-        {pages.map((p, idx) => {
-          const isLast = idx === totalPages - 1;
-          return (
-            <React.Fragment key={`page-${idx}`}>
-              <ContentData>
-                <ContentHead />
-                <ContentHead2 />
-                <ContentBody rows={p.rows} showSummary={isLast} pageIndex={idx} />
-              </ContentData>
-              {idx < totalPages - 1 && <div className="page-break" />}
-            </React.Fragment>
-          );
-        })}
-      </div>
-    );
-  };
+  const PrintablePages = () => (
+    <div ref={componentRef}>
+      {pages.map((p, idx) => {
+        const isLast = idx === totalPages - 1;
+        return (
+          <React.Fragment key={`page-${idx}`}>
+            <div className="dnpv-pages flex flex-col">
+              <div className="dnf">
+                <SheetHead pageNo={idx + 1} pageTotal={totalPages} />
+                <div className="dnf-body">
+                  <SheetTable rows={p.rows} />
+                </div>
+                {isLast ? <SheetFoot /> : <div className="dnf-rule" />}
+              </div>
+            </div>
+            {idx < totalPages - 1 && <div className="page-break" />}
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
 
   return (
     <>
-      {/* so-9x11 คือสวิตช์ขนาดกระดาษของฟอร์มนี้ (ดู so.css) */}
-      <div className="page-show so-9x11" id="dnpv">
+      {/* ไม่มีคลาส so-9x11 แล้ว: ใช้กล่องหน้า/ขนาดกระดาษเดียวกับใบส่งสินค้า */}
+      <div className="page-show" id="dnpv">
         {loading && <Spin fullscreen indicator={<LoadingOutlined />} />}
         <div className="title-preview">
           <Button

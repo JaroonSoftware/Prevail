@@ -4,8 +4,8 @@ import { QRCodeSVG } from "qrcode.react";
 /** ขนาดสติกเกอร์ "1 ดวง" (มม.) — แหล่งความจริงที่เดียว
  *  ตอนนี้ 100 x 75 mm แนวนอน 1 ดวงเต็มหน้า
  *  ต้องตรงกับ "ขนาดฉลาก" (สต็อก USER) ในไดรเวอร์เสมอ */
-export const LABEL_W = 100;
-export const LABEL_H = 75;
+export const LABEL_W = 80;
+export const LABEL_H = 50;
 
 /** จำนวนดวงต่อ 1 แถว/หน้ากระดาษ
  *  ม้วนปัจจุบันเป็นดวงเดียวเต็มหน้า = 1 */
@@ -18,7 +18,14 @@ const SAFE_H = 2;
 
 /** ขนาด "ผืนงาน" ที่วาดจริง (มม.) */
 const ART_W = LABEL_W - SAFE_W; // 99
-const ART_H = LABEL_H - SAFE_H; // 73
+const ART_H = LABEL_H - SAFE_H; // 48
+
+/** ขนาดที่ "ออกแบบ" ฟอร์ม (มม.) — ฟอนต์/ระยะทั้งหมดในไฟล์นี้คิดที่ขนาดนี้
+ *  แล้วย่อทั้งผืนด้วย zoom ให้พอดีดวงจริง (สัดส่วนเท่า ART_W:ART_H ไม่บิดเบี้ยว)
+ *  เปลี่ยนขนาดสติกเกอร์ทีหลังแก้แค่ LABEL_W/LABEL_H ไม่ต้องไล่แก้ฟอนต์ */
+const DESIGN_W = 99;
+const DESIGN_H = +(DESIGN_W * ART_H / ART_W).toFixed(2);
+const ZOOM = +(ART_W / DESIGN_W).toFixed(4);
 
 /** ขนาดหน้ากระดาษที่ส่งให้ @page — สลับด้านเมื่อหมุน 90 องศา */
 export const getPageSize = (rotate) =>
@@ -35,12 +42,14 @@ export const PK_LABEL_STYLE = `
     width: ${ART_W}mm;
     height: ${ART_H}mm;
     box-sizing: border-box;
-    /* ตัวชดเชยตำแหน่งพิมพ์ (calibration)
-       ใช้ position:relative เพราะเลื่อนแค่ "ภาพ" ไม่กระทบการคำนวณ
-       ขนาดกล่องกับจุดขึ้นหน้าใหม่ จึงไม่ทำให้ pagination เพี้ยน */
+    /* กล่องดวงอยู่กับที่เสมอ ห้ามเลื่อนตัวกล่อง (ตัวชดเชยไปทำที่ .pk-canvas)
+
+       เดิมเลื่อนกล่องนี้ด้วย position:relative + top ตามค่า "ปรับตำแหน่งพิมพ์"
+       ถ้าตั้งค่าแนวตั้งเป็นบวก ดวงสุดท้ายจะยื่นเลยขอบล่างของหน้า
+       Chrome เลยเพิ่มหน้าว่างต่อท้ายให้ส่วนที่ยื่น -> พิมพ์เกินมา 1 ดวงเปล่า
+       ตอนนี้เลื่อนเฉพาะผืนงานข้างใน แล้ว overflow:hidden ของกล่องนี้ตัดส่วนที่ยื่น
+       ไม่มีอะไรเกินขอบหน้าได้อีก */
     position: relative;
-    left: var(--pk-off-x, 0mm);
-    top: var(--pk-off-y, 0mm);
     margin: 0;
     background: #fff;
     page-break-after: always;
@@ -53,9 +62,14 @@ export const PK_LABEL_STYLE = `
 
   /* ผืนงานจริง — ออกแบบที่ ${ART_W} x ${ART_H} mm เสมอ ไม่ว่าจะหมุนหรือไม่ */
   .pk-canvas {
-    width: ${ART_W}mm;
-    height: ${ART_H}mm;
+    width: ${DESIGN_W}mm;
+    height: ${DESIGN_H}mm;
+    zoom: ${ZOOM};
     box-sizing: border-box;
+    /* ตัวชดเชยตำแหน่งพิมพ์ (calibration) เลื่อนแค่ผืนงานในกล่อง */
+    position: relative;
+    left: var(--pk-off-x, 0mm);
+    top: var(--pk-off-y, 0mm);
     /* เว้นขอบเล็กน้อย ไม่ให้เส้นกรอบไปชนรอยไดคัทจนโดนตัด */
     padding: 0.8mm;
     /* Tahoma มาก่อน: เส้นหนาทึบ อ่านชัดบนหัวพิมพ์ความร้อน และติดมากับ Windows ทุกเครื่อง
@@ -85,10 +99,10 @@ export const PK_LABEL_STYLE = `
   }
   .pk-label.is-rot .pk-canvas {
     position: absolute;
-    top: 0;
-    left: 0;
+    top: var(--pk-off-y, 0mm);
+    left: var(--pk-off-x, 0mm);
     transform-origin: top left;
-    transform: translateX(${ART_H}mm) rotate(90deg);
+    transform: translateX(${DESIGN_H}mm) rotate(90deg);
   }
 
   /* กรอบสี่เหลี่ยมขอบมน ครอบเนื้อหาทั้งดวง */
