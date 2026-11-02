@@ -41,3 +41,9 @@ README.md
 
 # AI อ่านบิล — API key ห้ามขึ้น git
 /api/ai/.env.ai
+
+/api/ai/env.ai
+
+/api/ai/.env.ai.*
+
+/api/ai/env.ai.*

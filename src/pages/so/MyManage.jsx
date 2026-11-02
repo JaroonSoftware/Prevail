@@ -15,6 +15,8 @@ import { Card, Col, Divider, Flex, Row, Space } from "antd";
 
 import OptionService from "../../service/Options.service";
 import SOService from "../../service/SO.service";
+import AiSoImportService from "../../service/AiSoImport.service";
+import { Alert, Select, Tag } from "antd";
 import { PrinterOutlined, SaveFilled, SearchOutlined } from "@ant-design/icons";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
 
@@ -33,6 +35,9 @@ import { LuPackagePlus } from "react-icons/lu";
 
 const opservice = OptionService();
 const soservice = SOService();
+const aiSoService = AiSoImportService();
+/* ใบขายที่สร้างจาก PO ด้วย AI ยังไม่เข้าระบบอื่นจนกว่าจะยืนยัน */
+const STATUS_DRAFT = "รอยืนยัน";
 
 const gotoFrom = "/sales-order";
 const dateFormat = "DD/MM/YYYY";
@@ -119,6 +124,13 @@ function MyManage() {
   const [unitOption, setUnitOption] = useState([]);
   const [stcodeOption, setStcodeOption] = useState([]);
 
+  /** รายการจาก PO ที่ AI จับคู่สินค้าไม่มั่นใจ (เฉพาะใบสถานะ "รอยืนยัน")
+   *  จับคู่/ตัดทิ้งในหน้านี้ก่อน แล้วค่อยแจ้ง server ตอนกดบันทึก (ถ้าออกจากหน้าโดยไม่บันทึก รายการยังอยู่) */
+  const [aiPending, setAiPending] = useState([]);
+  const [aiPick, setAiPick] = useState({});
+  const [aiDone, setAiDone] = useState([]); // [{pending_id, stcode|null}] null = ไม่เอารายการนี้
+  const isDraft = formDetail?.doc_status === STATUS_DRAFT;
+
   const cardStyle = {
     backgroundColor: "#f0f0f0",
     height: "calc(100% - (25.4px + 1rem))",
@@ -143,6 +155,16 @@ function MyManage() {
           deldate: dayjs(deldate),
         });
         getstcodeList(header?.cuscode);
+        if (header?.doc_status === STATUS_DRAFT) {
+          aiSoService
+            .pending(socode)
+            .then((r) => {
+              const rows = r?.data?.data || [];
+              setAiPending(rows);
+              setAiPick(Object.fromEntries(rows.map((p) => [p.pending_id, p.suggest_stcode || undefined])));
+            })
+            .catch(() => message.error("โหลดรายการรอจับคู่จาก PO ไม่สำเร็จ"));
+        }
         // setTimeout( () => {  handleCalculatePrice(head?.valid_price_until, head?.dated_price_until) }, 200);
         // handleChoosedCustomer(head);
       } else {
@@ -281,7 +303,43 @@ function MyManage() {
   //   handleSummaryPrice();
   // };
 
-  const handleConfirm = () => {
+  /* ใช้สินค้าที่เลือกกับรายการจาก PO -> เพิ่มเป็นแถวในตารางใบขาย */
+  const handleUsePending = (p) => {
+    const stcode = aiPick[p.pending_id];
+    const opt = stcodeOption.find((o) => o.stcode === stcode || o.value === stcode);
+    if (!opt) return message.warning("กรุณาเลือกสินค้า (ต้องเป็นสินค้าในแคตตาล็อกของลูกค้ารายนี้)");
+    setListDetail((state) => [
+      ...state.filter((d) => d.stcode), // ตัดแถวว่างที่ยังไม่เลือกสินค้าทิ้ง
+      {
+        _rid: Math.max(0, ...state.map((d) => Number(d._rid) || 0)) + 1,
+        stcode: opt.stcode,
+        stname: opt.label,
+        qty: Number(p.qty) > 0 ? Number(p.qty) : 1,
+        price: Number(opt.price || 0),
+        unit: opt.unit,
+        vat: Number(opt.vat || 0),
+        discount: 0,
+      },
+    ]);
+    setAiPending((s) => s.filter((x) => x.pending_id !== p.pending_id));
+    setAiDone((s) => [...s, { pending_id: p.pending_id, stcode: opt.stcode }]);
+  };
+
+  const handleDropPending = (p) => {
+    setAiPending((s) => s.filter((x) => x.pending_id !== p.pending_id));
+    setAiDone((s) => [...s, { pending_id: p.pending_id, stcode: null }]);
+  };
+
+  /* แจ้ง server ว่ารายการรอจับคู่ไหนจัดการแล้ว (จำชื่อใน PO คู่กับสินค้าไว้ใช้ครั้งหน้า) */
+  const flushAiDone = async () => {
+    for (const d of aiDone) {
+      if (d.stcode) await aiSoService.resolvePending(d.pending_id, d.stcode);
+      else await aiSoService.dropPending(d.pending_id);
+    }
+    setAiDone([]);
+  };
+
+  const handleConfirm = (confirmDraft = false) => {
     let errormessage = "";
 
     form
@@ -292,6 +350,9 @@ function MyManage() {
 
         if (listDetail.some((ld) => !ld.stcode || ld.stcode === ""))
           throw (errormessage = "กรุณาเลือกสินค้าที่ต้องการขายให้ครบถ้วน");
+
+        if (confirmDraft && aiPending.length > 0)
+          throw (errormessage = `ยังมีรายการจาก PO ที่ยังไม่ได้จับคู่ ${aiPending.length} รายการ (เลือกสินค้า หรือกด "ไม่เอา")`);
 
         const header = {
           ...formDetail,
@@ -308,7 +369,11 @@ function MyManage() {
         const actions =
           config?.action !== "create" ? soservice.update : soservice.create;
         actions(parm)
-          .then((r) => {
+          .then(async (r) => {
+            if (isDraft) {
+              await flushAiDone();
+              if (confirmDraft) await aiSoService.confirm(header.socode);
+            }
             if (config?.action === "create") {
               if (rememberCreateSodate) {
                 saveRememberedCreateSodate(header.sodate);
@@ -323,11 +388,11 @@ function MyManage() {
               }
             }
             handleClose().then((r) => {
-              message.success("Request SaleOrder success.");
+              message.success(confirmDraft ? "ยืนยันใบขายสินค้าแล้ว" : "Request SaleOrder success.");
             });
           })
           .catch((err) => {
-            message.error("Request SaleOrder fail.");
+            message.error(err?.response?.data?.message || "Request SaleOrder fail.");
             console.warn(err);
           });
       })
@@ -637,6 +702,55 @@ function MyManage() {
     </>
   );
 
+  const SectionAiPending = isDraft ? (
+    <Card
+      title={
+        <Flex align="center" gap={8}>
+          <span>ใบขายสินค้าจาก PO (AI) — รอยืนยัน</span>
+          {aiPending.length > 0 ? <Tag color="volcano">รอจับคู่ {aiPending.length} รายการ</Tag> : <Tag color="green">จับคู่ครบแล้ว</Tag>}
+        </Flex>
+      }
+      extra={
+        <Button type="primary" style={{ background: "#389e0d" }} disabled={aiPending.length > 0}
+          onClick={() => handleConfirm(true)}>
+          บันทึกและยืนยันใบขายสินค้า
+        </Button>
+      }
+    >
+      <Alert type="warning" showIcon className="!mb-3"
+        message="ตรวจรายการ ราคา จำนวน ให้ถูกต้องก่อนกดยืนยัน — ใบนี้ยังไม่เข้าใบจัดสินค้า/ใบส่งของ/รายงานเตรียมของ จนกว่าจะยืนยัน" />
+      {aiPending.length > 0 && (
+        <Table size="small" rowKey="pending_id" pagination={false} bordered dataSource={aiPending}
+          columns={[
+            { title: "ชื่อใน PO", dataIndex: "raw_name",
+              render: (v, p) => <>{v}{p.confidence === "low" && <Tag color="red" className="!ms-2">อ่านไม่ชัด</Tag>}</> },
+            { title: "จำนวน", dataIndex: "qty", width: 90, align: "right", render: (v) => (v == null ? "-" : comma(Number(v), 2, 3)) },
+            { title: "หน่วยใน PO", dataIndex: "unit", width: 110 },
+            { title: "ราคาใน PO", dataIndex: "price", width: 100, align: "right", render: (v) => (v == null ? "-" : comma(Number(v), 2, 2)) },
+            { title: "สินค้าในระบบ", key: "pick", width: 320,
+              render: (_, p) => (
+                <Select showSearch allowClear style={{ width: "100%" }} placeholder="เลือกสินค้า"
+                  options={stcodeOption} optionFilterProp="label"
+                  value={aiPick[p.pending_id]}
+                  onChange={(v) => setAiPick((s) => ({ ...s, [p.pending_id]: v }))} />
+              ) },
+            { title: "", key: "act", width: 150,
+              render: (_, p) => (
+                <Space size={4}>
+                  <Button size="small" type="primary" onClick={() => handleUsePending(p)}>เพิ่ม</Button>
+                  <Button size="small" danger onClick={() => handleDropPending(p)}>ไม่เอา</Button>
+                </Space>
+              ) },
+          ]}
+        />
+      )}
+      <Typography.Text type="secondary" className="block mt-2">
+        หน่วยใน PO ต่างจากหน่วยในระบบ (เช่น ขีด = 0.1 กก.) ให้แก้จำนวนในตารางรายการด้านล่างหลังกด "เพิ่ม"
+        — ระบบจะจำชื่อใน PO คู่กับสินค้าที่เลือกไว้ ครั้งหน้าจับคู่ให้เอง
+      </Typography.Text>
+    </Card>
+  ) : null;
+
   const SectionOther = (
     <>
       <Space size="small" direction="vertical" className="flex gap-2">
@@ -822,6 +936,11 @@ function MyManage() {
                   </Divider>
                   <Card style={cardStyle}>{SectionOther}</Card>
                 </Col>
+                {isDraft && (
+                  <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+                    {SectionAiPending}
+                  </Col>
+                )}
                 <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
                   <Divider orientation="left" className="!my-0">
                     Product

@@ -108,11 +108,11 @@ export default function SOPrintPreview() {
     <>
       <div className="dnf-head">
         <div className="dnf-co-th">บริษัท พรีเวล อินเตอร์เนชั่นแนล ฟู้ด จำกัด</div>
-        <div>Prevail International Food Co.,Ltd</div>
+        <div className="so-bold">Prevail International Food Co.,Ltd</div>
         <div>60/3 ถ.กระ ต.ตลาดใหญ่ อ.เมือง จ.ภูเก็ต 83000</div>
-        <div>โทร : 098 192 9391</div>
+        <div><span className="so-bold">โทร :</span> 098 192 9391</div>
         <div>
-          เลขประจำตัวผู้เสียภาษี 0835561011645
+          <span className="so-bold">เลขประจำตัวผู้เสียภาษี</span> 0835561011645
           <span className="dnf-tax-branch">สำนักงานใหญ่</span>
         </div>
         <div className="dnf-title">
@@ -123,18 +123,18 @@ export default function SOPrintPreview() {
       <div className="dnf-info">
         <div className="dnf-cus">
           <div>
-            ลูกค้า<span className="dnf-gap">{hData?.cuscode}</span>
+            <span className="so-bold">ลูกค้า</span><span className="dnf-gap">{hData?.cuscode}</span>
           </div>
           <div>
-            {hData?.prename} {hData?.cusname}
+            <span className="so-bold">{hData?.prename}</span> {hData?.cusname}
           </div>
           <div>{hData?.address}</div>
           <div>
-            เลขประจำตัวผู้เสียภาษี
+            <span className="so-bold">เลขประจำตัวผู้เสียภาษี</span>
             {hData?.taxnumber ? <span className="dnf-gap">{hData.taxnumber}</span> : null}
           </div>
           <div>
-            ผู้ติดต่อ<span className="dnf-gap">{hData?.contact || "-"}</span>
+            <span className="so-bold">ผู้ติดต่อ</span><span className="dnf-gap">{hData?.contact || "-"}</span>
           </div>
         </div>
 
@@ -255,7 +255,7 @@ export default function SOPrintPreview() {
         return (
           <React.Fragment key={`page-${idx}`}>
             <div className="dnpv-pages flex flex-col">
-              <div className="dnf">
+              <div className="dnf so-form">
                 <SheetHead pageNo={idx + 1} pageTotal={totalPages} />
                 <div className="dnf-body">
                   <SheetTable rows={p.rows} />

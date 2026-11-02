@@ -188,11 +188,11 @@ export default function DeliveryPrintPreview(props) {
     <>
       <div className="dnf-head">
         <div className="dnf-co-th">บริษัท พรีเวล อินเตอร์เนชั่นแนล ฟู้ด จำกัด</div>
-        <div>Prevail International Food Co.,Ltd</div>
+        <div className="dn-bold">Prevail International Food Co.,Ltd</div>
         <div>60/3 ถ.กระ ต.ตลาดใหญ่ อ.เมือง จ.ภูเก็ต 83000</div>
-        <div>โทร : 098 192 9391</div>
+        <div><span className="dn-bold">โทร :</span> 098 192 9391</div>
         <div>
-          เลขประจำตัวผู้เสียภาษี 0835561011645
+          <span className="dn-bold">เลขประจำตัวผู้เสียภาษี</span> 0835561011645
           <span className="dnf-tax-branch">สำนักงานใหญ่</span>
         </div>
         <div className="dnf-title">ใบส่งสินค้า/ใบแจ้งหนี้</div>
@@ -203,18 +203,18 @@ export default function DeliveryPrintPreview(props) {
           {/* ชื่ออังกฤษอยู่บรรทัดเดียวกับ "ลูกค้า" ตามตัวอย่าง
               ยังไม่ได้กรอกชื่ออังกฤษก็ใช้รหัสลูกค้าแทน */}
           <div>
-            ลูกค้า<span className="dnf-gap">{hData?.cusname_en || hData?.cuscode}</span>
+            <span className="dn-bold">ลูกค้า</span><span className="dnf-gap">{hData?.cusname_en || hData?.cuscode}</span>
           </div>
           <div>
-            {hData?.prename} {hData?.cusname}
+            <span className="dn-bold">{hData?.prename}</span> {hData?.cusname}
           </div>
           <div>{hData?.address}</div>
           <div>
-            เลขประจำตัวผู้เสียภาษี
+            <span className="dn-bold">เลขประจำตัวผู้เสียภาษี</span>
             {hData?.taxnumber ? <span className="dnf-gap">{hData.taxnumber}</span> : null}
           </div>
           <div>
-            Tel.{hData?.tel || ""} Attn: {hData?.contact || ""}
+            <span className="dn-bold">Tel.</span>{hData?.tel || ""} <span className="dn-bold">Attn:</span> {hData?.contact || ""}
           </div>
           <div>
             ขนส่งโดย<span className="dnf-gap">ส่งให้ลูกค้า</span>
@@ -305,6 +305,10 @@ export default function DeliveryPrintPreview(props) {
       <div className="dnf-printed">
         <span className="lb">วันที่พิมพ์</span>
         {`${formatBE(dayjs())} ${dayjs().format("HH:mm:ss")}`}
+        <span className="lb grp">พิมพ์โดย</span>
+        {`${userInfo?.firstname || ""} ${userInfo?.lastname || ""}`.trim()}
+        <span className="lb grp">ผู้บันทึก</span>
+        {hData?.created_name || ""}
       </div>
     </>
   );
@@ -315,7 +319,7 @@ export default function DeliveryPrintPreview(props) {
         {pages.map((p, idx) => (
           <React.Fragment key={`page-${idx}`}>
             <div className="dnpv-pages flex flex-col">
-              <div className="dnf">
+              <div className="dnf dn-form">
                 <SheetHead />
                 <div className="dnf-body">
                   <SheetTable rows={p.rows} />

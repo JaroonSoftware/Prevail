@@ -15,7 +15,7 @@ import { GoodsReceipt, GoodsReceiptAccess, GoodsReceiptManage } from "../pages/g
 
 import { PrintWeight, PrintWeightAccess, PrintWeightManage } from "../pages/print-package";
 
-import { SO, SOAccess, SOManage,SOView } from "../pages/so";
+import { SO, SOAccess, SOManage, SOView, SOAiImport } from "../pages/so";
 
 import { DN, DNAccess, DNManage,DNView } from "../pages/delivery-note";
 
@@ -59,6 +59,8 @@ export const WarehouseRouter = (
       <Route index element={<SOAccess />} />
       <Route path="manage/:action" element={<SOManage />} />
       <Route path="view" element={<SOView />} />
+      {/* PO ลูกค้า -> ร่างใบขายสินค้าด้วย AI */}
+      <Route path="ai-import" element={<SOAiImport />} />
     </Route>
 
     <Route path="/delivery-note/" exact element={<DN />}>

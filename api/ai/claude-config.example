@@ -1,0 +1,10 @@
+# Reference only. Enter the existing PO for SO key locally in .env.ai.
+# Never commit or paste the key into chat. Key expires 2026-12-02.
+ANTHROPIC_API_KEY=
+AI_ENABLED=0
+AI_MOCK=0
+AI_MODEL=claude-sonnet-5-5
+AI_MATCH_MODEL=claude-haiku-5-5
+AI_API_URL=https://api.anthropic.com/v1/messages
+# Model IDs verified in official Anthropic docs.
+# Existing forced tool_choice payload needs compatibility review before real use.

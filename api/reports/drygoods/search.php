@@ -54,7 +54,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
          AND dg.stcode = b.stcode
         LEFT JOIN items_stock e ON b.stcode = e.stcode
         LEFT JOIN drygoods_book f ON a.sodate = f.book_date AND b.stcode = f.stcode
-        WHERE 1 = 1
+        WHERE 1 = 1 and a.doc_status <> 'รอยืนยัน'
           AND i.typecode = '2'
           $socode
           $cuscode

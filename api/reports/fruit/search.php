@@ -30,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
         left join items as i on b.stcode=i.stcode
         left join customer c on a.cuscode = c.cuscode
         left join items_stock e on b.stcode = e.stcode
-        where 1 = 1 and i.typecode='5'
+        where 1 = 1 and a.doc_status <> 'รอยืนยัน' and i.typecode='5'
         $socode
         $cuscode
         $cusname

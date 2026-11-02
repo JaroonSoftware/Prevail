@@ -1,5 +1,5 @@
 # ไฟล์ค่าตั้ง (มี API key) ห้ามเปิดผ่านเว็บ
-<FilesMatch "^\.env">
+<FilesMatch "(?i)^(?:\.env|env\.ai)">
     Require all denied
 </FilesMatch>
 <FilesMatch "\.(md|example|sql)$">

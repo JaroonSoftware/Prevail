@@ -12,6 +12,8 @@ require_once __DIR__ . '/ItemMatcher.php';
 require_once __DIR__ . '/SemanticMatcher.php';
 require_once __DIR__ . '/UsageLog.php';
 require_once __DIR__ . '/MockDoc.php';
+require_once __DIR__ . '/PoReader.php';
+require_once __DIR__ . '/SoDraft.php';
 
 /** ข้อความใน exception นี้แสดงให้ผู้ใช้เห็นได้ตรง ๆ */
 class AiUserException extends RuntimeException
@@ -53,6 +55,18 @@ function ai_require_tables(PDO $conn): void
             $conn->query("SELECT 1 FROM `{$t}` LIMIT 1");
         } catch (PDOException $e) {
             throw new AiUserException("ยังไม่มีตาราง {$t} — กรุณาให้ผู้ดูแลรันไฟล์ api/ai/sql/ai_docscan.sql ก่อนใช้งาน");
+        }
+    }
+}
+
+/** ตารางของฟีเจอร์ PO ลูกค้า -> ใบขายสินค้า (sql/2026-11-02_ai_so_import.sql) */
+function ai_require_so_tables(PDO $conn): void
+{
+    foreach (array('ai_so_import', 'ai_so_pending', 'ai_customer_alias') as $t) {
+        try {
+            $conn->query("SELECT 1 FROM `{$t}` LIMIT 1");
+        } catch (PDOException $e) {
+            throw new AiUserException("ยังไม่มีตาราง {$t} — กรุณาให้ผู้ดูแลรันไฟล์ api/ai/sql/2026-11-02_ai_so_import.sql ก่อนใช้งาน");
         }
     }
 }

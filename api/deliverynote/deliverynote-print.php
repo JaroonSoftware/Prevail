@@ -34,6 +34,7 @@ try {
             c.credit_day,
             co.county_name,
             sm.customer_po,
+            TRIM(CONCAT(IFNULL(u.firstname, ''), ' ', IFNULL(u.lastname, ''))) as created_name,
             dd.code,
             dd.socode,
             dd.stcode,
@@ -53,11 +54,12 @@ try {
         $sql .= " LEFT JOIN sodetail as sd on dd.socode = sd.socode and dd.stcode = sd.stcode ";
         /* ดึงเลข PO ของลูกค้ามาแสดงช่อง "อ้างอิง" ตามฟอร์มตัวอย่าง */
         $sql .= " LEFT JOIN somaster as sm on dd.socode = sm.socode ";
+        $sql .= " LEFT JOIN user as u on dm.created_by = u.code ";
         $sql .= " WHERE dm.dncode = :code ";
         $sql .= " GROUP BY 
             dm.dncode, dm.dndate, dm.total_price, dm.remark, dm.cuscode,
             c.prename, c.cusname, c.idno, c.road, c.subdistrict, c.district, c.province, c.zipcode,
-            c.contact, c.tel, c.fax, c.taxnumber, c.cusname_en, c.credit_day, co.county_name, sm.customer_po,
+            c.contact, c.tel, c.fax, c.taxnumber, c.cusname_en, c.credit_day, co.county_name, sm.customer_po, u.firstname, u.lastname,
             dd.code, dd.socode, dd.stcode, i.stname, sd.qty, dd.price, sd.unit ";
         $sql .= " ORDER BY dd.socode, i.seq, dd.stcode ";
 
@@ -93,6 +95,7 @@ try {
                 "payment" => null,
                 "county_name" => $first["county_name"],
                 "total_price" => $first["total_price"],
+                "created_name" => $first["created_name"],
             );
 
             foreach ($rows as $row) {

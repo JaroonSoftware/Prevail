@@ -23,9 +23,10 @@ const ART_H = LABEL_H - SAFE_H; // 48
 /** ขนาดที่ "ออกแบบ" ฟอร์ม (มม.) — ฟอนต์/ระยะทั้งหมดในไฟล์นี้คิดที่ขนาดนี้
  *  แล้วย่อทั้งผืนด้วย zoom ให้พอดีดวงจริง (สัดส่วนเท่า ART_W:ART_H ไม่บิดเบี้ยว)
  *  เปลี่ยนขนาดสติกเกอร์ทีหลังแก้แค่ LABEL_W/LABEL_H ไม่ต้องไล่แก้ฟอนต์ */
-const DESIGN_W = 99;
-const DESIGN_H = +(DESIGN_W * ART_H / ART_W).toFixed(2);
-const ZOOM = +(ART_W / DESIGN_W).toFixed(4);
+// ยึดความสูงเดิม 73 มม. (เนื้อหาออกแบบให้พอดีความสูงนี้ ถ้าเตี้ยกว่านี้ขอบล่างจะล้นตก)
+const DESIGN_H = 73;
+const DESIGN_W = +(DESIGN_H * ART_W / ART_H).toFixed(2);
+const ZOOM = +(ART_H / DESIGN_H).toFixed(4);
 
 /** ขนาดหน้ากระดาษที่ส่งให้ @page — สลับด้านเมื่อหมุน 90 องศา */
 export const getPageSize = (rotate) =>
