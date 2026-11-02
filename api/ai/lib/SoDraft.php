@@ -1,20 +1,30 @@
 <?php
 /* ============================================================================
-   สร้าง "ร่างใบขายสินค้า" (somaster.doc_status = 'รอยืนยัน') จาก PO ที่ AI อ่านแล้ว
+   สร้าง "ร่างใบขายสินค้า" (somaster.doc_status = 'รอยืนยันใบขายสินค้า') จาก PO ที่ AI อ่านแล้ว
 
    - 1 order ใน PO (เลขที่ PO + ครัว/จุดส่ง + วันส่ง) = ใบขายสินค้า 1 ใบ
    - รายการที่จับคู่สินค้าได้มั่นใจ + หน่วยตรงกัน -> ลง sodetail เลย
      ราคา: ราคาในแคตตาล็อกของลูกค้า > ราคาที่พิมพ์ใน PO > 0
    - รายการที่ไม่มั่นใจ / หน่วยไม่ตรง (เช่น ขีด, Pack 800 G) / ไม่มีจำนวน
      -> ai_so_pending ให้ผู้ใช้จับคู่เองในหน้าใบขายสินค้า
-   - ใบขายสินค้าสถานะ "รอยืนยัน" ไม่โผล่ในใบจัดสินค้า/ใบส่งของ/รายงานเตรียมของ
+   - ใบขายสินค้าสถานะ "รอยืนยันใบขายสินค้า" ไม่โผล่ในใบจัดสินค้า/ใบส่งของ/รายงานเตรียมของ
      จนกว่าผู้ใช้กดยืนยัน (api/ai/so-confirm.php)
    ============================================================================ */
 
 final class SoDraft
 {
-    public const STATUS_DRAFT = 'รอยืนยัน';
+    public const STATUS_DRAFT = 'รอยืนยันใบขายสินค้า';
     public const STATUS_READY = 'รอออกใบส่งของ';
+
+    public static function requireDraftStatus(PDO $conn): void
+    {
+        $column = $conn->query("SHOW COLUMNS FROM somaster LIKE 'doc_status'")->fetch(PDO::FETCH_ASSOC);
+        if (!$column) throw new AiUserException('ไม่พบคอลัมน์ somaster.doc_status กรุณาตรวจโครงสร้างฐานข้อมูล');
+        $type = (string)$column['Type'];
+        if (stripos($type, 'enum(') === 0 && strpos($type, "'" . self::STATUS_DRAFT . "'") === false) {
+            throw new AiUserException('somaster.doc_status ยังไม่รองรับสถานะรอยืนยัน กรุณาปรับโครงสร้างด้วยไฟล์ SQL ที่ตรวจแล้วก่อนนำเข้า');
+        }
+    }
 
     /** คีย์ที่ใช้เก็บชื่อที่เคยจับคู่ใน ai_item_alias (ตารางเดียวกับฝั่งผู้ขาย แยกด้วย prefix) */
     public static function aliasKey(string $cuscode): string
@@ -117,6 +127,8 @@ final class SoDraft
     public static function create(PDO $conn, ItemMatcher $matcher, UsageLog $log, array $doc, string $cuscode,
                                   int $importId, ?string $user, bool $mock, string $fileName): array
     {
+        // Reject incompatible schema before an ENUM silently stores an empty status.
+        self::requireDraftStatus($conn);
         $catalog = self::catalogPrices($conn, $cuscode);
         $items = array();
         foreach ($matcher->catalog() as $it) $items[$it['stcode']] = $it;
@@ -132,7 +144,9 @@ final class SoDraft
         }
         $matched = ai_match_lines($conn, $matcher, $log, self::aliasKey($cuscode), array('lines' => $flat), null, $mock);
         $byOrder = array();
-        foreach ($matched['lines'] as $k => $m) {
+        // Keep every source row even if matching returns no result.
+        foreach ($flat as $k => $line) {
+            $m = $matched['lines'][$k] ?? array('doc' => $line, 'match' => array('code' => null, 'level' => 'low', 'candidates' => array()));
             list($oi, $li) = $owner[$k];
             $byOrder[$oi][$li] = self::decide($m, $catalog, $items);
         }
@@ -170,6 +184,11 @@ final class SoDraft
                 'remark' => mb_substr($remark, 0, 250, 'UTF-8'),
                 'status' => self::STATUS_DRAFT, 'now' => $now, 'user' => $user,
             ));
+            $savedStatus = $conn->prepare("SELECT doc_status FROM somaster WHERE socode = :s");
+            $savedStatus->execute(array('s' => $socode));
+            if ($savedStatus->fetchColumn() !== self::STATUS_DRAFT) {
+                throw new AiUserException('บันทึกสถานะรอยืนยันไม่สำเร็จ ระบบยกเลิกการนำเข้าครั้งนี้ กรุณาตรวจโครงสร้าง doc_status');
+            }
             update_socode($conn);
 
             $nAuto = 0;

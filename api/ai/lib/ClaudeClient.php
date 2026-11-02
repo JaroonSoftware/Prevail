@@ -34,6 +34,7 @@ final class ClaudeClient
      */
     public function messages(array $payload): array
     {
+        $payload = self::preparePayload($payload);
         $attempt = 0;
         while (true) {
             $attempt++;
@@ -69,15 +70,42 @@ final class ClaudeClient
     /** หยิบ input ของ tool ที่บังคับให้ตอบ (ผลลัพธ์แบบมีโครงสร้าง) */
     public static function toolInput(array $body, string $toolName): array
     {
+        if (($body['stop_reason'] ?? '') === 'max_tokens') {
+            throw new AiUserException('AI ส่งผลลัพธ์ไม่ครบ กรุณาแบ่งเอกสารแล้วนำเข้าใหม่');
+        }
+
         foreach ($body['content'] ?? array() as $block) {
             if (($block['type'] ?? '') === 'tool_use' && ($block['name'] ?? '') === $toolName) {
-                return is_array($block['input'] ?? null) ? $block['input'] : array();
+                if (!is_array($block['input'] ?? null) || !$block['input']) {
+                    throw new AiUserException('AI ไม่ได้ส่งข้อมูลรายการที่สมบูรณ์ กรุณาลองใหม่');
+                }
+                return $block['input'];
             }
         }
         if (($body['stop_reason'] ?? '') === 'max_tokens') {
             throw new AiUserException('เอกสารยาวเกินไป AI ตอบไม่จบ ลองถ่ายทีละหน้า');
         }
         throw new RuntimeException('Claude ไม่ได้ส่งผลลัพธ์ในรูปแบบที่กำหนด');
+    }
+
+    /** Use portable automatic tool selection; newer models reject forced tools and sampling controls. */
+    public static function preparePayload(array $payload): array
+    {
+        unset($payload['temperature'], $payload['top_p'], $payload['top_k']);
+        $choice = $payload['tool_choice']['type'] ?? null;
+        if ($choice === 'tool' || $choice === 'any') {
+            $name = $payload['tool_choice']['name'] ?? null;
+            $payload['tool_choice'] = array('type' => 'auto');
+            $instruction = $name !== null
+                ? 'Return the complete result by calling the ' . $name . ' tool exactly once. Do not substitute a prose answer. Include every source product row.'
+                : 'Return the complete result using the supplied tools, not a prose answer.';
+            if (is_array($payload['system'] ?? null)) {
+                $payload['system'][] = array('type' => 'text', 'text' => $instruction);
+            } else {
+                $payload['system'] = ($payload['system'] ?? '') . "\n" . $instruction;
+            }
+        }
+        return $payload;
     }
 
     private function send(array $payload): array

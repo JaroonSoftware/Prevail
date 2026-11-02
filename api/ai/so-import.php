@@ -23,8 +23,11 @@ $log = null;
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new AiUserException('request method fail.');
     ai_require_enabled();
+    // Never turn an uploaded customer PO into randomly generated demo orders.
+    if (ai_flag('AI_MOCK')) throw new AiUserException('ระบบอยู่ในโหมดทดสอบ (AI_MOCK=1) จึงยังไม่ได้อ่าน PO จริง กรุณาตั้งค่าการเชื่อมต่อ AI จริงก่อนนำเข้า');
     ai_require_tables($conn);
     ai_require_so_tables($conn);
+    SoDraft::requireDraftStatus($conn);
 
     $userId = ai_user_id();
     $log = new UsageLog($conn, $userId);
@@ -45,6 +48,7 @@ try {
         $st->execute(array('id' => $importId));
         $imp = $st->fetch(PDO::FETCH_ASSOC);
         if (!$imp) throw new AiUserException('ไม่พบไฟล์ที่อ่านไว้ กรุณาอัปโหลดใหม่');
+        if (($imp['model'] ?? '') === 'mock') throw new AiUserException('รายการนี้เป็นข้อมูลจำลอง กรุณานำเข้า PO ใหม่ด้วย AI จริง');
         if ($imp['status'] === 'done') throw new AiUserException('ไฟล์นี้สร้างใบขายสินค้าไปแล้ว: ' . $imp['socodes']);
         $doc = json_decode((string)$imp['extracted_json'], true);
         if (!is_array($doc) || empty($doc['orders'])) throw new AiUserException('ผลการอ่านไฟล์นี้ไม่มีรายการสั่งซื้อ');

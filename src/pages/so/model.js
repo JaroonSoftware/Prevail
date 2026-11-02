@@ -110,8 +110,8 @@ export const accessColumn = ({handleEdit, handleView, handlePrintsData, handleCr
             />
         </Badge>
         {/* ซ่อนปุ่มแก้ไข เมื่อออกใบส่งของแล้ว */}
-        {/* "รอยืนยัน" = ร่างจาก PO ด้วย AI ต้องเข้าไปตรวจ/จับคู่สินค้า/กดยืนยันในหน้าแก้ไข */}
-        {(record?.doc_status === "รอออกใบส่งของ" || record?.doc_status === "รอยืนยัน") && (
+        {/* "รอยืนยันใบขายสินค้า" = ร่างจาก PO ด้วย AI ต้องเข้าไปตรวจ/จับคู่สินค้า/กดยืนยันในหน้าแก้ไข */}
+        {(record?.doc_status === "รอออกใบส่งของ" || record?.doc_status === "รอยืนยันใบขายสินค้า") && (
           <Button
             icon={<EditOutlined />}
             className='bn-primary-outline'

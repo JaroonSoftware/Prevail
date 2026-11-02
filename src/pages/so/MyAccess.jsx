@@ -87,7 +87,7 @@ const MyAccess = () => {
                         allowClear
                         style={{ width: '100%', height: 40 }}
                         options={[
-                            { value: 'รอยืนยัน',               label: 'รอยืนยัน (สร้างจาก PO ด้วย AI)' },
+                            { value: 'รอยืนยันใบขายสินค้า',               label: 'รอยืนยันใบขายสินค้า (สร้างจาก PO ด้วย AI)' },
                             { value: 'รอจัดเตรียมสินค้า',      label: 'รอจัดเตรียมสินค้า' },
                             { value: 'รอออกใบส่งของ',           label: 'รอออกใบส่งของ' },
                             { value: 'รอออกใบวางบิล',           label: 'รอออกใบวางบิล' },
@@ -360,7 +360,7 @@ const MyAccess = () => {
                       size='small'
                       className='bn-action bn-center bn-primary-outline justify-center'
                       icon={<FileAddOutlined  style={{fontSize:'.9rem'}} />}
-                      disabled onClick={() => navigate("ai-import")} >
+                      onClick={() => navigate("ai-import")} >
                           สร้างจาก PO ลูกค้า (AI)
                       </Button>
                       <Button  

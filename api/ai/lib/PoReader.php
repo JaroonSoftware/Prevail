@@ -50,6 +50,7 @@ final class PoReader
         );
 
         $call = $this->client->messages($payload);
+        if (($call['body']['stop_reason'] ?? '') === 'max_tokens') throw new AiUserException('AI อ่านเอกสารไม่ครบ กรุณาแบ่งไฟล์แล้วนำเข้าใหม่');
         $raw = ClaudeClient::toolInput($call['body'], self::TOOL);
         return array('document' => self::normalize($raw), 'call' => $call);
     }
@@ -66,8 +67,9 @@ Rules:
   Output one entry in orders[] for EACH distinct combination of (order number, delivery location/kitchen, delivery date). Pages that continue the same order belong to the same entry.
 - po_no: the order's own number (PO Number / Request No. / PR No. / เลขที่). If several numbers are printed, prefer the PO number, else the PR/Request number.
 - order_date: the date the order was made. delivery_date: requested delivery date (Delivery Date / วันที่ส่ง / "เข้า 02/11"). Dates as YYYY-MM-DD; convert Thai Buddhist years (2569 or 69 -> 2026). Thai digits count as 0-9.
+- Read the value under DEPARTMENT / Department / Kitchen / Outlet as the kitchen location, including its numeric suffix (for example, DEPARTMENT: Sunset Kitchen 250 becomes location "Sunset Kitchen 250"). Never invent a test kitchen or substitute a demonstration value.
 - location: the kitchen / outlet / delivery location / department name as printed (e.g. "201 OCEAN VIEW - Kitchen", "ครัวพนักงาน", "5700 - Kitchen Canteen"). null if none.
-- lines: one per product row. Skip subtotal, tax, delivery charge, signature and note rows.
+- lines: include EVERY product row, even if its item code is blank (code=null). Row numbers are not item codes. Keep wrapped descriptions in one row, but never merge distinct product rows. Include fractional quantities. Count all rows visually and check the output count. Skip only subtotal, tax, delivery charge, signature and note rows.
   - name: product description exactly as printed, keeping BOTH Thai and English if both appear (e.g. "Veg Kale คะน้า"). For handwritten Thai, write your best reading.
   - code: the customer's item code if printed (it can be Thai text in a "Code" column), else null.
   - qty: ordered quantity as a number. unit: as printed (Kilogram, kg, กก., ขีด, Pack 800 G, Each, PCS, ลูก ...). If the unit is ขีด keep "ขีด" (do not convert).
@@ -150,7 +152,7 @@ TXT;
             foreach (($o['lines'] ?? array()) as $l) {
                 if (!is_array($l)) continue;
                 $name = AiText::str($l['name'] ?? null);
-                if ($name === null) continue;
+                if ($name === null) throw new AiUserException('อ่านชื่อสินค้าไม่ครบ กรุณาตรวจเอกสารแล้วนำเข้าใหม่');
                 $conf = $l['confidence'] ?? 'medium';
                 $lines[] = array(
                     'name' => $name,

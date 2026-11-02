@@ -152,6 +152,14 @@ try {
     } else if ($_SERVER["REQUEST_METHOD"] == "DELETE") {
         // $code = $_DELETE["code"];
         $socode = $_GET["code"];
+        $check = $conn->prepare("SELECT active_status, doc_status FROM somaster WHERE socode = :s FOR UPDATE");
+        $check->execute(['s' => $socode]);
+        $current = $check->fetch(PDO::FETCH_ASSOC);
+        if (!$current || $current['active_status'] !== 'Y' || !in_array($current['doc_status'], ['รอยืนยันใบขายสินค้า', 'รอออกใบส่งของ'], true)) throw new PDOException('ไม่สามารถยกเลิกใบขายในสถานะปัจจุบันได้');
+        $linked = $conn->prepare("SELECT COUNT(*) FROM dnmaster WHERE dncode = :s AND COALESCE(doc_status, '') <> 'ยกเลิก'");
+        $linked->execute(['s' => $socode]);
+        if ((int)$linked->fetchColumn() > 0) throw new PDOException('มีใบส่งสินค้าที่ใช้งานอยู่ กรุณาตรวจเอกสารที่เกี่ยวข้องก่อนยกเลิก');
+
 
         $sql = "update somaster set active_status = 'N',doc_status = 'ยกเลิก' where socode = :socode";
         $stmt = $conn->prepare($sql);

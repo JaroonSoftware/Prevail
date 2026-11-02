@@ -34,12 +34,19 @@ try {
         $stcode = AiText::str($body['stcode'] ?? null, 50);
         if ($id <= 0 || $stcode === null) throw new AiUserException('ต้องระบุ pending_id และ stcode');
 
-        $st = $conn->prepare("SELECT p.*, m.cuscode FROM ai_so_pending p JOIN somaster m ON m.socode = p.socode WHERE p.pending_id = :id");
+        $st = $conn->prepare("SELECT p.*, m.cuscode, m.doc_status FROM ai_so_pending p JOIN somaster m ON m.socode = p.socode WHERE p.pending_id = :id");
         $st->execute(array('id' => $id));
         $p = $st->fetch(PDO::FETCH_ASSOC);
         if (!$p) throw new AiUserException('รายการนี้ถูกจัดการไปแล้ว');
 
         $conn->beginTransaction();
+        $lock = $conn->prepare("SELECT doc_status FROM somaster WHERE socode = :s FOR UPDATE");
+        $lock->execute(array('s' => $p['socode']));
+        if ($lock->fetchColumn() !== SoDraft::STATUS_DRAFT) throw new AiUserException('ใบขายนี้ไม่ได้อยู่ในสถานะรอยืนยันใบขาย');
+        $valid = $conn->prepare("SELECT COUNT(*) FROM sodetail d JOIN items i ON i.stcode = d.stcode
+                                WHERE d.socode = :s AND d.stcode = :c AND i.active_status = 'Y'");
+        $valid->execute(array('s' => $p['socode'], 'c' => $stcode));
+        if ((int)$valid->fetchColumn() < 1) throw new AiUserException('กรุณาบันทึกรหัสสินค้าที่จับคู่ลงในใบขายก่อน');
         $norm = AiText::norm($p['raw_name']);
         if ($norm !== '' && $p['cuscode']) {
             $ins = $conn->prepare("
@@ -56,10 +63,7 @@ try {
         $conn->commit();
         ai_json(array('status' => 1));
     } elseif ($method === 'DELETE') {
-        $id = (int)($_GET['pending_id'] ?? 0);
-        if ($id <= 0) throw new AiUserException('ต้องระบุ pending_id');
-        $conn->prepare("DELETE FROM ai_so_pending WHERE pending_id = :id")->execute(array('id' => $id));
-        ai_json(array('status' => 1));
+        throw new AiUserException('ไม่สามารถข้ามรายการรอจับคู่ได้ กรุณาจับคู่รหัสสินค้าก่อนยืนยันใบขาย');
     } else {
         throw new AiUserException('request method fail.');
     }

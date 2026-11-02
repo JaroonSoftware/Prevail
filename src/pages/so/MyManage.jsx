@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Button,
   Checkbox,
@@ -37,7 +37,7 @@ const opservice = OptionService();
 const soservice = SOService();
 const aiSoService = AiSoImportService();
 /* ใบขายที่สร้างจาก PO ด้วย AI ยังไม่เข้าระบบอื่นจนกว่าจะยืนยัน */
-const STATUS_DRAFT = "รอยืนยัน";
+const STATUS_DRAFT = "รอยืนยันใบขายสินค้า";
 
 const gotoFrom = "/sales-order";
 const dateFormat = "DD/MM/YYYY";
@@ -123,8 +123,11 @@ function MyManage() {
 
   const [unitOption, setUnitOption] = useState([]);
   const [stcodeOption, setStcodeOption] = useState([]);
+  const [aiItemOptions, setAiItemOptions] = useState([]);
+  const [aiItemsLoading, setAiItemsLoading] = useState(false);
+  const itemRequest = useRef(0);
 
-  /** รายการจาก PO ที่ AI จับคู่สินค้าไม่มั่นใจ (เฉพาะใบสถานะ "รอยืนยัน")
+  /** รายการจาก PO ที่ AI จับคู่สินค้าไม่มั่นใจ (เฉพาะใบสถานะ "รอยืนยันใบขายสินค้า")
    *  จับคู่/ตัดทิ้งในหน้านี้ก่อน แล้วค่อยแจ้ง server ตอนกดบันทึก (ถ้าออกจากหน้าโดยไม่บันทึก รายการยังอยู่) */
   const [aiPending, setAiPending] = useState([]);
   const [aiPick, setAiPick] = useState({});
@@ -224,10 +227,26 @@ function MyManage() {
   }, [listDetail]);
 
   const getstcodeList = async (cuscode = "") => {
-    const [stcodeOptionRes] = await Promise.all([
-      opservice.optionsItems({ p: "cl", cuscode: cuscode }),
+    const request = ++itemRequest.current;
+    setAiItemsLoading(true);
+    setAiItemOptions([]);
+    const [catalogResult, itemsResult] = await Promise.allSettled([
+      opservice.optionsItems({ p: "cl", cuscode }),
+      opservice.optionsItems({ p: "items" }),
     ]);
-    setStcodeOption(stcodeOptionRes.data.data); // TO DO get stcode option
+    if (request !== itemRequest.current) return;
+    const catalog = catalogResult.status === "fulfilled" ? (catalogResult.value?.data?.data || []) : [];
+    setStcodeOption(catalog);
+    if (catalogResult.status === "rejected") message.error("โหลดราคาจากแค็ตตาล็อกลูกค้าไม่สำเร็จ กรุณาตรวจราคาก่อนบันทึก");
+    if (itemsResult.status === "fulfilled") {
+      const prices = new Map(catalog.map((i) => [String(i.stcode), i]));
+      setAiItemOptions((itemsResult.value?.data?.data || []).map((i) => {
+        const price = prices.get(String(i.stcode));
+        return { ...i, value: i.stcode, label: i.stcode + " - " + i.stname,
+          price: price ? price.price : null, unit: price?.unit || i.unit, vat: price?.vat ?? i.vat };
+      }));
+    } else message.error("โหลดสินค้าในระบบไม่สำเร็จ กรุณาเปิดหน้านี้ใหม่");
+    setAiItemsLoading(false);
   };
 
   const handleSummaryPrice = () => {
@@ -306,16 +325,16 @@ function MyManage() {
   /* ใช้สินค้าที่เลือกกับรายการจาก PO -> เพิ่มเป็นแถวในตารางใบขาย */
   const handleUsePending = (p) => {
     const stcode = aiPick[p.pending_id];
-    const opt = stcodeOption.find((o) => o.stcode === stcode || o.value === stcode);
+    const opt = aiItemOptions.find((o) => o.stcode === stcode || o.value === stcode);
     if (!opt) return message.warning("กรุณาเลือกสินค้า (ต้องเป็นสินค้าในแคตตาล็อกของลูกค้ารายนี้)");
     setListDetail((state) => [
       ...state.filter((d) => d.stcode), // ตัดแถวว่างที่ยังไม่เลือกสินค้าทิ้ง
       {
         _rid: Math.max(0, ...state.map((d) => Number(d._rid) || 0)) + 1,
         stcode: opt.stcode,
-        stname: opt.label,
+        stname: opt.stname || opt.label,
         qty: Number(p.qty) > 0 ? Number(p.qty) : 1,
-        price: Number(opt.price || 0),
+        price: Number(opt.price ?? p.price ?? 0),
         unit: opt.unit,
         vat: Number(opt.vat || 0),
         discount: 0,
@@ -325,16 +344,12 @@ function MyManage() {
     setAiDone((s) => [...s, { pending_id: p.pending_id, stcode: opt.stcode }]);
   };
 
-  const handleDropPending = (p) => {
-    setAiPending((s) => s.filter((x) => x.pending_id !== p.pending_id));
-    setAiDone((s) => [...s, { pending_id: p.pending_id, stcode: null }]);
-  };
 
   /* แจ้ง server ว่ารายการรอจับคู่ไหนจัดการแล้ว (จำชื่อใน PO คู่กับสินค้าไว้ใช้ครั้งหน้า) */
   const flushAiDone = async () => {
     for (const d of aiDone) {
       if (d.stcode) await aiSoService.resolvePending(d.pending_id, d.stcode);
-      else await aiSoService.dropPending(d.pending_id);
+      else throw new Error("ต้องจับคู่รหัสสินค้าก่อนบันทึก");
     }
     setAiDone([]);
   };
@@ -345,10 +360,10 @@ function MyManage() {
     form
       .validateFields()
       .then((v) => {
-        if (listDetail.length < 1)
+        if (listDetail.length < 1 && !(isDraft && !confirmDraft && aiPending.length > 0))
           throw (errormessage = "กรุณาเพิ่มรายการสินค้า");
 
-        if (listDetail.some((ld) => !ld.stcode || ld.stcode === ""))
+        if (listDetail.some((ld) => !String(ld.stcode || "").trim()))
           throw (errormessage = "กรุณาเลือกสินค้าที่ต้องการขายให้ครบถ้วน");
 
         if (confirmDraft && aiPending.length > 0)
@@ -711,7 +726,7 @@ function MyManage() {
         </Flex>
       }
       extra={
-        <Button type="primary" style={{ background: "#389e0d" }} disabled={aiPending.length > 0}
+        <Button type="primary" style={{ background: "#389e0d" }} disabled={aiPending.length > 0 || listDetail.length === 0 || listDetail.some((d) => !String(d.stcode || "").trim())}
           onClick={() => handleConfirm(true)}>
           บันทึกและยืนยันใบขายสินค้า
         </Button>
@@ -722,15 +737,15 @@ function MyManage() {
       {aiPending.length > 0 && (
         <Table size="small" rowKey="pending_id" pagination={false} bordered dataSource={aiPending}
           columns={[
-            { title: "ชื่อใน PO", dataIndex: "raw_name",
+            { title: "ข้อความจาก PO (รอจับคู่สินค้า)", dataIndex: "raw_name",
               render: (v, p) => <>{v}{p.confidence === "low" && <Tag color="red" className="!ms-2">อ่านไม่ชัด</Tag>}</> },
-            { title: "จำนวน", dataIndex: "qty", width: 90, align: "right", render: (v) => (v == null ? "-" : comma(Number(v), 2, 3)) },
+            { title: "จำนวน", dataIndex: "qty", width: 90, align: "right", render: (v) => (v == null ? "-" : comma(Number(v), 3, 2)) },
             { title: "หน่วยใน PO", dataIndex: "unit", width: 110 },
             { title: "ราคาใน PO", dataIndex: "price", width: 100, align: "right", render: (v) => (v == null ? "-" : comma(Number(v), 2, 2)) },
             { title: "สินค้าในระบบ", key: "pick", width: 320,
               render: (_, p) => (
                 <Select showSearch allowClear style={{ width: "100%" }} placeholder="เลือกสินค้า"
-                  options={stcodeOption} optionFilterProp="label"
+                  options={aiItemOptions} loading={aiItemsLoading} disabled={aiItemsLoading} optionFilterProp="label"
                   value={aiPick[p.pending_id]}
                   onChange={(v) => setAiPick((s) => ({ ...s, [p.pending_id]: v }))} />
               ) },
@@ -738,7 +753,6 @@ function MyManage() {
               render: (_, p) => (
                 <Space size={4}>
                   <Button size="small" type="primary" onClick={() => handleUsePending(p)}>เพิ่ม</Button>
-                  <Button size="small" danger onClick={() => handleDropPending(p)}>ไม่เอา</Button>
                 </Space>
               ) },
           ]}

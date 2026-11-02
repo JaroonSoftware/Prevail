@@ -39,19 +39,29 @@ function AiSoImport() {
 
   /* อ่านทีละไฟล์ตามลำดับ (กันเรียก AI พร้อมกันหลายไฟล์จนโดนจำกัดความถี่) */
   const queue = React.useRef(Promise.resolve());
+  const started = React.useRef(new Set());
   const handleFile = (file) => {
-    const uid = file.uid;
-    setJobs((s) => [{ uid, name: file.name, state: "reading" }, ...s]);
+    setJobs((s) => [{ uid: file.uid, name: file.name, file, state: "pending" }, ...s]);
+    return false; // Keep the file locally until the user confirms the paid request.
+  };
+  const handleRemoveFile = (job) => {
+    if (started.current.has(job.uid)) return;
+    setJobs((s) => s.filter((j) => j.uid !== job.uid));
+  };
+  const handleStartFile = (job) => {
+    if (job.state !== "pending" || started.current.has(job.uid)) return;
+    started.current.add(job.uid);
+    patchJob(job.uid, { state: "queued" });
     queue.current = queue.current.then(async () => {
+      patchJob(job.uid, { state: "reading" });
       try {
-        const res = await aiService.importFile(file);
+        const res = await aiService.importFile(job.file);
         const data = res?.data?.data;
-        patchJob(uid, { state: data?.need_customer ? "need_customer" : "done", data });
+        patchJob(job.uid, { state: data?.need_customer ? "need_customer" : "done", data, file: null });
       } catch (err) {
-        patchJob(uid, { state: "error", error: err?.response?.data?.message || err?.message || "อ่านไฟล์ไม่สำเร็จ" });
+        patchJob(job.uid, { state: "error", file: null, error: err?.response?.data?.message || err?.message || "ประมวลผลไม่สำเร็จ" });
       }
     });
-    return false; // ไม่ให้ antd อัปโหลดเอง
   };
 
   const handlePickCustomer = async (job, cuscode) => {
@@ -110,6 +120,8 @@ function AiSoImport() {
           }
         />
 
+        <Alert type="warning" showIcon message="การประมวลผลด้วย AI มีค่าใช้จ่าย"
+          description="ค่าใช้จ่ายขึ้นอยู่กับขนาดเอกสารและปริมาณการประมวลผล เมื่อวางไฟล์ ระบบจะยังไม่ส่งไฟล์ไปประมวลผล กรุณาตรวจรายการแล้วกดยืนยันประมวลผล หรือกดลบทิ้ง การประมวลผลซ้ำอาจมีค่าใช้จ่ายเพิ่ม" />
         <Upload.Dragger multiple accept=".pdf,image/*" showUploadList={false} beforeUpload={handleFile}>
           <p className="ant-upload-drag-icon"><InboxOutlined /></p>
           <p className="ant-upload-text">คลิกหรือลากไฟล์ PO มาวางที่นี่ (เลือกได้หลายไฟล์)</p>
@@ -119,11 +131,20 @@ function AiSoImport() {
         {jobs.map((job) => (
           <Card key={job.uid} size="small" title={job.name}
             extra={
-              job.state === "reading" ? <Tag icon={<LoadingOutlined />} color="processing">AI กำลังอ่าน...</Tag>
+              job.state === "pending" ? <Tag color="gold">รอยืนยันประมวลผล</Tag>
+              : job.state === "queued" ? <Tag color="blue">รอคิว</Tag>
+              : job.state === "reading" ? <Tag icon={<LoadingOutlined />} color="processing">AI กำลังอ่าน...</Tag>
               : job.state === "done" ? <Tag color="green">สร้างแล้ว</Tag>
               : job.state === "need_customer" ? <Tag color="orange">เลือกลูกค้า</Tag>
               : <Tag color="red">ไม่สำเร็จ</Tag>
             }>
+            {job.state === "pending" && (
+              <Space wrap>
+                <Typography.Text>ยังไม่ได้ประมวลผลไฟล์นี้</Typography.Text>
+                <Button type="primary" onClick={() => handleStartFile(job)}>ยืนยันประมวลผล (มีค่าใช้จ่าย)</Button>
+                <Button danger onClick={() => handleRemoveFile(job)}>ลบทิ้ง</Button>
+              </Space>
+            )}
             {job.state === "error" && <Alert type="error" showIcon message={job.error} />}
 
             {job.state === "need_customer" && (

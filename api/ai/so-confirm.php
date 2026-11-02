@@ -22,7 +22,8 @@ try {
     $socode = AiText::str($body['socode'] ?? null, 50);
     if ($socode === null) throw new AiUserException('ต้องระบุ socode');
 
-    $st = $conn->prepare("SELECT doc_status FROM somaster WHERE socode = :s");
+    $conn->beginTransaction();
+    $st = $conn->prepare("SELECT doc_status FROM somaster WHERE socode = :s FOR UPDATE");
     $st->execute(array('s' => $socode));
     $status = $st->fetchColumn();
     if ($status === false) throw new AiUserException("ไม่พบใบขายสินค้า $socode");
@@ -37,16 +38,26 @@ try {
     $st->execute(array('s' => $socode));
     if ((int)$st->fetchColumn() < 1) throw new AiUserException('ใบขายสินค้านี้ยังไม่มีรายการสินค้า');
 
+    // A nonempty code must refer to an active product, even for direct API calls.
+    $st = $conn->prepare("SELECT COUNT(*) FROM sodetail d LEFT JOIN items i ON i.stcode = d.stcode
+                         WHERE d.socode = :s AND (NULLIF(TRIM(d.stcode), '') IS NULL OR i.stcode IS NULL OR COALESCE(i.active_status, '') <> 'Y')");
+    $st->execute(array('s' => $socode));
+    if ((int)$st->fetchColumn() > 0) throw new AiUserException('ไม่สามารถยืนยันใบขายได้ ต้องจับคู่รหัสสินค้าที่ใช้งานครบทุกรายการ');
+
     $st = $conn->prepare("UPDATE somaster SET doc_status = :ready, updated_date = :d, updated_by = :u
                           WHERE socode = :s AND doc_status = :draft");
     $st->execute(array(
         'ready' => SoDraft::STATUS_READY, 'draft' => SoDraft::STATUS_DRAFT,
         'd' => date('Y-m-d H:i:s'), 'u' => ai_user_id(), 's' => $socode,
     ));
+    if ($st->rowCount() !== 1) throw new AiUserException('สถานะใบขายเปลี่ยนแล้ว กรุณาโหลดใหม่');
+    $conn->commit();
     ai_json(array('status' => 1, 'data' => array('socode' => $socode, 'doc_status' => SoDraft::STATUS_READY)));
 } catch (AiUserException $e) {
+    if ($conn && $conn->inTransaction()) $conn->rollBack();
     ai_fail($e->getMessage(), 400);
 } catch (Throwable $e) {
+    if ($conn && $conn->inTransaction()) $conn->rollBack();
     error_log('[ai/so-confirm] ' . $e->getMessage());
     ai_fail('ยืนยันใบขายสินค้าไม่สำเร็จ: ' . $e->getMessage(), 500);
 } finally {

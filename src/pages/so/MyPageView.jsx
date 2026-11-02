@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 import { Row, Col, Space, Descriptions, Table, Collapse } from "antd";
-import { Typography, Button, Form, message } from "antd";
+import { Typography, Button, Form, message, Modal, Alert } from "antd";
 import { ArrowLeftOutlined, PrinterOutlined } from "@ant-design/icons";
 
 import dayjs from "dayjs";
@@ -17,6 +17,8 @@ import { soViewColumns } from "./model";
 
 import "./MyPage.css";
 
+import AiSoImportService from "../../service/AiSoImport.service";
+const aiSoService = AiSoImportService();
 const soservice = SOService();
 const dateFormat = "DD/MM/YYYY";
 
@@ -27,6 +29,8 @@ export default function SOView() {
 
   const [form] = Form.useForm();
   const [master, setMaster] = useState({});
+  const [pending, setPending] = useState([]);
+  const [cancelling, setCancelling] = useState(false);
   const [masterItems, setMasterItems] = useState([]);
   const [detailItems, setDetailItems] = useState([]);
   const [lastItems, setLastItems] = useState([]);
@@ -51,6 +55,11 @@ export default function SOView() {
 
         buildMasterItems(header || {});
         buildDetailItems(detail || []);
+        setPending([]);
+        if (header?.doc_status === 'รอยืนยันใบขายสินค้า') {
+          const result = await aiSoService.pending(header.socode);
+          setPending(result?.data?.data || []);
+        }
         buildLastUpdateInfo(header || {});
       } catch (err) {
         console.warn(err);
@@ -161,6 +170,21 @@ export default function SOView() {
     setDetailItems(d);
   };
 
+  const canCancel = master.active_status === 'Y' && ['รอยืนยันใบขายสินค้า', 'รอออกใบส่งของ'].includes(master.doc_status);
+  const handleCancel = () => {
+    if (!canCancel || !soCode || cancelling) return;
+    Modal.confirm({ title: 'ยืนยันยกเลิกใบขาย ' + soCode + '?', okText: 'ยกเลิกใบขาย', cancelText: 'กลับ', okType: 'danger',
+      async onOk() {
+        setCancelling(true);
+        try {
+          await soservice.deleted(soCode);
+          setMaster((h) => ({ ...h, active_status: 'N', doc_status: 'ยกเลิก' }));
+          message.success('ยกเลิกใบขายเรียบร้อยแล้ว');
+        } catch (err) { message.error(err?.response?.data?.message || 'ยกเลิกไม่สำเร็จ'); throw err; }
+        finally { setCancelling(false); }
+      }
+    });
+  };
   const handlePrint = () => {
     const url = `/so-print/${soCode}`;
     const newWindow = window.open("", url, url);
@@ -193,6 +217,7 @@ export default function SOView() {
       align="center"
       style={{ display: "flex", justifyContent: "end" }}
     >
+      <Button danger disabled={!canCancel} loading={cancelling} onClick={handleCancel}>ยกเลิกใบขาย</Button>
       <Button icon={<PrinterOutlined />} onClick={handlePrint} type="primary" >
         Print SO
       </Button>
@@ -222,6 +247,14 @@ export default function SOView() {
         </Col>
       </Row>
 
+      {pending.length > 0 && <>
+        <Alert type="warning" showIcon message={'สินค้าจาก PO รอจับคู่ ' + pending.length + ' รายการ (แยกจากรายการสินค้าด้านล่าง)'} />
+        <Table size="small" rowKey="pending_id" dataSource={pending} pagination={false} columns={[
+          { title: 'ลำดับใน PO', dataIndex: 'seq' }, { title: 'ข้อความรอจับคู่', dataIndex: 'raw_name' },
+          { title: 'รหัสใน PO', dataIndex: 'raw_code', render: (v) => v || '-' },
+          { title: 'จำนวน', dataIndex: 'qty' }, { title: 'หน่วย', dataIndex: 'unit' }
+        ]} />
+      </>}
       <Descriptions
         bordered
         column={{ xs: 1, sm: 2, md: 3, lg: 3, xl: 3, xxl: 3 }}
