@@ -63,7 +63,23 @@ try {
         $conn->commit();
         ai_json(array('status' => 1));
     } elseif ($method === 'DELETE') {
-        throw new AiUserException('ไม่สามารถข้ามรายการรอจับคู่ได้ กรุณาจับคู่รหัสสินค้าก่อนยืนยันใบขาย');
+        $id = (int)($_GET['pending_id'] ?? 0);
+        if ($id <= 0) throw new AiUserException('กรุณาระบุ pending_id');
+        $find = $conn->prepare("SELECT socode FROM ai_so_pending WHERE pending_id = :id");
+        $find->execute(array('id' => $id));
+        $socode = $find->fetchColumn();
+        if (!$socode) throw new AiUserException('ไม่พบรายการรอจับคู่');
+        $conn->beginTransaction();
+        $lock = $conn->prepare("SELECT doc_status FROM somaster WHERE socode = :s FOR UPDATE");
+        $lock->execute(array('s' => $socode));
+        if ($lock->fetchColumn() !== SoDraft::STATUS_DRAFT) {
+            throw new AiUserException('ลบได้เฉพาะรายการในใบขายที่รอยืนยัน');
+        }
+        $delete = $conn->prepare("DELETE FROM ai_so_pending WHERE pending_id = :id AND socode = :s");
+        $delete->execute(array('id' => $id, 's' => $socode));
+        if ($delete->rowCount() !== 1) throw new AiUserException('รายการนี้ถูกเปลี่ยนแปลงแล้ว กรุณาโหลดหน้าใหม่');
+        $conn->commit();
+        ai_json(array('status' => 1));
     } else {
         throw new AiUserException('request method fail.');
     }

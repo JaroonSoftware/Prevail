@@ -12,7 +12,7 @@
 final class CatalogReader
 {
     public const TOOL = 'record_price_list';
-    private const CHUNK = 140;
+    private const CHUNK = 40;
 
     private ClaudeClient $client;
     private string $model;
@@ -91,6 +91,20 @@ final class CatalogReader
         $this->usage['calls']++;
         $this->usage['request_id'] = $call['request_id'];
         $this->usage['workspace_id'] = $call['workspace_id'];
+        // Discard truncated output and retry disjoint halves, preserving header context.
+        // A single-row chunk is the terminal case: toolInput reports the failure.
+        if (($call['body']['stop_reason'] ?? '') === 'max_tokens' && count($part) > 1) {
+            $middle = (int)ceil(count($part) / 2);
+            $leftRows = array_slice($part, 0, $middle);
+            $rightRows = array_slice($part, $middle);
+            $left = $this->call($sheet, $lines, $leftRows, $context, $groupNames, $wantMeta);
+            $right = $this->call($sheet, $lines, $rightRows,
+                self::contextRows($lines, $rightRows[0]), $groupNames, false);
+            foreach (array('title', 'start_date', 'stop_date') as $key) {
+                if ($left['meta'][$key] === null) $left['meta'][$key] = $right['meta'][$key];
+            }
+            return array('meta' => $left['meta'], 'items' => array_merge($left['items'], $right['items']));
+        }
         return self::normalize(ClaudeClient::toolInput($call['body'], self::TOOL));
     }
 

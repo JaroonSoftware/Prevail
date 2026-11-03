@@ -66,7 +66,7 @@ export const accessColumn = ({
     width: "5%",
     render: (text, record) => (
       <Space>
-        <Button size="small" icon={<PrinterOutlined />} title="พิมพ์แค็ตตาล็อก" onClick={() => handlePrint(record)} />
+        <Button size="small" className="bn-warning-outline" icon={<PrinterOutlined />} title="พิมพ์แค็ตตาล็อก" onClick={() => handlePrint(record)} />
         <Button
           icon={<EditOutlined />}
           className="bn-primary-outline"
@@ -81,7 +81,7 @@ export const accessColumn = ({
         />
         <Button
           icon={<CopyOutlined />}
-          className="bn-primary-outline"
+          className="bn-success-outline"
           style={{
             cursor: "pointer",
             display: "flex",

@@ -64,6 +64,15 @@ function AiSoImport() {
     });
   };
 
+  const pendingJobs = jobs.filter((job) => job.state === "pending");
+  const activeJobs = jobs.filter((job) => job.state === "queued" || job.state === "reading");
+  const handleStartAll = () => {
+    pendingJobs.forEach(handleStartFile);
+  };
+  const handleRemoveAll = () => {
+    setJobs((current) => current.filter((job) => job.state !== "pending" || started.current.has(job.uid)));
+  };
+
   const handlePickCustomer = async (job, cuscode) => {
     patchJob(job.uid, { state: "reading" });
     try {
@@ -127,6 +136,21 @@ function AiSoImport() {
           <p className="ant-upload-text">คลิกหรือลากไฟล์ PO มาวางที่นี่ (เลือกได้หลายไฟล์)</p>
           <p className="ant-upload-hint">PDF หลายหน้าอาจใช้เวลาอ่าน 1-3 นาที</p>
         </Upload.Dragger>
+
+        {(pendingJobs.length > 0 || activeJobs.length > 0) && (
+          <Card size="small">
+            <Space wrap>
+              <Typography.Text>รอยืนยัน {pendingJobs.length} ไฟล์ · กำลังประมวลผล/รอคิว {activeJobs.length} ไฟล์</Typography.Text>
+              <Button type="primary" disabled={!pendingJobs.length} onClick={handleStartAll}>
+                ยืนยันประมวลผลทุกไฟล์ ({pendingJobs.length} ไฟล์ · มีค่าใช้จ่าย)
+              </Button>
+              <Button danger disabled={!pendingJobs.length} onClick={handleRemoveAll}>ลบทิ้งทุกไฟล์ที่รอยืนยัน</Button>
+            </Space>
+            <div style={{ marginTop: 8 }}>
+              <Typography.Text type="secondary">ระบบจะประมวลผลทีละไฟล์จนครบ โดยไม่รวมใบขายข้ามไฟล์ หากบางไฟล์มีปัญหาหรือรอเลือกลูกค้า ระบบจะทำไฟล์ถัดไปต่อ</Typography.Text>
+            </div>
+          </Card>
+        )}
 
         {jobs.map((job) => (
           <Card key={job.uid} size="small" title={job.name}

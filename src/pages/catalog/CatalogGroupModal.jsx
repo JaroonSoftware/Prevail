@@ -12,7 +12,7 @@ export default function CatalogGroupModal({open,onClose,onChanged}) {
   const r=method==='delete'?await api.delete(endpoint+'?group_id='+v.group_id):await api[method](endpoint,v);
   const next=r.data.data||[];setRows(next);reset();onChanged?.(next);message.success('บันทึกหมวดเรียบร้อยแล้ว');
  }catch(e){setError(e?.response?.data?.message||'บันทึกหมวดไม่สำเร็จ');}finally{setBusy(false);}};
- return <Modal open={open} title="จัดการหมวดแค็ตตาล็อก" width={760} footer={null} onCancel={()=>{if(!busy)onClose();}} closable={!busy} maskClosable={!busy}>
+ return <Modal open={open} title="จัดการหมวดแค็ตตาล็อก" width={1100} style={{ maxWidth: "calc(100vw - 32px)" }} footer={null} onCancel={()=>{if(!busy)onClose();}} closable={!busy} maskClosable={!busy}>
   <Space direction="vertical" size="middle" style={{width:'100%'}}>
    <Alert type="info" showIcon message="หมวดใช้ร่วมกันทุกแค็ตตาล็อก ลบได้เฉพาะหมวดที่ไม่มีสินค้าอ้างอิง" />
    {error&&<Alert type="error" showIcon message={error} action={<Button disabled={busy} onClick={load}>โหลดใหม่</Button>} />}

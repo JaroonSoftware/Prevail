@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Form,
   Input,
@@ -26,11 +26,13 @@ const itemservice = Itemservice();
 const opService = OptionService();
 const from = "/items";
 
-const ItemsManage = () => {
+const ItemsManage = ({ embedded = false, initialItem = {}, onSaved, onCancel, onBusyChange }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { config } = location.state || { config: null };
+  const config = embedded ? { action: "create", title: "เพิ่มสินค้า" } : (location.state?.config || { action: "create" });
+  const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
   const [form] = Form.useForm();
   // const [formImage] = Form.useForm();
   const [formDetail, setFormDetail] = useState(Items);
@@ -50,6 +52,11 @@ const ItemsManage = () => {
       form.setFieldValue("vat", 0);
       form.setFieldValue("weight_stable", "N");
       form.setFieldValue("packing_weight", 1);
+      if (embedded) {
+        const defaults = { ...Items, buyprice: 0, price: 0, weight: 0, remark: "", aliases: [], vat: 0, weight_stable: "N", packing_weight: 1, ...initialItem };
+        setFormDetail(defaults);
+        form.setFieldsValue(defaults);
+      }
     }
     // console.log(config);
 
@@ -96,27 +103,40 @@ const ItemsManage = () => {
       });
   };
 
-  const handleConfirm = () => {
-    form.validateFields().then((v) => {
-      const source = { ...formDetail, ...v };
-      const actions =
-        config?.action !== "create"
-          ? itemservice.update(source)
-          : itemservice.create(source);
+  const validateItemCode = async (_, value) => {
+    if (config.action !== "create") return;
+    const code = String(value || "").trim();
+    if (!code) throw new Error("กรุณาระบุรหัสสินค้า");
+    let res;
+    try { res = await itemservice.get(code); }
+    catch { throw new Error("ตรวจสอบรหัสสินค้าไม่สำเร็จ กรุณาลองใหม่"); }
+    if (res?.data?.data) throw new Error("รหัสสินค้านี้มีอยู่แล้ว กรุณาใช้รหัสสินค้าอื่น");
+  };
 
-      actions
-        .then(async (r) => {
-          message.success("Request success.");
-          navigate(from, { replace: true });
-          await delay(300);
-          console.clear();
-        })
-        .catch((err) => {
-          console.warn(err);
-          const data = err?.response?.data;
-          message.error(data?.message || "บันทึกไม่สำเร็จ");
-        });
-    });
+  const handleConfirm = async () => {
+    if (savingRef.current) return;
+    let values;
+    try { values = await form.validateFields(); } catch { return; }
+    if (savingRef.current) return;
+    savingRef.current = true; setSaving(true); onBusyChange?.(true);
+    const source = { ...formDetail, ...values, stcode: String(values.stcode || '').trim() };
+    try {
+      if (config.action === 'create') await itemservice.create(source);
+      else await itemservice.update(source);
+    } catch (err) {
+      if (err?.response?.data?.code === 'DUPLICATE_ITEM_CODE') {
+        form.setFields([{ name: 'stcode', errors: ['รหัสสินค้านี้มีอยู่แล้ว กรุณาใช้รหัสสินค้าอื่น'] }]);
+      }
+      message.error(err?.response?.data?.message || 'บันทึกสินค้าไม่สำเร็จ');
+      savingRef.current = false; setSaving(false); onBusyChange?.(false);
+      return;
+    }
+    savingRef.current = false; setSaving(false); onBusyChange?.(false);
+    message.success('บันทึกสินค้าเรียบร้อยแล้ว');
+    if (embedded) { onSaved?.(source); return; }
+    navigate(from, { replace: true });
+    await delay(300);
+    console.clear();
   };
 
   const Detail = (
@@ -127,7 +147,8 @@ const ItemsManage = () => {
             label="รหัสสินค้า"
             value=" "
             name="stcode"
-            rules={[{ required: true, message: "โปรดกรอกข้อมูล" }]}
+            validateTrigger="onBlur"
+            rules={[{ validator: validateItemCode }]}
           >
             <Input
               disabled={config.action === "edit"}
@@ -320,7 +341,7 @@ const ItemsManage = () => {
     >
       <Col span={12} className="p-0">
         <Flex gap={4} justify="start">
-          <ButtonBack target={from} />
+          {embedded ? <Button disabled={saving} onClick={onCancel}>ปิด</Button> : <ButtonBack target={from} />}
         </Flex>
       </Col>
       <Col span={12} style={{ paddingInline: 0 }}>
@@ -328,6 +349,7 @@ const ItemsManage = () => {
           <Button
             icon={<SaveFilled style={{ fontSize: "1rem" }} />}
             type="primary"
+            loading={saving}
             style={{ width: "9.5rem" }}
             onClick={() => {
               handleConfirm();
@@ -344,6 +366,7 @@ const ItemsManage = () => {
       <Space direction="vertical" className="flex gap-2">
         <Form
           form={form}
+          disabled={saving}
           name="form_in_modal_add"
           layout="vertical"
           autoComplete="off"

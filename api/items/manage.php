@@ -57,6 +57,18 @@ try {
         $rest_json = file_get_contents("php://input");
         $_POST = json_decode($rest_json, true);
         extract($_POST, EXTR_OVERWRITE, "_");
+        $stcode = trim((string)($stcode ?? ''));
+        if ($stcode === '') throw new Exception('กรุณาระบุรหัสสินค้า');
+        $checkCode = $conn->prepare("SELECT 1 FROM items WHERE stcode = :code LIMIT 1");
+        $checkCode->execute(array('code' => $stcode));
+        if ($checkCode->fetchColumn()) {
+            $conn->rollBack();
+            http_response_code(409);
+            echo json_encode(array('status' => '0', 'code' => 'DUPLICATE_ITEM_CODE',
+                'message' => 'รหัสสินค้านี้มีอยู่แล้ว กรุณาใช้รหัสสินค้าอื่น'));
+            exit;
+        }
+
 
         // var_dump($_POST);
 
@@ -209,9 +221,12 @@ try {
         echo json_encode(array("data" => $res,"file" => $dataFile));
     }
 } catch (PDOException $e) {
-    $conn->rollback();
-    http_response_code(400);
-    echo json_encode(array('status' => '0', 'message' => $e->getMessage()));
+    if ($conn->inTransaction()) $conn->rollBack();
+    $duplicate = $_SERVER["REQUEST_METHOD"] === 'POST' && (int)($e->errorInfo[1] ?? 0) === 1062;
+    http_response_code($duplicate ? 409 : 400);
+    echo json_encode(array('status' => '0',
+        'code' => $duplicate ? 'DUPLICATE_ITEM_CODE' : 'ITEM_SAVE_ERROR',
+        'message' => $duplicate ? 'รหัสสินค้านี้มีอยู่แล้ว กรุณาใช้รหัสสินค้าอื่น' : $e->getMessage()));
 } catch (Exception $e) {
     $conn->rollback();
     http_response_code(400);

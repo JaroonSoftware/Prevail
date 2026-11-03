@@ -1,3 +1,4 @@
+import ItemsManage from "../items/MyManage";
 /* ============================================================================
    นำเข้าไฟล์ราคา Excel -> แคตตาล็อก ด้วย AI
    * เลือกได้หลายไฟล์ รวมเป็นแคตตาล็อกเดียว (อ่านทีละไฟล์ตามลำดับ)
@@ -11,7 +12,7 @@ import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Alert, Button, Card, Checkbox, DatePicker, Flex, Input, InputNumber, Segmented,
-  Modal, Select, Space, Spin, Table, Tag, Typography, Upload, message,
+  Drawer, Modal, Select, Space, Spin, Table, Tag, Typography, Upload, message,
 } from "antd";
 import { InboxOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
@@ -40,6 +41,8 @@ function AiCatalogImport() {
   const [range, setRange] = useState(null);
   const [view, setView] = useState("all");
   const [search, setSearch] = useState("");
+  const [createItemLine, setCreateItemLine] = useState(null);
+  const [itemSaving, setItemSaving] = useState(false);
 
   const itemMap = useMemo(() => Object.fromEntries((data?.items || []).map((i) => [i.stcode, i])), [data]);
   const itemOptions = useMemo(
@@ -178,6 +181,13 @@ function AiCatalogImport() {
     });
   };
 
+  const handleItemSaved = (item) => {
+    const idx = createItemLine?.idx;
+    setData((old) => ({ ...old, items: [...(old?.items || []).filter((i) => i.stcode !== item.stcode), item] }));
+    setLines((old) => old.map((line) => line.idx === idx ? { ...line, stcode: item.stcode, level: 'user', use: line.price != null } : line));
+    setCreateItemLine(null);
+  };
+
   const columns = [
     { title: "ใช้", key: "use", width: 50, align: "center",
       render: (_, l) => <Checkbox checked={l.use} onChange={(e) => patch(l.idx, { use: e.target.checked })} /> },
@@ -196,6 +206,7 @@ function AiCatalogImport() {
           <Select size="small" showSearch allowClear style={{ width: "100%" }} placeholder="เลือกสินค้า"
             value={l.stcode || undefined} options={itemOptions} optionFilterProp="label"
             onChange={(v) => patch(l.idx, { stcode: v || null, level: v ? "user" : "low", use: v ? l.price != null : true })} />
+          <Button size="small" type="primary" disabled={loading} onClick={() => setCreateItemLine(l)}>เพิ่มสินค้าใหม่</Button>
           {dupSet.has(l.idx) && <Typography.Text type="danger" style={{ fontSize: 12 }}>ซ้ำกับแถวก่อนหน้า (จะไม่นำเข้า)</Typography.Text>}
           {l.stcode && itemMap[l.stcode]?.unit && l.unit && itemMap[l.stcode].unit.toLowerCase() !== l.unit.toLowerCase() && (
             <Typography.Text type="warning" style={{ fontSize: 12 }}>หน่วยในระบบ: {itemMap[l.stcode].unit}</Typography.Text>
@@ -209,6 +220,12 @@ function AiCatalogImport() {
 
   return (
     <div style={{ padding: 8 }}>
+      <Drawer title="เพิ่มสินค้าจากรายการรอสร้าง" open={!!createItemLine} width={1000} styles={{ wrapper: { maxWidth: "100vw" } }} onClose={() => { if (!itemSaving) setCreateItemLine(null); }} maskClosable={!itemSaving} closable={!itemSaving} keyboard={!itemSaving}>
+        {createItemLine && <ItemsManage key={createItemLine.idx} embedded onBusyChange={setItemSaving} onCancel={() => setCreateItemLine(null)} onSaved={handleItemSaved} initialItem={{
+          stname: createItemLine.name || "", stnameEN: createItemLine.name_en || "", unit: createItemLine.unit || undefined,
+          price: createItemLine.price ?? 0, catalog_group_id: (data?.groups || []).find((g) => g.group_name === createItemLine.group)?.group_id != null ? Number((data?.groups || []).find((g) => g.group_name === createItemLine.group).group_id) : undefined,
+        }} />}
+      </Drawer>
       <Space direction="vertical" size="middle" style={{ display: "flex" }}>
         <Flex justify="space-between" align="center">
           <Typography.Title level={3} className="m-0 !text-zinc-800">นำเข้าแคตตาล็อกจาก Excel (AI)</Typography.Title>

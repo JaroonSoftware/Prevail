@@ -23,18 +23,77 @@ final class PoReader
         $this->model = $model;
     }
 
+    /** จำนวนหน้าต่อการเรียก AI 1 ครั้ง — PDF หลายหน้าผลลัพธ์ยาวเกินที่ AI ตอบได้ในครั้งเดียว */
+    private const PAGES_PER_CALL = 4;
+
     public function read(string $path, string $mime): array
     {
         $bytes = file_get_contents($path);
         if ($bytes === false) throw new RuntimeException('อ่านไฟล์ที่อัปโหลดไม่ได้');
 
-        $fileBlock = $mime === 'application/pdf'
-            ? array('type' => 'document', 'source' => array('type' => 'base64', 'media_type' => 'application/pdf', 'data' => base64_encode($bytes)))
+        $isPdf = $mime === 'application/pdf';
+        /* cache_control: แบ่งอ่านหลายรอบ ส่งไฟล์เดิมซ้ำ ให้ API จำไฟล์ไว้ รอบถัดไปคิดค่า input ถูกลงมาก */
+        $fileBlock = $isPdf
+            ? array('type' => 'document', 'source' => array('type' => 'base64', 'media_type' => 'application/pdf', 'data' => base64_encode($bytes)), 'cache_control' => array('type' => 'ephemeral'))
             : array('type' => 'image', 'source' => array('type' => 'base64', 'media_type' => $mime, 'data' => base64_encode($bytes)));
+
+        $pages = $isPdf ? self::pdfPageCount($bytes) : 1;
+        $ranges = array();
+        if ($pages <= self::PAGES_PER_CALL) {
+            $ranges[] = null; // อ่านทั้งไฟล์ครั้งเดียว
+        } else {
+            for ($a = 1; $a <= $pages; $a += self::PAGES_PER_CALL) $ranges[] = array($a, min($pages, $a + self::PAGES_PER_CALL - 1));
+        }
+
+        $calls = array();
+        $merged = null;
+        while ($ranges) {
+            $range = array_shift($ranges);
+            try {
+                $call = $this->callOnce($fileBlock, $range);
+            } catch (AiUserException $e) {
+                /* ช่วงนี้รายการเยอะจน AI ตอบไม่จบ -> แบ่งครึ่งแล้วอ่านใหม่ (เหลือหน้าเดียวแล้วยังไม่จบค่อยแจ้งผู้ใช้) */
+                $tooLong = strpos($e->getMessage(), 'ไม่ครบ') !== false || strpos($e->getMessage(), 'ไม่จบ') !== false;
+                if (!$tooLong) throw $e;
+                if ($range === null && $isPdf && $pages > 1) {
+                    $range = array(1, $pages);
+                }
+                if ($range === null || $range[0] === $range[1]) {
+                    throw new AiUserException('AI อ่านเอกสารไม่ครบ (หน้า ' . ($range ? $range[0] : 1) . ' มีรายการมากเกินไป) กรุณาแบ่งไฟล์แล้วนำเข้าใหม่');
+                }
+                $mid = intdiv($range[0] + $range[1], 2);
+                array_unshift($ranges, array($range[0], $mid), array($mid + 1, $range[1]));
+                continue;
+            }
+            $calls[] = $call;
+            $doc = self::normalize(ClaudeClient::toolInput($call['body'], self::TOOL));
+            $merged = $merged === null ? $doc : self::merge($merged, $doc);
+        }
+
+        /* รวม usage ทุกครั้งที่เรียก ให้ so-import.php บันทึกเป็นรายการเดียว */
+        $last = end($calls);
+        $usage = array('input_tokens' => 0, 'output_tokens' => 0);
+        $ms = 0;
+        foreach ($calls as $c) {
+            $usage['input_tokens'] += $c['usage']['input_tokens'];
+            $usage['output_tokens'] += $c['usage']['output_tokens'];
+            $ms += $c['ms'];
+        }
+        $call = array('body' => $last['body'], 'usage' => $usage, 'ms' => $ms,
+            'request_id' => $last['request_id'], 'workspace_id' => $last['workspace_id'], 'calls' => count($calls));
+        return array('document' => $merged, 'call' => $call);
+    }
+
+    private function callOnce(array $fileBlock, ?array $range): array
+    {
+        $ask = $range === null
+            ? 'Read every order in this customer document and record them with the tool.'
+            : "Read ONLY pages {$range[0]}-{$range[1]} of this PDF and record the order lines printed on those pages with the tool. "
+              . "If an order started on an earlier page, still record its lines from these pages and repeat its po_no / delivery_date / location (look at the earlier page header if needed). "
+              . "Do not record lines from other pages. If these pages have no order lines, return an empty orders array.";
 
         $payload = array(
             'model' => $this->model,
-            /* PDF หลายสิบหน้า รายการหลายร้อยแถว ต้องเผื่อ output ไว้มาก */
             'max_tokens' => 20000,
             'temperature' => 0,
             'system' => self::systemPrompt(),
@@ -42,17 +101,43 @@ final class PoReader
             'tool_choice' => array('type' => 'tool', 'name' => self::TOOL),
             'messages' => array(array(
                 'role' => 'user',
-                'content' => array(
-                    $fileBlock,
-                    array('type' => 'text', 'text' => 'Read every order in this customer document and record them with the tool.'),
-                ),
+                'content' => array($fileBlock, array('type' => 'text', 'text' => $ask)),
             )),
         );
-
         $call = $this->client->messages($payload);
-        if (($call['body']['stop_reason'] ?? '') === 'max_tokens') throw new AiUserException('AI อ่านเอกสารไม่ครบ กรุณาแบ่งไฟล์แล้วนำเข้าใหม่');
-        $raw = ClaudeClient::toolInput($call['body'], self::TOOL);
-        return array('document' => self::normalize($raw), 'call' => $call);
+        if (($call['body']['stop_reason'] ?? '') === 'max_tokens') throw new AiUserException('AI อ่านเอกสารไม่ครบ');
+        return $call;
+    }
+
+    /** นับหน้า PDF แบบคร่าวๆ จากโครงสร้างไฟล์ (นับไม่ได้ถือว่า 1 หน้า = อ่านครั้งเดียวเหมือนเดิม) */
+    private static function pdfPageCount(string $bytes): int
+    {
+        $n = preg_match_all('/\/Type\s*\/Page(?!s)\b/', $bytes);
+        if (!$n && preg_match_all('/\/Count\s+(\d+)/', $bytes, $m)) $n = max(array_map('intval', $m[1]));
+        return max(1, (int)$n);
+    }
+
+    /** รวมผลหลายช่วงหน้า: order เดียวกัน (PO + จุดส่ง + วันส่ง) ต่อรายการกัน */
+    private static function merge(array $a, array $b): array
+    {
+        if (empty($a['customer']['name']) && !empty($b['customer']['name'])) $a['customer'] = $b['customer'];
+        $key = function ($o) {
+            return mb_strtolower(trim(($o['po_no'] ?? '') . '|' . ($o['location'] ?? '') . '|' . ($o['delivery_date'] ?? '')));
+        };
+        $idx = array();
+        foreach ($a['orders'] as $i => $o) $idx[$key($o)] = $i;
+        foreach ($b['orders'] as $o) {
+            $k = $key($o);
+            if (isset($idx[$k])) {
+                $a['orders'][$idx[$k]]['lines'] = array_merge($a['orders'][$idx[$k]]['lines'], $o['lines']);
+            } else {
+                $idx[$k] = count($a['orders']);
+                $a['orders'][] = $o;
+            }
+        }
+        $notes = array_filter(array($a['notes'] ?? null, $b['notes'] ?? null));
+        $a['notes'] = $notes ? mb_substr(implode(' / ', array_unique($notes)), 0, 1000) : null;
+        return $a;
     }
 
     private static function systemPrompt(): string

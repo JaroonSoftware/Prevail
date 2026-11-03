@@ -4,6 +4,7 @@ import {
   Button,
   Checkbox,
   DatePicker,
+  Drawer,
   Form,
   Input,
   Modal,
@@ -15,6 +16,7 @@ import { Card, Col, Divider, Flex, Row, Space } from "antd";
 
 import OptionService from "../../service/Options.service";
 import SOService from "../../service/SO.service";
+import ItemsManage from "../items/MyManage";
 import AiSoImportService from "../../service/AiSoImport.service";
 import { Alert, Select, Tag } from "antd";
 import { PrinterOutlined, SaveFilled, SearchOutlined } from "@ant-design/icons";
@@ -131,6 +133,8 @@ function MyManage() {
    *  จับคู่/ตัดทิ้งในหน้านี้ก่อน แล้วค่อยแจ้ง server ตอนกดบันทึก (ถ้าออกจากหน้าโดยไม่บันทึก รายการยังอยู่) */
   const [aiPending, setAiPending] = useState([]);
   const [aiPick, setAiPick] = useState({});
+  const [createItemLine, setCreateItemLine] = useState(null);
+  const [itemSaving, setItemSaving] = useState(false);
   const [aiDone, setAiDone] = useState([]); // [{pending_id, stcode|null}] null = ไม่เอารายการนี้
   const isDraft = formDetail?.doc_status === STATUS_DRAFT;
 
@@ -323,9 +327,9 @@ function MyManage() {
   // };
 
   /* ใช้สินค้าที่เลือกกับรายการจาก PO -> เพิ่มเป็นแถวในตารางใบขาย */
-  const handleUsePending = (p) => {
+  const handleUsePending = (p, createdItem = null) => {
     const stcode = aiPick[p.pending_id];
-    const opt = aiItemOptions.find((o) => o.stcode === stcode || o.value === stcode);
+    const opt = createdItem || aiItemOptions.find((o) => o.stcode === stcode || o.value === stcode);
     if (!opt) return message.warning("กรุณาเลือกสินค้า (ต้องเป็นสินค้าในแคตตาล็อกของลูกค้ารายนี้)");
     setListDetail((state) => [
       ...state.filter((d) => d.stcode), // ตัดแถวว่างที่ยังไม่เลือกสินค้าทิ้ง
@@ -346,6 +350,34 @@ function MyManage() {
 
 
   /* แจ้ง server ว่ารายการรอจับคู่ไหนจัดการแล้ว (จำชื่อใน PO คู่กับสินค้าไว้ใช้ครั้งหน้า) */
+  const handleDeletePending = (row) => {
+    Modal.confirm({
+      title: "ลบรายการที่ AI นำเข้าผิด?",
+      content: "ลบรายการ " + row.raw_name + " ออกจากใบขายนี้ทันที",
+      okText: "ลบรายการ", cancelText: "ยกเลิก", okButtonProps: { danger: true },
+      onOk: async () => {
+        try {
+          await aiSoService.dropPending(row.pending_id);
+          setAiPending((old) => old.filter((p) => p.pending_id !== row.pending_id));
+          setAiPick((old) => { const next = { ...old }; delete next[row.pending_id]; return next; });
+          message.success("ลบรายการแล้ว");
+        } catch (err) {
+          message.error(err?.response?.data?.message || "ลบรายการไม่สำเร็จ");
+          throw err;
+        }
+      },
+    });
+  };
+
+  const handleItemSaved = (item) => {
+    if (!createItemLine) return;
+    const option = { ...item, value: item.stcode, label: item.stcode + " - " + item.stname };
+    setAiItemOptions((old) => [...old.filter((i) => i.stcode !== item.stcode), option]);
+    setStcodeOption((old) => [...old.filter((i) => i.stcode !== item.stcode), option]);
+    handleUsePending(createItemLine, option);
+    setCreateItemLine(null);
+  };
+
   const flushAiDone = async () => {
     for (const d of aiDone) {
       if (d.stcode) await aiSoService.resolvePending(d.pending_id, d.stcode);
@@ -749,10 +781,12 @@ function MyManage() {
                   value={aiPick[p.pending_id]}
                   onChange={(v) => setAiPick((s) => ({ ...s, [p.pending_id]: v }))} />
               ) },
-            { title: "", key: "act", width: 150,
+            { title: "", key: "act", width: 220,
               render: (_, p) => (
-                <Space size={4}>
+                <Space size={4} wrap={false} style={{ whiteSpace: "nowrap" }}>
                   <Button size="small" type="primary" onClick={() => handleUsePending(p)}>เพิ่ม</Button>
+                  <Button size="small" onClick={() => setCreateItemLine(p)}>{"\u0e40\u0e1e\u0e34\u0e48\u0e21\u0e2a\u0e34\u0e19\u0e04\u0e49\u0e32\u0e43\u0e2b\u0e21\u0e48"}</Button>
+                  <Button size="small" danger onClick={() => handleDeletePending(p)}>ลบ</Button>
                 </Space>
               ) },
           ]}
@@ -885,6 +919,15 @@ function MyManage() {
 
   return (
     <div className="quotation-manage">
+      <Drawer title={"เพิ่มสินค้าจาก PO"} open={!!createItemLine}
+        width={1000} styles={{ wrapper: { maxWidth: "100vw" } }}
+        onClose={() => { if (!itemSaving) setCreateItemLine(null); }}
+        maskClosable={!itemSaving} closable={!itemSaving} keyboard={!itemSaving}>
+        {createItemLine && <ItemsManage key={createItemLine.pending_id} embedded
+          onBusyChange={setItemSaving} onCancel={() => setCreateItemLine(null)} onSaved={handleItemSaved}
+          initialItem={{ stname: createItemLine.raw_name || "", unit: createItemLine.unit || undefined,
+            price: createItemLine.price ?? 0 }} />}
+      </Drawer>
       <div id="quotation-manage" className="px-0 sm:px-0 md:px-8 lg:px-8">
         <Space direction="vertical" className="flex gap-4">
           {SectionTop}
