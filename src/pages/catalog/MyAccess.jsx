@@ -1,3 +1,4 @@
+import CatalogGroupModal from "./CatalogGroupModal";
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +28,7 @@ const mngConfig = {
 const CatalogAccess = () => {
   const PAGE_COOKIE_KEY = "catalog";
   const navigate = useNavigate();
+  const [groupsOpen, setGroupsOpen] = useState(false);
   const defaultTablePagination = { current: 1, pageSize: 25, pageSizeOptions: [10,25,35,50,100,200], showSizeChanger: true };
   const [form] = Form.useForm();
   const isFirstLoadRef = useRef(true);
@@ -221,7 +223,7 @@ const CatalogAccess = () => {
         message.error("Request error!");
       });
   };
-  const column = accessColumn({ handleEdit, handleDuplicate, handleDelete });
+  const column = accessColumn({ handleEdit, handleDuplicate, handleDelete, handlePrint: (record) => window.open("/catalog-print/" + encodeURIComponent(record.catalog_code), "_blank", "noopener,noreferrer") });
 
   const handleTableChange = (pagination) => {
     const nextPagination = {
@@ -295,6 +297,14 @@ const CatalogAccess = () => {
             size="small"
             className="bn-action bn-center bn-primary-outline justify-center"
             icon={<FileAddOutlined style={{ fontSize: ".9rem" }} />}
+            onClick={() => navigate("ai-import")}
+          >
+            นำเข้าจาก Excel (AI)
+          </Button>
+          <Button
+            size="small"
+            className="bn-action bn-center bn-primary-outline justify-center"
+            icon={<FileAddOutlined style={{ fontSize: ".9rem" }} />}
             onClick={() => {
               hangleAdd();
             }}
@@ -307,6 +317,8 @@ const CatalogAccess = () => {
   );
   return (
     <div className="catalog-access" id="area">
+      <CatalogGroupModal open={groupsOpen} onClose={() => setGroupsOpen(false)} />
+      <Button className="mb-3" onClick={() => setGroupsOpen(true)}>จัดการหมวด</Button>
       <Space
         direction="vertical"
         size="middle"

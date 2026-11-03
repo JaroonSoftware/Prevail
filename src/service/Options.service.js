@@ -36,6 +36,8 @@ const OptionService = () => {
   const optionsBilling = (parm = {}, config = {}) => api.get(`${API_URL.OPTION_BILLING}?${getParmeter(parm)}`, { ignoreLoading : true, ...config });
   const optionsDeliverynote = (parm = {}, config = {}) => api.get(`${API_URL.OPTION_DELIVERY_NOTE}?${getParmeter(parm)}`, { ignoreLoading : true, ...config });
   const optionsShipping = (parm = {}, config = {}) => api.get(`${API_URL.OPTION_SHIPPING}?${getParmeter(parm)}`, { ignoreLoading : true, ...config });
+  /* หมวดแคตตาล็อก (ผัก / ผักบ้าน / เส้น ...) ใช้แบ่งแท็บในหน้ากรอกแคตตาล็อก */
+  const optionsCatalogGroup = (config = {}) => api.get(`${API_URL.OPTION_ITEMS}?p=catalog-group`, { ignoreLoading : true, ...config });
   const optionsItemstype = (config = {}) => api.get(`${API_URL.OPTION_ITEMSTYPE}`, { ignoreLoading : true, ...config });
   const optionsUnit = (config = {}) => api.get(`${API_URL.OPTION_UNIT}`, { ignoreLoading : true, ...config });  
   const optionsPurchaseOrder = (config = {}) => api.get(`${API_URL.OPTION_PurchaseOrder}`, { ignoreLoading : true, ...config });
@@ -61,6 +63,7 @@ const OptionService = () => {
     optionsDeliverynote,
     optionsShipping,
     optionsItemstype,
+    optionsCatalogGroup,
     optionsUnit,
     optionsPurchaseOrder,
     optionsBanks,

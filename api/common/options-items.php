@@ -81,6 +81,13 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
             $stmt = $conn->prepare($sql); 
             $stmt->execute();
             $res = $stmt->fetchAll(PDO::FETCH_ASSOC);             
+        } else if ($p === 'catalog-group') {
+            /* หมวดแคตตาล็อก (ตาราง catalog_group) — ยังไม่ได้รัน SQL คืนรายการว่าง */
+            $res = array();
+            if ($conn->query("SHOW TABLES LIKE 'catalog_group'")->fetch()) {
+                $res = $conn->query("SELECT group_id, group_name, seq FROM catalog_group WHERE active_status = 'Y' ORDER BY seq, group_id")
+                    ->fetchAll(PDO::FETCH_ASSOC);
+            }
         } else {
             $sql = "
             select  i.stcode value, i.stname label 

@@ -34,6 +34,17 @@ function load_item_aliases(PDO $conn, string $stcode): array
     return $st->fetchAll(PDO::FETCH_COLUMN);
 }
 
+/* หมวดแคตตาล็อก (items.catalog_group_id) — ถ้ายังไม่ได้รัน SQL 2026-11-03_catalog_group.sql ข้ามไปเงียบๆ */
+function save_item_catalog_group(PDO $conn, string $stcode, $groupId): void
+{
+    if (!$conn->query("SHOW COLUMNS FROM items LIKE 'catalog_group_id'")->fetch()) return;
+    $gid = (is_numeric($groupId) && (int)$groupId > 0) ? (int)$groupId : null;
+    $st = $conn->prepare("UPDATE items SET catalog_group_id = :g WHERE stcode = :s");
+    $st->bindValue(':g', $gid, $gid === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+    $st->bindValue(':s', $stcode, PDO::PARAM_STR);
+    $st->execute();
+}
+
 $db = new DbConnect;
 $conn = $db->connect();
 $conn->beginTransaction();
@@ -103,6 +114,7 @@ try {
         }    
 
         save_item_aliases($conn, (string)$stcode, $aliases ?? null);
+        save_item_catalog_group($conn, (string)$stcode, $catalog_group_id ?? null);
 
         $conn->commit();
         http_response_code(200);
@@ -158,6 +170,7 @@ try {
         }
 
         save_item_aliases($conn, (string)$stcode, $aliases ?? null);
+        save_item_catalog_group($conn, (string)$stcode, $catalog_group_id ?? null);
 
         $conn->commit();
         http_response_code(200);

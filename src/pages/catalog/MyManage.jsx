@@ -13,7 +13,9 @@ import {
   Badge,
   DatePicker,
   Collapse,
+  Tabs,
 } from "antd";
+import OptionService from "../../service/Options.service";
 import CatalogService from "../../service/Catalog.Service";
 import {
   SaveFilled,
@@ -34,6 +36,11 @@ import { RiDeleteBin5Line } from "react-icons/ri";
 import { LuPackageSearch } from "react-icons/lu";
 import dayjs from "dayjs";
 const clservice = CatalogService();
+const opservice = OptionService();
+/* แท็บสำหรับสินค้าที่ยังไม่ได้ตั้งหมวดในหน้าข้อมูลสินค้า */
+const NO_GROUP = "none";
+/* แท็บรายการจากไฟล์ราคาที่ยังไม่มีสินค้าในระบบ (ตาราง catalog_pending) */
+const PENDING_TAB = "pending";
 const gotoFrom = "/catalog";
 
 const cardStyle = {
@@ -45,7 +52,7 @@ const RangePicker = DatePicker.RangePicker;
 function CatalogManage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { config } = location.state || { config: null };
+  const { config, prefill } = location.state || { config: null, prefill: null };
   const isEditMode = config?.action === "edit";
   const [form] = Form.useForm();
   /** Modal handle */
@@ -57,6 +64,16 @@ function CatalogManage() {
   const [listDetail, setListDetail] = useState([]);
   const [listCustomer, setCusDetail] = useState([]);
   const [formDetail, setFormDetail] = useState([]);
+  /** หมวดแคตตาล็อก (แบ่งแท็บตามไฟล์ราคา Q4) */
+  const [groups, setGroups] = useState([]);
+  const [activeTab, setActiveTab] = useState(null);
+  const [tabSearch, setTabSearch] = useState("");
+  /** รายการรอสร้างสินค้า + สินค้าทั้งหมดไว้ให้เลือกจับคู่ */
+  const [listPending, setListPending] = useState([]);
+  const [allItems, setAllItems] = useState([]);
+  const [pendingPick, setPendingPick] = useState({});
+  const loadAllItems = () =>
+    opservice.optionsItems({ p: "items" }).then((r) => setAllItems(r?.data?.data || [])).catch(() => {});
   useEffect(() => {
     const initial = async () => {
       if (config?.action === "create") {
@@ -72,6 +89,16 @@ function CatalogManage() {
           catalog_code: code,
         };
 
+        /* มาจากหน้านำเข้า Excel (AI): เติมชื่อ ช่วงวันที่ และรายการสินค้าให้ */
+        if (prefill) {
+          initialValue.catalog_name = prefill.catalog_name;
+          if (prefill.start_date && prefill.stop_date) {
+            initialValue.catalog_date = [dayjs(prefill.start_date), dayjs(prefill.stop_date)];
+          }
+          setListDetail(prefill.detail || []);
+          setListPending((prefill.pending || []).map((p, i) => ({ ...p, _pid: i + 1 })));
+        }
+
         setFormDetail(initialValue);
         form.setFieldsValue(initialValue);
         return;
@@ -83,8 +110,9 @@ function CatalogManage() {
       if (!res?.data?.data) return;
 
       const {
-        data: { header, detail, customer },
+        data: { header, detail, customer, pending },
       } = res.data;
+      setListPending((pending || []).map((p, i) => ({ ...p, _pid: i + 1 })));
       const nextHeader = { ...header };
 
       if (!isEditMode) {
@@ -116,6 +144,15 @@ function CatalogManage() {
       // console.log(unitOprionRes.data.data)
     };
 
+    opservice
+      .optionsCatalogGroup()
+      .then((r) => {
+        const g = r?.data?.data || [];
+        setGroups(g);
+        setActiveTab((t) => t ?? (g.length ? String(g[0].group_id) : NO_GROUP));
+      })
+      .catch(() => setActiveTab(NO_GROUP));
+
     initial();
     return () => {};
   }, []);
@@ -130,8 +167,14 @@ function CatalogManage() {
     setCusDetail(value);
   };
 
+  const groupKeyOf = (it) => (it?.catalog_group_id ? String(it.catalog_group_id) : NO_GROUP);
+
   const handleItemsChoosed = (value) => {
-    // console.log(value);
+    /* เพิ่มจากโหมด "แสดงสินค้าทั้งหมด" สินค้าจะไปอยู่ในแท็บหมวดของตัวเอง แจ้งให้รู้ */
+    const before = new Set(listDetail.map((d) => d.stcode));
+    const added = value.filter((v) => !before.has(v.stcode));
+    const other = added.filter((v) => groupKeyOf(v) !== activeTab).length;
+    if (other > 0) message.info(`${other} รายการที่เพิ่ม อยู่ในแท็บหมวดอื่น (ตามหมวดที่ตั้งไว้ในข้อมูลสินค้า)`);
     setListDetail(value);
   };
 
@@ -165,7 +208,8 @@ function CatalogManage() {
 
         const detail = listDetail;
         const customer = listCustomer;
-        const parm = { header, detail, customer, };
+        const pending = listPending.map(({ _pid, pending_id, ...p }) => p);
+        const parm = { header, detail, customer, pending };
         // console.log(parm);
         const actions = isEditMode ? clservice.update : clservice.create;
         actions(parm)
@@ -331,12 +375,26 @@ function CatalogManage() {
               setOpenProduct(true);
             }}
           >
-            เลือกสินค้า
+            เพิ่มสินค้าในหมวดนี้
           </Button>
         </Flex>
       </Col>
     </Flex>
   );
+
+  const countByTab = listDetail.reduce((a, d) => ({ ...a, [groupKeyOf(d)]: (a[groupKeyOf(d)] || 0) + 1 }), {});
+  const tabItems = [
+    ...groups.map((g) => ({ key: String(g.group_id), name: g.group_name })),
+    { key: NO_GROUP, name: "ยังไม่จัดหมวด" },
+    ...(listPending.length ? [{ key: PENDING_TAB, name: "⚠ รอสร้างสินค้า" }] : []),
+  ].map((t) => ({
+    key: t.key,
+    label: (
+      <span>
+        {t.name} <Badge count={t.key === PENDING_TAB ? listPending.length : countByTab[t.key] || 0} showZero color={t.key === PENDING_TAB ? "#faad14" : countByTab[t.key] ? "#1677ff" : "#d9d9d9"} size="small" />
+      </span>
+    ),
+  }));
 
   const SectionDetail = (
     <>
@@ -414,15 +472,85 @@ function CatalogManage() {
       </Flex>
     </>
   );
+  /* จับคู่รายการรอสร้างสินค้ากับสินค้าที่สร้างแล้ว -> ย้ายเข้าแคตตาล็อก */
+  const handleMatchPending = (p) => {
+    const it = allItems.find((i) => i.stcode === pendingPick[p._pid]);
+    if (!it) return message.warning("กรุณาเลือกสินค้า");
+    if (listDetail.some((d) => d.stcode === it.stcode)) return message.warning(`สินค้า ${it.stname} มีในแคตตาล็อกแล้ว`);
+    setListDetail((s) => [...s, {
+      stcode: it.stcode, stname: it.stname, unit: it.unit,
+      price: p.price != null ? Number(p.price) : Number(it.price || 0),
+      catalog_group_id: it.catalog_group_id ?? null,
+    }]);
+    setListPending((s) => s.filter((x) => x._pid !== p._pid));
+    message.success(`ย้าย ${it.stname} เข้าแคตตาล็อกแล้ว (กด Save เพื่อบันทึก)`);
+  };
+
+  const SectionPending = (
+    <Space direction="vertical" style={{ width: "100%" }}>
+      <Flex justify="space-between" align="center" wrap="wrap" gap={8}>
+        <Typography.Text type="warning">
+          รายการจากไฟล์ราคาที่ยังไม่มีสินค้าในระบบ — สร้างสินค้าในหน้าข้อมูลสินค้าก่อน แล้วกลับมาเลือกจับคู่ (ยังไม่ถูกใช้ในใบขายสินค้า)
+        </Typography.Text>
+        <Space>
+          <Button onClick={() => window.open("/items", "_blank")}>เปิดหน้าข้อมูลสินค้า (แท็บใหม่)</Button>
+          <Button onClick={loadAllItems}>โหลดรายการสินค้าใหม่</Button>
+        </Space>
+      </Flex>
+      <Table size="small" bordered rowKey="_pid" pagination={false} scroll={{ x: "max-content" }}
+        dataSource={listPending.filter((p) => !tabSearch || p.raw_name?.includes(tabSearch) || p.name_en?.toLowerCase().includes(tabSearch.toLowerCase()))}
+        columns={[
+          { title: "ลำดับ", key: "i", width: 60, render: (_, __, i) => i + 1 },
+          { title: "ชื่อในไฟล์", key: "n", render: (_, p) => <>{p.raw_name}{p.name_en && <div style={{ color: "#8c8c8c", fontSize: 12 }}>{p.name_en}</div>}</> },
+          { title: "หน่วย", dataIndex: "unit", width: 80 },
+          { title: "ราคา", dataIndex: "price", width: 90, align: "right", render: (v) => (v == null ? "-" : Number(v).toFixed(2)) },
+          { title: "หมวดในไฟล์", dataIndex: "group_name", width: 140 },
+          { title: "ไฟล์", dataIndex: "source_file", width: 160, render: (v, p) => <span style={{ fontSize: 12 }}>{v}{p.cust_code && <><br />รหัสลูกค้า {p.cust_code}</>}</span> },
+          { title: "จับคู่กับสินค้าที่สร้างแล้ว", key: "pick", width: 300,
+            render: (_, p) => (
+              <Select size="small" showSearch allowClear style={{ width: "100%" }} placeholder="เลือกสินค้า"
+                onDropdownVisibleChange={(o) => o && !allItems.length && loadAllItems()}
+                options={allItems.map((i) => ({ value: i.stcode, label: `${i.stname} (${i.stcode})` }))}
+                optionFilterProp="label" value={pendingPick[p._pid]}
+                onChange={(v) => setPendingPick((s) => ({ ...s, [p._pid]: v }))} />
+            ) },
+          { title: "", key: "act", width: 130,
+            render: (_, p) => (
+              <Space size={4}>
+                <Button size="small" type="primary" onClick={() => handleMatchPending(p)}>ย้ายเข้า</Button>
+                <Button size="small" danger onClick={() => setListPending((s) => s.filter((x) => x._pid !== p._pid))}>ลบ</Button>
+              </Space>
+            ) },
+        ]}
+      />
+    </Space>
+  );
+
   const SectionProduct = (
     <>
       <Flex className="width-100" vertical gap={4}>
+        <Tabs
+          activeKey={activeTab || undefined}
+          onChange={(k) => { setActiveTab(k); setTabSearch(""); }}
+          items={tabItems}
+          className="!mb-0"
+        />
+        <Input
+          allowClear
+          placeholder="ค้นหาในหมวดนี้"
+          value={tabSearch}
+          onChange={(e) => setTabSearch(e.target.value)}
+          style={{ maxWidth: 320 }}
+        />
+        {activeTab === PENDING_TAB ? SectionPending : (
         <Table
           title={() => TitleTable}
           components={componentsEditable}
           rowClassName={() => "editable-row"}
           bordered
-          dataSource={listDetail}
+          dataSource={listDetail.filter(
+            (d) => groupKeyOf(d) === activeTab && (!tabSearch || d.stname?.includes(tabSearch) || d.stcode?.includes(tabSearch))
+          )}
           columns={prodcolumns}
           pagination={false}
           rowKey="stcode"
@@ -431,6 +559,7 @@ function CatalogManage() {
             emptyText: <span>No data available, please add some data.</span>,
           }}
         />
+        )}
       </Flex>
     </>
   );
@@ -581,6 +710,7 @@ function CatalogManage() {
               <Collapse
                 items={collapetableitems}
                 bordered={false}
+                defaultActiveKey={["1"]}
                 expandIcon={({ isActive }) => (
                   <CaretRightOutlined rotate={isActive ? 90 : 0} />
                 )}
@@ -608,6 +738,8 @@ function CatalogManage() {
             handleItemsChoosed(v);
           }}
           selected={listDetail}
+          groups={groups}
+          groupId={activeTab === NO_GROUP ? null : activeTab}
         ></ModalItems>
       )}
     </div>

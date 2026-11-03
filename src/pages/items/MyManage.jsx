@@ -36,11 +36,13 @@ const ItemsManage = () => {
   const [formDetail, setFormDetail] = useState(Items);
   const [optionUnit, setOptionUnit] = useState([]);
   const [optionType, setOptionType] = useState([]);
+  const [optionGroup, setOptionGroup] = useState([]);
 
   useEffect(() => {
     // setLoading(true);
     GetItemsUnit();
     GetItemsType();
+    opService.optionsCatalogGroup().then((res) => setOptionGroup(res?.data?.data || [])).catch(() => {});
 
     if (config?.action !== "create") {
       getsupData(config.code);
@@ -81,6 +83,8 @@ const ItemsManage = () => {
 
         const init = {
           ...data,
+          /* PDO คืนตัวเลขเป็นข้อความ แปลงให้ตรงกับ value ของ Select */
+          catalog_group_id: data?.catalog_group_id ? Number(data.catalog_group_id) : undefined,
         };
 
         setFormDetail(init);
@@ -197,6 +201,19 @@ const ItemsManage = () => {
         </Col>
       </Row>
       <Row gutter={[8, 8]} className="px-2 sm:px-4 md:px-4 lg:px-4">
+        <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={4}>
+          {/* หมวดที่ใช้แบ่งแท็บในหน้ากรอกแคตตาล็อก (แยกจากประเภทสินค้า ที่รายงานเตรียมของใช้) */}
+          <Form.Item label="หมวดแคตตาล็อก" name="catalog_group_id">
+            <Select
+              size="large"
+              showSearch
+              allowClear
+              filterOption={filterOption}
+              placeholder="เลือกหมวดแคตตาล็อก"
+              options={optionGroup.map((g) => ({ value: Number(g.group_id), label: g.group_name }))}
+            />
+          </Form.Item>
+        </Col>
         <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={4}>
           <Form.Item label="ประเภทสินค้า" name="typecode">
             <Select

@@ -3,6 +3,32 @@ ob_start();
 include_once(dirname(__FILE__, 2) . "/onload.php");
 include_once(dirname(__FILE__, 2) . "/common/fnc-code.php");
 
+/* รายการที่ยังไม่มีสินค้าในระบบ (ตาราง catalog_pending) — บันทึกแบบลบแล้วใส่ใหม่ทั้งชุด
+   ถ้ายังไม่ได้รัน SQL 2026-11-03_catalog_pending.sql ข้ามไปเงียบๆ */
+function catalog_has_pending(PDO $conn): bool
+{
+    return (bool)$conn->query("SHOW TABLES LIKE 'catalog_pending'")->fetch();
+}
+function save_catalog_pending(PDO $conn, string $code, $pending): void
+{
+    if (!is_array($pending) || !catalog_has_pending($conn)) return;
+    $conn->prepare("DELETE FROM catalog_pending WHERE catalog_code = :c")->execute(array('c' => $code));
+    $st = $conn->prepare("INSERT INTO catalog_pending (catalog_code, raw_name, name_en, unit, price, group_name, cust_code, source_file)
+                          VALUES (:c, :n, :e, :u, :p, :g, :cc, :f)");
+    foreach ($pending as $p) {
+        $name = trim((string)($p['raw_name'] ?? ''));
+        if ($name === '') continue;
+        $price = isset($p['price']) && is_numeric($p['price']) ? $p['price'] : null;
+        $st->execute(array(
+            'c' => $code, 'n' => mb_substr($name, 0, 255), 'e' => isset($p['name_en']) ? mb_substr((string)$p['name_en'], 0, 255) : null,
+            'u' => isset($p['unit']) ? mb_substr((string)$p['unit'], 0, 30) : null, 'p' => $price,
+            'g' => isset($p['group_name']) ? mb_substr((string)$p['group_name'], 0, 150) : null,
+            'cc' => isset($p['cust_code']) ? mb_substr((string)$p['cust_code'], 0, 50) : null,
+            'f' => isset($p['source_file']) ? mb_substr((string)$p['source_file'], 0, 255) : null,
+        ));
+    }
+}
+
 $db = new DbConnect;
 $conn = $db->connect();
 $conn->beginTransaction();
@@ -90,6 +116,8 @@ try {
                 throw new PDOException("Insert data error => $error");
             }
         }
+        save_catalog_pending($conn, $catalog_code, $pending ?? null);
+
         $strSQL = "update catalog_code SET ";
         $strSQL .= " number= number+1 ";
         $strSQL .= " order by id desc LIMIT 1 ";
@@ -203,6 +231,8 @@ try {
             }
         }
 
+        save_catalog_pending($conn, (string)$header->catalog_code, $pending ?? null);
+
         $conn->commit();
         http_response_code(200);
         echo json_encode(array("data" => array("code" => $code)));
@@ -221,7 +251,9 @@ try {
         }
         $header = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT a.catalog_code,a.stcode,i.stname,a.price ";
+        /* หมวดแคตตาล็อกของสินค้า (ใช้แบ่งแท็บในหน้ากรอก) — ถ้ายังไม่มีคอลัมน์ ให้เป็น NULL */
+        $hasGroup = (bool)$conn->query("SHOW COLUMNS FROM items LIKE 'catalog_group_id'")->fetch();
+        $sql = "SELECT a.catalog_code,a.stcode,i.stname,i.unit,a.price," . ($hasGroup ? "i.catalog_group_id" : "NULL AS catalog_group_id") . " ";
         $sql .= " FROM `catalog_detail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
         $sql .= " where a.catalog_code = :code";
         $sql .= " order by i.seq";
@@ -246,9 +278,17 @@ try {
         }
         $customer = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        $pending = array();
+        if (catalog_has_pending($conn)) {
+            $st = $conn->prepare("SELECT pending_id, raw_name, name_en, unit, price, group_name, cust_code, source_file
+                                  FROM catalog_pending WHERE catalog_code = :code ORDER BY pending_id");
+            $st->execute(array('code' => $code));
+            $pending = $st->fetchAll(PDO::FETCH_ASSOC);
+        }
+
         $conn->commit();
         http_response_code(200);
-        echo json_encode(array('status' => 1, 'data' => array("header" => $header, "detail" => $detail, "customer" => $customer)));
+        echo json_encode(array('status' => 1, 'data' => array("header" => $header, "detail" => $detail, "customer" => $customer, "pending" => $pending)));
     }
 } catch (PDOException $e) {
     $conn->rollback();

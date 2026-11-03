@@ -5,7 +5,7 @@ import {
   EditableRow,
   EditableCell,
 } from "../../components/table/TableEditAble";
-import { CopyOutlined, EditOutlined } from "@ant-design/icons";
+import { CopyOutlined, EditOutlined, PrinterOutlined } from "@ant-design/icons";
 import { comma } from '../../utils/util';
 
 /** export component for edit table */
@@ -66,6 +66,7 @@ export const accessColumn = ({
     width: "5%",
     render: (text, record) => (
       <Space>
+        <Button size="small" icon={<PrinterOutlined />} title="พิมพ์แค็ตตาล็อก" onClick={() => handlePrint(record)} />
         <Button
           icon={<EditOutlined />}
           className="bn-primary-outline"

@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, {useState, useEffect} from 'react';
-import { Modal, Card, Table, message, Form, Spin } from "antd";
+import { Modal, Card, Table, message, Form, Spin, Segmented, Tag } from "antd";
 import { Row, Col, Space } from "antd";
 import { Input, Button } from "antd";
 import { SearchOutlined } from "@ant-design/icons"
@@ -9,7 +9,10 @@ import { columns } from "./modal-items.model";
 import OptionService from "../../../service/Options.service"
 
 const opnService = OptionService();
-export default function ModalCusCL({show, close, values, selected}) {
+/* groups / groupId (ไม่บังคับ): ใช้ในหน้าแคตตาล็อกที่แบ่งแท็บตามหมวด
+   เปิดจากแท็บไหน ค่าเริ่มต้นแสดงเฉพาะสินค้าหมวดนั้น สลับเป็น "สินค้าทั้งหมด" ได้
+   หน้าที่ไม่ส่ง groupId มา (เช่นใบขายสินค้า) ทำงานเหมือนเดิมทุกอย่าง */
+export default function ModalCusCL({show, close, values, selected, groups = [], groupId = undefined}) {
     const [form] = Form.useForm();
     /** handle state */
     const [itemsData, setItemsData] = useState([]);
@@ -18,21 +21,26 @@ export default function ModalCusCL({show, close, values, selected}) {
     const [itemsList, setItemsList] = useState(selected || []);
     const [itemsRowKeySelect, setItemsRowKeySelect] = useState([]);
     const [loading,  setLoading] = useState(true);
+    const hasGroupMode = groupId !== undefined;
+    const [viewMode, setViewMode] = useState(hasGroupMode && groupId !== null ? "group" : "all");
+    const [searchText, setSearchText] = useState("");
+    const groupName = (id) => groups.find((g) => String(g.group_id) === String(id))?.group_name;
     /** handle logic component */
     const handleClose = () =>{ 
         close(false);
     }
  
-    const handleSearch = (value) => {
-        if(!!value){    
-            const f = itemsData.filter( d => ( (d.stcode?.includes(value)) || (d.stname?.includes(value)) ) );
-             
-            setItemsDataWrap(f);            
-        } else { 
-            setItemsDataWrap(itemsData);            
+    /* กรองตามคำค้น + หมวด (groupId = null หมายถึงแท็บ "ยังไม่จัดหมวด") */
+    useEffect(() => {
+        let f = itemsData;
+        if (hasGroupMode && viewMode === "group") {
+            f = f.filter((d) => groupId === null ? !d.catalog_group_id : String(d.catalog_group_id) === String(groupId));
         }
+        if (searchText) f = f.filter( d => ( (d.stcode?.includes(searchText)) || (d.stname?.includes(searchText)) ) );
+        setItemsDataWrap(f);
+    }, [itemsData, searchText, viewMode, groupId]);
 
-    }
+    const handleSearch = (value) => setSearchText(value || "");
 
     const handleSelectItems = (record) => {
         const newData = {
@@ -58,6 +66,7 @@ export default function ModalCusCL({show, close, values, selected}) {
             qty: 1,
             unit:m.unit,
             discount:0,
+            catalog_group_id: m.catalog_group_id ?? null,
         }));
         
         // const trans = selected.filter( (item) =>  item?.stcode === "" );
@@ -106,7 +115,12 @@ export default function ModalCusCL({show, close, values, selected}) {
     /** End Config Component */
 
     /** setting initial component */ 
-    const column = columns( { handleSelectItems, handleCheckDuplicate } );
+    const column = hasGroupMode
+        ? [...columns( { handleSelectItems, handleCheckDuplicate } ), {
+            title: "หมวด", key: "catalog_group_id", dataIndex: "catalog_group_id",
+            render: (v) => (v ? groupName(v) || "-" : <Tag>ยังไม่จัดหมวด</Tag>),
+          }]
+        : columns( { handleSelectItems, handleCheckDuplicate } );
 
     useEffect( () => {
         const onload = () =>{
@@ -162,6 +176,18 @@ export default function ModalCusCL({show, close, values, selected}) {
                     <Card style={{backgroundColor:'#f0f0f0' }}>
                         <Form form={form} layout="vertical" autoComplete="off" >
                             <Row gutter={[{xs:32, sm:32, md:32, lg:12, xl:12}, 8]} className='m-0'>
+                                {hasGroupMode && (
+                                    <Col span={24}>
+                                        <Segmented
+                                            value={viewMode}
+                                            onChange={setViewMode}
+                                            options={[
+                                                { value: "group", label: `เฉพาะหมวดนี้ (${groupId === null ? "ยังไม่จัดหมวด" : groupName(groupId) || "-"})` },
+                                                { value: "all", label: "แสดงสินค้าทั้งหมด" },
+                                            ]}
+                                        />
+                                    </Col>
+                                )}
                                 <Col span={24}>
                                     <Form.Item label="ค้นหา"  >
                                         <Input suffix={<SearchOutlined />} onChange={ (e) => { handleSearch(e.target.value) } } placeholder='ค้นหาชื่อ หรือ รหัสสินค้า'/>
