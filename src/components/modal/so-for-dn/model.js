@@ -1,3 +1,4 @@
+import DocumentLink from "../../DocumentLink";
 /** get items column */
 import dayjs from 'dayjs';
 import { TagSalesOrderStatus } from "../../../components/badge-and-tag";
@@ -11,7 +12,7 @@ export const columns = ()=>{
       align: "left",
       hidden: true,
     },
-    {
+    {render: (value) => <DocumentLink type="socode" code={value} />,
       title: "รหัสใบส่งสินค้า",
       key: "socode",
       dataIndex: "socode", 

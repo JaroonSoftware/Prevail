@@ -1,3 +1,4 @@
+import DocumentLink from "../../components/DocumentLink";
 import { Button, Space } from "antd"; 
 import "../../assets/styles/banks.css"
 // import { Typography } from "antd"; 
@@ -24,7 +25,7 @@ export const componentsEditable = {
 
 /** get sample column */
 export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}) => [
-  {
+  {render: (value) => <DocumentLink type="pocode" code={value} />,
     title: "รหัสใบสั่งซื้อ",
     key: "pocode",
     dataIndex: "pocode",

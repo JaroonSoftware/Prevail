@@ -1,3 +1,4 @@
+import DocumentLink from "../../components/DocumentLink";
 import { Button, Space,Flex,Typography, Popconfirm } from "antd";
 import { Tooltip,Badge } from "antd";
 // import { EditOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons"; 
@@ -22,7 +23,7 @@ export const componentsEditable = {
 
 /** get sample column */
 export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}) => [
-  {
+  {render: (value) => <DocumentLink type="recode" code={value} />,
     title: "เลขที่ใบเสร็จรับเงิน",
     key: "recode",
     dataIndex: "recode",
@@ -124,7 +125,7 @@ export const reViewColumns = [
     align: "center",
     render: (_, __, index) => index + 1,
   },
-  {
+  {render: (value) => <DocumentLink type="blcode" code={value} />,
     title: "เลขที่ใบวางบิล",
     dataIndex: "blcode",
     key: "blcode",
@@ -253,7 +254,7 @@ export const productColumn = ({handleRemove}) => [
     width: "10%",
     render: (im, rc, index) => <>{index + 1}</>,
   },
-  {
+  {render: (value) => <DocumentLink type="blcode" code={value} />,
     title: "เลขที่ใบวางบิล",
     dataIndex: "blcode",
     key: "blcode",

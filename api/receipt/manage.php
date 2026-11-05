@@ -16,6 +16,18 @@ try {
         $rest_json = file_get_contents("php://input");
         $_POST = json_decode($rest_json, true);
         extract($_POST, EXTR_OVERWRITE, "_");
+        // Serialize receipt creation against delivery-note edits and reject stale totals.
+        $receiptBills = $detail;
+        usort($receiptBills, function ($a, $b) { return strcmp($a['blcode'], $b['blcode']); });
+        foreach ($receiptBills as $bill) {
+            $lockBill = $conn->prepare("SELECT total_price FROM bl_master WHERE blcode = :b FOR UPDATE");
+            $lockBill->execute(array('b' => $bill['blcode']));
+            $currentTotal = $lockBill->fetchColumn();
+            if ($currentTotal === false || abs((float)$currentTotal - (float)$bill['total_price']) > 0.005) {
+                throw new Exception('ยอดใบวางบิลเปลี่ยนแปลง กรุณาโหลดข้อมูลใหม่ก่อนออกใบเสร็จ');
+            }
+        }
+
 
         // var_dump($_POST);
         $sql = "insert receipt (`recode`, `redate`, `cuscode`,

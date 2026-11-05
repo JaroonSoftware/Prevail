@@ -2,6 +2,7 @@
 ob_start();
 include_once(dirname(__FILE__, 2) . "/onload.php");
 include_once(dirname(__FILE__, 2) . "/common/fnc-code.php");
+require_once __DIR__ . "/source-line-map.php";
 
 $db = new DbConnect;
 $conn = $db->connect();
@@ -153,6 +154,32 @@ try {
         $rest_json = file_get_contents("php://input");
         $_PUT = json_decode($rest_json, true);
         extract($_PUT, EXTR_OVERWRITE, "_");
+        $header = (object)$header;
+        $lockDn = $conn->prepare("SELECT cuscode, doc_status FROM dnmaster WHERE dncode = :d FOR UPDATE");
+        $lockDn->execute(array('d' => $header->dncode));
+        $lockedDn = $lockDn->fetch(PDO::FETCH_ASSOC);
+        if (!$lockedDn) throw new Exception('ไม่พบใบส่งสินค้า');
+        $blockedStatuses = array('ชำระเงินไม่ครบ','ชำระเงินครบแล้ว','ชำระเงินยังไม่ครบ','ชำระครบแล้ว','ยกเลิก');
+        if (in_array($lockedDn['doc_status'], $blockedStatuses, true)) throw new Exception('สถานะเอกสารไม่อนุญาตให้แก้ไข');
+        $linkedReceipts = array();
+        $bills = $conn->prepare("SELECT b.blcode, b.cuscode FROM bl_master b
+            WHERE b.active_status = 'Y' AND EXISTS (SELECT 1 FROM bl_detail d WHERE d.blcode = b.blcode AND d.dncode = :d)
+            ORDER BY b.blcode FOR UPDATE");
+        $bills->execute(array('d' => $header->dncode));
+        $linkedBills = $bills->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($linkedBills as $bill) {
+            $receipt = $conn->prepare("SELECT r.recode, r.doc_status FROM receipt_detail rd JOIN receipt r ON r.recode = rd.recode
+                WHERE rd.blcode = :b ORDER BY r.recode FOR UPDATE");
+            $receipt->execute(array('b' => $bill['blcode']));
+            foreach ($receipt->fetchAll(PDO::FETCH_ASSOC) as $receiptRow) {
+                if (in_array($receiptRow['doc_status'], $blockedStatuses, true)) {
+                    throw new Exception('ไม่สามารถแก้ไขได้: ใบเสร็จชำระเงินไม่ครบ ชำระครบแล้ว หรือยกเลิก');
+                }
+                $linkedReceipts[$receiptRow['recode']] = true;
+            }
+            if ($bill['cuscode'] !== $header->cuscode) throw new Exception('กรุณานำใบส่งสินค้าออกจากใบวางบิลก่อนเปลี่ยนลูกค้า');
+        }
+
         // var_dump($_POST);
         $sql = "
         update dnmaster 
@@ -183,35 +210,102 @@ try {
             die;
         }
 
-        $sql = "delete from dndetail where dncode = :dncode";
-        $stmt = $conn->prepare($sql);
-        if (!$stmt->execute(['dncode' => $header->dncode])) {
-            $error = $conn->errorInfo();
-            throw new PDOException("Remove data error => $error");
+        $oldRows = $conn->prepare("SELECT code,socode,stcode,qty,price,unit FROM dndetail WHERE dncode = :d ORDER BY code FOR UPDATE");
+        $oldRows->execute(array('d' => $header->dncode));
+        $oldByCode = array();
+        $groups = array();
+        foreach ($oldRows->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $oldByCode[(string)$row['code']] = $row;
+            $groups[$row['socode']][$row['stcode']][] = $row;
         }
-
-        $sql = "insert into dndetail (dncode,socode,stcode,qty,price,unit)
-        values (:dncode,:socode,:stcode,:qty,:price,:unit)";
-        $stmt = $conn->prepare($sql);
-        if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
-
-        // $detail = $detail;  
-        foreach ($detail as $ind => $val) {
-            $val = (object)$val;
-            $stmt->bindParam(":dncode", $header->dncode, PDO::PARAM_STR);
-            $stmt->bindParam(":socode", $val->socode, PDO::PARAM_STR);
-            $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
-            $stmt->bindParam(":qty", $val->qty, PDO::PARAM_STR);
-            $stmt->bindParam(":price", $val->price, PDO::PARAM_STR);
-            $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
-        
-            if (!$stmt->execute()) {
-                $error = $conn->errorInfo();
-                throw new PDOException("Insert data error => $error");
+        $submittedCodes = array();
+        foreach ($detail as $value) {
+            $line = (array)$value;
+            $id = (string)($line['code'] ?? '');
+            if (!isset($oldByCode[$id]) || isset($submittedCodes[$id])) {
+                throw new Exception('รายการสินค้าเปลี่ยนแปลงหรืออ้างอิงซ้ำ กรุณาโหลดหน้าใหม่ก่อนบันทึก');
             }
-            
+            $old = $oldByCode[$id];
+            if ((string)$line['socode'] !== (string)$old['socode'] || (string)$line['stcode'] !== (string)$old['stcode']) {
+                throw new Exception('รายการสินค้าไม่ตรงกับใบส่งสินค้าเดิม กรุณาโหลดหน้าใหม่');
+            }
+            $submittedCodes[$id] = true;
+        }
+        $sourceMap = array();
+        ksort($groups);
+        foreach ($groups as $sourceSo => $products) {
+            $lockSo = $conn->prepare("SELECT socode FROM somaster WHERE socode = :s FOR UPDATE");
+            $lockSo->execute(array('s' => $sourceSo));
+            foreach ($products as $product => $rows) {
+                $sourceQuery = $conn->prepare("SELECT code,qty,price,unit FROM sodetail WHERE socode = :s AND stcode = :c ORDER BY code FOR UPDATE");
+                $sourceQuery->execute(array('s' => $sourceSo, 'c' => $product));
+                $sources = $sourceQuery->fetchAll(PDO::FETCH_ASSOC);
+                $sourceMap += dn_source_line_map($rows, $sources);
+            }
         }
 
+        $updateLine = $conn->prepare("UPDATE dndetail SET qty = :q, price = :p, unit = :u WHERE code = :id AND dncode = :d");
+        foreach ($detail as $value) {
+            $line = (array)$value;
+            $updateLine->execute(array('q' => $line['qty'], 'p' => $line['price'], 'u' => $line['unit'],
+                'id' => $line['code'], 'd' => $header->dncode));
+        }
+        foreach ($oldByCode as $id => $old) {
+            if (!isset($submittedCodes[$id])) {
+                $conn->prepare("DELETE FROM dndetail WHERE code = :id AND dncode = :d")
+                    ->execute(array('id' => $id, 'd' => $header->dncode));
+            }
+        }
+
+        // Each submitted line targets one source line, never a product-wide UPDATE.
+        $changedOrders = array();
+        $usedSourceCodes = array();
+        foreach ($detail as $value) {
+            $line = (array)$value;
+            $sourceCode = $sourceMap[(string)($line['code'] ?? '')] ?? null;
+            if ($sourceCode === null) {
+                throw new Exception('ไม่พบรายการสินค้าในใบขายต้นทาง กรุณาตรวจสอบก่อนบันทึก');
+            }
+            if (isset($usedSourceCodes[$sourceCode])) throw new Exception('รายการสินค้าอ้างอิงซ้ำ กรุณาโหลดหน้าใหม่');
+            $usedSourceCodes[$sourceCode] = true;
+            $original = $oldByCode[(string)$line['code']];
+            if ($line['socode'] !== $original['socode'] || $line['stcode'] !== $original['stcode']) {
+                throw new Exception('รายการสินค้าเปลี่ยนแปลง กรุณาโหลดหน้าใหม่');
+            }
+            $conn->prepare("UPDATE sodetail SET qty = :qty, price = :price, unit = :unit, delamount = :delqty
+                WHERE code = :id AND socode = :s AND stcode = :c")
+                ->execute(array('qty' => $line['qty'], 'price' => $line['price'], 'unit' => $line['unit'],
+                    'delqty' => $line['qty'], 'id' => $sourceCode, 's' => $line['socode'], 'c' => $line['stcode']));
+            $changedOrders[$line['socode']] = true;
+        }
+        foreach (array_keys($changedOrders) as $socode) {
+            $conn->prepare("UPDATE somaster SET total_price =
+                (SELECT COALESCE(SUM(qty * price * (1 + COALESCE(vat,0) / 100)),0) FROM sodetail WHERE socode = :s),
+                updated_date = CURRENT_TIMESTAMP(), updated_by = :u WHERE socode = :code")
+                ->execute(array('s' => $socode, 'u' => $action_user, 'code' => $socode));
+        }
+
+        foreach ($linkedBills as $bill) {
+            $conn->prepare("DELETE FROM bl_detail WHERE blcode = :b AND dncode = :d")
+                ->execute(array('b' => $bill['blcode'], 'd' => $header->dncode));
+            $conn->prepare("INSERT INTO bl_detail (blcode,socode,dncode,stcode,qty,price,unit)
+                SELECT :b,socode,dncode,stcode,qty,price,unit FROM dndetail WHERE dncode = :d")
+                ->execute(array('b' => $bill['blcode'], 'd' => $header->dncode));
+            $conn->prepare("UPDATE bl_master SET total_price = (SELECT COALESCE(SUM(qty * price),0) FROM bl_detail WHERE blcode = :b),
+                updated_date = CURRENT_TIMESTAMP(), updated_by = :u WHERE blcode = :code")
+                ->execute(array('b' => $bill['blcode'], 'u' => $action_user, 'code' => $bill['blcode']));
+        }
+        // Keep unpaid receipts consistent with the updated billing totals.
+        foreach (array_keys($linkedReceipts) as $recode) {
+            $conn->prepare("UPDATE receipt_detail rd JOIN bl_master b ON b.blcode = rd.blcode
+                SET rd.total_price = b.total_price, rd.grand_total_price = b.total_price - COALESCE(rd.discount,0)
+                WHERE rd.recode = :r")
+                ->execute(array('r' => $recode));
+            $conn->prepare("UPDATE receipt SET total_price = (SELECT COALESCE(SUM(total_price),0) FROM receipt_detail WHERE recode = :r),
+                grand_total_price = (SELECT COALESCE(SUM(total_price),0) FROM receipt_detail WHERE recode = :r2) - COALESCE(total_discount,0),
+                updated_date = CURRENT_TIMESTAMP(), updated_by = :u WHERE recode = :code")
+                ->execute(array('r' => $recode, 'r2' => $recode, 'u' => $action_user, 'code' => $recode));
+        }
         $conn->commit();
         http_response_code(200);
         echo json_encode(array("data" => array("code" => $code)));

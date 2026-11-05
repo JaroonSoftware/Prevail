@@ -1,3 +1,4 @@
+import DocumentLink from "../../components/DocumentLink";
 import { Button, Space,Badge } from "antd";
 import "../../assets/styles/banks.css";
 import { Tooltip } from "antd";
@@ -22,7 +23,7 @@ export const accessColumn = ({
   handleView,
   handlePrintsData,
 }) => [
-  {
+  {render: (value) => <DocumentLink type="dncode" code={value} />,
     title: "เลขที่ใบส่งของ",
     key: "dncode",
     dataIndex: "dncode",

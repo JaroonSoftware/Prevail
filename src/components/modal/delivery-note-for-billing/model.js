@@ -1,3 +1,4 @@
+import DocumentLink from "../../DocumentLink";
 /** get items column */
 import { TagSalesOrderStatus, TagDeliveryNoteStatus } from "../../badge-and-tag";
 import dayjs from "dayjs";
@@ -10,7 +11,7 @@ export const columns = ()=>{
       key: "code",
       hidden: "true",
     },
-    {
+    {render: (value) => <DocumentLink type="socode" code={value} />,
       title: "เลขที่ใบขายสินค้า",
       key: "socode",
       width: "15%",
@@ -53,7 +54,7 @@ export const columns = ()=>{
 
 export const dnSummaryColumns = () => {
   return [
-    {
+    {render: (value) => <DocumentLink type="dncode" code={value} />,
       title: "เลขที่ใบส่งของ",
       key: "dncode",
       width: "20%",
@@ -93,13 +94,13 @@ export const dnSummaryColumns = () => {
 
 export const shippingColumns = () => {
   return [
-    {
+    {render: (value) => <DocumentLink type="dncode" code={value} />,
       title: "เลขที่ใบส่งของ",
       key: "dncode",
       width: "14%",
       dataIndex: "dncode",
     },
-    {
+    {render: (value) => <DocumentLink type="socode" code={value} />,
       title: "เลขที่ใบขายสินค้า",
       key: "socode",
       width: "14%",

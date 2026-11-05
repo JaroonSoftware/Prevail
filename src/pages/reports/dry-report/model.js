@@ -1,3 +1,4 @@
+import DocumentLink from "../../../components/DocumentLink";
 import { Typography } from "antd";
 import dayjs from "dayjs";
 import { formatMoney } from "../../../utils/util";
@@ -10,7 +11,7 @@ export const columns = ({ handleCheck, handleSelectChange }) => [
     width: 40,
     render: (im, rc, index) => <>{index + 1}</>,
   },
-  {
+  {render: (value) => <DocumentLink type="socode" code={value} />,
     title: "ใบขายสินค้า",
     dataIndex: "socode",
     key: "socode",

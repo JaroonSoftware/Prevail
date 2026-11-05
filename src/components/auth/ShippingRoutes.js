@@ -2,11 +2,11 @@
 import React, { useEffect, useState } from "react";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Modal } from "antd";
-import Main from "../layout/MainShipping";
+import Main from "../layout/Main";
 import { Authenticate } from "../../service/Authenticate.service";
 import { store } from "../../store/store";
 import { Provider } from "react-redux";
-import { LoadingProvider } from "../../store/context/loading-context";
+
 // import { AxiosInterceptor } from "../layout/AxiosInterceptor";
 import { LAYOUT } from "../../constant/constant";
 // import { LoadingProvider } from "../../store/context/loading-context"
@@ -62,11 +62,7 @@ const ShippingRoutes = ({ allowdRole, layout = "child" }) => {
     if (isAuth && LAYOUT.CHILD === layout) {
       return (
         <Provider store={store}>
-          <LoadingProvider>
-          <Main>
-          </Main>
-            <Outlet />
-          </LoadingProvider>
+          <Main><Outlet /></Main>
         </Provider>
       );
     } else {

@@ -1,3 +1,4 @@
+import DocumentLink from "../../components/DocumentLink";
 import { Button, Space } from "antd";
 import "../../assets/styles/banks.css";
 // import { Typography } from "antd";
@@ -33,7 +34,7 @@ export const accessColumn = ({
   handleIssue,
   handlePrintsData,
 }) => [
-  {
+  {render: (value) => <DocumentLink type="dncode" code={value} />,
     title: "เลขที่ใบส่งของ",
     key: "dncode",
     dataIndex: "dncode",
@@ -76,12 +77,7 @@ export const accessColumn = ({
     key: "billing_blcode",
     width: 130,
     align: "center",
-    render: (v) =>
-      v ? (
-        <Tag color="green">{v}</Tag>
-      ) : (
-        <Tag color="default">ยังไม่ออก</Tag>
-      ),
+    render: (value) => <DocumentLink type="billing_blcode" code={value} />,
   },
   {
     title: "สถานะตัดสต๊อก",
@@ -186,7 +182,7 @@ export const productColumn = ({ handleRemove, handleSelectChange }) => [
     width: 80,
     render: (im, rc, index) => <>{index + 1}</>,
   },
-  {
+  {render: (value) => <DocumentLink type="socode" code={value} />,
     title: "ใบขายสินค้า",
     dataIndex: "socode",
     key: "socode",

@@ -1,3 +1,4 @@
+import DocumentLink from "../../DocumentLink";
 import { Typography } from "antd";
 
 
@@ -10,7 +11,7 @@ export const deliverynoteColumn = ({handleChoose})=>{
         key: "dncode",
         width: "30%",
         dataIndex: "dncode", 
-        render: (v, record) => <Link className="text-select" onClick={()=>handleChoose(record)}>{v}</Link>
+        render: (value) => <DocumentLink type="dncode" code={value} />
       },
       {
         title: "ชื่อผู้รับ",

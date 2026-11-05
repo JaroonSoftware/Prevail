@@ -1,3 +1,4 @@
+import DocumentLink from "../../components/DocumentLink";
 import { Button, Space } from "antd"; 
 import "../../assets/styles/banks.css"
 // import { Typography } from "antd"; 
@@ -18,7 +19,7 @@ export const componentsEditable = {
 
 /** get sample column */
 export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}) => [
-  {
+  {render: (value) => <DocumentLink type="grcode" code={value} />,
     title: "รหัสใบรับสินค้า",
     key: "grcode",
     dataIndex: "grcode",
@@ -114,7 +115,7 @@ export const productColumn = ({handleRemove},optionsItems) => [
     width: 80, 
     render: (im, rc, index) => <>{index + 1}</>,
   },
-  {
+  {render: (value) => <DocumentLink type="pocode" code={value} />,
     title: "ใบสั่งซื้อ",
     dataIndex: "pocode",
     key: "pocode",

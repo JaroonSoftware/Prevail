@@ -1,3 +1,4 @@
+import DocumentLink from "../../components/DocumentLink";
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from "react";
@@ -75,7 +76,7 @@ export default function DeliveryNoteView() {
 
   const buildMasterItems = (h) => {
     const items = [
-      { label: "เลขที่ใบส่งของ", children: h?.dncode || "" },
+      { label: "เลขที่ใบส่งของ", children: <DocumentLink type="dncode" code={h?.dncode} /> },
       {
         label: "วันที่ใบส่งของ",
         children: h?.dndate ? dayjs(h.dndate).format("DD/MM/YYYY") : "",
@@ -220,7 +221,7 @@ export default function DeliveryNoteView() {
   };
 
   const handleClose = () => {
-    navigate("/delivery-note", { replace: true });
+    location.state?.documentReturn ? navigate(-1) : navigate("/delivery-note", { replace: true });
   };
 
   const handleIssue = async (data) => {
@@ -340,7 +341,7 @@ export default function DeliveryNoteView() {
               <Card>
                 <Space direction="vertical" size="middle" style={{ width: "100%" }}>
                   <Typography.Title level={4}>
-                    ใบวางบิล: {billingInfo.blcode}
+                    ใบวางบิล: <DocumentLink type="blcode" code={billingInfo.blcode} />
                   </Typography.Title>
                   <Button
                     type="primary"

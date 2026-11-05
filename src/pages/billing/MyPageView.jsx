@@ -1,3 +1,4 @@
+import DocumentLink from "../../components/DocumentLink";
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from "react";
@@ -60,7 +61,7 @@ export default function BillingView() {
 
   const buildMasterItems = (h) => {
     const items = [
-      { label: "เลขที่ใบวางบิล", children: h?.blcode || "" },
+      { label: "เลขที่ใบวางบิล", children: <DocumentLink type="blcode" code={h?.blcode} /> },
       {
         label: "วันที่ใบวางบิล",
         children: h?.bldate ? dayjs(h.bldate).format("DD/MM/YYYY") : "",
@@ -205,7 +206,7 @@ export default function BillingView() {
   };
 
   const handleClose = () => {
-    navigate("/billing", { replace: true });
+    location.state?.documentReturn ? navigate(-1) : navigate("/billing", { replace: true });
   };
 
   const ButtonActionLeft = (

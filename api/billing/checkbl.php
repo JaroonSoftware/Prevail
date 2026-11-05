@@ -12,7 +12,7 @@ try {
             throw new Exception("dncode is required");
         }
 
-        $sql = "SELECT DISTINCT a.blcode, b.bldate, b.cuscode, b.payment, b.duedate, b.total_price, b.discount, b.remark, b.doc_status, b.active_status, a.dncode"
+        $sql = "SELECT DISTINCT a.blcode, b.bldate, b.cuscode, b.payment, b.duedate, b.total_price, b.discount, b.remark, b.doc_status, b.active_status, a.dncode, EXISTS(SELECT 1 FROM receipt_detail rd JOIN receipt r ON r.recode = rd.recode WHERE rd.blcode = b.blcode) AS has_receipt, EXISTS(SELECT 1 FROM receipt_detail rd JOIN receipt r ON r.recode = rd.recode WHERE rd.blcode = b.blcode AND r.doc_status IN ('ชำระเงินไม่ครบ','ชำระเงินครบแล้ว','ชำระเงินยังไม่ครบ','ชำระครบแล้ว','ยกเลิก')) AS edit_locked"
              . " FROM bl_detail a"
              . " INNER JOIN bl_master b ON a.blcode = b.blcode"
              . " WHERE a.dncode = :dncode AND b.active_status = 'Y'"

@@ -1,3 +1,4 @@
+import DocumentLink from "../../../components/DocumentLink";
 import { Tag, Typography } from "antd";
 import dayjs from "dayjs";
 import { IoMdTime } from "react-icons/io";
@@ -11,7 +12,7 @@ export const columns = ({ handleCheck, handleSelectChange }) => [
     width: 60,
     render: (im, rc, index) => <>{index + 1}</>,
   },
-  {
+  {render: (value) => <DocumentLink type="socode" code={value} />,
     title: "ใบขายสินค้า",
     dataIndex: "socode",
     key: "socode",

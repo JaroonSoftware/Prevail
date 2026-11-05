@@ -1,3 +1,4 @@
+import DocumentLink from "../../components/DocumentLink";
 import { Button, Space } from "antd"; 
 import "../../assets/styles/banks.css"
 // import { Typography } from "antd"; 
@@ -24,7 +25,7 @@ export const componentsEditable = {
 
 /** get sample column */
 export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}) => [
-  {
+  {render: (value) => <DocumentLink type="blcode" code={value} />,
     title: "เลขที่ใบวางบิล",
     key: "blcode",
     dataIndex: "blcode",
@@ -126,7 +127,7 @@ export const detailColumns = [
       align: "center",
       render: (_, __, index) => index + 1,
     },
-    {
+    {render: (value) => <DocumentLink type="socode" code={value} />,
       title: "เลขที่ SO",
       dataIndex: "socode",
       key: "socode",
@@ -189,14 +190,14 @@ export const blViewColumns = [
         align: "center",
         render: (_, __, index) => index + 1,
       },
-      {
+      {render: (value) => <DocumentLink type="socode" code={value} />,
         title: "เลขที่ใบขายสินค้า",
         dataIndex: "socode",
         key: "socode",
         width: 140,
         align: "left",
       },
-    {
+    {render: (value) => <DocumentLink type="dncode" code={value} />,
         title: "เลขที่ใบส่งของ",
         dataIndex: "dncode",
         key: "dncode",
@@ -274,7 +275,7 @@ export const blViewColumns = [
     ];
 
 export const prodcolumns = ({ handleRemove }) => [
-  {
+  {render: (value) => <DocumentLink type="dncode" code={value} />,
     title: "เลขที่ใบส่งของ",
     dataIndex: "dncode",
     key: "dncode",
@@ -350,7 +351,7 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
   //   width: 120, 
   //   align: "center",
   // },
-  {
+  {render: (value) => <DocumentLink type="dncode" code={value} />,
     title: "เลขที่ใบส่งของ",
     dataIndex: "dncode",
     key: "dncode",

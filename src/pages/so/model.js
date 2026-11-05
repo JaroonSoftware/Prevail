@@ -1,3 +1,4 @@
+import DocumentLink from "../../components/DocumentLink";
 import { Button,Space,Badge,Tooltip } from "antd"; 
 
 // import { EditOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons"; 
@@ -26,7 +27,7 @@ export const componentsEditableWithDrag = {
 
 /** get sample column */
 export const accessColumn = ({handleEdit, handleView, handlePrintsData, handleCreateDN}) => [
-  {
+  {render: (value) => <DocumentLink type="socode" code={value} />,
     title: "รหัสใบขายสินค้า",
     key: "socode",
     dataIndex: "socode",

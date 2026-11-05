@@ -1,7 +1,9 @@
+import DocumentLink from "../../components/DocumentLink";
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
 import {
   Button,
+  Alert,
   DatePicker,
   Form,
   Input,
@@ -66,6 +68,8 @@ function DeliveryNoteManage() {
   const [formDetail, setFormDetail] = useState(DEFALUT_CHECK_DELIVERY);
 
   const [billingInfo, setBillingInfo] = useState(null);
+  const [billingChecking, setBillingChecking] = useState(config?.action !== "create");
+  const receiptLocked = billingChecking || !!billingInfo?.hasReceipt || ["ชำระเงินไม่ครบ", "ชำระเงินครบแล้ว", "ชำระเงินยังไม่ครบ", "ชำระครบแล้ว", "ยกเลิก"].includes(formDetail?.doc_status);
 
   const [unitOption, setUnitOption] = React.useState([]);
 
@@ -146,6 +150,7 @@ function DeliveryNoteManage() {
 
   const checkBillingStatus = async (dncode) => {
     if (!dncode) return;
+    setBillingChecking(true);
     
     try {
       const res = await blservice.checkBillingByDncode(dncode);
@@ -157,17 +162,22 @@ function DeliveryNoteManage() {
         const billing = data[0]; // เอาใบแรกที่เจอ
         setBillingInfo({
           blcode: billing.blcode,
-          hasBilling: true
+          hasBilling: true,
+          hasReceipt: data.some((row) => Number(row.edit_locked) === 1)
         });
       } else {
         setBillingInfo(null);
       }
     } catch (error) {
       console.warn("Error checking billing status:", error);
-      setBillingInfo(null);
+      setBillingInfo({ hasReceipt: true });
+      message.error("ตรวจสอบใบเสร็จไม่สำเร็จ กรุณาโหลดหน้าใหม่");
+    } finally {
+      setBillingChecking(false);
     }
   };
   const handleConfirm = () => {
+    if (receiptLocked) return;
     form
       .validateFields()
       .then((v) => {
@@ -300,7 +310,7 @@ function DeliveryNoteManage() {
           <RiDeleteBin5Line style={{ fontSize: "1rem", marginTop: "3px" }} />
         }
         onClick={() => handleDelete(record?.socode)}
-        disabled={!!billingInfo?.hasBilling}
+        disabled={receiptLocked}
       />
     ) : null;
   };
@@ -432,7 +442,7 @@ function DeliveryNoteManage() {
             onClick={() => {
               setOpenProduct(true);
             }}
-            disabled={!!billingInfo?.hasBilling}
+            disabled={receiptLocked}
           >
             เลือกใบขายสินค้า
           </Button>
@@ -542,7 +552,7 @@ function DeliveryNoteManage() {
             onClick={() => {
               handleConfirm();
             }}
-            disabled={!!billingInfo?.hasBilling}
+            disabled={receiptLocked}
           >
             Save
           </Button>
@@ -570,7 +580,7 @@ function DeliveryNoteManage() {
             onClick={() => {
               handleConfirm();
             }}
-            disabled={!!billingInfo?.hasBilling}
+            disabled={receiptLocked}
           >
             Save
           </Button>
@@ -584,20 +594,15 @@ function DeliveryNoteManage() {
       <div id="dn-manage" className="px-0 sm:px-0 md:px-8 lg:px-8">
         <Space direction="vertical" className="flex gap-4">
           {SectionTop}
+          {!billingChecking && receiptLocked && <Alert type="warning" showIcon message="ไม่สามารถแก้ไขได้: เอกสารอยู่ในสถานะชำระเงินไม่ครบ ชำระครบแล้ว หรือยกเลิก" />}
           <Form
             form={form}
             layout="vertical"
             className="width-100"
             autoComplete="off"
+            disabled={receiptLocked}
           >
-            <Tabs
-              defaultActiveKey="1"
-              items={[
-                {
-                  key: "1",
-                  label: "ข้อมูลใบส่งสินค้า",
-                  children: (
-                    <Card
+            <Card
                       title={
                         <>
                           <Row className="m-0 py-3 sm:py-0" gutter={[12, 12]}>
@@ -638,25 +643,18 @@ function DeliveryNoteManage() {
                           <Card style={cardStyle}>{SectionCustomers}</Card>
                         </Col>
                         <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-                          <Divider orientation="left" className="!my-0">
-                            รายการใบส่งสินค้า
-                          </Divider>
-                          <Card style={{ backgroundColor: "#f0f0f0" }}>
-                            {SectionProduct}
-                          </Card>
-                        </Col>
-                      </Row>
-                    </Card>
-                  ),
-                },
-                ...(billingInfo?.hasBilling ? [{
+                          <Tabs defaultActiveKey="1" items={[
+                            { key: "1", label: "รายการใบส่งสินค้า", children: (
+                              <Card style={{ backgroundColor: "#f0f0f0" }}>{SectionProduct}</Card>
+                            ) },
+                            ...(billingInfo?.hasBilling ? [{
                   key: "2",
                   label: "รายการรับชำระ",
                   children: (
                     <Card>
                       <Space direction="vertical" size="middle" style={{ width: "100%" }}>
                         <Typography.Title level={4}>
-                          ใบวางบิล: {billingInfo.blcode}
+                          ใบวางบิล: <DocumentLink type="blcode" code={billingInfo.blcode} />
                         </Typography.Title>
                         <Button
                           type="primary"
@@ -667,9 +665,11 @@ function DeliveryNoteManage() {
                       </Space>
                     </Card>
                   ),
-                }] : []),
-              ]}
-            />
+                }] : [])
+                          ]} />
+                        </Col>
+                      </Row>
+                    </Card>
           </Form>
           {SectionBottom}
         </Space>

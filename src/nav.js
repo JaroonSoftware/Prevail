@@ -22,6 +22,8 @@ import { BsShop } from "react-icons/bs";
 import { MdOutlineDashboard  } from "react-icons/md";
 
 let _nav = [
+  { title: "เมนูระบบ", icon: <AppstoreAddOutlined className="nav-ico" />, to: "/menu" },
+  { title: "สิทธิ์การเข้าถึงโปรแกรม", icon: <TeamOutlined className="nav-ico" />, to: "/permissions", role: ["admin"] },
   {
       title: "DATA",
       type: "group",
@@ -111,6 +113,12 @@ let _nav = [
     title: "รายงานยอดขายตามลูกค้า",
     icon: <TeamOutlined className="nav-ico" />,
     to: "/so-by-customer-report",
+    hiddenRoles: ["จัดซื้อ","พนักงานส่งสินค้า"],
+  },
+  {
+    title: "ประวัติการขายแยกตามลูกค้า",
+    icon: <TeamOutlined className="nav-ico" />,
+    to: "/sales-history-customer-report",
     hiddenRoles: ["จัดซื้อ","พนักงานส่งสินค้า"],
   },
   {

@@ -1,3 +1,4 @@
+import DocumentLink from "../../components/DocumentLink";
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from "react";
@@ -80,7 +81,7 @@ export default function PurchaseOrderView() {
 
   const buildMasterItems = (h) => {
     const items = [
-      { label: "รหัสใบสั่งซื้อ", children: h?.pocode || "" },
+      { label: "รหัสใบสั่งซื้อ", children: <DocumentLink type="pocode" code={h?.pocode} /> },
       {
         label: "วันที่ใบสั่งซื้อ",
         children: h?.podate ? dayjs(h.podate).format("DD/MM/YYYY") : "",
@@ -181,7 +182,7 @@ export default function PurchaseOrderView() {
   };
 
   const hendleClose = () => {
-    navigate("/purchase-order", { replace: true });
+    location.state?.documentReturn ? navigate(-1) : navigate("/purchase-order", { replace: true });
   };
 
   const ButtonActionLeft = (

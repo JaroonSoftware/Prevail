@@ -1,3 +1,4 @@
+import DocumentLink from "../../DocumentLink";
 /** get items column */
 import { TagItemTypes } from "../../badge-and-tag";
 export const columns = ()=>{
@@ -8,7 +9,7 @@ export const columns = ()=>{
       key: "code",
       hidden: "true",
     },
-    {
+    {render: (value) => <DocumentLink type="pocode" code={value} />,
       title: "รหัสใบสั่งซื้อ",
       key: "pocode",
       dataIndex: "pocode", 

@@ -13,8 +13,11 @@ import { SalesByCustomerReport } from "../pages/reports/sales-by-customer-report
 import { SalesByProductReport } from "../pages/reports/sales-by-product-report";
 import { OutstandingByCustomerReport } from "../pages/reports/outstanding-by-customer-report";
 
+import SalesHistoryCustomerReport from "../pages/reports/sales-history-customer-report/MyReport";
+
 export const ReportRouter = (
   <>
+    <Route path="/sales-history-customer-report" element={<SalesHistoryCustomerReport />} />
     <Route path="/so-by-product-report" element={<SalesByProductReport />} />
     <Route path="/profit-by-product-customer-report" element={<ProfitByProductCustomerReport />} />
     <Route path="/best-selling-product-report" element={<BestSellingProductReport />} />

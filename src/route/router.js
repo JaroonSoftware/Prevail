@@ -1,3 +1,5 @@
+import MenuHome from "../pages/home/MenuHome";
+import PortalRoute from "../pages/home/PortalRoute";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 // import { BrowserRouter, Routes, Route } from "react-router-dom";
 // import Home from "../pages/Home";
@@ -16,8 +18,9 @@ const Router = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate replace to="/login" />} />
+        <Route path="/" element={<Navigate replace to="/menu" />} />
         <Route path="/login" element={<Login />} />
+        <Route element={<PortalRoute />}><Route path="/menu" element={<MenuHome />} /><Route path="/menu/:moduleCode" element={<MenuHome />} /></Route>
 
         <Route
           element={<ShippingRoutes allowdRole={[ROLES.ADMIN, ROLES.USER]} />}

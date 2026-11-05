@@ -1,3 +1,4 @@
+import DocumentLink from "../../../components/DocumentLink";
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   Card,
@@ -375,7 +376,7 @@ const OutstandingByCustomerReport = () => {
           dataSource={billListRow?.bills || []}
           pagination={false}
           columns={[
-            { title: "เลขที่ใบวางบิล", dataIndex: "blcode" },
+            {render: (value) => <DocumentLink type="blcode" code={value} />, title: "เลขที่ใบวางบิล", dataIndex: "blcode" },
             {
               title: "วันที่บิล",
               dataIndex: "bldate",

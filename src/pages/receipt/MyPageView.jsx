@@ -1,3 +1,4 @@
+import DocumentLink from "../../components/DocumentLink";
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
@@ -82,7 +83,7 @@ export default function ReceiptView() {
 
   const buildMasterItems = (h) => {
     const items = [
-      { label: "เลขที่ใบเสร็จรับเงิน", children: h?.recode || "" },
+      { label: "เลขที่ใบเสร็จรับเงิน", children: <DocumentLink type="recode" code={h?.recode} /> },
       {
         label: "วันที่ใบเสร็จรับเงิน",
         children: h?.redate ? dayjs(h.redate).format("DD/MM/YYYY") : "",
@@ -337,7 +338,7 @@ export default function ReceiptView() {
   };
 
   const handleClose = () => {
-    navigate("/receipt", { replace: true });
+    location.state?.documentReturn ? navigate(-1) : navigate("/receipt", { replace: true });
   };
 
   const ButtonActionLeft = (

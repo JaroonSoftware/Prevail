@@ -1,3 +1,4 @@
+import DocumentLink from "../../components/DocumentLink";
 import { Button, Space, Badge } from "antd";
 import "../../assets/styles/banks.css";
 import { Tooltip } from "antd";
@@ -21,7 +22,7 @@ export const accessColumn = ({
   handleView,
   handlePrint,
 }) => [
-  {
+  {render: (value) => <DocumentLink type="catalog_code" code={value} />,
     title: "รหัสแคตตาล๊อก",
     key: "catalog_code",
     dataIndex: "catalog_code",

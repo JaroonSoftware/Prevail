@@ -66,12 +66,7 @@ const Login = () => {
     Connectapp(values);
   };
   const direcetSystem = () => {
-    const type = authService.getType();
-
-    if(type!=='พนักงานส่งสินค้า')
-    navigate("/dashboard", { replace: true });
-    else
-    navigate("/shipping", { replace: true });
+    navigate("/menu", { replace: true });
   };
 
   const checkOverdueCustomers = async () => {

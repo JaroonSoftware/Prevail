@@ -1,3 +1,4 @@
+import DocumentLink from "../../DocumentLink";
 /** get items column */
 import { TagItemTypes } from "../../badge-and-tag";
 import { Image } from "antd";
@@ -15,7 +16,7 @@ export const columns = ()=>{
       key: "stcode",
       dataIndex: "stcode", 
     },
-    {
+    {render: (value) => <DocumentLink type="socode" code={value} />,
       title: "รหัสใบขายสินค้า",
       key: "socode",
       dataIndex: "socode", 

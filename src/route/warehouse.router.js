@@ -1,3 +1,4 @@
+import { DocumentPage } from "../components/DocumentLink";
 
 import { Route } from "react-router-dom";
 
@@ -33,13 +34,13 @@ export const WarehouseRouter = (
       <Route index element={<QuotationAccess />} />
       <Route path="manage/:action" element={<QuotationManage />} />
       <Route path="order" element={<QuotationOrder />} />
-      <Route path="view" element={<QuotationView />} />
+      <Route path="view" element={<DocumentPage><QuotationView /></DocumentPage>} />
     </Route>
 
     <Route path="/purchase-order/" exact element={<PurchaseOrder />}>
       <Route index element={<PurchaseOrderAccess />} />
       <Route path="manage/:action" element={<PurchaseOrderManage />} />
-      <Route path="view" element={<PurchaseOrderView />} />
+      <Route path="view" element={<DocumentPage><PurchaseOrderView /></DocumentPage>} />
     </Route>
 
     {/* ใบสั่งซื้ออ่านค่าจาก AI (ทดสอบ) — แยก path ไม่ให้เมนูใบสั่งซื้อไฮไลต์ซ้อน */}
@@ -47,7 +48,7 @@ export const WarehouseRouter = (
 
     <Route path="/goods-receipt/" exact element={<GoodsReceipt />}>
       <Route index element={<GoodsReceiptAccess />} />
-      <Route path="manage/:action" element={<GoodsReceiptManage />} />
+      <Route path="manage/:action" element={<DocumentPage><GoodsReceiptManage /></DocumentPage>} />
     </Route>
 
     <Route path="/print-weight/" exact element={<PrintWeight />}>
@@ -58,7 +59,7 @@ export const WarehouseRouter = (
     <Route path="/sales-order/" exact element={<SO />}>
       <Route index element={<SOAccess />} />
       <Route path="manage/:action" element={<SOManage />} />
-      <Route path="view" element={<SOView />} />
+      <Route path="view" element={<DocumentPage><SOView /></DocumentPage>} />
       {/* PO ลูกค้า -> ร่างใบขายสินค้าด้วย AI */}
       <Route path="ai-import" element={<SOAiImport />} />
     </Route>
@@ -66,19 +67,19 @@ export const WarehouseRouter = (
     <Route path="/delivery-note/" exact element={<DN />}>
       <Route index element={<DNAccess />} />
       <Route path="manage/:action" element={<DNManage />} />
-      <Route path="view" element={<DNView />} />
+      <Route path="view" element={<DocumentPage><DNView /></DocumentPage>} />
     </Route>
 
     <Route path="/billing/" exact element={<BL />}>
       <Route index element={<BLAccess />} />
       <Route path="manage/:action" element={<BLManage />} />
-      <Route path="view" element={<BLView />} />
+      <Route path="view" element={<DocumentPage><BLView /></DocumentPage>} />
     </Route>
 
     <Route path="/receipt/" exact element={<Receipt />}>
       <Route index element={<ReceiptAccess />} />
       <Route path="manage/:action" element={<ReceiptManage />} />
-      <Route path="view" element={<ReceiptView />} />
+      <Route path="view" element={<DocumentPage><ReceiptView /></DocumentPage>} />
     </Route>
 
     <Route path="/shipping/" exact element={<Shipping />}>

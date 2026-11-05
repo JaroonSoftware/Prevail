@@ -174,29 +174,6 @@
 .dnf { padding-left: 0.6in; padding-right: 0.6in; }
 
 /* ขอบซ้ายห่างรูหนามเตยมากขึ้นตามที่ลูกค้าขอ (ขวาคงเดิม) */
-.dnf { padding-left: 0.85in; }
+.dnf { padding-left: 0.7in; }
 /* ตัวเลข/หน่วยไม่ตัดบรรทัด (เดิม "10.000 Pack" ตก Pack ลงบรรทัดใหม่) */
 .dnf-table td.dnf-r { white-space: nowrap; }
-
-/* Sales order and delivery note: bold only company, title and selected field labels. */
-.dnf.so-form,
-.dnf.dn-form {
-  font-weight: 400;
-  /* Slightly reinforce regular text without changing character spacing. */
-  -webkit-text-stroke: 0.12px #000;
-}
-.dnf.so-form .dnf-table th,
-.dnf.so-form .dnf-table td,
-.dnf.dn-form .dnf-table th,
-.dnf.dn-form .dnf-table td {
-  font-weight: 400;
-}
-.dnf.so-form .so-bold,
-.dnf.so-form .dnf-co-th,
-.dnf.so-form .dnf-title,
-.dnf.dn-form .dn-bold,
-.dnf.dn-form .dnf-co-th,
-.dnf.dn-form .dnf-title {
-  font-weight: 700;
-  -webkit-text-stroke: 0;
-}

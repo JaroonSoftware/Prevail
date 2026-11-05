@@ -1,3 +1,4 @@
+import DocumentLink from "../../components/DocumentLink";
 import { Tag, Typography } from "antd";
 import dayjs from "dayjs";
 import { IoMdTime } from "react-icons/io";
@@ -10,7 +11,7 @@ export const salesOrderListColumn = ({handleShowDetail}) => [
       key: "socode",
       dataIndex: "socode",
       align: "left",
-      render : (value, record) => <Typography.Link onClick={() => handleShowDetail(record)}>{value || "-"}</Typography.Link>
+      render: (value) => <DocumentLink type="socode" code={value} />
     },
     {
       title: "วันที่ใบขายสินค้า",
@@ -58,7 +59,7 @@ export const deliveryNoteListColumn = [
       width:20,
       render:() => <IoMdTime color="#ff7e23" style={{fontSize: '1.3rem'}} />
     },
-    {
+    {render: (value) => <DocumentLink type="dncode" code={value} />,
       title: "เลขที่ใบส่งของ",
       key: "dncode",
       dataIndex: "dncode",

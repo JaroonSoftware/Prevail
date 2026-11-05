@@ -1,3 +1,4 @@
+import DocumentLink from "../../components/DocumentLink";
 /* ============================================================================
    PO ลูกค้า -> ร่างใบขายสินค้าด้วย AI
    อัปโหลด PO / ใบขอซื้อ (PDF หรือรูป หลายไฟล์ได้) -> AI อ่าน -> สร้างใบขายสินค้า
@@ -88,7 +89,7 @@ function AiSoImport() {
 
   const soColumns = [
     { title: "เลขที่ใบขาย", dataIndex: "socode", width: 130,
-      render: (v) => <Typography.Link onClick={() => openSO(v)}>{v}</Typography.Link> },
+      render: (value) => <DocumentLink type="socode" code={value} /> },
     { title: "PO ลูกค้า", dataIndex: "customer_po", width: 150 },
     { title: "ห้องครัว / จุดส่ง", dataIndex: "del_room" },
     { title: "วันส่ง", dataIndex: "deldate", width: 110, render: (v) => (v ? dayjs(v).format("DD/MM/YYYY") : "-") },

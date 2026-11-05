@@ -1,3 +1,4 @@
+import DocumentLink from "../../DocumentLink";
 
 import { TagInvoiceStatus } from "../../badge-and-tag";
 import { formatMoney } from "../../../utils/util";
@@ -11,7 +12,7 @@ export const customersColumn = ()=>{
         key: "code",
         hidden: "true",
       },
-      {
+      {render: (value) => <DocumentLink type="blcode" code={value} />,
         title: "เลขที่ใบวางบิล",
         key: "blcode",
         width: "14%",

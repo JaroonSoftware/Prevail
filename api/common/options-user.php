@@ -9,6 +9,13 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
     try { 
         $res = null;
         
+        // Prefer configured groups after the reviewed permission migration is installed.
+        if ($conn->query("SHOW TABLES LIKE 'prevail_role'")->fetch()) {
+            $roles = $conn->query("SELECT role_code FROM prevail_role WHERE status='Y' ORDER BY seq,role_code")->fetchAll(PDO::FETCH_COLUMN);
+            http_response_code(200);
+            echo json_encode(array('data' => $roles));
+            exit;
+        }
         $sql = "SHOW COLUMNS FROM `user` LIKE 'type'";
             // $type_code
             $stmt = $conn->prepare($sql); 

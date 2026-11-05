@@ -1,3 +1,4 @@
+import DocumentLink from "../../DocumentLink";
 /** get items column */
 import { TagDeliveryNoteStatus } from "../../badge-and-tag";
 export const columns = ()=>{
@@ -8,7 +9,7 @@ export const columns = ()=>{
       key: "code",
       hidden: "true",
     },
-    {
+    {render: (value) => <DocumentLink type="dncode" code={value} />,
       title: "เลขที่ใบส่งของ",
       key: "dncode",
       width: "15%",

@@ -1,3 +1,4 @@
+import DocumentLink from "../../components/DocumentLink";
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from "react";
@@ -78,7 +79,7 @@ export default function SOView() {
 
   const buildMasterItems = (h) => {
     const items = [
-      { label: "เลขที่ใบขายสินค้า", children: h?.socode || "" },
+      { label: "เลขที่ใบขายสินค้า", children: <DocumentLink type="socode" code={h?.socode} /> },
       {
         label: "วันที่ใบขายสินค้า",
         children: h?.sodate ? dayjs(h.sodate).format("DD/MM/YYYY") : "",
@@ -192,7 +193,7 @@ export default function SOView() {
   };
 
   const handleClose = () => {
-    navigate("/sales-order", { replace: true });
+    location.state?.documentReturn ? navigate(-1) : navigate("/sales-order", { replace: true });
   };
 
   const ButtonActionLeft = (

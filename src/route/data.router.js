@@ -1,3 +1,5 @@
+import PermissionPage from "../pages/permission";
+import { DocumentPage } from "../components/DocumentLink";
 import React from "react";
 import { Route } from "react-router-dom";
 
@@ -11,6 +13,7 @@ import { Catalog, CatalogAccess ,CatalogManage, CatalogAiImport } from "../pages
 
 export const DataRouter = (
   <>
+    <Route path="/permissions" element={<PermissionPage />} />
     <Route path="/users/" exact element={<Users />}>
       <Route index element={<UsersAccess />} />
       <Route path="manage/:action" element={<UsersManage />} />
@@ -44,7 +47,7 @@ export const DataRouter = (
     
     <Route path="/catalog/" exact element={<Catalog />}>
       <Route index element={<CatalogAccess />} />
-      <Route path="manage/:action" element={<CatalogManage />} />
+      <Route path="manage/:action" element={<DocumentPage><CatalogManage /></DocumentPage>} />
       {/* นำเข้าไฟล์ราคา Excel ด้วย AI */}
       <Route path="ai-import" element={<CatalogAiImport />} />
     </Route>
