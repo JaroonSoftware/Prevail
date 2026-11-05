@@ -151,6 +151,8 @@ final class SoDraft
             $byOrder[$oi][$li] = self::decide($m, $catalog, $items);
         }
 
+        // AI matching is complete; do not hold the numbering lock during external calls.
+        lock_document_numbers($conn);
         $insHead = $conn->prepare("
             INSERT INTO somaster (socode, cuscode, sodate, customer_po, del_room, total_price, deldate, remark,
                                   active_status, doc_status, created_date, created_by)
@@ -189,7 +191,6 @@ final class SoDraft
             if ($savedStatus->fetchColumn() !== self::STATUS_DRAFT) {
                 throw new AiUserException('บันทึกสถานะรอยืนยันไม่สำเร็จ ระบบยกเลิกการนำเข้าครั้งนี้ กรุณาตรวจโครงสร้าง doc_status');
             }
-            update_socode($conn);
 
             $nAuto = 0;
             $nPend = 0;
@@ -258,8 +259,7 @@ final class SoDraft
     /** เลขที่ใบขายถัดไป (request_socode คืน 0 ครั้งแรกของเดือนตอนเพิ่งสร้างแถว options) */
     private static function nextSocode(PDO $conn): string
     {
-        $code = request_socode($conn);
-        if (!$code) $code = request_socode($conn);
+        $code = document_number($conn, 'socode', true);
         return (string)$code;
     }
 }

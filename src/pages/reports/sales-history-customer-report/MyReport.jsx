@@ -56,7 +56,7 @@ export default function SalesHistoryCustomerReport(){
   return <div className="history-report">
     <section className="history-toolbar">
       <h1>{REPORT_TITLE}</h1>
-      <Form form={form} layout="vertical" onFinish={search} onValuesChange={()=>setDirty(true)}>
+      <Form form={form} layout="vertical" size="large" onFinish={search} onValuesChange={()=>setDirty(true)}>
         <div className="history-filters">
           <Form.Item name="dates" label="ช่วงวันที่ใบส่งสินค้า" rules={[{required:true,message:'กรุณาเลือกช่วงวันที่'}]}><DatePicker.RangePicker allowClear={false} format="DD/MM/YYYY" /></Form.Item>
           {customerField('customer_from')}{customerField('customer_to')}
@@ -65,14 +65,13 @@ export default function SalesHistoryCustomerReport(){
           <Form.Item label="เลือกลูกค้ารายเดียว"><Select showSearch allowClear options={customers} optionFilterProp="label" placeholder="เลือกเพื่อกำหนดรหัสจาก–ถึง" onChange={value=>{form.setFieldsValue({customer_from:value||'',customer_to:value||''});setDirty(true);}} /></Form.Item>
         </div>
         <div className="history-actions">
+          {report&&<span className="history-record-count">{report.data.length.toLocaleString()} รายการ</span>}
           <Button type="primary" htmlType="submit" icon={<SearchOutlined />} loading={loading}>แสดงรายงาน</Button>
           <Button icon={<PrinterOutlined />} disabled={!ready||loading||dirty||!!error} onClick={()=>window.print()}>พิมพ์ / บันทึก PDF</Button>
-          {report&&<span>{report.data.length.toLocaleString()} รายการ</span>}
+
         </div>
       </Form>
       {['customer_from','customer_to'].map(name=><datalist id={'history-customers-'+name} key={name}>{customers.map(c=><option key={c.value} value={c.value}>{c.label}</option>)}</datalist>)}
-      <p className="history-help">ดูและพิมพ์จากเอกสารชุดเดียวกัน · กระดาษ Letter แนวตั้ง ขนาด 100% · ปิดหัว/ท้ายกระดาษของเบราว์เซอร์</p>
-      <p className="history-help">ข้อมูลจากใบส่งสินค้าที่ไม่ยกเลิก · VAT ใช้อัตราสินค้าปัจจุบันตามรายงานขายเดิม · “–” ในช่องคืน/ส่วนลดหมายถึงไม่มีข้อมูลจากแหล่งนี้</p>
     </section>
     {dirty&&report&&<Alert className="history-status" type="info" message="ตัวกรองเปลี่ยนแล้ว กรุณากดแสดงรายงานอีกครั้งก่อนพิมพ์" />}
     {error&&<Alert className="history-status" showIcon type="error" message={error} />}

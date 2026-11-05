@@ -38,20 +38,12 @@ try {
     $action_user = $token->userid;
 
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        lock_document_numbers($conn);
         $rest_json = file_get_contents("php://input");
         $_POST = json_decode($rest_json, true);
         extract($_POST, EXTR_OVERWRITE, "_");
 
-        $sql = "SELECT number FROM catalog_code ORDER BY id DESC LIMIT 1 FOR UPDATE";
-        $stmt = $conn->prepare($sql);
-        if (!$stmt) throw new PDOException("Geting data error => {$conn->errorInfo()}");
-        if (!$stmt->execute()) {
-            $error = $conn->errorInfo();
-            throw new PDOException("Geting data error => $error");
-        }
-
-        $catalog_number = (int)$stmt->fetchColumn();
-        $catalog_code = "CL" . sprintf("%04s", $catalog_number + 1);
+        $catalog_code = catalog_document_number($conn, true);
 
 
         // var_dump($_POST);
@@ -118,19 +110,10 @@ try {
         }
         save_catalog_pending($conn, $catalog_code, $pending ?? null);
 
-        $strSQL = "update catalog_code SET ";
-        $strSQL .= " number= number+1 ";
-        $strSQL .= " order by id desc LIMIT 1 ";
-
-        $stmt3 = $conn->prepare($strSQL);
-        if ($stmt3->execute()) {
+        {
             $conn->commit();
             http_response_code(200);
             echo json_encode(array("data" => array("id" => "ok", "catalog_code" => $catalog_code, 'message' => 'เพิ่ม Catalog สำเร็จ')));
-        } else {
-            $error = $conn->errorInfo();
-            throw new PDOException("Insert data error => $error");
-            die;
         }
     } else  if ($_SERVER["REQUEST_METHOD"] == "PUT") {
         $rest_json = file_get_contents("php://input");

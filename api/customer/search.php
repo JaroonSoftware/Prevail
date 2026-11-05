@@ -40,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $cusname
         $tel
         $province
-        order by a.created_date desc";
+        order by a.cuscode asc";
         $stmt = $conn->prepare($sql);
         $stmt->execute();
         $res = $stmt->fetchAll(PDO::FETCH_ASSOC);

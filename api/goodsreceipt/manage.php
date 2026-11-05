@@ -13,6 +13,7 @@ try {
     // echo $action_user;
 
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        lock_document_numbers($conn);
         $rest_json = file_get_contents("php://input");
         $_POST = json_decode($rest_json, true);
         extract($_POST, EXTR_OVERWRITE, "_");
@@ -27,6 +28,7 @@ try {
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
         $header = (object)$header;
+        $header->grcode = document_number($conn, 'grcode', true);
         $stmt->bindParam(":grcode", $header->grcode, PDO::PARAM_STR);
         $stmt->bindParam(":grdate", $header->grdate, PDO::PARAM_STR);
         $stmt->bindParam(":supcode", $header->supcode, PDO::PARAM_STR);
@@ -42,8 +44,6 @@ try {
             throw new PDOException("Insert data error => $error");
             die;
         }
-
-        update_grcode($conn);
 
         $code = $conn->lastInsertId();
         // var_dump($master); exit;
@@ -151,7 +151,7 @@ try {
 
         $conn->commit();
         http_response_code(200);
-        echo json_encode(array("data" => array("code" => $code)));
+        echo json_encode(array("data" => array("code" => $code, "document_code" => $header->grcode)));
     } else  if ($_SERVER["REQUEST_METHOD"] == "PUT") {
         $rest_json = file_get_contents("php://input");
         $_PUT = json_decode($rest_json, true);

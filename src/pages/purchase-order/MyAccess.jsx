@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card } from 'antd';
 import { Collapse, Form, Flex, Row, Col, Space } from 'antd';
 import { Input, Button, Table, message, DatePicker, Typography } from 'antd';
-import { SearchOutlined, ClearOutlined, FileAddOutlined } from '@ant-design/icons'; 
+import { SearchOutlined, ClearOutlined, FileAddOutlined, RobotOutlined } from '@ant-design/icons'; 
 import { accessColumn } from "./model";
 
 import dayjs from 'dayjs';
@@ -249,7 +249,12 @@ const PurchaseOrderAccess = () => {
                 </Flex>
             </Col>
             <Col span={12} style={{paddingInline:0}}>
-                <Flex gap={4} justify='end'>
+                <Flex gap={4} justify='end' wrap='wrap'>
+                      <Button size='small'
+                        className='bn-action bn-center bn-primary-outline justify-center'
+                        icon={<RobotOutlined />} onClick={() => navigate('/purchase-order/ai-import')}>
+                        นำเข้าเอกสารด้วย AI
+                      </Button>
                       <Button  
                       size='small' 
                       className='bn-action bn-center bn-primary-outline justify-center'  

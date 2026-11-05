@@ -1,3 +1,4 @@
+import DocumentNumberPreview from "../../components/DocumentNumberPreview";
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
 import {
@@ -288,8 +289,9 @@ function BillingnoteManage() {
           config?.action !== "create" ? blservice.update : blservice.create;
         actions(parm)
           .then((r) => {
+            const savedDocument = r?.data?.data?.document_code || r?.data?.data?.catalog_code;
             handleClose().then((r) => {
-              message.success("Request Billing Note success.");
+              message.success(savedDocument ? `บันทึกเอกสาร ${savedDocument} สำเร็จ` : ("Request Billing Note success."));
             });
           })
           .catch((err) => {
@@ -829,6 +831,7 @@ function BillingnoteManage() {
                       <Typography.Title level={3} className="m-0">
                         เลขที่ใบวางบิล : {blCode}
                       </Typography.Title>
+                      <DocumentNumberPreview visible={config?.action === "create"} />
                     </Col>
                     <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
                       <Flex

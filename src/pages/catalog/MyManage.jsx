@@ -1,3 +1,4 @@
+import DocumentNumberPreview from "../../components/DocumentNumberPreview";
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
 import { Button, Form, Table, Typography, message } from "antd";
@@ -214,8 +215,9 @@ function CatalogManage() {
         const actions = isEditMode ? clservice.update : clservice.create;
         actions(parm)
           .then((r) => {
+            const savedDocument = r?.data?.data?.document_code || r?.data?.data?.catalog_code;
             handleClose().then((r) => {
-              isEditMode ? message.success("แก้ไข Catalog สำเร็จ") : message.success("สร้าง Catalog สำเร็จ");
+              message.success(savedDocument ? `บันทึกเอกสาร ${savedDocument} สำเร็จ` : "แก้ไข Catalog สำเร็จ");
             });
           })
           .catch((err) => {
@@ -684,6 +686,7 @@ function CatalogManage() {
                       <Typography.Title level={3} className="m-0">
                         รหัสแคตตาล๊อก : {clCode}
                       </Typography.Title>
+                      <DocumentNumberPreview visible={!isEditMode} />
                     </Col>
                   </Row>
                 </>

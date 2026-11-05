@@ -1,3 +1,4 @@
+import DocumentNumberPreview from "../../components/DocumentNumberPreview";
 import DocumentLink from "../../components/DocumentLink";
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
@@ -199,8 +200,9 @@ function DeliveryNoteManage() {
           config?.action !== "create" ? dnservice.update : dnservice.create;
         actions(parm)
           .then((r) => {
+            const savedDocument = r?.data?.data?.document_code || r?.data?.data?.catalog_code;
             handleClose().then((r) => {
-              message.success("Request Delivery Note success.");
+              message.success(savedDocument ? `บันทึกเอกสาร ${savedDocument} สำเร็จ` : ("Request Delivery Note success."));
             });
           })
           .catch((err) => {
@@ -274,11 +276,12 @@ function DeliveryNoteManage() {
       .then((res) => {
         const { data } = res.data;
       setListDetail(data);
-      // ใช้เลขที่ใบขายสินค้าเป็นเลขที่ใบส่งของ (1 SO : 1 DN)
+      // เลขที่ใบส่งของ = เลขใบขาย เปลี่ยนหน้าเป็น DN (IV6911017 -> DN6911017) ตรงกับที่ server สร้าง
       const socode = data?.[0]?.socode || v?.[0]?.socode || null;
       if (socode) {
-        setDNCode(socode);
-        setFormDetail((state) => ({ ...state, dncode: socode }));
+        const dncode = `DN${String(socode).startsWith("IV") ? String(socode).slice(2) : socode}`;
+        setDNCode(dncode);
+        setFormDetail((state) => ({ ...state, dncode }));
       }
       // ใช้วันที่ใบขายสินค้าเป็นวันที่ใบส่งของ
       const sodate = v?.[0]?.sodate || null;
@@ -610,6 +613,7 @@ function DeliveryNoteManage() {
                               <Typography.Title level={3} className="m-0">
                                 เลขที่ใบส่งสินค้า : {dnCode}
                               </Typography.Title>
+                      <DocumentNumberPreview visible={config?.action === "create"} linked />
                             </Col>
                             <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
                               <Flex

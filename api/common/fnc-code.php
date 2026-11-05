@@ -1,384 +1,129 @@
 <?php
-#region Update Code
-function update_pocode($pdo){
-    $year = date("Y");
-    $month = date("m");
-    $sql = "update options set pocode = pocode + 1 where year = :y and month = :m";
-    $stmt = $pdo->prepare($sql);
-
-    if (!$stmt->execute([ 'y' => $year, 'm' => $month ])){
-        $error = $pdo->errorInfo(); 
-        http_response_code(401);
-        throw new PDOException("Update code error => $error");
+/** Preview is read-only. Writers hold one database-scoped lock until commit/rollback.
+ * All document creation entry points must use this lock, including AI and packaging.
+ */
+function lock_document_numbers(PDO $pdo): void {
+    static $held = array();
+    $id = spl_object_id($pdo);
+    if (isset($held[$id])) return;
+    $database = (string)$pdo->query('SELECT DATABASE()')->fetchColumn();
+    $name = 'prevail-doc-' . sha1($database);
+    $stmt = $pdo->prepare('SELECT GET_LOCK(:name, 15)');
+    $stmt->execute(array('name' => $name));
+    if ((int)$stmt->fetchColumn() !== 1) {
+        throw new RuntimeException('มีผู้ใช้อื่นกำลังออกเลขเอกสาร กรุณากดบันทึกอีกครั้ง');
     }
+    $held[$id] = true;
+    // Keep the connection alive until cleanup; never unlock an unfinished write.
+    register_shutdown_function(function () use ($pdo, $name) {
+        try {
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            $stmt = $pdo->prepare('SELECT RELEASE_LOCK(:name)');
+            $stmt->execute(array('name' => $name));
+        } catch (Throwable $e) { error_log('Document number lock cleanup failed'); }
+    });
+}
+function document_number_config(string $kind): array {
+    $types = array(
+        'pocode' => array('PO', 'pomaster', false),
+        'grcode' => array('GR', 'grmaster', false),
+        'qtcode' => array('QT', 'qtmaster', true),
+        'socode' => array('IV', 'somaster', true),
+        'dncode' => array('DN', 'dnmaster', true),
+        'blcode' => array('BI', 'bl_master', true),
+        'recode' => array('RE', 'receipt', true),
+    );
+    if (!isset($types[$kind])) throw new InvalidArgumentException('Unknown document type');
+    return $types[$kind];
+}
+function document_number(PDO $pdo, string $kind, bool $allocate = false): string {
+    list($prefix, $table, $buddhist) = document_number_config($kind);
+    if ($allocate) {
+        if (!$pdo->inTransaction()) throw new LogicException('Document allocation requires a transaction');
+        lock_document_numbers($pdo);
+    }
+    $year = date('Y'); $month = date('m');
+    $params = array('y' => $year, 'm' => $month);
+    $lock = $allocate ? ' FOR UPDATE' : '';
+    $stmt = $pdo->prepare("SELECT $kind FROM options WHERE year = :y AND month = :m" . $lock);
+    $stmt->execute($params);
+    $rows = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    if (count($rows) > 1) throw new RuntimeException('พบเลขรันซ้ำในเดือนนี้ กรุณาตรวจสอบตาราง options');
+    $number = count($rows) ? max(1, (int)$rows[0]) : 1;
+    if (!$rows && $allocate) {
+        $stmt = $pdo->prepare('INSERT INTO options (year, month) VALUES (:y, :m)');
+        $stmt->execute($params);
+    }
+    $prefix .= substr((string)((int)$year + ($buddhist ? 543 : 0)), -2) . $month;
+    // Locking reads see the latest committed rows even under REPEATABLE READ.
+    $check = $pdo->prepare("SELECT $kind FROM $table WHERE $kind = :code" . $lock);
+    $legacy = $kind === 'socode' ? $pdo->prepare('SELECT dncode FROM dnmaster WHERE dncode = :code' . $lock) : null;
+    do {
+        $code = $prefix . sprintf('%03d', $number);
+        $check->execute(array('code' => $code));
+        $exists = $check->fetchColumn() !== false;
+        if ($legacy) {
+            $legacy->execute(array('code' => $code));
+            $exists = $exists || $legacy->fetchColumn() !== false;
+        }
+        if ($exists) ++$number;
+    } while ($exists);
+    if ($allocate) {
+        $stmt = $pdo->prepare("UPDATE options SET $kind = :next WHERE year = :y AND month = :m");
+        $stmt->execute(array_merge($params, array('next' => $number + 1)));
+    }
+    return $code;
 }
 
-function update_grcode($pdo){
-    $year = date("Y");
-    $month = date("m");
-    $sql = "update options set grcode = grcode + 1 where year = :y and month = :m";
-    $stmt = $pdo->prepare($sql);
+function request_pocode($pdo) { return document_number($pdo, 'pocode'); }
 
-    if (!$stmt->execute([ 'y' => $year, 'm' => $month ])){
-        $error = $pdo->errorInfo(); 
-        http_response_code(401);
-        throw new PDOException("Update code error => $error");
+function request_grcode($pdo) { return document_number($pdo, 'grcode'); }
+
+function request_qtcode($pdo) { return document_number($pdo, 'qtcode'); }
+
+function request_socode($pdo) { return document_number($pdo, 'socode'); }
+
+function request_dncode($pdo) { return document_number($pdo, 'dncode'); }
+
+function request_blcode($pdo) { return document_number($pdo, 'blcode'); }
+
+function request_recode($pdo) { return document_number($pdo, 'recode'); }
+
+function catalog_document_number(PDO $pdo, bool $allocate = false): string {
+    if ($allocate) {
+        if (!$pdo->inTransaction()) throw new LogicException('Catalog allocation requires a transaction');
+        lock_document_numbers($pdo);
     }
+    $lock = $allocate ? ' FOR UPDATE' : '';
+    $row = $pdo->query('SELECT id, number FROM catalog_code ORDER BY id DESC LIMIT 1' . $lock)->fetch(PDO::FETCH_ASSOC);
+    $number = max(1, (int)($row['number'] ?? 0) + 1);
+    $check = $pdo->prepare('SELECT catalog_code FROM catalog_master WHERE catalog_code = :code' . $lock);
+    do {
+        $code = 'CL' . sprintf('%04d', $number);
+        $check->execute(array('code' => $code));
+        $exists = $check->fetchColumn() !== false;
+        if ($exists) ++$number;
+    } while ($exists);
+    if ($allocate) {
+        if ($row) {
+            $stmt = $pdo->prepare('UPDATE catalog_code SET number = :number WHERE id = :id');
+            $stmt->execute(array('number' => $number, 'id' => $row['id']));
+        } else {
+            $stmt = $pdo->prepare('INSERT INTO catalog_code (number) VALUES (:number)');
+            $stmt->execute(array('number' => $number));
+        }
+    }
+    return $code;
 }
 
-function update_qtcode($pdo){
-    $year = date("Y");
-    $month = date("m");
-    $sql = "update options set qtcode = qtcode + 1 where year = :y and month = :m";
-    $stmt = $pdo->prepare($sql);
-
-    if (!$stmt->execute([ 'y' => $year, 'm' => $month ])){
-        $error = $pdo->errorInfo(); 
-        http_response_code(401);
-        throw new PDOException("Update code error => $error");
-    }
-} 
-
-function update_socode($pdo){
-    $year = date("Y");
-    $month = date("m");
-    $sql = "update options set socode = socode + 1 where year = :y and month = :m";
-    $stmt = $pdo->prepare($sql);
-
-    if (!$stmt->execute([ 'y' => $year, 'm' => $month ])){
-        $error = $pdo->errorInfo(); 
-        http_response_code(401);
-        throw new PDOException("Update code error => $error");
-    }
-} 
-
-function update_dncode($pdo){
-    $year = date("Y");
-    $month = date("m");
-    $sql = "update options set dncode = dncode + 1 where year = :y and month = :m";
-    $stmt = $pdo->prepare($sql);
-
-    if (!$stmt->execute([ 'y' => $year, 'm' => $month ])){
-        $error = $pdo->errorInfo(); 
-        http_response_code(401);
-        throw new PDOException("Update code error => $error");
-    }
-} 
-
-function update_blcode($pdo){
-    $year = date("Y");
-    $month = date("m");
-    $sql = "update options set blcode = blcode + 1 where year = :y and month = :m";
-    $stmt = $pdo->prepare($sql);
-
-    if (!$stmt->execute([ 'y' => $year, 'm' => $month ])){
-        $error = $pdo->errorInfo(); 
-        http_response_code(401);
-        throw new PDOException("Update code error => $error");
-    }
-} 
-
-function update_recode($pdo){
-    $year = date("Y");
-    $month = date("m");
-    $sql = "update options set recode = recode + 1 where year = :y and month = :m";
-    $stmt = $pdo->prepare($sql);
-
-    if (!$stmt->execute([ 'y' => $year, 'm' => $month ])){
-        $error = $pdo->errorInfo(); 
-        http_response_code(401);
-        throw new PDOException("Update code error => $error");
-    }
-} 
-
-#endregion
- 
-#region Request Code
-function request_pocode($pdo ){
-    $year = date("Y");
-    $month = date("m");
-
-    $sql = "select pocode code from options where year = :y and month = :m";
-    $stmt = $pdo->prepare($sql); 
-    if (!$stmt->execute([ 'y' => $year, 'm' => $month ])){
-        $error = $pdo->errorInfo();
-        http_response_code(401);
-        throw new PDOException("Geting code error => $error");
-    }
-
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (empty($result)) {
-        create_options($pdo, $year, $month);
-        return 0;
-    } 
-    //EST24010001
-    $res = $result["code"];
-    $y = date("y");
-    $m = date("m");
-    $number = intval($res);
-    $prefix = "PO$y$m";
-    while(true){
-        $code = sprintf("%03s", ( $number) );
-        $format = $prefix.$code;
-        $sql = "SELECT 1 r FROM pomaster where pocode = '$format'"; 
-        $stmt = $pdo->prepare($sql); 
-        $stmt->execute(); 
-        if ($stmt->rowCount() > 0){
-            $number += 1;
-            update_pocode($pdo);
-            continue;
-        } else break;
-    } 
-    return $prefix.sprintf("%03s", ( $number) );   
-}
-
-function request_grcode($pdo ){
-    $year = date("Y");
-    $month = date("m");
-
-    $sql = "select grcode code from options where year = :y and month = :m";
-    $stmt = $pdo->prepare($sql); 
-    if (!$stmt->execute([ 'y' => $year, 'm' => $month ])){
-        $error = $pdo->errorInfo();
-        http_response_code(401);
-        throw new PDOException("Geting code error => $error");
-    }
-
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (empty($result)) {
-        create_options($pdo, $year, $month);
-        return 0;
-    } 
-    //EST24010001
-    $res = $result["code"];
-    $y = date("y");
-    $m = date("m");
-    $number = intval($res);
-    $prefix = "GR$y$m";
-    while(true){
-        $code = sprintf("%03s", ( $number) );
-        $format = $prefix.$code;
-        $sql = "SELECT 1 r FROM grmaster where grcode = '$format'"; 
-        $stmt = $pdo->prepare($sql); 
-        $stmt->execute(); 
-        if ($stmt->rowCount() > 0){
-            $number += 1;
-            update_grcode($pdo);
-            continue;
-        } else break;
-    } 
-    return $prefix.sprintf("%03s", ( $number) );   
-}
-
-function request_qtcode($pdo){
-    $year = date("Y");
-    $month = date("m");
-
-    $sql = "select qtcode code from options where year = :y and month = :m";
-    $stmt = $pdo->prepare($sql); 
-    if (!$stmt->execute([ 'y' => $year, 'm' => $month ])){
-        $error = $pdo->errorInfo();
-        http_response_code(401);
-        throw new PDOException("Geting code error => $error");
-    }
-
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (empty($result)) {
-        create_options($pdo, $year, $month);
-        return 0;
-    } 
-    //QU240100001
-    $res = $result["code"];
-    $y = substr( date("Y")+543, -2);
-    $m = date("m");
-    $number = intval($res);
-    $prefix = "QT$y$m";
-    while(true){
-        $code = sprintf("%03s", ( $number) );
-        $format = $prefix.$code;
-        $sql = "SELECT 1 r FROM qtmaster where qtcode = '$format'"; 
-        $stmt = $pdo->prepare($sql); 
-        $stmt->execute(); 
-        if ($stmt->rowCount() > 0){
-            $number += 1;
-            update_qtcode($pdo);
-            continue;
-        } else break;
-    } 
-    return $prefix.sprintf("%03s", ( $number) );   
-}
-
-function request_socode($pdo){
-    $year = date("Y");
-    $month = date("m");
-
-    $sql = "select socode code from options where year = :y and month = :m";
-    $stmt = $pdo->prepare($sql); 
-    if (!$stmt->execute([ 'y' => $year, 'm' => $month ])){
-        $error = $pdo->errorInfo();
-        http_response_code(401);
-        throw new PDOException("Geting code error => $error");
-    }
-
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (empty($result)) {
-        create_options($pdo, $year, $month);
-        return 0;
-    } 
-    //QU240100001
-    $res = $result["code"];
-    $y = substr( date("Y")+543, -2);
-    $m = date("m");
-    $number = intval($res);
-    $prefix = "IV$y$m";
-    while(true){
-        $code = sprintf("%03s", ( $number) );
-        $format = $prefix.$code;
-        // เช็คซ้ำทั้งใบขายสินค้า (somaster) และใบส่งของ (dnmaster) เพราะใช้ prefix IV ร่วมกัน
-        $sql = "SELECT 1 r FROM somaster where socode = '$format'
-                UNION SELECT 1 FROM dnmaster where dncode = '$format'";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute();
-        if ($stmt->rowCount() > 0){
-            $number += 1;
-            update_socode($pdo);
-            continue;
-        } else break;
-    }
-    return $prefix.sprintf("%03s", ( $number) );
-}
-
-function request_dncode($pdo){
-    $year = date("Y");
-    $month = date("m");
-
-    $sql = "select dncode code from options where year = :y and month = :m";
-    $stmt = $pdo->prepare($sql); 
-    if (!$stmt->execute([ 'y' => $year, 'm' => $month ])){
-        $error = $pdo->errorInfo();
-        http_response_code(401);
-        throw new PDOException("Geting code error => $error");
-    }
-
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (empty($result)) {
-        create_options($pdo, $year, $month);
-        return 0;
-    } 
-    //QU240100001
-    $res = $result["code"];
-    $y = substr( date("Y")+543, -2);
-    $m = date("m");
-    $number = intval($res);
-    $prefix = "IV$y$m";
-    while(true){
-        $code = sprintf("%03s", ( $number) );
-        $format = $prefix.$code;
-        // เช็คซ้ำทั้งใบขายสินค้า (somaster) และใบส่งของ (dnmaster) เพราะใช้ prefix IV ร่วมกัน
-        $sql = "SELECT 1 r FROM somaster where socode = '$format'
-                UNION SELECT 1 FROM dnmaster where dncode = '$format'";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute();
-        if ($stmt->rowCount() > 0){
-            $number += 1;
-            update_dncode($pdo);
-            continue;
-        } else break;
-    }
-    return $prefix.sprintf("%03s", ( $number) );
-}
-
-function request_blcode($pdo){
-    $year = date("Y");
-    $month = date("m");
-
-    $sql = "select blcode code from options where year = :y and month = :m";
-    $stmt = $pdo->prepare($sql); 
-    if (!$stmt->execute([ 'y' => $year, 'm' => $month ])){
-        $error = $pdo->errorInfo();
-        http_response_code(401);
-        throw new PDOException("Geting code error => $error");
-    }
-
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (empty($result)) {
-        create_options($pdo, $year, $month);
-        return 0;
-    } 
-    //QU240100001
-    $res = $result["code"];
-    $y = substr( date("Y")+543, -2);
-    $m = date("m");
-    $number = intval($res);
-    $prefix = "BI$y$m";
-    while(true){
-        $code = sprintf("%03s", ( $number) );
-        $format = $prefix.$code;
-        $sql = "SELECT 1 r FROM bl_master where blcode = '$format'"; 
-        $stmt = $pdo->prepare($sql); 
-        $stmt->execute(); 
-        if ($stmt->rowCount() > 0){
-            $number += 1;
-            update_blcode($pdo);
-            continue;
-        } else break;
-    } 
-    return $prefix.sprintf("%03s", ( $number) );   
-}
-
-function request_recode($pdo){
-    $year = date("Y");
-    $month = date("m");
-
-    $sql = "select recode code from options where year = :y and month = :m";
-    $stmt = $pdo->prepare($sql); 
-    if (!$stmt->execute([ 'y' => $year, 'm' => $month ])){
-        $error = $pdo->errorInfo();
-        http_response_code(401);
-        throw new PDOException("Geting code error => $error");
-    }
-
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (empty($result)) {
-        create_options($pdo, $year, $month);
-        return 0;
-    } 
-    //QU240100001
-    $res = $result["code"];
-    $y = substr( date("Y")+543, -2);
-    $m = date("m");
-    $number = intval($res);
-    $prefix = "RE$y$m";
-    while(true){
-        $code = sprintf("%03s", ( $number) );
-        $format = $prefix.$code;
-        $sql = "SELECT 1 r FROM receipt where recode = '$format'"; 
-        $stmt = $pdo->prepare($sql); 
-        $stmt->execute(); 
-        if ($stmt->rowCount() > 0){
-            $number += 1;
-            update_recode($pdo);
-            continue;
-        } else break;
-    } 
-    return $prefix.sprintf("%03s", ( $number) );   
-}
-
-#endregion
-
-function create_options($pdo, $year, $month){
-    $sql = "insert into options (year, month) values ( :y, :m)";
-    $stmt = $pdo->prepare($sql); 
-    if (!$stmt->execute([ 'y' => $year, 'm' => $month ])){
-        $error = $pdo->errorInfo(); 
-        http_response_code(401);
-        throw new PDOException("Geting code error => $error");
+/** Compatibility for first login of a month; recheck under the same writer lock. */
+function create_options(PDO $pdo, $year, $month): void {
+    lock_document_numbers($pdo);
+    $stmt = $pdo->prepare('SELECT year FROM options WHERE year = :y AND month = :m FOR UPDATE');
+    $params = array('y' => $year, 'm' => $month);
+    $stmt->execute($params);
+    if ($stmt->fetchColumn() === false) {
+        $stmt = $pdo->prepare('INSERT INTO options (year, month) VALUES (:y, :m)');
+        $stmt->execute($params);
     }
 }

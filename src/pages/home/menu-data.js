@@ -1,7 +1,7 @@
 import nav from '../../nav';
 export const MODULES = [
  {code:'SO',title:'ขาย',english:'Sales',paths:['/quotation','/sales-order','/customers','/catalog','/so-by-product-report','/profit-by-product-customer-report','/best-selling-product-report','/so-by-customer-report','/sales-history-customer-report']},
- {code:'PU',title:'จัดซื้อ',english:'Purchasing',paths:['/purchase-order','/ai-purchase-order','/supplier']},
+ {code:'PU',title:'จัดซื้อ',english:'Purchasing',paths:['/purchase-order','/supplier']},
  {code:'IC',title:'สินค้า',english:'Inventory',paths:['/items','/itemtype','/unit','/print-weight','/dry-report','/noodle-report','/fresh-report','/special-dry-report','/curry-paste-report','/fruit-report']},
  {code:'AC',title:'บัญชี',english:'Accounting',paths:['/billing','/receipt','/delivery-note','/outstanding-by-customer-report']},
  {code:'SH',title:'จัดส่ง',english:'Shipping',paths:['/shipping','/county']},

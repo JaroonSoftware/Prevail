@@ -195,6 +195,7 @@ const ProfitByProductCustomerReport = () => {
               <Form
                 form={form}
                 layout="inline"
+                style={{ marginLeft: "auto", justifyContent: "flex-end" }}
                 autoComplete="off"
                 onValuesChange={(changedValues) => {
                   if (Object.prototype.hasOwnProperty.call(changedValues, "dndate")) {
@@ -205,8 +206,8 @@ const ProfitByProductCustomerReport = () => {
                 <Form.Item name="dndate" className="!mb-2">
                   <RangePicker placeholder={["From Date", "To Date"]} style={{ minWidth: 260, height: 38 }} />
                 </Form.Item>
-                <Form.Item className="!mb-2">
-                  <Flex gap={8} wrap="wrap">
+                <Form.Item className="!mb-2" style={{ marginInlineStart: "auto", marginInlineEnd: 0 }}>
+                  <Flex gap={8} wrap="wrap" justify="flex-end">
                     <Button type="primary" className="bn-action" icon={<SearchOutlined />} onClick={() => handleSearch()}>
                       ค้นหา
                     </Button>

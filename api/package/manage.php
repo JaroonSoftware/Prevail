@@ -9,12 +9,13 @@ $conn->beginTransaction();
 http_response_code(400);
 try {
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        lock_document_numbers($conn);
         $rest_json = file_get_contents("php://input");
         $_POST = json_decode($rest_json, true);
         extract($_POST, EXTR_OVERWRITE, "_");
         $action_datetime = date("Y-m-d H:i:s");
         $action_user = $token->userid;
-        $socode = request_socode($conn);
+        $socode = document_number($conn, 'socode', true);
         $sql = " 
         insert somaster ( 
             socode, cuscode, sodate, total_price,deldate, remark, active_status, doc_status, created_date, created_by
@@ -41,8 +42,6 @@ try {
             die;
         }
 
-        update_socode($conn);
-
         $code = $conn->lastInsertId();
         // var_dump($master); exit;
 
@@ -67,7 +66,7 @@ try {
 
         $conn->commit();
         http_response_code(200);
-        echo json_encode(array("data" => array("code" => $code)));
+        echo json_encode(array("data" => array("code" => $code, "document_code" => $socode)));
     } else  if ($_SERVER["REQUEST_METHOD"] == "PUT") {
         $rest_json = file_get_contents("php://input");
         $_PUT = json_decode($rest_json, true);

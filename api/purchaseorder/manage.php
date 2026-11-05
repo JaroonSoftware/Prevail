@@ -13,13 +13,14 @@ try {
     // echo $action_user;
 
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        lock_document_numbers($conn);
         $rest_json = file_get_contents("php://input");
         $_POST = json_decode($rest_json, true);
         extract($_POST, EXTR_OVERWRITE, "_");
 
         $doc_status = "รับของครบแล้ว";
 
-        $pocode = request_pocode($conn);
+        $pocode = document_number($conn, 'pocode', true);
 
         // var_dump($_POST);
         $sql = "insert pomaster (`pocode`, `podate`, `supcode`,`deldate`,`payment`,`poqua`, `total_price`,
@@ -51,16 +52,6 @@ try {
                 throw new PDOException("Insert data error => " . json_encode($error));
                 die;
             }
-
-        $sql2 = " update options set pocode = pocode+1 WHERE year= '" . date("Y") . "' ";
-
-        $stmt2 = $conn->prepare($sql2);
-        if (!$stmt2) throw new PDOException("Insert data error => {$conn->errorInfo()}");
-        if (!$stmt2->execute()) {
-            $error = $conn->errorInfo();
-            throw new PDOException("Insert data error => $error");
-            die;
-        }
 
         $code = $conn->lastInsertId();
         // var_dump($master); exit;
@@ -123,7 +114,7 @@ try {
 
         $conn->commit();
         http_response_code(200);
-        echo json_encode(array("data" => array("code" => $code)));
+        echo json_encode(array("data" => array("code" => $code, "document_code" => $pocode)));
     } else  if ($_SERVER["REQUEST_METHOD"] == "PUT") {
         $rest_json = file_get_contents("php://input");
         $_PUT = json_decode($rest_json, true);

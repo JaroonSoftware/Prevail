@@ -1,22 +1,12 @@
 <?php
-error_reporting(E_ERROR | E_PARSE);
-ini_set('display_errors', 1);
-// header("Access-Control-Allow-Origin: *");
-// header("Access-Control-Allow-Headers: *");
-// header("Access-Control-Allow-Methods: *");
-
-include '../conn.php';
-
-$sql = "SELECT number as clcode FROM `catalog_code` ";
-// $sql .= " where prodty_id = '".$_GET['id']."'";
-$stmt = $conn->prepare($sql);
-$stmt->execute();
-$res = $stmt->fetch(PDO::FETCH_ASSOC);
-extract($res, EXTR_OVERWRITE, "_");
-
-$code = "CL".sprintf("%04s", ($clcode+1));
-
-http_response_code(200);
-echo json_encode(array("data"=>$code));
-
-
+include_once dirname(__DIR__) . '/onload.php';
+include_once dirname(__DIR__) . '/common/fnc-code.php';
+try {
+    $db = new DbConnect;
+    $conn = $db->connect();
+    header('Cache-Control: no-store');
+    echo json_encode(array('data' => catalog_document_number($conn)));
+} catch (Throwable $e) {
+    http_response_code(400);
+    echo json_encode(array('message' => $e->getMessage()));
+}

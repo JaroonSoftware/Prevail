@@ -1,6 +1,6 @@
 import { DocumentPage } from "../components/DocumentLink";
 
-import { Route } from "react-router-dom";
+import { Route, Navigate } from "react-router-dom";
 
 import {
   Quotation,
@@ -39,12 +39,13 @@ export const WarehouseRouter = (
 
     <Route path="/purchase-order/" exact element={<PurchaseOrder />}>
       <Route index element={<PurchaseOrderAccess />} />
+      <Route path="ai-import" element={<PurchaseOrderAiScan />} />
       <Route path="manage/:action" element={<PurchaseOrderManage />} />
       <Route path="view" element={<DocumentPage><PurchaseOrderView /></DocumentPage>} />
     </Route>
 
     {/* ใบสั่งซื้ออ่านค่าจาก AI (ทดสอบ) — แยก path ไม่ให้เมนูใบสั่งซื้อไฮไลต์ซ้อน */}
-    <Route path="/ai-purchase-order" element={<PurchaseOrderAiScan />} />
+    <Route path="/ai-purchase-order" element={<Navigate to="/purchase-order/ai-import" replace />} />
 
     <Route path="/goods-receipt/" exact element={<GoodsReceipt />}>
       <Route index element={<GoodsReceiptAccess />} />

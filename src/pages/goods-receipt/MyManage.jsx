@@ -1,3 +1,4 @@
+import DocumentNumberPreview from "../../components/DocumentNumberPreview";
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
 import {
@@ -204,8 +205,9 @@ function GoodsReceiptManage() {
           config?.action !== "create" ? quservice.update : quservice.create;
         actions(parm)
           .then((r) => {
+            const savedDocument = r?.data?.data?.document_code || r?.data?.data?.catalog_code;
             handleClose().then((r) => {
-              message.success("Request GoodsReceipt success.");
+              message.success(savedDocument ? `บันทึกเอกสาร ${savedDocument} สำเร็จ` : ("Request GoodsReceipt success."));
             });
           })
           .catch((err) => {
@@ -490,6 +492,7 @@ function GoodsReceiptManage() {
                       <Typography.Title level={3} className="m-0">
                         รหัสใบรับสินค้า : {poCode}
                       </Typography.Title>
+                      <DocumentNumberPreview visible={config?.action === "create"} />
                     </Col>
                     <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
                       <Flex

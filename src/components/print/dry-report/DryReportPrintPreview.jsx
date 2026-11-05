@@ -1,29 +1,35 @@
+import React, { useEffect, useRef, useState } from "react";
+import { Button, Alert, Spin } from "antd";
+import { PrinterOutlined } from "@ant-design/icons";
+import { useReactToPrint } from "react-to-print";
+import dayjs from "dayjs";
 import ReportService from "../../../service/Report.service";
-import PurchaseReportPrintPreview from "../purchase-report/PurchaseReportPrintPreview";
-import { createPurchaseReportPrintColumns } from "../purchase-report/model";
-
-const reportService = ReportService();
-
-const printColumns = createPurchaseReportPrintColumns({
-  quantityTitle: "จำนวนที่ต้องซื้อ",
-  quantityDataIndex: "qty_result",
-});
-
+import { loadMyAccessSearchCookie } from "../../../utils/myaccessSearchCookie";
+import DryGoodsSummary from "./DryGoodsSummary";
+const service = ReportService();
 export default function DryReportPrintPreview() {
-  return (
-    <PurchaseReportPrintPreview
-      documentTitle="Dry Goods Report"
-      toolbarTitle="Dry Report Print Preview"
-      reportTitle="รายงานของแห้ง"
-      reportBadge="Dry Goods Purchase Report"
-      reportSubtitle="เอกสารสรุปรายการสินค้าที่ต้องซื้อสำหรับฝ่ายจัดซื้อ"
-      emptyDescription="ไม่พบข้อมูลรายงานของแห้งจากเงื่อนไขล่าสุด"
-      pageCookieKey="dry-report"
-      fetchReport={(payload, config) => reportService.getDryGoods(payload, config)}
-      printColumns={printColumns}
-      quantityDataIndex="qty_result"
-      quantitySummaryLabel="รวมจำนวนที่ต้องซื้อ"
-      itemSummaryLabel="รวมรายการรายงานของแห้งทั้งหมด"
-    />
-  );
+  const ref = useRef(null);
+  const [rows,setRows] = useState([]);
+  const [range,setRange] = useState();
+  const [loading,setLoading] = useState(true);
+  const [error,setError] = useState(false);
+  const print = useReactToPrint({ documentTitle:"รายงานของแห้ง", removeAfterPrint:true, pageStyle:"@page { size:A4 portrait; margin:8mm; }" });
+  useEffect(()=>{
+    let active=true;
+    const values=loadMyAccessSearchCookie("dry-report")?.searchValues || {};
+    const payload={...values};
+    setRange(values.sodate);
+    if(Array.isArray(values.sodate) && values.sodate.length===2) {
+      [payload.sodate_form,payload.sodate_to]=values.sodate.map(v=>dayjs(v).format("YYYY-MM-DD"));
+    }
+    delete payload.sodate;
+    service.getDryGoods(payload,{ignoreLoading:true}).then(res=>{if(active)setRows(Array.isArray(res.data.data)?res.data.data:[]);})
+      .catch(()=>{if(active)setError(true);}).finally(()=>{if(active)setLoading(false);});
+    return ()=>{active=false;};
+  },[]);
+  return <div className="dry-horizontal-preview">
+    <div className="dry-horizontal-toolbar"><h1>รายงานของแห้ง</h1><Button type="primary" icon={<PrinterOutlined/>} disabled={loading || error || !rows.length} onClick={()=>print(null,()=>ref.current)}>พิมพ์ / บันทึก PDF</Button></div>
+    {error && <Alert type="error" showIcon message="โหลดรายงานไม่สำเร็จ กรุณาลองใหม่"/>}
+    <Spin spinning={loading}><div ref={ref} className="dry-horizontal-paper"><DryGoodsSummary rows={rows} dateRange={range}/></div></Spin>
+  </div>;
 }

@@ -1,5 +1,6 @@
 <?php
 ob_start();
+header('Cache-Control: no-store');
 include_once(dirname(__FILE__, 2)."/onload.php");
 include_once(dirname(__FILE__, 2)."/common/fnc-code.php");
 $db = new DbConnect;

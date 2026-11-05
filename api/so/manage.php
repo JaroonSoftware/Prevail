@@ -9,12 +9,13 @@ $conn->beginTransaction();
 http_response_code(400);
 try {
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        lock_document_numbers($conn);
         $rest_json = file_get_contents("php://input");
         $_POST = json_decode($rest_json, true);
         extract($_POST, EXTR_OVERWRITE, "_");
         $action_datetime = date("Y-m-d H:i:s");
         $action_user = $token->userid;
-        $socode = request_socode($conn);
+        $socode = document_number($conn, 'socode', true);
         $sql = " 
         insert somaster ( 
             socode, cuscode, sodate,customer_po, del_room, total_price,deldate, remark, active_status, doc_status, created_date, created_by
@@ -43,8 +44,6 @@ try {
             die;
         }
 
-        update_socode($conn);
-
         $code = $conn->lastInsertId();
         // var_dump($master); exit;
 
@@ -71,7 +70,7 @@ try {
 
         $conn->commit();
         http_response_code(200);
-        echo json_encode(array("data" => array("code" => $code)));
+        echo json_encode(array("data" => array("code" => $code, "document_code" => $socode)));
     } else  if ($_SERVER["REQUEST_METHOD"] == "PUT") {
         $rest_json = file_get_contents("php://input");
         $_PUT = json_decode($rest_json, true);
@@ -156,8 +155,11 @@ try {
         $check->execute(['s' => $socode]);
         $current = $check->fetch(PDO::FETCH_ASSOC);
         if (!$current || $current['active_status'] !== 'Y' || !in_array($current['doc_status'], ['รอยืนยันใบขายสินค้า', 'รอออกใบส่งของ'], true)) throw new PDOException('ไม่สามารถยกเลิกใบขายในสถานะปัจจุบันได้');
-        $linked = $conn->prepare("SELECT COUNT(*) FROM dnmaster WHERE dncode = :s AND COALESCE(doc_status, '') <> 'ยกเลิก'");
-        $linked->execute(['s' => $socode]);
+        /* ใบส่งของใช้เลข DN แล้ว (เดิมเลขเดียวกับใบขาย) -> หาผ่าน dndetail.socode เป็นหลัก */
+        $linked = $conn->prepare("SELECT COUNT(*) FROM dnmaster m
+            WHERE COALESCE(m.doc_status, '') <> 'ยกเลิก'
+              AND (m.dncode = :s OR EXISTS (SELECT 1 FROM dndetail d WHERE d.dncode = m.dncode AND d.socode = :s2))");
+        $linked->execute(['s' => $socode, 's2' => $socode]);
         if ((int)$linked->fetchColumn() > 0) throw new PDOException('มีใบส่งสินค้าที่ใช้งานอยู่ กรุณาตรวจเอกสารที่เกี่ยวข้องก่อนยกเลิก');
 
 

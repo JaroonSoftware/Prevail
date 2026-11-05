@@ -1,3 +1,4 @@
+import DocumentNumberPreview from "../../components/DocumentNumberPreview";
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
 import {
@@ -237,8 +238,9 @@ function PurchaseOrderManage() {
           config?.action !== "create" ? poservice.update : poservice.create;
         actions(parm)
           .then((r) => {
+            const savedDocument = r?.data?.data?.document_code || r?.data?.data?.catalog_code;
             handleClose().then((r) => {
-              message.success("Request PurchaseOrder success.");
+              message.success(savedDocument ? `บันทึกเอกสาร ${savedDocument} สำเร็จ` : ("Request PurchaseOrder success."));
             });
           })
           .catch((err) => {
@@ -618,6 +620,7 @@ function PurchaseOrderManage() {
                       <Typography.Title level={3} className="m-0">
                         รหัสใบสั่งซื้อ : {poCode}
                       </Typography.Title>
+                      <DocumentNumberPreview visible={config?.action === "create"} />
                     </Col>
                     <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
                       <Flex

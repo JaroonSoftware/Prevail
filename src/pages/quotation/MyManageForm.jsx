@@ -1,3 +1,4 @@
+import DocumentNumberPreview from "../../components/DocumentNumberPreview";
 import {
   Col,
   Divider,
@@ -168,8 +169,9 @@ export default function ItemsManageForm({
         const actions = config?.action !== "create" ? qtservice.update : qtservice.create;
         actions(parm)
           .then((r) => {
+            const savedDocument = r?.data?.data?.document_code || r?.data?.data?.catalog_code;
             handleClose().then((r) => {
-              message.success("Request Quotation success.");
+              message.success(savedDocument ? `บันทึกเอกสาร ${savedDocument} สำเร็จ` : ("Request Quotation success."));
             });
           })
           .catch((err) => {
@@ -485,6 +487,7 @@ export default function ItemsManageForm({
                       <Typography.Title level={3} className="m-0">
                         เลขที่ใบเสนอราคา : {quotCode}
                       </Typography.Title>
+                      <DocumentNumberPreview visible={config?.action === "create"} />
                     </Col>
                     <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
                       <Flex

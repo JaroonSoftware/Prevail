@@ -13,6 +13,7 @@ try {
     // echo $action_user;
 
     if ($_SERVER["REQUEST_METHOD"] == "POST"){
+        lock_document_numbers($conn);
         $rest_json = file_get_contents("php://input");
         $_POST = json_decode($rest_json, true); 
         extract($_POST, EXTR_OVERWRITE, "_");
@@ -26,7 +27,8 @@ try {
         $stmt = $conn->prepare($sql);
         if(!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}"); 
 
-        $header = (object)$header;  
+        $header = (object)$header;
+        $header->qtcode = document_number($conn, 'qtcode', true);  
         $stmt->bindParam(":qtcode", $header->qtcode, PDO::PARAM_STR);
         $stmt->bindParam(":qtdate", $header->qtdate, PDO::PARAM_STR);
         $stmt->bindParam(":cuscode", $header->cuscode, PDO::PARAM_STR);
@@ -38,16 +40,6 @@ try {
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_STR); 
 
         if(!$stmt->execute()) {
-            $error = $conn->errorInfo();
-            throw new PDOException("Insert data error => $error");
-            die;
-        }
-
-        $sql2 = " update options set qtcode = qtcode+1 WHERE year= '".date("Y")."' ";        
-
-        $stmt2 = $conn->prepare($sql2);
-        if(!$stmt2) throw new PDOException("Insert data error => {$conn->errorInfo()}"); 
-        if(!$stmt2->execute()) {
             $error = $conn->errorInfo();
             throw new PDOException("Insert data error => $error");
             die;
@@ -77,7 +69,7 @@ try {
 
         $conn->commit();
         http_response_code(200);
-        echo json_encode(array("data"=> array("code" => $code)));
+        echo json_encode(array("data"=> array("code" => $code, "document_code" => $header->qtcode)));
 
     } else  if($_SERVER["REQUEST_METHOD"] == "PUT"){
         $rest_json = file_get_contents("php://input");

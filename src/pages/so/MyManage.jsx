@@ -1,3 +1,4 @@
+import DocumentNumberPreview from "../../components/DocumentNumberPreview";
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState, useRef } from "react";
 import {
@@ -417,6 +418,7 @@ function MyManage() {
           config?.action !== "create" ? soservice.update : soservice.create;
         actions(parm)
           .then(async (r) => {
+            const savedDocument = r?.data?.data?.document_code || r?.data?.data?.catalog_code;
             if (isDraft) {
               await flushAiDone();
               if (confirmDraft) await aiSoService.confirm(header.socode);
@@ -435,7 +437,7 @@ function MyManage() {
               }
             }
             handleClose().then((r) => {
-              message.success(confirmDraft ? "ยืนยันใบขายสินค้าแล้ว" : "Request SaleOrder success.");
+              message.success(savedDocument ? `บันทึกเอกสาร ${savedDocument} สำเร็จ` : (confirmDraft ? "ยืนยันใบขายสินค้าแล้ว" : "Request SaleOrder success."));
             });
           })
           .catch((err) => {
@@ -946,6 +948,7 @@ function MyManage() {
                       <Typography.Title level={3} className="m-0">
                         รหัสใบขายสินค้า : {soCode}
                       </Typography.Title>
+                      <DocumentNumberPreview visible={config?.action === "create"} />
                     </Col>
                     <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
                       <Flex

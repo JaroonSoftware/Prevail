@@ -17,6 +17,7 @@ try {
     $doc_status = "รอออกใบวางบิล";
     
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        lock_document_numbers($conn);
         $rest_json = file_get_contents("php://input");
         $_POST = json_decode($rest_json, true);
         extract($_POST, EXTR_OVERWRITE, "_");
@@ -25,7 +26,7 @@ try {
         // $sql = "insert dnmaster (`dncode`, `dndate`, `cuscode`,`total_price`,`remark`,doc_status,created_by,updated_by) 
         // values (:dncode,:dndate,:cuscode,:total_price,:remark,'รอจัดเตรียมสินค้า',:action_user,:action_user)";
 
-        // ใช้เลขที่ใบขายสินค้าเป็นเลขที่ใบส่งของ (1 SO : 1 DN เท่านั้น)
+        // เลขที่ใบส่งของ = เลขที่ใบขายสินค้า เปลี่ยนหน้าเป็น DN (IV6911017 -> DN6911017) 1 SO : 1 DN
         $socodes = array_values(array_unique(array_filter(array_map(function ($d) {
             return ((object)$d)->socode ?? null;
         }, $detail))));
@@ -33,14 +34,15 @@ try {
         if (count($socodes) !== 1) {
             throw new PDOException("ใบส่งของ 1 ใบ ต้องมาจากใบขายสินค้าเพียง 1 ใบเท่านั้น");
         }
-        $dncode = $socodes[0];
+        $socodeSrc = (string)$socodes[0];
+        $dncode = 'DN' . (strncmp($socodeSrc, 'IV', 2) === 0 ? substr($socodeSrc, 2) : $socodeSrc);
 
-        // กันออกใบส่งของซ้ำจากใบขายสินค้าเดิม
-        $stmtChk = $conn->prepare("SELECT doc_status FROM dnmaster where dncode = :dncode");
-        $stmtChk->execute(['dncode' => $dncode]);
+        // กันออกใบส่งของซ้ำจากใบขายสินค้าเดิม (เช็คทั้งเลข DN ใหม่ และเลข IV แบบเดิมที่ยังไม่ได้แปลง)
+        $stmtChk = $conn->prepare("SELECT doc_status FROM dnmaster where dncode IN (:dncode, :socode) AND COALESCE(doc_status, '') <> 'ยกเลิก' FOR UPDATE");
+        $stmtChk->execute(['dncode' => $dncode, 'socode' => $socodeSrc]);
         if ($stmtChk->rowCount() > 0) {
             $chk = $stmtChk->fetch(PDO::FETCH_ASSOC);
-            throw new PDOException("ใบขายสินค้า $dncode ออกใบส่งของแล้ว (สถานะ: {$chk['doc_status']})");
+            throw new PDOException("ใบขายสินค้า $socodeSrc ออกใบส่งของแล้ว (สถานะ: {$chk['doc_status']})");
         }
 
         $sql = "insert dnmaster (`dncode`, `dndate`, `cuscode`,`total_price`,`remark`,doc_status,created_by,updated_by)
@@ -149,7 +151,7 @@ try {
 
         $conn->commit();
         http_response_code(200);
-        echo json_encode(array("data" => array("code" => $code)));
+        echo json_encode(array("data" => array("code" => $code, "document_code" => $dncode)));
     } else  if ($_SERVER["REQUEST_METHOD"] == "PUT") {
         $rest_json = file_get_contents("php://input");
         $_PUT = json_decode($rest_json, true);
