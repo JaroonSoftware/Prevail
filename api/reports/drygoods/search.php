@@ -31,6 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
             b.stcode,
             i.stname,
             i.buyprice AS purchase_price,
+            b.price AS sale_price,
             b.qty,
             dg.total_qty,
             IFNULL(f.qty, 0) AS qty_book,

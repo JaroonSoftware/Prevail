@@ -29,6 +29,7 @@ import dayjs from "dayjs";
 import { columns } from "./model";
 import DryCheckDrawer from "../../../components/drawer/dry-check/DryCheckDrawer";
 import ReportService from "../../../service/Report.service";
+import { formatDryQuantity } from "../../../components/print/dry-report/horizontalSummary";
 import DryGoodsSummary from "../../../components/print/dry-report/DryGoodsSummary";
 import {
   saveMyAccessSearchCookie,
@@ -313,30 +314,47 @@ const DryGoodsSelector = () => {
     [handleCheck, handleSelectChange]
   );
 
+  const productTotals = useMemo(() => {
+    const totals = new Map();
+    listDetail.forEach(item => {
+      const unit = String(item.unit || "").trim().toUpperCase();
+      const key = JSON.stringify([item.stcode || item.stname || "", unit]);
+      if (!totals.has(key)) totals.set(key, { key, stcode: item.stcode, stname: item.stname, unit, totalQty: 0, orderCount: 0 });
+      const row = totals.get(key);
+      row.totalQty += Number(item.qty_result || 0);
+      row.orderCount += 1;
+    });
+    return [...totals.values()];
+  }, [listDetail]);
+
+  const productTotalColumns = useMemo(() => [
+    { title: "ลำดับ", key: "index", width: 60, render: (_, __, index) => index + 1 },
+    { title: "รหัสสินค้า", dataIndex: "stcode", width: 120 },
+    { title: "ชื่อสินค้า", dataIndex: "stname" },
+    { title: "หน่วยสินค้า", dataIndex: "unit", width: 100, align: "center" },
+    { title: "จำนวนรายการ", dataIndex: "orderCount", width: 120, align: "right" },
+    { title: "จำนวนที่ต้องจัดซื้อรวม", dataIndex: "totalQty", width: 170, align: "right", render: formatDryQuantity },
+  ], []);
+
   const tabItems = useMemo(() => [
     {
       key: "main-report",
-      label: "ข้อมูลหลัก",
-      children: (
-        <Table
-          size="small"
-          rowKey="key"
-          columns={columnDefs}
-          dataSource={listDetail}
-          pagination={false}
-          scroll={{ x: "max-content" }}
-          locale={{ emptyText: "ไม่มีรายการ" }}
-        />
-      ),
+      label: "รายละเอียด",
+      children: <Table size="small" rowKey="key" columns={columnDefs} dataSource={listDetail}
+        pagination={false} scroll={{ x: "max-content" }} locale={{ emptyText: "ไม่พบข้อมูล" }} />,
+    },
+    {
+      key: "product-totals",
+      label: "ผลรวมแต่ละสินค้า",
+      children: <Table size="small" rowKey="key" columns={productTotalColumns} dataSource={productTotals}
+        pagination={false} scroll={{ x: "max-content" }} locale={{ emptyText: "ไม่พบข้อมูลสรุปสินค้า" }} />,
     },
     {
       key: "product-summary",
-      label: "ผลรวมของแต่ละสินค้า",
-      children: (
-        <DryGoodsSummary rows={listDetail} dateRange={reportDateRange} />
-      ),
+      label: "สรุปลูกค้าแนวนอน",
+      children: <DryGoodsSummary rows={listDetail} dateRange={reportDateRange} />,
     },
-  ], [columnDefs, listDetail, reportDateRange]);
+  ], [columnDefs, listDetail, reportDateRange, productTotalColumns, productTotals]);
 
   return (
     <div
@@ -362,7 +380,7 @@ const DryGoodsSelector = () => {
           }}
           bodyStyle={{ padding: 12 }}
         >
-          <Tabs defaultActiveKey="product-summary" items={tabItems} />
+          <Tabs defaultActiveKey="main-report" items={tabItems} />
         </Card>
       </Space>
       {!!show && (

@@ -13,7 +13,7 @@ export default function DryReportPrintPreview() {
   const [range,setRange] = useState();
   const [loading,setLoading] = useState(true);
   const [error,setError] = useState(false);
-  const print = useReactToPrint({ documentTitle:"รายงานของแห้ง", removeAfterPrint:true, pageStyle:"@page { size:A4 portrait; margin:8mm; }" });
+  const print = useReactToPrint({ documentTitle:"รายงานของแห้ง", removeAfterPrint:true, pageStyle:"@page { size:210mm 297mm; margin:8mm; } @page dryHorizontal { size:210mm 297mm; margin:8mm; } html, body { margin:0 !important; padding:0 !important; background:white !important; }" });
   useEffect(()=>{
     let active=true;
     const values=loadMyAccessSearchCookie("dry-report")?.searchValues || {};

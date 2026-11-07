@@ -4,22 +4,34 @@ export const formatDryQuantity = value => Number(value).toLocaleString("en-US", 
 export function groupDryGoods(rows = []) {
   const groups = new Map();
   rows.forEach((row, index) => {
-    const price = row.purchase_price == null || row.purchase_price === "" ? null : Number(row.purchase_price);
-    const key = JSON.stringify([row.stcode || row.stname || "", price]);
-    if (!groups.has(key)) groups.set(key, { key, name: row.stname || row.stcode || "–", price, customers: [], totals: new Map() });
+    const rawPrice = row.sale_price;
+    const numericPrice = rawPrice == null || String(rawPrice).trim() === "" ? NaN : Number(rawPrice);
+    const price = Number.isFinite(numericPrice) ? numericPrice : null;
+    const key = JSON.stringify([row.stcode || row.stname || ""]);
+    if (!groups.has(key)) groups.set(key, { key, name: row.stname || row.stcode || "–", price, customers: [], customerMap: new Map(), totals: new Map() });
     const group = groups.get(key);
+    // Minimum actual SO line price among the rows returned for the selected filters.
+    if (price !== null && (group.price === null || price < group.price)) group.price = price;
     const qty = Number(row.qty_result || 0);
     const unit = String(row.unit || "").trim().toUpperCase();
     if (!Number.isFinite(qty)) return;
-    // Preserve separate source lines (including repeated customers), as in the worksheet.
-    group.customers.push({ key: index, code: row.cuscode || "–", name: row.cusname || "", qty, unit });
+    const customerCode = String(row.cuscode || "").trim();
+    // Missing codes must not combine unrelated customers.
+    const customerKey = customerCode || "missing:" + index;
+    if (!group.customerMap.has(customerKey)) {
+      const customer = { key: customerKey, code: customerCode || "–", name: row.cusname || "", totals: new Map() };
+      group.customerMap.set(customerKey, customer);
+      group.customers.push(customer);
+    }
+    const customer = group.customerMap.get(customerKey);
+    customer.totals.set(unit, (customer.totals.get(unit) || 0) + qty);
     group.totals.set(unit, (group.totals.get(unit) || 0) + qty);
   });
   return [...groups.values()];
 }
 export function dryDateLabel(rows, range) {
   let dates = Array.isArray(range) ? range.filter(Boolean).map(v => dayjs(v)) : [];
-  if (!dates.length) dates = rows.map(r => dayjs(r.sodate)).filter(d => d.isValid()).sort((a,b) => a.valueOf()-b.valueOf());
+  if (!dates.length) dates = rows.filter(r => r.sodate).map(r => dayjs(r.sodate)).filter(d => d.isValid()).sort((a,b) => a.valueOf()-b.valueOf());
   dates = dates.filter(d => d.isValid());
   if (!dates.length) return "ทุกวันที่";
   const first = dates[0], last = dates[dates.length - 1];

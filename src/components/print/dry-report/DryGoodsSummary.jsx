@@ -18,7 +18,7 @@ export default function DryGoodsSummary({ rows = [], dateRange }) {
           <td rowSpan={2} className="dry-horizontal-price">{group.price == null ? "–" : group.price.toLocaleString("en-US",{maximumFractionDigits:2})}</td>
           {cells.map((c,i)=><th key={i} className={c ? "dry-horizontal-customer" : ""} title={c?.name}>{c?.code || ""}</th>)}
           <td rowSpan={2} className="dry-horizontal-total">{last && [...group.totals].map(([unit,qty])=><div key={unit}>{formatDryQuantity(qty)} {unit}</div>)}</td>
-        </tr><tr>{cells.map((c,i)=><td key={i} className="dry-horizontal-quantity">{c ? formatDryQuantity(c.qty)+" "+c.unit : ""}</td>)}</tr></tbody>);
+        </tr><tr>{cells.map((c,i)=><td key={i} className="dry-horizontal-quantity">{c ? [...c.totals].map(([unit,qty]) => <div key={unit}>{formatDryQuantity(qty)} {unit}</div>) : ""}</td>)}</tr></tbody>);
       }
       return bands;
     })}
