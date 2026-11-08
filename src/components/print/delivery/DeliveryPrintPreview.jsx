@@ -26,6 +26,8 @@ export default function DeliveryPrintPreview(props) {
   const [userInfo, setUserInfo] = useState(null);
   const handlePrint = useReactToPrint({
     documentTitle: "Print This Document",
+    /* ระยะขอบ 0 = Chrome ไม่มีที่วางหัว/ท้ายกระดาษ (URL, วันที่) — ต้องตั้ง "ระยะขอบ" ใน dialog เป็น ค่าเริ่มต้น/ไม่มี */
+    pageStyle: "@page { size: 9in 11in; margin: 0; } html, body { margin: 0; }",
     onBeforePrint: () => handleBeforePrint(),
     onAfterPrint: () => handleAfterPrint(),
     removeAfterPrint: true,

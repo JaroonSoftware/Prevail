@@ -40,6 +40,9 @@ export default function SOPrintPreview() {
   const [userInfo, setUserInfo] = useState(null);
   const handlePrint = useReactToPrint({
     documentTitle: "Print Sales Order",
+    /* ใส่ @page ตรงเข้า iframe ที่ใช้พิมพ์ด้วย: ระยะขอบ 0 = Chrome ไม่มีที่วางหัว/ท้ายกระดาษ (URL, วันที่, ชื่อเอกสาร)
+       ใช้ได้เมื่อ dialog ตั้ง "ระยะขอบ" เป็น ค่าเริ่มต้น/ไม่มี — ถ้าผู้ใช้ตั้ง กำหนดเอง/ต่ำสุด Chrome จะใช้ค่าของผู้ใช้แทน */
+    pageStyle: "@page { size: 9in 11in; margin: 0; } html, body { margin: 0; }",
     onBeforePrint: () => handleBeforePrint(),
     onAfterPrint: () => handleAfterPrint(),
     removeAfterPrint: true,

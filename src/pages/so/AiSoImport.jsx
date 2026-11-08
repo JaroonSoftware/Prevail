@@ -132,7 +132,12 @@ function AiSoImport() {
 
         <Alert type="warning" showIcon message="การประมวลผลด้วย AI มีค่าใช้จ่าย"
           description="ค่าใช้จ่ายขึ้นอยู่กับขนาดเอกสารและปริมาณการประมวลผล เมื่อวางไฟล์ ระบบจะยังไม่ส่งไฟล์ไปประมวลผล กรุณาตรวจรายการแล้วกดยืนยันประมวลผล หรือกดลบทิ้ง การประมวลผลซ้ำอาจมีค่าใช้จ่ายเพิ่ม" />
-        <Upload.Dragger multiple accept=".pdf,image/*" showUploadList={false} beforeUpload={handleFile}>
+        {/* ไม่ใส่ accept: ไฟล์ที่ชนิดไม่ตรงจะถูกทิ้งเงียบๆ ตอนลากมาวาง -> ตรวจเองแล้วแจ้งเตือน */}
+        <Upload.Dragger multiple showUploadList={false} beforeUpload={(f) => {
+          const ok = /\.(pdf|jpe?g|png|webp)$/i.test(f.name || "") || /^(application\/pdf|image\/)/.test(f.type || "");
+          if (!ok) { message.warning(`${f.name}: รองรับเฉพาะ PDF หรือรูป JPG/PNG/WEBP`); return false; }
+          return handleFile(f);
+        }}>
           <p className="ant-upload-drag-icon"><InboxOutlined /></p>
           <p className="ant-upload-text">คลิกหรือลากไฟล์ PO มาวางที่นี่ (เลือกได้หลายไฟล์)</p>
           <p className="ant-upload-hint">PDF หลายหน้าอาจใช้เวลาอ่าน 1-3 นาที</p>

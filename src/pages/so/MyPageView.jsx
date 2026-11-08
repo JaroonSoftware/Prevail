@@ -95,6 +95,10 @@ export default function SOView() {
         span: { xs: 1, sm: 2, md: 2, lg: 2, xl: 2, xxl: 2 },
       },
       { label: "วันที่นัดส่งสินค้า", children: h?.deldate ? dayjs(h.deldate).format("DD/MM/YYYY") : "" },
+      /* ข้อมูลที่บันทึกในใบขายแต่เดิมหน้าดูไม่ได้แสดง */
+      { label: "PO ลูกค้า", children: h?.customer_po || "-" },
+      { label: "ห้องครัว", children: h?.del_room || "-" },
+      { label: "เลขประจำตัวผู้เสียภาษี", children: h?.taxnumber || "-" },
       
       { label: "ที่อยู่", children: h?.address || h?.cusaddress || "" ,span: { xs: 1, sm: 2, md: 2, lg: 2, xl: 2, xxl: 2 },},
       { label: "ผู้ติดต่อ", children: h?.contact || "" },

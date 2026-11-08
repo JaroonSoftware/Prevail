@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Breadcrumb, Button, Dropdown } from 'antd';
-import { HomeOutlined, UserOutlined, SettingOutlined, LogoutOutlined, PushpinFilled } from '@ant-design/icons';
+import { HomeOutlined, UserOutlined, SettingOutlined, LogoutOutlined, PushpinFilled, LeftOutlined } from '@ant-design/icons';
 import { Authenticate } from '../../service/Authenticate.service';
 import ModalResetPassword from '../../components/modal/reset-password/ModalResetPassword';
 import logo from '../../assets/images/logo.png';
@@ -34,6 +34,9 @@ export default function PortalLayout({ children }) {
   const chips = [...new Set(codes)].map(c => MODULES.find(m => m.code === c))
     .filter(m => m && menus.some(n => m.paths.includes(n.to))).slice(0, 3);
   const module = MODULES.find(m => m.code === code);
+  /* อยู่ในหมวดงาน (ไม่ได้มาจากเมนูปักหมุด) -> หัวแบบ NSF: ย้อนกลับ + ป้ายรหัสหมวด + ชื่อหมวด + เมนูของหมวด */
+  const moduleMenus = module ? module.paths.map(p => menus.find(m => m.to === p)).filter(Boolean) : [];
+  const showModuleBar = !!module && !onPinnedMenu && moduleMenus.length > 0;
   const actions = [
     { key: 'reset', label: 'เปลี่ยนรหัสผ่าน', icon: <SettingOutlined />, onClick: () => setReset(true) },
     { type: 'divider' },
@@ -52,6 +55,19 @@ export default function PortalLayout({ children }) {
         <Link to="/menu" className="pv-brand" aria-label="PREVAIL เมนูระบบ">
           <img src={logo} alt="Prevail" /><strong>PREVAIL</strong>
         </Link>
+        {showModuleBar ? (
+        <nav className="pv-topnav pv-modnav" aria-label={'เมนูหมวด' + module.title}>
+          <Link to="/menu" className="pv-mod-back" title="กลับไปเมนูระบบ" aria-label="กลับไปเมนูระบบ"><LeftOutlined /></Link>
+          <Link to={'/menu/' + module.code} className="pv-mod-head" title="หน้ารวมเมนูของหมวดนี้"
+            aria-current={isMenu ? 'page' : undefined}>
+            <span className={'pv-mod-code' + (isMenu ? ' active' : '')}>{module.code}</span>
+            <span className="pv-mod-text"><small>หมวดงาน</small><b>{module.title}</b></span>
+          </Link>
+          <span className="pv-mod-divider" />
+          {moduleMenus.map(m => <Link key={m.to} className={'pv-chip pv-mod-chip ' + (currentPath === m.to ? 'active' : '')}
+            to={m.to} aria-current={currentPath === m.to ? 'page' : undefined}>{m.title}</Link>)}
+        </nav>
+        ) : (
         <nav className="pv-topnav" aria-label="เมนูหลัก">
           <Link className={'pv-chip ' + (isMenu && !code ? 'active' : '')} to="/menu"
             aria-current={isMenu && !code ? 'page' : undefined}><HomeOutlined /> เมนูระบบ</Link>
@@ -62,6 +78,7 @@ export default function PortalLayout({ children }) {
             {m.code} · {m.title}
           </Link>)}
         </nav>
+        )}
         <Dropdown menu={{ items: actions }} trigger={['click']}>
           <Button type="text" className="pv-user" aria-label="บัญชีผู้ใช้">
             <UserOutlined /><span>{[user?.firstname, user?.lastname].filter(Boolean).join(' ') || user?.username}

@@ -237,8 +237,13 @@ function AiCatalogImport() {
           description="ตรวจรายการที่ขึ้น “ตรวจ” / “ไม่พบสินค้า” แล้วกด “สร้างแคตตาล็อก” ระบบจะพาไปหน้าสร้างแคตตาล็อก ให้เลือกลูกค้าและกด Save อีกครั้ง (ยังไม่บันทึกจนกว่าจะกด Save)" />
 
         <Spin spinning={loading} tip={progress ? `AI กำลังอ่านไฟล์ ${progress.done + 1}/${progress.total}: ${progress.name}` : "กำลังทำงาน..."}>
-          <Upload.Dragger accept=".xlsx" multiple showUploadList={false} disabled={loading}
+          {/* ไม่ใส่ accept: antd ทิ้งไฟล์ที่ลากมาวางแบบเงียบๆ ถ้าชนิดไฟล์ไม่ตรง (บางเครื่องไม่บอกชนิดไฟล์)
+              ผู้ใช้จะเห็นว่า "ลากแล้วไม่เกิดอะไร" -> รับทุกไฟล์แล้วตรวจนามสกุลเองพร้อมแจ้งเตือน */}
+          <Upload.Dragger multiple showUploadList={false} disabled={loading}
             beforeUpload={(f) => {
+              const nm = (f.name || "").toLowerCase();
+              if (nm.endsWith(".xls")) { message.warning(`${f.name}: ไฟล์ .xls รุ่นเก่า กรุณาเปิดใน Excel แล้ว Save As เป็น .xlsx`); return false; }
+              if (!nm.endsWith(".xlsx")) { message.warning(`${f.name}: รองรับเฉพาะไฟล์ .xlsx`); return false; }
               setQueue((q) => (q.some((x) => x.name === f.name && x.size === f.size) ? q : [...q, f]));
               return false;
             }}>

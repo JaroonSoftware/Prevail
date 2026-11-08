@@ -11,3 +11,17 @@
 .pv-panel-heading{display:flex;align-items:baseline;gap:10px;margin-bottom:16px}.pv-panel-heading h3{font-size:21px;font-weight:600;color:#006838;margin:0}.pv-panel-heading>span{color:#64776b;font-size:13px}.pv-section-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.pv-panel-empty{padding:28px 12px;margin:0;color:#64776b;text-align:center;background:#f1f6f3;border-radius:12px;font-size:13px}
 @media(max-width:760px){.pv-module-sections{grid-template-columns:minmax(0,1fr);grid-template-areas:"system" "master" "report";gap:22px}.pv-module-panel{padding:0 0 22px;border:0;border-bottom:1px solid #c5dfd0}.pv-panel-report{border-bottom:0}.pv-panel-heading h3{font-size:19px}}
 @media(max-width:360px){.pv-section-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* หัวหมวดงานแบบ NSF: ปุ่มย้อนกลับ + ป้ายรหัสหมวด + "หมวดงาน/ชื่อหมวด" + เส้นคั่น + เมนูของหมวด */
+.pv-modnav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;padding:2px 0}
+.pv-mod-back{flex:0 0 auto;width:34px;height:34px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #d9e6de;background:#fff;color:#4a6555}
+.pv-mod-back:hover{color:#006838;border-color:#006838}
+.pv-mod-head{flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;padding:0 6px;text-decoration:none}
+.pv-mod-code{min-width:34px;height:34px;padding:0 6px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:#0b4d2c;color:#fff;font-size:12px;font-weight:800;letter-spacing:.5px}
+.pv-mod-code.active,.pv-mod-head:hover .pv-mod-code{background:#006838}
+.pv-mod-text{display:inline-flex;flex-direction:column;line-height:1.15}
+.pv-mod-text small{font-size:10px;color:#94a39a;font-weight:600}
+.pv-mod-text b{font-size:14px;color:#203c2c;font-weight:800;white-space:nowrap}
+.pv-mod-divider{flex:0 0 auto;width:2px;height:30px;background:#d5e3da;border-radius:2px;margin:0 6px}
+.pv-topnav .pv-mod-chip{flex:0 0 auto;white-space:nowrap;padding:7px 16px;border-radius:10px;font-size:13px;background:#f2f7f4;border-color:#dbe8e0;color:#3d5a49}
+.pv-topnav .pv-mod-chip.active{background:#006838;border-color:#006838;color:#fff}
