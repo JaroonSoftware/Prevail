@@ -1,4 +1,6 @@
 <?php
+
+require_once dirname(__DIR__) . "/common/packing.php";
 ob_start();
 include_once(dirname(__FILE__, 2) . "/onload.php");
 include_once(dirname(__FILE__, 2) . "/common/fnc-code.php");
@@ -108,6 +110,7 @@ try {
                 throw new PDOException("Insert data error => $error");
             }
         }
+        packing_save_catalog($conn, $catalog_code, $detail, $customer);
         save_catalog_pending($conn, $catalog_code, $pending ?? null);
 
         {
@@ -214,6 +217,7 @@ try {
             }
         }
 
+        packing_save_catalog($conn, (string)$header->catalog_code, $detail, $customer);
         save_catalog_pending($conn, (string)$header->catalog_code, $pending ?? null);
 
         $conn->commit();
@@ -236,7 +240,7 @@ try {
 
         /* หมวดแคตตาล็อกของสินค้า (ใช้แบ่งแท็บในหน้ากรอก) — ถ้ายังไม่มีคอลัมน์ ให้เป็น NULL */
         $hasGroup = (bool)$conn->query("SHOW COLUMNS FROM items LIKE 'catalog_group_id'")->fetch();
-        $sql = "SELECT a.catalog_code,a.stcode,i.stname,i.unit,a.price," . ($hasGroup ? "i.catalog_group_id" : "NULL AS catalog_group_id") . " ";
+        $sql = "SELECT a.catalog_code,a.stcode,i.stname,i.unit,i.packing_weight,a.price," . ($hasGroup ? "i.catalog_group_id" : "NULL AS catalog_group_id") . " ";
         $sql .= " FROM `catalog_detail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
         $sql .= " where a.catalog_code = :code";
         $sql .= " order by i.seq";
@@ -247,7 +251,7 @@ try {
             http_response_code(404);
             throw new PDOException("Geting data error => $error");
         }
-        $detail = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $detail = packing_load_catalog($conn, $code, $stmt->fetchAll(PDO::FETCH_ASSOC));
 
         $sql = "SELECT a.catalog_code,a.cuscode,a.updated_date,a.created_by,a.updated_by,i.cusname,i.prename ";
         $sql .= " FROM `catalog_link` as a inner join `customer` as i on (a.cuscode=i.cuscode)  ";

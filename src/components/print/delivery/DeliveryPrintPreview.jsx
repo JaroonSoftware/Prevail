@@ -8,7 +8,7 @@ import "./delivery.css";
 import "./delivery-form.css";
 import { Authenticate } from "../../../service/Authenticate.service";
 // import logo from "../../../assets/images/QRCODEDN.jpg";
-import { Button, message } from "antd";
+import { Button, message, Modal } from "antd";
 import thaiBahtText from "thai-baht-text";
 import dayjs from "dayjs";
 import { comma, formatMoney } from "../../../utils/util";
@@ -16,6 +16,7 @@ import { PiPrinterFill } from "react-icons/pi";
 import { LoadingOutlined } from "@ant-design/icons";
 import { Spin } from "antd";
 import DeliveryService from "../../../service/DeliveryNote.service";
+import { v4 as uuidv4 } from "uuid";
 
 const dnservice = DeliveryService();
 
@@ -40,7 +41,23 @@ export default function DeliveryPrintPreview(props) {
   const [loading] = useState(false);
 
   const handleAfterPrint = () => {
-    // setNewPageContent([]);
+    const eventId = uuidv4();
+    Modal.confirm({
+      title: "พิมพ์ใบส่งสินค้าสำเร็จแล้วใช่หรือไม่",
+      content: "กดยืนยันเพื่อบันทึกจำนวนครั้งพิมพ์เพิ่ม 1 ครั้ง",
+      okText: "พิมพ์สำเร็จ",
+      cancelText: "ยกเลิก / พิมพ์ไม่สำเร็จ",
+      onOk: async () => {
+        try {
+          await dnservice.recordPrint(code, eventId);
+          message.success("บันทึกจำนวนครั้งพิมพ์แล้ว");
+          window.opener?.postMessage({ type: "delivery-note-printed" }, window.location.origin);
+        } catch (error) {
+          message.error(error?.response?.data?.message || "บันทึกจำนวนครั้งพิมพ์ไม่สำเร็จ");
+          throw error;
+        }
+      },
+    });
   };
   const handleBeforePrint = (e) => {
     // console.log("before printing...")

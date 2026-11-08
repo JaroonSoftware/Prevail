@@ -250,7 +250,7 @@ export const columnsParametersEditable = (
              ไม่มีผลกับฉลากที่ backend จะดึงของเดิมมาปริ้นซ้ำ */
           editable:
             col.dataIndex === "packing_weight"
-              ? !isPackedPrinted(record)
+              ? false
               : col.editable,
           dataIndex: col.dataIndex,
           title: col.title,
@@ -306,7 +306,7 @@ export const productColumnInCollape = () => [
     align: "right",
     className: "!pe-3",
     required: true,
-    editable: true,
+    editable: false,
     type: "number",
     render: (_, rec) => <>{comma(Number(rec?.packing_weight || 0), 2, 2)}</>,
   },

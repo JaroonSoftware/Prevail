@@ -1,4 +1,5 @@
 <?php
+require_once dirname(__DIR__, 2) . "/common/packing.php";
 /* ============================================================================
    สร้าง "ร่างใบขายสินค้า" (somaster.doc_status = 'รอยืนยันใบขายสินค้า') จาก PO ที่ AI อ่านแล้ว
 
@@ -109,10 +110,11 @@ final class SoDraft
             JOIN catalog_detail d ON a.catalog_code = d.catalog_code
             JOIN catalog_master m ON a.catalog_code = m.catalog_code
             JOIN items i ON d.stcode = i.stcode
-            WHERE a.cuscode = :c AND (CURDATE() BETWEEN m.start_date AND m.stop_date) AND m.active_status = 'Y'");
+            WHERE a.cuscode = :c AND (CURDATE() BETWEEN m.start_date AND m.stop_date) AND m.active_status = 'Y' ORDER BY m.start_date DESC, a.catalog_code DESC");
         $st->execute(array('c' => $cuscode));
         $out = array();
         foreach ($st->fetchAll(PDO::FETCH_ASSOC) as $r) {
+            if (isset($out[(string)$r['stcode']])) continue;
             $out[(string)$r['stcode']] = array('price' => (float)$r['price'], 'unit' => $r['unit'], 'vat' => (int)($r['vat'] ?? 0));
         }
         return $out;
@@ -129,6 +131,7 @@ final class SoDraft
     {
         // Reject incompatible schema before an ENUM silently stores an empty status.
         self::requireDraftStatus($conn);
+        $packingReady = packing_schema_ready($conn);
         $catalog = self::catalogPrices($conn, $cuscode);
         $items = array();
         foreach ($matcher->catalog() as $it) $items[$it['stcode']] = $it;
@@ -158,8 +161,8 @@ final class SoDraft
                                   active_status, doc_status, created_date, created_by)
             VALUES (:socode, :cuscode, :sodate, :po, :room, :total, :deldate, :remark, 'Y', :status, :now, :user)");
         $insLine = $conn->prepare("
-            INSERT INTO sodetail (socode, stcode, qty, price, unit, vat, total_cost)
-            VALUES (:socode, :stcode, :qty, :price, :unit, :vat, 0)");
+            INSERT INTO sodetail (socode, stcode, qty, price, unit, vat, total_cost" . ($packingReady ? ", packing_weight" : "") . ")
+            VALUES (:socode, :stcode, :qty, :price, :unit, :vat, 0" . ($packingReady ? ", :packing_weight" : "") . ")");
         $insPend = $conn->prepare("
             INSERT INTO ai_so_pending (socode, import_id, seq, raw_name, raw_code, qty, unit, price, suggest_stcode, confidence)
             VALUES (:socode, :imp, :seq, :name, :code, :qty, :unit, :price, :sug, :conf)");
@@ -199,6 +202,7 @@ final class SoDraft
                     $insLine->execute(array(
                         'socode' => $socode, 'stcode' => $d['stcode'], 'qty' => $d['qty'],
                         'price' => $d['price'], 'unit' => $d['unit'], 'vat' => $d['vat'],
+                        ...($packingReady ? ['packing_weight' => packing_resolve($conn, $cuscode, $d)] : []),
                     ));
                     $nAuto++;
                 } else {

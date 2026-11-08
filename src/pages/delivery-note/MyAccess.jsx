@@ -188,6 +188,16 @@ const MyAccess = () => {
     setTimeout(() => getData(payload), 80);
   };
 
+  useEffect(() => {
+    const onPrinted = (event) => {
+      if (event.origin === window.location.origin && event.data?.type === "delivery-note-printed") {
+        handleSearch();
+      }
+    };
+    window.addEventListener("message", onPrinted);
+    return () => window.removeEventListener("message", onPrinted);
+  });
+
   const handleClear = () => {
     clearMyAccessSearchCookie(PAGE_COOKIE_KEY);
     form.resetFields();

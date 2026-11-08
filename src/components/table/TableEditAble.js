@@ -129,6 +129,8 @@ export const EditableCell = ({
         price: v.price,
         unit: v.unit,
         vat: v.vat,
+          catalog_code: v.catalog_code,
+          packing_weight: v.packing_weight,
         key: dataIndex,
       });
       // After updating row data, focus price editor in same row
@@ -448,7 +450,7 @@ export const EditableCell = ({
               style={{ width: "100%" }}
               className="input-30"
               placeholder="เลือกข้อมูล"
-              options={(optionsStcode || []).map((m) => ({ label: m.label, value: m.value,stcode:m.value,stname:m.label,price:m.price,unit:m.unit,vat:m.vat }))}
+              options={(optionsStcode || []).map((m) => ({ label: m.label, value: m.value,stcode:m.value,stname:m.label,price:m.price,unit:m.unit,vat:m.vat,catalog_code:m.catalog_code,packing_weight:m.packing_weight }))}
               filterOption={filterOption}
               onSelect={(data,value)=>selectStcode(data,value)}
               onBlur={save}
@@ -463,7 +465,7 @@ export const EditableCell = ({
               style={{ width: "100%" }}
               className="input-30"
               placeholder="เลือกข้อมูล"
-              options={(optionsStcode || []).map((m) => ({ label: m.label, value: m.value,stcode:m.value,stname:m.label,price:m.price,unit:m.unit,vat:m.vat }))}
+              options={(optionsStcode || []).map((m) => ({ label: m.label, value: m.value,stcode:m.value,stname:m.label,price:m.price,unit:m.unit,vat:m.vat,catalog_code:m.catalog_code,packing_weight:m.packing_weight }))}
               filterOption={filterOption}
               onSelect={(data,value)=>selectStcode(data,value)}
               onBlur={save}

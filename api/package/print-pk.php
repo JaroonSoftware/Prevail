@@ -1,4 +1,6 @@
 <?php
+
+require_once dirname(__DIR__) . "/common/packing.php";
 ob_start();
 include_once(dirname(__FILE__, 2) . "/onload.php");
 include_once(dirname(__FILE__, 2) . "/common/fnc-code.php");
@@ -15,17 +17,37 @@ try {
         extract($_POST, EXTR_OVERWRITE, "_");
 
         $listbarcode = [];
+        $action_user = $token->userid;
+        if (!is_array($detail) || !$detail) throw new Exception('Select at least one item.');
 
         foreach ($detail as $ind => $val) {
 
             $count = 0;
+            $packingReady = packing_schema_ready($conn);
+            $lock = $conn->prepare('SELECT socode FROM somaster WHERE socode=:s FOR UPDATE');
+            $lock->execute(['s'=>$val['socode']]);
+            if (!$lock->fetchColumn()) throw new Exception('Sales order not found.');
+            $lines = $conn->prepare('SELECT d.qty,d.unit,' . ($packingReady ? 'd.packing_weight' : 'i.packing_weight') . ',i.stname FROM sodetail d JOIN items i ON i.stcode=d.stcode WHERE d.socode=:s AND d.stcode=:i ORDER BY d.code');
+            $lines->execute(['s'=>$val['socode'],'i'=>$val['stcode']]);
+            $saved = $lines->fetchAll(PDO::FETCH_ASSOC);
+            if (!$saved) throw new Exception('Sales order item not found.');
+            $val['qty'] = 0;
+            foreach ($saved as $row) {
+                $val['qty'] += (float)$row['qty'];
+            }
+            $val['unit']=$saved[0]['unit']; $val['stname']=$saved[0]['stname'];
+            $val['packing_weight']=$saved[0]['packing_weight'];
+            $existing=$conn->prepare('SELECT COUNT(*) FROM package_barcode WHERE socode=:s AND stcode=:i');
+            $existing->execute(['s'=>$val['socode'],'i'=>$val['stcode']]);
+            $existingCount=(int)$existing->fetchColumn();
 
-            $strSQL = "SELECT count(code) as num FROM `sodetail` where packing_status != 'ยังไม่ปริ้นหน้าถุง' and stcode = '" . $val['stcode'] . "' and socode = '" . $val['socode'] . "'  ";
-            $stmt = $conn->prepare($strSQL);
-            $stmt->execute();
-            $res = $stmt->fetch(PDO::FETCH_ASSOC);
-            extract($res, EXTR_OVERWRITE, "_");
-            if ($num==0) {
+
+            if ($existingCount === 0) {
+                foreach ($saved as $row) {
+                if ($row['unit'] !== $saved[0]['unit'] || $row['packing_weight'] !== $saved[0]['packing_weight'])
+                    throw new Exception('Duplicate item rows have different units or packing sizes. Separate these orders before packing.');
+                }
+
                 /* ต้อง join customer ด้วย: $val มาจาก sodetail ฝั่งหน้าจอ ซึ่งไม่มี
                    cusname/cuscode ติดมา (ดู query GET ใน package/manage.php)
                    ถ้าไม่ดึงจาก DB ตรงนี้ ปริ้นครั้งแรกชื่อลูกค้าจะว่างเสมอ */
@@ -54,23 +76,9 @@ try {
                    ทำให้ qty 0.30 / ถุงละ 1.00 ได้ 0 % 1 = 0 -> ไม่เกิดถุงเลย */
                 $qty_f    = (float) $val['qty'];
 
-                /* น้ำหนักต่อถุง: ยอมให้หน้าจอส่งค่าที่แก้เฉพาะการปริ้นครั้งนี้มาได้
-                   (แก้ได้เฉพาะรายการที่ยังไม่เคยปริ้น ซึ่งก็คือกิ่งนี้)
-                   ค่านี้ใช้แค่คำนวณ + เก็บลง package_barcode.sup_weight
-                   ไม่มีการเขียนกลับ items.packing_weight = ไม่แตะ master data
-                   ถ้าค่าที่ส่งมาใช้ไม่ได้ (ว่าง/0/ติดลบ) ให้ถอยไปใช้ค่า master */
-                $pack_f = isset($val['packing_weight']) ? (float) $val['packing_weight'] : 0;
-                if (!($pack_f > 0)) {
-                    $stmt6 = $conn->prepare("SELECT packing_weight FROM `items` WHERE stcode = :stcode LIMIT 1");
-                    $stmt6->bindValue(":stcode", $val['stcode'], PDO::PARAM_STR);
-                    $stmt6->execute();
-                    $pack_f = (float) ($stmt6->fetchColumn() ?: 0);
-                }
-                if (!($pack_f > 0)) {
-                    throw new Exception("สินค้า {$val['stcode']} ไม่มีน้ำหนักสูงสุดต่อถุงที่ใช้ได้ กรุณากรอกก่อนปริ้น");
-                }
-                $full_bag = $pack_f > 0 ? (int) floor($qty_f / $pack_f) : 0;
-                $remain   = $pack_f > 0 ? fmod($qty_f, $pack_f) : $qty_f;
+                // Use only the sales-order snapshot; reprints use existing barcode rows.
+                $pack_f = (float)($val['packing_weight'] ?? 0);
+                [$full_bag, $remain] = packing_split($qty_f, $pack_f);
 
                 for ($count = 0; $count < $full_bag; $count++) {
                     $sql = "INSERT INTO package_barcode
@@ -170,9 +178,9 @@ try {
                 inner join items as i on (a.stcode=i.stcode)
                 inner join somaster as s on (a.socode=s.socode)
                 inner join customer as c on (s.cuscode=c.cuscode)
-                where a.stcode = '" . $val['stcode'] . "' and a.socode = '" . $val['socode'] . "'  ";
+                where a.stcode = :stcode and a.socode = :socode ";
                 $stmt = $conn->prepare($strSQL);
-                if (!$stmt->execute()) {
+                if (!$stmt->execute(['stcode'=>$val['stcode'], 'socode'=>$val['socode']])) {
                     $error = $conn->errorInfo();
                     http_response_code(404);
                     throw new PDOException("Geting data error => $error");

@@ -25,6 +25,7 @@ const DeliveryNoteService = () => {
   
 
   return {
+    recordPrint: (code, eventId) => api.post('/deliverynote/record-print.php', { code, eventId }),
     create,
     update,
     deleted,

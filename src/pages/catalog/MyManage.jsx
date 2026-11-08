@@ -1,7 +1,7 @@
 import DocumentNumberPreview from "../../components/DocumentNumberPreview";
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
-import { Button, Form, Table, Typography, message } from "antd";
+import { Button, Form, Table, Typography, message, InputNumber } from "antd";
 import {
   Card,
   Col,
@@ -207,6 +207,8 @@ function CatalogManage() {
           stop_date: data.stop_date,
         };
 
+        const staleUnit = listDetail.some(d => listCustomer.some(c => d.customer_packing?.[c.cuscode] != null && d.customer_packing_units?.[c.cuscode] && d.customer_packing_units[c.cuscode] !== d.unit));
+        if (staleUnit) throw new Error("กรุณาตั้งขนาดถุงใหม่ให้ตรงหน่วยสินค้า");
         const detail = listDetail;
         const customer = listCustomer;
         const pending = listPending.map(({ _pid, pending_id, ...p }) => p);
@@ -221,7 +223,7 @@ function CatalogManage() {
             });
           })
           .catch((err) => {
-            message.error("Request Catalog fail.");
+            message.error(err?.response?.data?.message || "Request Catalog fail.");
             console.warn(err);
           });
       })
@@ -332,6 +334,21 @@ function CatalogManage() {
   );
   const prodcolumns = columnsParametersEditable(handleEditCell,{
     handleRemove,
+  });
+  const operationColumnIndex = prodcolumns.findIndex(column => column.key === "operation");
+  prodcolumns.splice(operationColumnIndex < 0 ? prodcolumns.length : operationColumnIndex, 0, { title: "ขนาดบรรจุต่อถุงแยกตามลูกค้า", key: "customer_packing", width: 320,
+    render: (_, row) => <Space direction="vertical">
+      <Typography.Text type="secondary">ค่ากลาง: {row.packing_weight || "-"} {row.unit}/ถุง · เว้นว่างเพื่อใช้ค่ากลาง</Typography.Text>
+      {listCustomer.map(c => <Space key={c.cuscode}>
+        <InputNumber aria-label={`ขนาดถุง ${c.cuscode} ${row.stcode}`} min={0.01} max={9999999.99} precision={2}
+          value={row.customer_packing?.[c.cuscode] ?? null}
+          onChange={v => handleEditCell({...row, customer_packing: {...row.customer_packing, [c.cuscode]: v},
+            customer_packing_units: {...row.customer_packing_units, [c.cuscode]: row.unit}})} />
+        <span>{row.unit}/ถุง</span>
+        {row.customer_packing_units?.[c.cuscode] && row.customer_packing_units[c.cuscode] !== row.unit &&
+          <Typography.Text type="danger">หน่วยเดิม {row.customer_packing_units[c.cuscode]} กรุณาตั้งค่าใหม่</Typography.Text>}
+      </Space>)}
+    </Space>
   });
   const TitleTableCustomer = (
     <Flex className="width-100" align="center">
@@ -480,7 +497,7 @@ function CatalogManage() {
     if (!it) return message.warning("กรุณาเลือกสินค้า");
     if (listDetail.some((d) => d.stcode === it.stcode)) return message.warning(`สินค้า ${it.stname} มีในแคตตาล็อกแล้ว`);
     setListDetail((s) => [...s, {
-      stcode: it.stcode, stname: it.stname, unit: it.unit,
+      stcode: it.stcode, stname: it.stname, unit: it.unit, packing_weight: it.packing_weight, customer_packing: {},
       price: p.price != null ? Number(p.price) : Number(it.price || 0),
       catalog_group_id: it.catalog_group_id ?? null,
     }]);

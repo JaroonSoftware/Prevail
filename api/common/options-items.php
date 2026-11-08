@@ -1,4 +1,6 @@
 <?php 
+
+require_once dirname(__DIR__) . "/common/packing.php";
 ob_start();
 include_once(dirname(__FILE__, 2)."/onload.php");
 $db = new DbConnect;
@@ -60,7 +62,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
             $res = $stmt->fetchAll(PDO::FETCH_ASSOC);         
         }else if ($p === 'cl' ){
             $sql = "
-			select i.stcode as value,i.stcode,i.stname as label, d.price, i.unit,i.vat
+			select a.catalog_code,i.stcode as value,i.stcode,i.stname as label, d.price, i.unit,i.vat,i.packing_weight
             from catalog_link as a
             inner join catalog_detail d on (a.catalog_code=d.catalog_code)
             inner join catalog_master m on (a.catalog_code=m.catalog_code)
@@ -68,11 +70,13 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
             left outer join `itemtype` t on i.typecode = t.typecode
             where a.cuscode= '$cuscode' and (CURDATE() BETWEEN m.start_date AND m.stop_date) and m.active_status = 'Y'
             $type_code";
-            $sql .= " order by i.seq";
+            $sql .= " order by i.seq, m.start_date DESC, a.catalog_code DESC";
 
             $stmt = $conn->prepare($sql); 
             $stmt->execute();
-            $res = $stmt->fetchAll(PDO::FETCH_ASSOC);         
+            $res = packing_catalog_rows($conn, $stmt->fetchAll(PDO::FETCH_ASSOC), (string)$cuscode);
+            $unique = []; foreach ($res as $row) if (!isset($unique[$row["stcode"]])) $unique[$row["stcode"]] = $row;
+            $res = array_values($unique);         
         } else  if ($p === 'items-type' ){
             $sql = "
 			select t.*

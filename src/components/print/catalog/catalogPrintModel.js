@@ -12,3 +12,12 @@ export function catalogPages(detail, groups) {
   for(let i=0;i<columns.length;i+=2)pages.push({group:known.get(key)||(key==='none'?'ยังไม่ระบุหมวด':'หมวด '+key),left:columns[i],right:columns[i+1]||[]});
  }return pages;
 }
+
+// A customer uses its override; otherwise display the item's default in its own unit.
+export function customerCatalogDetail(detail, customer) {
+ return detail.map(item => {
+  const custom = item.customer_packing?.[customer];
+  const mismatch = custom != null && item.customer_packing_units?.[customer] && item.customer_packing_units[customer] !== item.unit;
+  return {...item, printPacking: mismatch ? null : custom ?? item.packing_weight, packingUnitMismatch: mismatch};
+ });
+}

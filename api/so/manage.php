@@ -1,10 +1,13 @@
 <?php
+
+require_once dirname(__DIR__) . "/common/packing.php";
 ob_start();
 include_once(dirname(__FILE__, 2) . "/onload.php");
 include_once(dirname(__FILE__, 2) . "/common/fnc-code.php");
 
 $db = new DbConnect;
 $conn = $db->connect();
+$packingReady = packing_schema_ready($conn);
 $conn->beginTransaction();
 http_response_code(400);
 try {
@@ -16,6 +19,7 @@ try {
         $action_datetime = date("Y-m-d H:i:s");
         $action_user = $token->userid;
         $socode = document_number($conn, 'socode', true);
+        $detail = !$packingReady ? $detail : packing_prepare_lines($conn, $detail, (string)$header['cuscode']);
         $sql = " 
         insert somaster ( 
             socode, cuscode, sodate,customer_po, del_room, total_price,deldate, remark, active_status, doc_status, created_date, created_by
@@ -47,8 +51,8 @@ try {
         $code = $conn->lastInsertId();
         // var_dump($master); exit;
 
-        $sql = "insert into sodetail (socode,stcode,qty,price,unit,vat,total_cost)
-        values (:socode,:stcode,:qty,:price,:unit,:vat,0)";
+        $sql = "insert into sodetail (socode,stcode,qty,price,unit,vat,total_cost" . ($packingReady ? ",packing_weight" : "") . ")
+        values (:socode,:stcode,:qty,:price,:unit,:vat,0" . ($packingReady ? ",:packing_weight" : "") . ")";
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
@@ -57,6 +61,7 @@ try {
             $val = (object)$val;
             $vat = trim((string)($val->vat ?? "")) === "" ? 0 : (int)$val->vat;
             $stmt->bindParam(":socode", $socode, PDO::PARAM_STR);
+            if ($packingReady) $stmt->bindValue(":packing_weight", $val->packing_weight, $val->packing_weight === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
             $stmt->bindParam(":qty", $val->qty, PDO::PARAM_STR);
             $stmt->bindParam(":price", $val->price, PDO::PARAM_STR);
@@ -75,6 +80,7 @@ try {
         $rest_json = file_get_contents("php://input");
         $_PUT = json_decode($rest_json, true);
         extract($_PUT, EXTR_OVERWRITE, "_");
+        $detail = !$packingReady ? $detail : packing_prepare_lines($conn, $detail, (string)$header["cuscode"], (string)$header["socode"]);
         $action_datetime = date("Y-m-d H:i:s");
         $action_user = $token->userid;
 
@@ -124,8 +130,8 @@ try {
             throw new PDOException("Remove data error => $error");
         }
 
-        $sql = "insert into sodetail (socode,stcode,unit,qty,price,vat,total_cost)
-        values (:socode,:stcode,:unit,:qty,:price,:vat,0)";
+        $sql = "insert into sodetail (socode,stcode,unit,qty,price,vat,total_cost" . ($packingReady ? ",packing_weight" : "") . ")
+        values (:socode,:stcode,:unit,:qty,:price,:vat,0" . ($packingReady ? ",:packing_weight" : "") . ")";
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
@@ -134,6 +140,7 @@ try {
             $val = (object)$val;
             $vat = trim((string)($val->vat ?? "")) === "" ? 0 : (int)$val->vat;
             $stmt->bindParam(":socode", $header->socode, PDO::PARAM_STR);
+            if ($packingReady) $stmt->bindValue(":packing_weight", $val->packing_weight, $val->packing_weight === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
             $stmt->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
             $stmt->bindParam(":unit", $val->unit, PDO::PARAM_STR);
             $stmt->bindParam(":qty", $val->qty, PDO::PARAM_STR);
@@ -195,7 +202,7 @@ try {
         }
         $header = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT a.socode,a.stcode, a.price, a.unit, a.qty,a.vat,i.stname,i.packing_weight ";
+        $sql = "SELECT a.code,a.socode,a.stcode, a.price, a.unit, a.qty,a.vat,i.stname," . (packing_schema_ready($conn) ? "a.packing_weight" : "i.packing_weight") . " ";
         $sql .= " FROM `sodetail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
         $sql .= " where a.socode = :code";
         // $sql .= " order by i.seq";

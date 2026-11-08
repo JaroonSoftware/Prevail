@@ -98,6 +98,26 @@ export const accessColumn = ({
     render: (data) => <TagDeliveryNoteStatus result={data} />,
   },
   {
+    title: "สถานะการพิมพ์",
+    key: "print_status",
+    dataIndex: "print_count",
+    width: 140,
+    render: (count) => count == null ? <Tag>ยังไม่เปิดใช้ตัวนับ</Tag> : (
+      <Tag color={Number(count) > 0 ? "green" : "default"}>
+        {Number(count) > 0 ? "พิมพ์แล้ว" : "ยังไม่พิมพ์"}
+      </Tag>
+    ),
+  },
+  {
+    title: "จำนวนที่พิมพ์",
+    key: "print_count",
+    dataIndex: "print_count",
+    width: 120,
+    align: "center",
+    sorter: (a, b) => Number(a.print_count || 0) - Number(b.print_count || 0),
+    render: (count) => count == null ? "—" : `${Number(count)} ครั้ง`,
+  },
+  {
     title: "จัดทำโดย",
     dataIndex: "created_name",
     key: "created_name",

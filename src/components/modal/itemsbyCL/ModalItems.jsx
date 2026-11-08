@@ -64,6 +64,8 @@ export default function ModalItems({ show, close, values, selected,cuscode }) {
         price: Number(m?.price || 0),
         qty: 1,
         unit: m.unit,
+        catalog_code: m.catalog_code,
+        packing_weight: m.packing_weight,
         discount: 0,
         vat: m.vat,
       }));

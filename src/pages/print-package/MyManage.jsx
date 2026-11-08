@@ -1,3 +1,4 @@
+import { isPackedPrinted as isPackedPrintedForValidation } from "./model";
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState, useRef } from "react";
 import {
@@ -213,7 +214,7 @@ function MyManage() {
 
     /* กันส่งค่าที่แบ่งถุงไม่ได้ไปให้ backend (0 หรือติดลบ = ไม่เกิดถุงเลย
        หรือวนสร้างถุงไม่รู้จบ) เช็คตั้งแต่หน้าจอจะบอกได้ตรงกว่า */
-    const bad = chosen.find((it) => !(Number(it?.packing_weight) > 0));
+    const bad = chosen.find((it) => !isPackedPrintedForValidation(it) && !(Number(it?.packing_weight) > 0));
     if (bad) {
       message.error(
         `กรุณากรอกน้ำหนักสูงสุดต่อถุงของ ${bad?.stcode ?? ""} ให้มากกว่า 0`

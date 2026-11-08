@@ -65,6 +65,8 @@ export default function ModalCusCL({show, close, values, selected, groups = [], 
             price: Number(m?.price || 0),
             qty: 1,
             unit:m.unit,
+            packing_weight:m.packing_weight,
+            customer_packing:{},
             discount:0,
             catalog_group_id: m.catalog_group_id ?? null,
         }));

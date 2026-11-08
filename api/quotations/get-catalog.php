@@ -1,4 +1,6 @@
 <?php
+
+require_once dirname(__DIR__) . "/common/packing.php";
 ob_start();
 include_once(dirname(__FILE__, 2)."/onload.php");
 include_once(dirname(__FILE__, 2)."/common/fnc-code.php");
@@ -14,13 +16,13 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
     try {  
         $code = $_GET["code"]; 
 
-        $sql = "SELECT a.catalog_code,a.cuscode,c.stcode,c.price,d.stname,d.unit ";
+        $sql = "SELECT a.catalog_code,a.cuscode,c.stcode,c.price,d.stname,d.unit,d.packing_weight ";
         $sql .= " FROM `catalog_link` as a ";        
         $sql .= " left join catalog_master as b on a.catalog_code = b.catalog_code ";
         $sql .= " left join catalog_detail as c on a.catalog_code = c.catalog_code ";
         $sql .= " left join items as d on c.stcode = d.stcode ";
         $sql .= " where a.cuscode = :code and b.start_date <= CURDATE() and b.stop_date >= CURDATE() and b.active_status = 'Y' ";
-        $sql .= " order by d.seq asc ";
+        $sql .= " order by d.seq asc, b.start_date DESC, a.catalog_code DESC ";
         
         $stmt = $conn->prepare($sql); 
         if (!$stmt->execute([ 'code' => $code ])){
@@ -28,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
             http_response_code(404);
             throw new PDOException("Geting data error => $error");
         }
-        $detail = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $detail = packing_catalog_rows($conn, $stmt->fetchAll(PDO::FETCH_ASSOC), (string)$code);
 
         $conn->commit();
 

@@ -226,6 +226,7 @@ export const soViewColumns = [
     ];
 
 export const productColumn = ({handleRemove,handleSelectChange}) => [
+  { title: "ขนาดต่อถุง", key: "packing_weight", width: 140, render: (_, r) => r.packing_weight == null ? "-" : `${r.packing_weight} ${r.unit}/ถุง` },
   {
     title: "ลำดับ",
     dataIndex: "ind",

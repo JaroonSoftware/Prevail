@@ -16,6 +16,7 @@ import {
 } from "antd";
 import { Card, Col, Divider, Flex, Row, Space, Popconfirm } from "antd";
 import OptionService from "../../service/Options.service";
+import CustomerService from "../../service/Customer.Service";
 import DeliveryNoteService from "../../service/DeliveryNote.service";
 import BillingNoteService from "../../service/BillingNote.Service";
 import { SearchOutlined, SaveFilled,QuestionCircleOutlined } from "@ant-design/icons";
@@ -38,12 +39,12 @@ import { TbExclamationCircle } from "react-icons/tb";
 import { CloseCircleFilledIcon } from "../../components/icon";
 import { Authenticate } from "../../service/Authenticate.service";
 const opservice = OptionService();
+const customerService = CustomerService();
 const dnservice = DeliveryNoteService();
 const blservice = BillingNoteService();
 const authService = Authenticate();
 // const qtservice = QuotationService();
 
-const gotoFrom = "/delivery-note";
 const dateFormat = "DD/MM/YYYY";
 
 function DeliveryNoteManage() {
@@ -51,6 +52,9 @@ function DeliveryNoteManage() {
   const location = useLocation();
 
   const { config } = location.state || { config: null };
+  const salesOrder = config?.action === "create" ? config.salesOrder : null;
+  const gotoFrom = salesOrder ? "/sales-order" : "/delivery-note";
+  const [loadingSalesOrder, setLoadingSalesOrder] = useState(!!salesOrder);
   const [form] = Form.useForm();
 
   const isSalesman = authService.getType() !== "พนักงานขาย";
@@ -114,6 +118,10 @@ function DeliveryNoteManage() {
         setFormDetail(ininteial_value);
         form.setFieldsValue(ininteial_value);
         form.setFieldValue("vat", "7");
+        if (salesOrder) {
+          await handleChoosedSO([salesOrder], salesOrder.cuscode);
+          setLoadingSalesOrder(false);
+        }
       }
 
       const [unitOprionRes] = await Promise.all([
@@ -142,8 +150,8 @@ function DeliveryNoteManage() {
       0
     );
 
-    setFormDetail(() => ({
-      ...formDetail,
+    setFormDetail((state) => ({
+      ...state,
       total_price,
     }));
     // console.log(formDetail)
@@ -178,7 +186,7 @@ function DeliveryNoteManage() {
     }
   };
   const handleConfirm = () => {
-    if (receiptLocked) return;
+    if (receiptLocked || loadingSalesOrder) return;
     form
       .validateFields()
       .then((v) => {
@@ -268,13 +276,23 @@ function DeliveryNoteManage() {
     form.setFieldsValue({ ...fvalue, ...customers });
     setListDetail([]);
   };
-  const handleChoosedSO = (v) => {
+  const handleChoosedSO = async (v, sourceCustomerCode) => {
     if (!v || v.length < 1) return;
-    let value = { detail: v };
-    dnservice
-      .getdetail_for_issue(value)
-      .then((res) => {
-        const { data } = res.data;
+    try {
+      const [res, customerRes] = await Promise.all([
+        dnservice.getdetail_for_issue({ detail: v }),
+        sourceCustomerCode ? customerService.get(sourceCustomerCode) : null,
+      ]);
+      let { data } = res.data;
+      if (sourceCustomerCode) {
+        const customer = customerRes.data.header;
+        if (!customer) throw new Error("ไม่พบข้อมูลลูกค้าของใบขายสินค้า");
+        data = data
+          .map((row) => ({ ...row, qty: Number(row.qty || 0) - Number(row.delamount || 0) }))
+          .filter((row) => row.qty > 0);
+        if (!data.length) throw new Error("ไม่พบรายการสินค้าคงเหลือสำหรับออกใบส่งของ");
+        handleChoosedCustomers(customer);
+      }
       setListDetail(data);
       // เลขที่ใบส่งของ = เลขใบขาย เปลี่ยนหน้าเป็น DN (IV6911017 -> DN6911017) ตรงกับที่ server สร้าง
       const socode = data?.[0]?.socode || v?.[0]?.socode || null;
@@ -289,14 +307,10 @@ function DeliveryNoteManage() {
         setFormDetail((state) => ({ ...state, dndate: dayjs(sodate) }));
         form.setFieldValue("dndate", dayjs(sodate));
       }
-      // handleSummaryPrice();
-      })
-      .catch((err) => {
-        message.error("Get Sales Order detail fail.");
-        console.warn(err);
-      });
-
-    // console.log(value);
+    } catch (err) {
+      message.error(err?.response?.data?.message || err?.message || "โหลดข้อมูลใบขายสินค้าไม่สำเร็จ");
+      console.warn(err);
+    }
   };
   const handleDelete = (socode) => {
     setListDetail((prev) => prev.filter((item) => item?.socode !== socode));
@@ -445,7 +459,7 @@ function DeliveryNoteManage() {
             onClick={() => {
               setOpenProduct(true);
             }}
-            disabled={receiptLocked}
+            disabled={receiptLocked || loadingSalesOrder}
           >
             เลือกใบขายสินค้า
           </Button>
@@ -555,7 +569,7 @@ function DeliveryNoteManage() {
             onClick={() => {
               handleConfirm();
             }}
-            disabled={receiptLocked}
+            disabled={receiptLocked || loadingSalesOrder}
           >
             Save
           </Button>
@@ -583,7 +597,7 @@ function DeliveryNoteManage() {
             onClick={() => {
               handleConfirm();
             }}
-            disabled={receiptLocked}
+            disabled={receiptLocked || loadingSalesOrder}
           >
             Save
           </Button>
@@ -603,7 +617,7 @@ function DeliveryNoteManage() {
             layout="vertical"
             className="width-100"
             autoComplete="off"
-            disabled={receiptLocked}
+            disabled={receiptLocked || loadingSalesOrder}
           >
             <Card
                       title={

@@ -248,6 +248,7 @@ function MyManage() {
       setAiItemOptions((itemsResult.value?.data?.data || []).map((i) => {
         const price = prices.get(String(i.stcode));
         return { ...i, value: i.stcode, label: i.stcode + " - " + i.stname,
+          catalog_code: price?.catalog_code, packing_weight: price ? price.packing_weight : i.packing_weight,
           price: price ? price.price : null, unit: price?.unit || i.unit, vat: price?.vat ?? i.vat };
       }));
     } else message.error("โหลดสินค้าในระบบไม่สำเร็จ กรุณาเปิดหน้านี้ใหม่");
@@ -341,6 +342,8 @@ function MyManage() {
         qty: Number(p.qty) > 0 ? Number(p.qty) : 1,
         price: Number(opt.price ?? p.price ?? 0),
         unit: opt.unit,
+        catalog_code: opt.catalog_code,
+        packing_weight: opt.packing_weight,
         vat: Number(opt.vat || 0),
         discount: 0,
       },
