@@ -21,6 +21,7 @@ import { delay } from "../../utils/util";
 // import OptionService from '../../service/Options.service';
 import Itemservice from "../../service/Items.Service";
 import OptionService from "../../service/Options.service";
+import "./item-form.css";
 
 const itemservice = Itemservice();
 const opService = OptionService();
@@ -162,7 +163,7 @@ const ItemsManage = ({ embedded = false, initialItem = {}, onSaved, onCancel, on
             name="stname"
             rules={[{ required: true, message: "โปรดกรอกข้อมูล" }]}
           >
-            <Input placeholder="กรอกชื่อสิ" />
+            <Input placeholder="กรอกชื่อสินค้า" />
           </Form.Item>
         </Col>
         <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={8}>
@@ -177,7 +178,7 @@ const ItemsManage = ({ embedded = false, initialItem = {}, onSaved, onCancel, on
         {/* ชื่อย่อย (ชื่อเรียกอื่น) ของสินค้า เพิ่มได้ไม่จำกัด ไม่บังคับกรอก
             ใช้ให้ AI อ่านบิลจับคู่ชื่อที่เขียนไม่ตรงกับชื่อในระบบ
             เช่น ภาษาอื่น ชื่อย่อ ชื่อยี่ห้อ หรือสะกดต่างไป */}
-        <Col xs={24}>
+        <Col xs={24} className="item-form-full-width">
           <Form.Item label="ชื่อย่อย (ชื่อเรียกอื่นของสินค้า)">
             <Form.List name="aliases">
               {(fields, { add, remove }) => (
@@ -362,13 +363,14 @@ const ItemsManage = ({ embedded = false, initialItem = {}, onSaved, onCancel, on
     </Row>
   );
   return (
-    <div className="item-manage xs:px-0 sm:px-0 md:px-8 lg:px-8">
+    <div className={embedded ? "item-manage item-manage-embedded" : "item-manage xs:px-0 sm:px-0 md:px-8 lg:px-8"}>
       <Space direction="vertical" className="flex gap-2">
         <Form
           form={form}
           disabled={saving}
           name="form_in_modal_add"
           layout="vertical"
+          size={embedded ? "large" : undefined}
           autoComplete="off"
           initialValues={{
             modifier: "public",

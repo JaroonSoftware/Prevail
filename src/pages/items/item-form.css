@@ -1,0 +1,55 @@
+.item-manage-embedded {
+  container-type: inline-size;
+}
+
+.item-manage-embedded .ant-card-body {
+  padding: 24px;
+}
+
+.item-manage-embedded .ant-card-body > .ant-row {
+  padding-inline: 0;
+  margin-inline: -8px !important;
+  row-gap: 0 !important;
+}
+
+.item-manage-embedded .ant-card-body > .ant-row > .ant-col {
+  flex: 0 0 50%;
+  max-width: 50%;
+  padding-inline: 8px !important;
+}
+
+.item-manage-embedded .ant-card-body > .ant-row > .item-form-full-width {
+  flex-basis: 100%;
+  max-width: 100%;
+}
+
+.item-manage-embedded .ant-form-item {
+  margin-bottom: 20px;
+}
+
+.item-manage-embedded .ant-form-item-label {
+  padding-bottom: 8px;
+}
+
+.item-manage-embedded .ant-input,
+.item-manage-embedded .ant-input-number,
+.item-manage-embedded .ant-select {
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+}
+
+.item-manage-embedded .ant-input-number-input {
+  height: 38px !important;
+}
+
+@container (max-width: 560px) {
+  .item-manage-embedded .ant-card-body {
+    padding: 16px;
+  }
+
+  .item-manage-embedded .ant-card-body > .ant-row > .ant-col {
+    flex-basis: 100%;
+    max-width: 100%;
+  }
+}

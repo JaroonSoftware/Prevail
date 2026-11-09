@@ -39,6 +39,39 @@ try {
     $action_datetime = date("Y-m-d H:i:s");
     $action_user = $token->userid;
 
+    if (in_array($_SERVER['REQUEST_METHOD'], ['POST', 'PUT'], true)) {
+        $payload = json_decode(file_get_contents('php://input'), true);
+        $inputHeader = $payload['header'] ?? [];
+        if (trim($inputHeader['catalog_name'] ?? '') === '') throw new Exception('กรุณากรอกชื่อแคตตาล็อก');
+        foreach (['start_date', 'stop_date'] as $field) {
+            $value = $inputHeader[$field] ?? '';
+            $date = DateTime::createFromFormat('!Y-m-d', $value);
+            if (!$date || $date->format('Y-m-d') !== $value) throw new Exception('กรุณาระบุวันที่ใช้งานให้ครบถ้วนและถูกต้อง');
+        }
+        if ($inputHeader['start_date'] > $inputHeader['stop_date']) throw new Exception('วันสิ้นสุดต้องไม่ก่อนวันเริ่มต้น');
+        $customers = $payload['customer'] ?? [];
+        if (!is_array($customers) || !$customers) throw new Exception('กรุณาเลือกลูกค้าอย่างน้อย 1 ราย');
+        $lookup = $conn->prepare('SELECT cuscode FROM customer WHERE cuscode = :code');
+        $duplicates = [];
+        $exclude = $_SERVER['REQUEST_METHOD'] === 'PUT' ? ($inputHeader['catalog_code'] ?? '') : '';
+        $check = $conn->prepare("SELECT DISTINCT c.cuscode,c.cusname,m.catalog_code,m.catalog_name FROM catalog_link l
+            JOIN catalog_master m ON m.catalog_code=l.catalog_code JOIN customer c ON c.cuscode=l.cuscode
+            WHERE l.cuscode=:customer AND m.active_status='Y' AND m.catalog_code<>:exclude ORDER BY m.catalog_code");
+        foreach ($customers as $customerRow) {
+            $customerCode = $customerRow['cuscode'] ?? '';
+            $lookup->execute(['code' => $customerCode]);
+            if (!$lookup->fetchColumn()) throw new Exception('ข้อมูลลูกค้าไม่ถูกต้อง กรุณาเลือกลูกค้าใหม่');
+            $check->execute(['customer' => $customerCode, 'exclude' => $exclude]);
+            $duplicates = array_merge($duplicates, $check->fetchAll(PDO::FETCH_ASSOC));
+        }
+        if ($duplicates && ($payload['confirm_duplicate_customers'] ?? false) !== true) {
+            $conn->rollBack();
+            http_response_code(409);
+            echo json_encode(['code' => 'DUPLICATE_CATALOG_CUSTOMERS', 'duplicates' => $duplicates]);
+            exit;
+        }
+    }
+
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         lock_document_numbers($conn);
         $rest_json = file_get_contents("php://input");
@@ -118,10 +151,29 @@ try {
             http_response_code(200);
             echo json_encode(array("data" => array("id" => "ok", "catalog_code" => $catalog_code, 'message' => 'เพิ่ม Catalog สำเร็จ')));
         }
+    } else if ($_SERVER["REQUEST_METHOD"] == "DELETE") {
+        $code = trim($_GET['code'] ?? '');
+        if ($code === '') throw new Exception('กรุณาระบุแคตตาล็อกที่ต้องการลบ');
+        $lock = $conn->prepare('SELECT catalog_code FROM catalog_master WHERE catalog_code = :code FOR UPDATE');
+        $lock->execute(['code' => $code]);
+        $tables = [];
+        if (catalog_has_pending($conn)) $tables[] = 'catalog_pending';
+        if ($conn->query("SHOW TABLES LIKE 'catalog_customer_packing'")->fetch()) $tables[] = 'catalog_customer_packing';
+        $tables = array_merge($tables, ['catalog_link', 'catalog_detail', 'catalog_master']);
+        foreach ($tables as $table) {
+            $stmt = $conn->prepare("DELETE FROM `$table` WHERE catalog_code = :code");
+            $stmt->execute(['code' => $code]);
+        }
+        $conn->commit();
+        http_response_code(200);
+        echo json_encode(['status' => 1]);
     } else  if ($_SERVER["REQUEST_METHOD"] == "PUT") {
         $rest_json = file_get_contents("php://input");
         $_PUT = json_decode($rest_json, true);
         extract($_PUT, EXTR_OVERWRITE, "_");
+        $lock = $conn->prepare('SELECT catalog_code FROM catalog_master WHERE catalog_code = :code FOR UPDATE');
+        $lock->execute(['code' => $header['catalog_code'] ?? '']);
+        if (!$lock->fetchColumn()) throw new Exception('ไม่พบแคตตาล็อก หรือแคตตาล็อกถูกลบแล้ว');
         // var_dump($_POST);
         $sql2 = "
         update catalog_link 
@@ -237,6 +289,7 @@ try {
             throw new PDOException("Geting data error => $error");
         }
         $header = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$header) throw new Exception('ไม่พบแคตตาล็อก หรือแคตตาล็อกถูกลบแล้ว');
 
         /* หมวดแคตตาล็อกของสินค้า (ใช้แบ่งแท็บในหน้ากรอก) — ถ้ายังไม่มีคอลัมน์ ให้เป็น NULL */
         $hasGroup = (bool)$conn->query("SHOW COLUMNS FROM items LIKE 'catalog_group_id'")->fetch();

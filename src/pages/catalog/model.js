@@ -6,7 +6,7 @@ import {
   EditableRow,
   EditableCell,
 } from "../../components/table/TableEditAble";
-import { CopyOutlined, EditOutlined, PrinterOutlined } from "@ant-design/icons";
+import { CopyOutlined, EditOutlined, PrinterOutlined, DeleteOutlined } from "@ant-design/icons";
 import { comma } from '../../utils/util';
 
 /** export component for edit table */
@@ -92,6 +92,7 @@ export const accessColumn = ({
           onClick={() => handleDuplicate(record)}
           size="small"
         />
+        <Button size="small" danger icon={<DeleteOutlined />} title="ลบแคตตาล็อกถาวร" onClick={() => handleDelete(record)} />
       </Space>
     ),
   },

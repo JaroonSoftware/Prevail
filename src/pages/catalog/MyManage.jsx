@@ -1,7 +1,7 @@
 import DocumentNumberPreview from "../../components/DocumentNumberPreview";
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useState } from "react";
-import { Button, Form, Table, Typography, message, InputNumber } from "antd";
+import React, { useEffect, useState, useRef } from "react";
+import { Button, Form, Table, Typography, message, InputNumber, Modal } from "antd";
 import {
   Card,
   Col,
@@ -56,6 +56,7 @@ function CatalogManage() {
   const { config, prefill } = location.state || { config: null, prefill: null };
   const isEditMode = config?.action === "edit";
   const [form] = Form.useForm();
+  const savingRef = useRef(false);
   /** Modal handle */
   const [openCustomerCL, setOpenCustomerCL] = useState(false);
   const [openProduct, setOpenProduct] = useState(false);
@@ -183,6 +184,11 @@ function CatalogManage() {
     form
       .validateFields()
       .then((v) => {
+        if (!listCustomer.length) throw new Error("กรุณาเลือกลูกค้าอย่างน้อย 1 ราย");
+        const dates = v.catalog_date;
+        if (!dates?.[0]?.isValid() || !dates?.[1]?.isValid() || dates[1].isBefore(dates[0], "day")) {
+          throw new Error("กรุณาระบุช่วงวันที่ให้ถูกต้อง วันสิ้นสุดต้องไม่ก่อนวันเริ่มต้น");
+        }
         // if (listDetail.length < 1)
         //   throw new Error("กรุณาเพิ่มข้อมูลให้ถูกต้อง");
         // if (listCustomer.length < 1)
@@ -215,7 +221,10 @@ function CatalogManage() {
         const parm = { header, detail, customer, pending };
         // console.log(parm);
         const actions = isEditMode ? clservice.update : clservice.create;
-        actions(parm)
+        const save = (payload) => {
+          if (savingRef.current) return Promise.resolve();
+          savingRef.current = true;
+          return actions(payload)
           .then((r) => {
             const savedDocument = r?.data?.data?.document_code || r?.data?.data?.catalog_code;
             handleClose().then((r) => {
@@ -223,12 +232,31 @@ function CatalogManage() {
             });
           })
           .catch((err) => {
+            if (err?.response?.data?.code === "DUPLICATE_CATALOG_CUSTOMERS") {
+              Modal.confirm({
+                title: "ลูกค้าอยู่ในแคตตาล็อกอื่นที่เปิดใช้งานแล้ว",
+                content: <div style={{ maxHeight: 320, overflowY: "auto" }}>
+                  {err.response.data.duplicates.map((row, index) => <p key={index}>
+                    {row.cuscode} — {row.cusname}<br />{row.catalog_code} — {row.catalog_name}
+                  </p>)}
+                  <p>ต้องการบันทึกแคตตาล็อกนี้ต่อหรือไม่?</p>
+                </div>,
+                okText: "ยืนยันบันทึกต่อ",
+                cancelText: "กลับไปตรวจสอบ",
+                onOk: () => save({ ...payload, confirm_duplicate_customers: true }),
+              });
+              return;
+            }
             message.error(err?.response?.data?.message || "Request Catalog fail.");
             console.warn(err);
-          });
+            if (payload.confirm_duplicate_customers) throw err;
+          })
+          .finally(() => { savingRef.current = false; });
+        };
+        save(parm);
       })
       .catch((err) => {
-        message.error('คุณกรอกข้อมูล ไม่ครบถ้วน');
+        message.error(err?.message || 'คุณกรอกข้อมูล ไม่ครบถ้วน');
       });
   };
 
@@ -422,6 +450,7 @@ function CatalogManage() {
           <Col xs={24} sm={10} md={10} lg={10} xl={10}>
             <Form.Item
               name="catalog_name"
+              rules={[{ required: true, whitespace: true, message: "กรุณากรอกชื่อแคตตาล็อก" }]}
               label="ชื่อแคตตาล๊อก"
               className="!mb-1"
             >

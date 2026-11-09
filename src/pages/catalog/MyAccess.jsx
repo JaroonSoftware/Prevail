@@ -2,7 +2,7 @@ import CatalogGroupModal from "./CatalogGroupModal";
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, Checkbox } from "antd";
+import { Card, Checkbox, Modal } from "antd";
 import { Collapse, Form, Flex, Row, Col, Space } from "antd";
 import { Input, Button, Table, message, Typography,Select,Badge } from "antd";
 import {
@@ -210,18 +210,24 @@ const CatalogAccess = () => {
   };
 
   const handleDelete = (data) => {
-    // startLoading();
-    clService
-      .deleted(data?.quotcode)
-      .then((_) => {
-        const tmp = accessData.filter((d) => d.clService !== data?.clService);
-
-        setAccessData([...tmp]);
-      })
-      .catch((err) => {
-        console.log(err);
-        message.error("Request error!");
-      });
+    Modal.confirm({
+      title: "ลบแคตตาล็อกถาวร",
+      content: `ยืนยันลบ ${data.catalog_code} — ${data.catalog_name} พร้อมราคา รายการลูกค้า ขนาดแพ็กเฉพาะลูกค้า และรายการรอสร้างสินค้าในแคตตาล็อกนี้? เมื่อลบแล้วจะค้นหาไม่พบและกู้คืนผ่านระบบไม่ได้`,
+      okText: "ลบถาวร",
+      cancelText: "ยกเลิก",
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        try {
+          await clService.deleted(data.catalog_code);
+          setAccessData((rows) => rows.filter((row) => row.catalog_code !== data.catalog_code));
+          handleSearch();
+          message.success("ลบแคตตาล็อกถาวรแล้ว");
+        } catch (error) {
+          message.error(error?.response?.data?.message || "ลบแคตตาล็อกไม่สำเร็จ");
+          throw error;
+        }
+      },
+    });
   };
   const column = accessColumn({ handleEdit, handleDuplicate, handleDelete, handlePrint: (record) => window.open("/catalog-print/" + encodeURIComponent(record.catalog_code), "_blank", "noopener,noreferrer") });
 
