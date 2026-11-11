@@ -207,6 +207,12 @@ let _nav = [
     hiddenRoles: ["พนักงานส่งสินค้า"],
   },
   {
+    title: "เที่ยวรถ",
+    icon: <FileTextFilled className="nav-ico" />,
+    to: "/delivery-trip",
+    hiddenRoles: ["จัดซื้อ","พนักงานส่งสินค้า"],
+  },
+  {
     title: "เขตขนส่ง",
     icon: <FileTextFilled className="nav-ico" />, 
     to: "/county",    

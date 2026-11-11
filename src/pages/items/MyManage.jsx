@@ -10,6 +10,7 @@ import {
   Card,
   Select,
   InputNumber,
+  Modal,
 } from "antd";
 import { Row, Col, Space } from "antd";
 import { SaveFilled, PlusOutlined, MinusCircleOutlined } from "@ant-design/icons";
@@ -121,6 +122,21 @@ const ItemsManage = ({ embedded = false, initialItem = {}, onSaved, onCancel, on
     if (savingRef.current) return;
     savingRef.current = true; setSaving(true); onBusyChange?.(true);
     const source = { ...formDetail, ...values, stcode: String(values.stcode || '').trim() };
+    /* ชื่อสินค้าซ้ำกับสินค้าอื่นในระบบ -> เตือนก่อนบันทึก (ไม่บล็อก บางครั้งชื่อซ้ำแต่คนละขนาด/หน่วย) */
+    try {
+      const all = (await opService.optionsItems({ p: 'items' }))?.data?.data || [];
+      const norm = (x) => String(x || '').replace(/\s+/g, '').toLowerCase();
+      const dups = all.filter((i) => norm(i.stname) === norm(source.stname) && String(i.stcode) !== source.stcode);
+      if (dups.length) {
+        const ok = await new Promise((resolve) => Modal.confirm({
+          title: 'ชื่อสินค้าซ้ำกับสินค้าที่มีอยู่แล้ว',
+          content: <>{dups.map((d) => <div key={d.stcode}>• {d.stcode} {d.stname} ({d.unit || '-'})</div>)}<div style={{ marginTop: 8 }}>ต้องการบันทึกต่อหรือไม่?</div></>,
+          okText: 'บันทึกต่อ', cancelText: 'กลับไปแก้',
+          onOk: () => resolve(true), onCancel: () => resolve(false),
+        }));
+        if (!ok) { savingRef.current = false; setSaving(false); onBusyChange?.(false); return; }
+      }
+    } catch { /* ตรวจชื่อซ้ำไม่ได้ ไม่ขวางการบันทึก */ }
     try {
       if (config.action === 'create') await itemservice.create(source);
       else await itemservice.update(source);

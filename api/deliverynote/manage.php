@@ -11,6 +11,7 @@ http_response_code(400);
 try {
     $action_date = date("Y-m-d H:i:s");
     $action_user = $token->userid;
+    $hasSourceLine = dn_has_source_line($conn);
     // echo $action_user;
 
     // $doc_status = "รอออกใบส่งของ";
@@ -96,8 +97,8 @@ try {
         // ไม่ต้อง update running number แล้ว เพราะใช้เลขที่ใบขายสินค้าโดยตรง
         $code = $conn->lastInsertId();
 
-        $sql = "insert into dndetail (dncode,socode,stcode,qty,price,unit)
-        values (:dncode,:socode,:stcode,:qty,:price,:unit)";
+        $sql = "insert into dndetail (dncode,socode,stcode,qty,price,unit" . ($hasSourceLine ? ',source_so_detail_code' : '') . ")
+        values (:dncode,:socode,:stcode,:qty,:price,:unit" . ($hasSourceLine ? ',:source_so_detail_code' : '') . ")";
         $stmt2 = $conn->prepare($sql);
         if (!$stmt2) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
@@ -105,6 +106,7 @@ try {
         foreach ($detail as $ind => $val) {
             $val = (object)$val;
             $stmt2->bindParam(":dncode", $dncode, PDO::PARAM_STR);
+            if ($hasSourceLine) $stmt2->bindValue(':source_so_detail_code', $createSourceMap[$ind], PDO::PARAM_STR);
             $stmt2->bindParam(":socode", $val->socode, PDO::PARAM_STR);
             $stmt2->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
             $stmt2->bindParam(":qty", $val->qty, PDO::PARAM_STR);
@@ -241,7 +243,7 @@ try {
             die;
         }
 
-        $oldRows = $conn->prepare("SELECT code,socode,stcode,qty,price,unit FROM dndetail WHERE dncode = :d ORDER BY code FOR UPDATE");
+        $oldRows = $conn->prepare("SELECT code,socode,stcode,qty,price,unit" . ($hasSourceLine ? ',source_so_detail_code' : '') . " FROM dndetail WHERE dncode = :d ORDER BY code FOR UPDATE");
         $oldRows->execute(array('d' => $header->dncode));
         $oldByCode = array();
         $groups = array();
@@ -250,6 +252,7 @@ try {
             $groups[$row['socode']][$row['stcode']][] = $row;
         }
         $submittedCodes = array();
+        $changedProducts = array();
         foreach ($detail as $value) {
             $line = (array)$value;
             $id = (string)($line['code'] ?? '');
@@ -261,6 +264,7 @@ try {
                 throw new Exception('รายการสินค้าไม่ตรงกับใบส่งสินค้าเดิม กรุณาโหลดหน้าใหม่');
             }
             $submittedCodes[$id] = true;
+            if (dn_line_changed($old, $line)) $changedProducts[$old['socode']][$old['stcode']] = true;
         }
         $sourceMap = array();
         ksort($groups);
@@ -268,10 +272,17 @@ try {
             $lockSo = $conn->prepare("SELECT socode FROM somaster WHERE socode = :s FOR UPDATE");
             $lockSo->execute(array('s' => $sourceSo));
             foreach ($products as $product => $rows) {
-                $sourceQuery = $conn->prepare("SELECT code,qty,price,unit FROM sodetail WHERE socode = :s AND stcode = :c ORDER BY code FOR UPDATE");
+                if (empty($changedProducts[$sourceSo][$product])) continue;
+                $sourceQuery = $conn->prepare("SELECT * FROM sodetail WHERE socode = :s AND stcode = :c ORDER BY code FOR UPDATE");
                 $sourceQuery->execute(array('s' => $sourceSo, 'c' => $product));
                 $sources = $sourceQuery->fetchAll(PDO::FETCH_ASSOC);
                 $sourceMap += dn_source_line_map($rows, $sources);
+            }
+        }
+        if ($hasSourceLine) {
+            $saveSource = $conn->prepare('UPDATE dndetail SET source_so_detail_code = :source WHERE code = :code AND dncode = :dn');
+            foreach ($sourceMap as $rowCode => $sourceCode) {
+                $saveSource->execute(['source' => $sourceCode, 'code' => $rowCode, 'dn' => $header->dncode]);
             }
         }
 
@@ -293,6 +304,7 @@ try {
         $usedSourceCodes = array();
         foreach ($detail as $value) {
             $line = (array)$value;
+            if (!dn_line_changed($oldByCode[(string)$line['code']], $line)) continue;
             $sourceCode = $sourceMap[(string)($line['code'] ?? '')] ?? null;
             if ($sourceCode === null) {
                 throw new Exception('ไม่พบรายการสินค้าในใบขายต้นทาง กรุณาตรวจสอบก่อนบันทึก');

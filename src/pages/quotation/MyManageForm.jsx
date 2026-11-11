@@ -29,6 +29,7 @@ import { quotationForm,columnsParametersEditable,componentsEditable } from "./mo
 import { ButtonBack } from "../../components/button";
 
 import { delay } from "../../utils/util";
+import { confirmDuplicateItem } from "../../utils/duplicateItem";
 import { SaveFilled } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { RiDeleteBin5Line } from "react-icons/ri";
@@ -234,6 +235,19 @@ export default function ItemsManageForm({
     };
   
     const handleEditCell = (row) => {
+      /* เลือกสินค้าในแถวนี้ใหม่ และสินค้านี้มีอยู่แล้วในบรรทัดอื่น -> เตือนก่อน */
+      const prev = listDetail.find((item) => item._rid === row._rid);
+      if (row?.stcode && prev && row.stcode !== prev.stcode) {
+        confirmDuplicateItem(listDetail, row, (r) => r._rid === row._rid).then((ok) => {
+          if (ok) applyEditCell(row);
+          else setListDetail((s) => [...s]);
+        });
+        return;
+      }
+      applyEditCell(row);
+    };
+
+    const applyEditCell = (row) => {
       const newData = (r) => {
         const itemDetail = [...listDetail];
         const newData = [...itemDetail];

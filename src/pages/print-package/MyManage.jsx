@@ -12,7 +12,7 @@ import {
   Typography,
   message,
 } from "antd";
-import { Card, Col, Divider, Flex, Row, Space } from "antd";
+import { Card, Col, Divider, Flex, Row, Space, Modal } from "antd";
 import OptionService from "../../service/Options.service";
 import PackageService from "../../service/Package.service";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
@@ -178,6 +178,38 @@ function MyManage() {
       }))
     );
     handleSummaryPrice();
+  };
+
+  /* ล้าง barcode ที่สร้างไว้แล้วของรายการที่เลือก (เฉพาะแถวที่ปริ้นแล้ว) เพื่อปริ้นใหม่ */
+  const handleClearBarcode = () => {
+    const rows = selectedData.filter((it) => isPackedPrintedForValidation(it));
+    if (!rows.length) return message.warning("เลือกรายการที่ปริ้นหน้าถุงแล้วก่อน");
+    Modal.confirm({
+      title: `ล้าง barcode ${rows.length} รายการ?`,
+      content: (
+        <>
+          {rows.map((r) => <div key={r._rowKey}>• {r.stcode} {r.stname} ({r.qty} {r.unit})</div>)}
+          <div style={{ color: "#cf1322", marginTop: 8 }}>
+            สติ๊กเกอร์ที่ปริ้นไปแล้วจะใช้สแกนไม่ได้ ต้องปริ้นใหม่และเปลี่ยนสติ๊กเกอร์บนถุงทั้งหมด
+            · ถุงที่สแกนส่งของไปแล้วล้างไม่ได้
+          </div>
+        </>
+      ),
+      okText: "ล้าง barcode", okType: "danger", cancelText: "ยกเลิก",
+      onOk: () =>
+        pkservice
+          .clearpackage({ detail: rows.map((r) => ({ socode: r.socode, stcode: r.stcode, code: r.code })) })
+          .then(async () => {
+            message.success("ล้าง barcode แล้ว — เลือกรายการแล้วกด Print เพื่อปริ้นใหม่");
+            const res = await pkservice.get(config?.code);
+            const detail = res?.data?.data?.detail || [];
+            setListDetail(detail.map((item, i) => ({ ...item, _rowKey: `${item?.socode ?? ""}::${item?.stcode ?? ""}::${i}` })));
+            setSelectedData([]);
+          })
+          .catch((err) => {
+            message.error(err?.response?.data?.message || "ล้าง barcode ไม่สำเร็จ");
+          }),
+    });
   };
 
   const handlePrint = () => {
@@ -389,7 +421,15 @@ function MyManage() {
         </Flex>
       </Col>
       <Col span={12} style={{ paddingInline: 0 }}>
-        <Flex justify="end">
+        <Flex justify="end" gap={8}>
+          <Button
+            danger
+            className="bn-center justify-center"
+            disabled={!selectedData.some((it) => isPackedPrintedForValidation(it))}
+            onClick={handleClearBarcode}
+          >
+            ล้าง barcode
+          </Button>
           <Button
             icon={<PrinterOutlined style={{ fontSize: "1.2rem" }} />}
             className="bn-center justify-center bn-primary-outline"
@@ -423,6 +463,8 @@ function MyManage() {
           rowSelection={{
             type: "checkbox",
             ...rowSelection,
+            /* คุมการติ๊กจาก state ให้ล้างติ๊กได้หลังล้าง barcode */
+            selectedRowKeys: selectedData.map((r) => r._rowKey),
           }}
           components={componentsEditable}
           rowClassName={() => "editable-row"}

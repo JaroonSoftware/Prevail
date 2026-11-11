@@ -30,6 +30,7 @@ import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 // import { ModalItems } from "../../components/modal/itemsbyCL/modal-items";
 import dayjs from "dayjs";
 import { delay, comma } from "../../utils/util";
+import { confirmDuplicateItem } from "../../utils/duplicateItem";
 import { ButtonBack } from "../../components/button";
 import { useLocation, useNavigate } from "react-router-dom";
 import { TbSquareRoundedX, TbExclamationCircle } from "react-icons/tb";
@@ -339,10 +340,11 @@ function MyManage() {
   // };
 
   /* ใช้สินค้าที่เลือกกับรายการจาก PO -> เพิ่มเป็นแถวในตารางใบขาย */
-  const handleUsePending = (p, createdItem = null) => {
+  const handleUsePending = async (p, createdItem = null) => {
     const stcode = aiPick[p.pending_id];
     const opt = createdItem || aiItemOptions.find((o) => o.stcode === stcode || o.value === stcode);
     if (!opt) return message.warning("กรุณาเลือกสินค้า (ต้องเป็นสินค้าในแคตตาล็อกของลูกค้ารายนี้)");
+    if (!(await confirmDuplicateItem(listDetail, { stcode: opt.stcode, stname: opt.stname || opt.label }))) return;
     setListDetail((state) => {
       const rows = state.filter((d) => d.stcode); // ตัดแถวว่างที่ยังไม่เลือกสินค้าทิ้ง
       const seq = Number(p.seq) || Infinity;
@@ -539,6 +541,19 @@ function MyManage() {
   };
 
   const handleEditCell = (row) => {
+    /* เลือกสินค้าในแถวนี้ใหม่ และสินค้านี้มีอยู่แล้วในบรรทัดอื่น -> เตือนก่อน */
+    const prev = listDetail.find((item) => item._rid === row._rid);
+    if (row?.stcode && prev && row.stcode !== prev.stcode) {
+      confirmDuplicateItem(listDetail, row, (r) => r._rid === row._rid).then((ok) => {
+        if (ok) applyEditCell(row);
+        else setListDetail((s) => [...s]); // คืนค่าเดิมในช่อง
+      });
+      return;
+    }
+    applyEditCell(row);
+  };
+
+  const applyEditCell = (row) => {
     const newData = (r) => {
       const itemDetail = [...listDetail];
       const newData = [...itemDetail];

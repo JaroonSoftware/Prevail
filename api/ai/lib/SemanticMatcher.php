@@ -40,7 +40,9 @@ final class SemanticMatcher
             'temperature' => 0,
             'system' => "You match product lines from a Thai supplier's bill or delivery note to items in a Thai food wholesaler's product catalog.\n"
                 . "Names may be in Thai on one side and English on the other, abbreviated, or include pack sizes. "
-                . "Each catalog item may have 'aka': other names the shop uses for that same item; treat a match on any aka as a match on the item. "
+                . "Each catalog item's 'name' is its Thai name and is the PRIMARY name: judge the match mainly against 'name'. "
+                . "'en' (English name) and 'aka' (other names the shop uses for that same item) are SECONDARY: use them when the line is in English or uses another name, "
+                . "but when 'name' and a secondary name point to different items, prefer the item whose Thai 'name' fits. "
                 . "Match by meaning (same product), not by spelling alone. Different sizes, grades or flavours are different products. "
                 . "If no candidate is clearly the same product, return code null. Never force a match. "
                 . "confidence: high = certainly the same product, medium = probably, low = unsure. "

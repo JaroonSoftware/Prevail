@@ -158,6 +158,13 @@ export const PK_LABEL_STYLE = `
     font-weight: 800;
     line-height: 1.3;
   }
+  /* ชื่อเที่ยวยาว (เช่น 13.ในเมือง-อ่าวขาม) ให้ขึ้นบรรทัดใหม่ได้ ไม่ล้นไปทับ QR */
+  .pk-trip {
+    display: inline-block;
+    margin-left: 4mm;
+    font-size: 16pt;
+    overflow-wrap: anywhere;
+  }
 
   /* ---- ตัวอักษรขนาดเล็กบนหัวพิมพ์ความร้อน ----
      ต่อให้หนา 800 แล้ว เส้นก็ยังบางจนพิมพ์ออกมาขาดเป็นช่วง
@@ -297,6 +304,8 @@ const FormPKBarcode = forwardRef(
                     <div className="pk-name">{data?.stname}</div>
                     <div className="pk-bag">
                       ถุงที่ {bagNo}/{bagTotal}
+                      {/* เที่ยวรถของลูกค้า เช่น "5.ป่าตอง-กมลา" (ตั้งที่เมนู จัดส่ง > เที่ยวรถ) */}
+                      {data?.trip ? <span className="pk-trip">{data.trip}</span> : null}
                     </div>
 
                     <div className="pk-weight">

@@ -55,6 +55,16 @@ export const accessColumn = ({ handleEdit, handleDelete, handleView }) => [
     width: 60,
   },
   {
+    /* น้ำหนัก/จำนวนต่อถุง ใช้แบ่งถุงตอนปริ้นหน้าถุง (หน่วยเดียวกับหน่วยสินค้า) */
+    title: "ขนาดต่อถุง",
+    dataIndex: "packing_weight",
+    key: "packing_weight",
+    align: "right",
+    sorter: (a, b) => Number(a?.packing_weight || 0) - Number(b?.packing_weight || 0),
+    render: (v, r) => (v != null && v !== "" && Number(v) > 0 ? `${Number(v).toLocaleString("th-TH", { maximumFractionDigits: 2 })} ${r?.unit || ""}` : "-"),
+    width: 100,
+  },
+  {
     title: "สถานะ",
     dataIndex: "active_status",
     key: "status",

@@ -12,6 +12,7 @@ final class ItemMatcher
 {
     public const HIGH = 0.80;      // จับคู่ให้เลย
     public const MEDIUM = 0.55;    // จับคู่ให้ แต่ไฮไลต์ให้ตรวจ
+    public const SECONDARY_WEIGHT = 0.92; // ชื่ออังกฤษ/ชื่อย่อย ได้คะแนนรองจากชื่อไทย
     public const SUP_BONUS = 0.03; // ใช้จัดอันดับเท่านั้น ไม่บวกในคะแนนที่แสดง
 
     private PDO $conn;
@@ -182,10 +183,10 @@ final class ItemMatcher
         $byCode = array();
         foreach ($catalog as $idx => $it) {
             $ps = array();
-            /* เทียบกับชื่อไทย ชื่ออังกฤษ และชื่อย่อยทุกชื่อ แล้วเอาคะแนนสูงสุด */
-            foreach (array_merge(array($it['stname'], $it['stnameEN']), $it['aliases']) as $n) {
+            /* ชื่อไทย (stname) เป็นหลัก = คะแนนเต็ม, ชื่ออังกฤษ/ชื่อย่อย = x SECONDARY_WEIGHT */
+            foreach (array_merge(array($it['stname'], $it['stnameEN']), $it['aliases']) as $k => $n) {
                 $nn = AiText::norm($n);
-                if ($nn !== '') $ps[] = AiText::profile($nn);
+                if ($nn !== '') $ps[] = array(AiText::profile($nn), $k === 0 ? 1.0 : self::SECONDARY_WEIGHT);
             }
             $profiles[$idx] = $ps;
             $byCode[AiText::norm($it['stcode'])] = $idx;
@@ -204,7 +205,7 @@ final class ItemMatcher
                 $score = 0.0;
                 $source = 'name';
                 if ($rawNorm !== '') {
-                    foreach ($profiles[$idx] as $p) $score = max($score, AiText::similarityP($rawP, $p));
+                    foreach ($profiles[$idx] as $p) $score = max($score, AiText::similarityP($rawP, $p[0]) * $p[1]);
                 }
                 if ($codeIdx === $idx) {
                     $score = max($score, 0.98);
@@ -277,7 +278,9 @@ final class ItemMatcher
             if (!isset($want[$it['stcode']])) continue;
             $pool[] = array(
                 'code' => $it['stcode'],
-                'name' => $it['stname'] . ($it['stnameEN'] ? ' / ' . $it['stnameEN'] : ''),
+                /* name = ชื่อไทย (ชื่อหลัก), en = ชื่ออังกฤษ (ชื่อรอง) */
+                'name' => $it['stname'],
+                'en' => $it['stnameEN'],
                 /* ชื่อเรียกอื่นที่ผู้ใช้กรอกไว้ ให้ AI เห็นด้วยตอนช่วยจับคู่ */
                 'aka' => $it['aliases'],
                 'unit' => $it['unit'],

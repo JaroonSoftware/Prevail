@@ -3,8 +3,8 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, message } from "antd";
 import { Collapse, Form, Flex, Row, Col, Space, Select } from "antd";
-import { Input, Button, Table, Typography } from "antd";
-import { SearchOutlined, ClearOutlined } from "@ant-design/icons";
+import { Input, Button, Table, Typography, Popover, Checkbox } from "antd";
+import { SearchOutlined, ClearOutlined, SettingOutlined } from "@ant-design/icons";
 import { MdOutlineLibraryAdd } from "react-icons/md";
 import { accessColumn } from "./model";
 import OptionService from "../../service/Options.service";
@@ -17,6 +17,7 @@ import {
 } from "../../utils/myaccessSearchCookie";
 const opService = OptionService();
 const itemservice = Itemservice();
+const COLUMN_STORAGE_KEY = "prevail-items-hidden-columns";
 const mngConfig = {
   title: "",
   textOk: null,
@@ -37,6 +38,22 @@ const ItemsAccess = () => {
   };
 
   const [accessData, setAccessData] = useState([]);
+  const [hiddenColumns, setHiddenColumns] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(COLUMN_STORAGE_KEY) || "[]");
+      return Array.isArray(saved) ? saved.filter((key) => typeof key === "string") : [];
+    } catch {
+      return [];
+    }
+  });
+  const updateHiddenColumns = (keys) => {
+    setHiddenColumns(keys);
+    try {
+      localStorage.setItem(COLUMN_STORAGE_KEY, JSON.stringify(keys));
+    } catch {
+      // Column selection still works when browser storage is unavailable.
+    }
+  };
   const [activeSearch, setActiveSearch] = useState([]);
   const [optionType, setOptionType] = useState([]);
   const [tablePagination, setTablePagination] = useState(defaultTablePagination);
@@ -326,6 +343,26 @@ const ItemsAccess = () => {
     />
   );
   const column = accessColumn({ handleEdit, handleDelete, handleView });
+  const visibleColumns = column.filter((col) =>
+    col.key === "stcode" || col.key === "operation" || !hiddenColumns.includes(col.key)
+  );
+  const columnSettings = (
+    <Space direction="vertical" style={{ maxHeight: "60vh", overflowY: "auto" }}>
+      {column.filter((col) => col.key !== "operation").map((col) => (
+        <Checkbox
+          key={col.key}
+          checked={col.key === "stcode" || !hiddenColumns.includes(col.key)}
+          disabled={col.key === "stcode"}
+          onChange={(event) => updateHiddenColumns(event.target.checked
+            ? hiddenColumns.filter((key) => key !== col.key)
+            : [...hiddenColumns, col.key])}
+        >
+          {col.title}
+        </Checkbox>
+      ))}
+      <Button size="small" onClick={() => updateHiddenColumns([])}>แสดงทั้งหมด</Button>
+    </Space>
+  );
 
   const TitleTable = (
     <Flex className="width-100" align="center">
@@ -337,7 +374,10 @@ const ItemsAccess = () => {
         </Flex>
       </Col>
       <Col span={12} style={{ paddingInline: 0 }}>
-        <Flex gap={4} justify="end">
+        <Flex gap={4} justify="end" wrap="wrap">
+          <Popover title="เลือกคอลัมน์ที่ต้องการแสดง" content={columnSettings} trigger="click" placement="bottomRight">
+            <Button size="small" icon={<SettingOutlined />}>แสดง/ซ่อนคอลัมน์</Button>
+          </Popover>
         <Button
             size="small"
             className="bn-action bn-center bn-success-outline justify-center"
@@ -378,7 +418,7 @@ const ItemsAccess = () => {
                 title={() => TitleTable}
                 size="small"
                 rowKey="stcode"
-                columns={column}
+                columns={visibleColumns}
                 dataSource={accessData}
                 pagination={tablePagination}
                 onChange={handleTableChange}

@@ -4,7 +4,7 @@ export const MODULES = [
  {code:'PU',title:'จัดซื้อ',english:'Purchasing',paths:['/purchase-order','/supplier']},
  {code:'IC',title:'สินค้า',english:'Inventory',paths:['/items','/itemtype','/unit','/print-weight','/dry-report','/noodle-report','/fresh-report','/special-dry-report','/curry-paste-report','/fruit-report']},
  {code:'AC',title:'บัญชี',english:'Accounting',paths:['/billing','/receipt','/delivery-note','/outstanding-by-customer-report']},
- {code:'SH',title:'จัดส่ง',english:'Shipping',paths:['/shipping','/county']},
+ {code:'SH',title:'จัดส่ง',english:'Shipping',paths:['/shipping','/delivery-trip','/county']},
  {code:'AD',title:'ผู้ดูแลระบบ',english:'Administration',paths:['/dashboard','/users','/permissions']},
 ];
 export function visibleMenus(role, username) {

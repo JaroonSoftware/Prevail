@@ -27,6 +27,7 @@ import { Receipt, ReceiptAccess, ReceiptManage,ReceiptView } from "../pages/rece
 import { Shipping, ShippingAccess } from "../pages/shipping";
 
 import { County, CountyAccess, CountyManage } from "../pages/county";
+import DeliveryTrip from "../pages/trip/DeliveryTrip";
 
 export const WarehouseRouter = (
   <>
@@ -91,6 +92,8 @@ export const WarehouseRouter = (
       <Route index element={<ShippingAccess />} />
     </Route>
 
+    {/* เที่ยวรถ (สายส่ง) — ชื่อเที่ยวพิมพ์บนสติ๊กเกอร์หน้าถุง */}
+    <Route path="/delivery-trip" element={<div className="layout-content px-3 sm:px-5 md:px-5"><DeliveryTrip /></div>} />
     <Route path="/county/" exact element={<County />}>
       <Route index element={<CountyAccess />} />
       <Route path="manage/:action" element={<CountyManage />} />

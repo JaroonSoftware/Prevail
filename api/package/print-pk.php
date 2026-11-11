@@ -276,6 +276,25 @@ try {
         /* array_values กัน index ขาดช่วง (เช่นบางรายการไม่มีถุง) ทำให้ json_encode
            กลายเป็น object แทน array แล้วฝั่ง React map ไม่ได้ -> ฉลากหายทั้งชุด */
         $listbarcode = array_values(array_map('array_values', $listbarcode));
+        /* เที่ยวรถของลูกค้า (เช่น "5.ป่าตอง-กมลา") สำหรับพิมพ์บนสติ๊กเกอร์ — ยังไม่รัน sql/2026-11-11_delivery_trip.sql ก็ไม่แสดง */
+        if ($conn->query("SHOW COLUMNS FROM customer LIKE 'trip_id'")->fetch()) {
+            $tripSt = $conn->prepare("SELECT CONCAT(t.trip_no, '.', t.trip_name) FROM customer c
+                                      JOIN delivery_trip t ON t.trip_id = c.trip_id AND t.active_status = 'Y' WHERE c.cuscode = :c");
+            $tripCache = array();
+            foreach ($listbarcode as &$grp) {
+                if (!is_array($grp)) continue;
+                foreach ($grp as &$lb) {
+                    $cc = (string)($lb['cuscode'] ?? '');
+                    if (!array_key_exists($cc, $tripCache)) {
+                        $tripSt->execute(array('c' => $cc));
+                        $tripCache[$cc] = $tripSt->fetchColumn() ?: '';
+                    }
+                    $lb['trip'] = $tripCache[$cc];
+                }
+                unset($lb);
+            }
+            unset($grp);
+        }
         echo json_encode(array("data" => $listbarcode));
 
     } else {
