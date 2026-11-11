@@ -39,29 +39,23 @@ try {
             dd.socode,
             dd.stcode,
             i.stname,
-            sd.qty,
+            dd.qty,
             dd.price,
-            sd.unit,
-            COUNT(dd.code) as del_count,
-            SUM(dd.qty) as del_qty,
-            sd.unit as del_unit
+            dd.unit,
+            1 as del_count,
+            dd.qty as del_qty,
+            dd.unit as del_unit
         ";
         $sql .= " FROM dnmaster as dm ";
         $sql .= " INNER JOIN customer as c on dm.cuscode = c.cuscode ";
         $sql .= " LEFT JOIN county as co on c.county_code = co.county_code ";
         $sql .= " LEFT JOIN dndetail as dd on dm.dncode = dd.dncode ";
         $sql .= " LEFT JOIN items as i on dd.stcode = i.stcode ";
-        $sql .= " LEFT JOIN sodetail as sd on dd.socode = sd.socode and dd.stcode = sd.stcode ";
         /* ดึงเลข PO ของลูกค้ามาแสดงช่อง "อ้างอิง" ตามฟอร์มตัวอย่าง */
         $sql .= " LEFT JOIN somaster as sm on dd.socode = sm.socode ";
         $sql .= " LEFT JOIN user as u on dm.created_by = u.code ";
         $sql .= " WHERE dm.dncode = :code ";
-        $sql .= " GROUP BY 
-            dm.dncode, dm.dndate, dm.total_price, dm.remark, dm.cuscode,
-            c.prename, c.cusname, c.idno, c.road, c.subdistrict, c.district, c.province, c.zipcode,
-            c.contact, c.tel, c.fax, c.taxnumber, c.cusname_en, c.credit_day, co.county_name, sm.customer_po, u.firstname, u.lastname,
-            dd.code, dd.socode, dd.stcode, i.stname, sd.qty, dd.price, sd.unit ";
-        $sql .= " ORDER BY dd.socode, i.seq, dd.stcode ";
+        $sql .= " ORDER BY dd.socode, i.seq, dd.stcode, dd.code ";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute(['code' => $code])) {

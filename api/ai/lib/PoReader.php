@@ -81,6 +81,8 @@ final class PoReader
         }
         $call = array('body' => $last['body'], 'usage' => $usage, 'ms' => $ms,
             'request_id' => $last['request_id'], 'workspace_id' => $last['workspace_id'], 'calls' => count($calls));
+        /* เลข PO เดียวกัน = ใบขายสินค้าใบเดียว แม้ AI แยกตามครัว/จุดส่ง/วันส่ง */
+        $merged = self::groupByPo($merged);
         return array('document' => $merged, 'call' => $call);
     }
 
@@ -118,6 +120,33 @@ final class PoReader
     }
 
     /** รวมผลหลายช่วงหน้า: order เดียวกัน (PO + จุดส่ง + วันส่ง) ต่อรายการกัน */
+    /** รวม order ที่เลข PO เดียวกันเป็นใบเดียว: รายการต่อกัน, ครัว/จุดส่งรวมเป็นข้อความเดียว, วันส่ง = วันแรกสุด
+        order ที่ไม่มีเลข PO ไม่รวม (แยกใบตามเดิม) */
+    private static function groupByPo(array $doc): array
+    {
+        $out = array();
+        $idx = array();
+        foreach (($doc['orders'] ?? array()) as $o) {
+            $po = mb_strtolower(trim((string)($o['po_no'] ?? '')));
+            if ($po === '' || !isset($idx[$po])) {
+                if ($po !== '') $idx[$po] = count($out);
+                $out[] = $o;
+                continue;
+            }
+            $t = &$out[$idx[$po]];
+            $t['lines'] = array_merge($t['lines'], $o['lines']);
+            foreach (array('delivery_date', 'order_date') as $k) {
+                if (!empty($o[$k]) && (empty($t[$k]) || $o[$k] < $t[$k])) $t[$k] = $o[$k];
+            }
+            $locs = array_filter(array_map('trim', explode(',', (string)($t['location'] ?? ''))));
+            if (!empty($o['location']) && !in_array(trim($o['location']), $locs, true)) $locs[] = trim($o['location']);
+            $t['location'] = $locs ? mb_substr(implode(', ', $locs), 0, 100) : null;
+            unset($t);
+        }
+        $doc['orders'] = $out;
+        return $doc;
+    }
+
     private static function merge(array $a, array $b): array
     {
         if (empty($a['customer']['name']) && !empty($b['customer']['name'])) $a['customer'] = $b['customer'];

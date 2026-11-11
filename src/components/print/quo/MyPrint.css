@@ -2,7 +2,7 @@
   /* named page เฉพาะใบเสนอราคา — ดูเหตุผลแบบเต็มใน print/delivery/delivery.css */
   @page quo {
     size: A4;
-    font-family: "Angsana New";
+    font-family: Tahoma, sans-serif;
   }
   .quopv-pages {
     page: quo;
@@ -28,7 +28,7 @@
     /* top: 0;  */
     box-shadow: none !important;
     border-radius: 0px !important;
-    font-family: "Angsana New"; 
+    font-family: Tahoma, sans-serif;
   } 
 
   
@@ -163,7 +163,7 @@
   }
 
   .quopv-pages .ant-typography {
-    font-family: "Angsana New"; 
+    font-family: Tahoma, sans-serif;
     box-sizing: border-box;
     vertical-align: top;
   }
@@ -172,16 +172,16 @@
     background: #ffffff;
     border-radius: 0;
     box-shadow: none; 
-    font-family: "Angsana New" !important;
+    font-family: Tahoma, sans-serif !important;
   }
 
   .quopv-pages [class^="ant-table"], .quopv-pages [class*=" ant-table"] {
-    font-family: "Angsana New";
+    font-family: Tahoma, sans-serif;
     font-size: 18px;
     box-sizing: border-box;
   }
   .quopv-pages .ant-table-wrapper .ant-table {
-    font-family: "Angsana New";
+    font-family: Tahoma, sans-serif;
   }
 
 
@@ -248,7 +248,7 @@
 .quopv-pages .ant-table-wrapper .ant-table.ant-table-small tfoot>tr>th, 
 .quopv-pages .ant-table-wrapper .ant-table.ant-table-small tfoot>tr>td {
   padding: 2px 6px;
-  font-family: "Angsana New";
+  font-family: Tahoma, sans-serif;
   font-size: 12px;
   transform: unset !important;
 }
@@ -324,10 +324,10 @@
 
 .quopv-pages .tx-info {
   font-size: 14px;
-  font-family: "Angsana New";
+  font-family: Tahoma, sans-serif;
 }
 
 .quopv-pages .tx-sub {
   font-size: 11px;
-  font-family: "Angsana New";
+  font-family: Tahoma, sans-serif;
 }

@@ -6,7 +6,7 @@
   @page bl {
     size: 11in 17in;
     margin: 0;
-    font-family: open sans, Helvetica, Arial, sans-serif;
+    font-family: Tahoma, sans-serif;
   }
   .bl-pages {
     page: bl;
@@ -39,7 +39,7 @@
     /* top: 0;  */
     box-shadow: none !important;
     border-radius: 0px !important;
-    font-family: open sans, Helvetica, Arial, sans-serif; 
+    font-family: Tahoma, sans-serif;
   } 
 
   

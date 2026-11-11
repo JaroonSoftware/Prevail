@@ -61,6 +61,7 @@ function QuotationManage() {
   useEffect(() => {
     // alert(config?.action);
     const initial = async () => {
+      if (config?.action === "duplicate") return;
       if (config?.action !== "create") {
         const res = await qtservice
           .get(config?.code)
@@ -139,7 +140,7 @@ function QuotationManage() {
         const parm = { header, detail };
         // console.log(parm)
         const actions =
-          config?.action !== "create" ? qtservice.update : qtservice.create;
+          config?.action === "edit" ? qtservice.update : qtservice.create;
         actions(parm)
           .then((r) => {
             handleClose().then((r) => {
@@ -195,7 +196,7 @@ function QuotationManage() {
 
   return (
     <div className="quotation-manage">
-      {config.action === "edit" ? (
+      {config.action === "edit" || config.action === "duplicate" ? (
         <MyManageForm
           formName={formName}
           submit={handleConfirm}

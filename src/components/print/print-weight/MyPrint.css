@@ -2,7 +2,7 @@
   /* named page เฉพาะฟอร์มชั่งน้ำหนัก — ดูเหตุผลแบบเต็มใน print/delivery/delivery.css */
   @page pw {
     size: A4;
-    font-family: "Angsana New";
+    font-family: Tahoma, sans-serif;
   }
   /* ผูกทั้งสองคลาส: ไฟล์นี้เขียนกฎไว้ให้ .del-pages แต่ MyPrintPreview.jsx
      ใช้ .rec-pages จริง (ของเก่าที่ยังไม่ได้ไล่เก็บ) ผูกไว้ทั้งคู่กันพลาด */
@@ -32,7 +32,7 @@
     /* top: 0;  */
     box-shadow: none !important;
     border-radius: 0px !important;
-    font-family: "Angsana New"; 
+    font-family: Tahoma, sans-serif;
   } 
 
   
@@ -211,7 +211,7 @@
   } 
 
   .del-pages .ant-typography {
-    font-family: "Angsana New"; 
+    font-family: Tahoma, sans-serif;
     box-sizing: border-box;
     vertical-align: top;
   }
@@ -220,16 +220,16 @@
     background: #ffffff;
     border-radius: 0;
     box-shadow: none; 
-    font-family: "Angsana New" !important;
+    font-family: Tahoma, sans-serif !important;
   }
 
   .del-pages [class^="ant-table"], .del-pages [class*=" ant-table"] {
-    font-family: "Angsana New";
+    font-family: Tahoma, sans-serif;
     font-size: 18px;
     box-sizing: border-box;
   }
   .del-pages .ant-table-wrapper .ant-table {
-    font-family: "Angsana New";
+    font-family: Tahoma, sans-serif;
   }
 
 
@@ -298,7 +298,7 @@
 .del-pages .ant-table-wrapper .ant-table.ant-table-small tfoot>tr>th, 
 .del-pages .ant-table-wrapper .ant-table.ant-table-small tfoot>tr>td {
   padding: 2px 6px;
-  font-family: "Angsana New";
+  font-family: Tahoma, sans-serif;
   transform: unset !important;
 }
 
@@ -364,16 +364,16 @@
 
 .del-pages .tx-title {
   font-size: 16px;
-  font-family: "Angsana New";
+  font-family: Tahoma, sans-serif;
 }
 
 .del-pages .tx-info {
   font-size: 14px;
-  font-family: "Angsana New";
+  font-family: Tahoma, sans-serif;
 }
 
 .del-pages .tx-sub {
   font-size: 11px;
   line-height: 1.4rem;
-  font-family: "Angsana New";
+  font-family: Tahoma, sans-serif;
 }

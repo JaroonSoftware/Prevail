@@ -1,3 +1,4 @@
+import "../print-font.css";
 import React, { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useReactToPrint } from "react-to-print";
 import { Button, Empty, Flex, Spin, Tag, Typography, message } from "antd";

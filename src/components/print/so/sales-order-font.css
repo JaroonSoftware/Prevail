@@ -1,0 +1,19 @@
+/* Sales order text weight and legibility. */
+.dnf.so-form {
+  font-family: Tahoma, sans-serif;
+  font-size: 19px;
+  font-weight: 400;
+  -webkit-text-stroke: 0;
+  -webkit-font-smoothing: auto;
+  color: #000;
+}
+
+.dnf.so-form .dnf-table th,
+.dnf.so-form .dnf-table td {
+  font-weight: 400;
+}
+
+.dnf.so-form .dnf-co-th,
+.dnf.so-form .dnf-title {
+  font-weight: 700;
+}

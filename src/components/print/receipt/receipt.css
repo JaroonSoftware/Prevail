@@ -2,7 +2,7 @@
   /* named page เฉพาะใบเสร็จ — ดูเหตุผลแบบเต็มใน print/delivery/delivery.css */
   @page rcp {
     size: A4;
-    font-family: open sans, Helvetica, Arial, sans-serif;
+    font-family: Tahoma, sans-serif;
   }
   .repv-pages {
     page: rcp;
@@ -29,7 +29,7 @@
     /* top: 0;  */
     box-shadow: none !important;
     border-radius: 0px !important;
-    font-family: open sans, Helvetica, Arial, sans-serif; 
+    font-family: Tahoma, sans-serif;
   } 
 
   

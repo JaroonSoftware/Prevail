@@ -18,7 +18,7 @@ import {
   Typography,
   Table
 } from "antd";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import OptionService from "../../service/Options.service";
 import QuotationService from "../../service/Quotation.service";
 import dayjs from "dayjs";
@@ -55,6 +55,7 @@ export default function ItemsManageForm({
   const navigate = useNavigate();
 
   const [form] = Form.useForm();
+  const savingRef = useRef(false);
   const formRole = { required: true, message: "กรุณากรอกข้อมูลให้ครบถ้วน!" };
   const [optionType, setOptionType] = useState([]);
 
@@ -79,15 +80,25 @@ export default function ItemsManageForm({
             const res = await qtservice
               .get(config?.code)
               .catch((error) => message.error("get Quotation data fail."));
+            if (!res?.data?.header) return;
             const {
               data: { header, detail },
             } = res.data;
-            const { qtcode, qtdate } = header;
-            setFormDetail(header);
-            setListDetail(detail.map((d, i) => ({ ...d, _rid: i + 1 })));
+            let nextHeader = header;
+            let nextDetail = detail;
+            if (config?.action === "duplicate") {
+              const codeResponse = await qtservice.code();
+              const { qtcode: sourceCode, code: sourceId, doc_status, created_by, updated_by, created_date, updated_date, ...copiedHeader } = header;
+              nextHeader = { ...copiedHeader, qtcode: codeResponse.data.data, qtdate: dayjs().format("YYYY-MM-DD") };
+              nextDetail = detail.map(({ code, qtcode, ...row }) => row);
+              await getstcodeList(header.cuscode);
+            }
+            const { qtcode, qtdate } = nextHeader;
+            setFormDetail(nextHeader);
+            setListDetail(nextDetail.map((d, i) => ({ ...d, _rid: i + 1 })));
             // setQuotBanks( bank );
             setQuotCode(qtcode);
-            form.setFieldsValue({ ...header, qtdate: dayjs(qtdate) });
+            form.setFieldsValue({ ...nextHeader, qtdate: dayjs(qtdate) });
             // setTimeout( () => {  handleCalculatePrice(head?.valid_price_until, head?.dated_price_until) }, 200);
             // handleChoosedCustomer(head);
           } else {
@@ -114,12 +125,13 @@ export default function ItemsManageForm({
           setUnitOption(unitOprionRes.data.data);
         };
     
-        initial();
+        initial().catch(() => message.error("โหลดข้อมูลใบเสนอราคาไม่สำเร็จ กรุณาลองใหม่"));
         return () => {};
   }, [initeial, config, form]);
 
   useEffect(() => {
     // alert(step_number);
+    if (config?.action === "duplicate") return;
     if(step_number === 1){
       qtservice.getcatalog(form.getFieldValue("cuscode")).then((res) => {
         let { data } = res.data;
@@ -151,6 +163,7 @@ export default function ItemsManageForm({
     form
       .validateFields()
       .then((v) => {
+        if (savingRef.current) return;
         if (listDetail.length < 1)
           throw (errormessage = "กรุณาเพิ่มรายการสินค้า");
 
@@ -166,7 +179,8 @@ export default function ItemsManageForm({
 
         const parm = { header, detail };
         // console.log(parm)
-        const actions = config?.action !== "create" ? qtservice.update : qtservice.create;
+        const actions = config?.action === "edit" ? qtservice.update : qtservice.create;
+        savingRef.current = true;
         actions(parm)
           .then((r) => {
             const savedDocument = r?.data?.data?.document_code || r?.data?.data?.catalog_code;
@@ -177,7 +191,8 @@ export default function ItemsManageForm({
           .catch((err) => {
             message.error("Request Quotation fail.");
             console.warn(err);
-          });
+          })
+          .finally(() => { savingRef.current = false; });
       })
       .catch((err) => {
         if (errormessage === "")
@@ -472,7 +487,7 @@ export default function ItemsManageForm({
       >
         <div id="quotation-manage" className="px-0 sm:px-0 md:px-8 lg:px-8">
         <Space direction="vertical" className="flex gap-4">
-          {config.action === "edit" && SectionTop}
+          {(config.action === "edit" || config.action === "duplicate") && SectionTop}
           <Form
             form={form}
             layout="vertical"
@@ -487,7 +502,7 @@ export default function ItemsManageForm({
                       <Typography.Title level={3} className="m-0">
                         เลขที่ใบเสนอราคา : {quotCode}
                       </Typography.Title>
-                      <DocumentNumberPreview visible={config?.action === "create"} />
+                      <DocumentNumberPreview visible={config?.action !== "edit"} />
                     </Col>
                     <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
                       <Flex
@@ -536,7 +551,7 @@ export default function ItemsManageForm({
               </Row>
             </Card>
           </Form>
-          {config.action === "edit" && SectionBottom}
+          {(config.action === "edit" || config.action === "duplicate") && SectionBottom}
         </Space>
       </div>
       </Form>

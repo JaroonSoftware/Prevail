@@ -1,3 +1,4 @@
+import "../print-font.css";
 import React, { useEffect, useRef, useState } from "react";
 import { Button, Alert, Spin } from "antd";
 import { PrinterOutlined } from "@ant-design/icons";

@@ -14,7 +14,7 @@ import { TagsCreateBy } from "../../components/badge-and-tag/";
 // import TagIs from '../../components/badge-and-tag/tags-is/TagIs';
 
 import dayjs from "dayjs";
-import { EditOutlined, PrinterOutlined,ExclamationCircleOutlined } from "@ant-design/icons";
+import { EditOutlined, PrinterOutlined,ExclamationCircleOutlined, CopyOutlined } from "@ant-design/icons";
 // import { EditOutlined, PrinterOutlined } from "@ant-design/icons";
 import { comma } from "../../utils/util";
 
@@ -24,7 +24,7 @@ export const componentsEditable = {
 };
 
 /** get sample column */
-export const accessColumn = ({ handleEdit, handleDelete, handlePrint,handleView }) => [
+export const accessColumn = ({ handleEdit, handleDuplicate, handleDelete, handlePrint,handleView }) => [
   {render: (value) => <DocumentLink type="qtcode" code={value} />,
     title: "เลขที่ใบเสนอราคา",
     key: "qtcode",
@@ -115,6 +115,7 @@ export const accessColumn = ({ handleEdit, handleDelete, handlePrint,handleView 
           onClick={(e) => handleEdit(record)}
           size="small"
         />
+        <Button size="small" icon={<CopyOutlined />} title="ทำสำเนาใบเสนอราคา" onClick={() => handleDuplicate(record)} />
         <Button
           icon={<PrinterOutlined />}
           className="bn-warning-outline"

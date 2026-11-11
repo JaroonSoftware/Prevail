@@ -301,11 +301,14 @@ function DeliveryNoteManage() {
         setDNCode(dncode);
         setFormDetail((state) => ({ ...state, dncode }));
       }
-      // ใช้วันที่ใบขายสินค้าเป็นวันที่ใบส่งของ
-      const sodate = v?.[0]?.sodate || null;
-      if (sodate) {
-        setFormDetail((state) => ({ ...state, dndate: dayjs(sodate) }));
-        form.setFieldValue("dndate", dayjs(sodate));
+      // ตั้งต้นจากวันนัดส่งล่าสุดของใบขาย ผู้ใช้แก้วันที่ในฟอร์มได้ก่อนบันทึก
+      if (config?.action === "create") {
+        const deliveryDate = res.data.header?.deldate;
+        const defaultDate = deliveryDate && !deliveryDate.startsWith("0000-") && dayjs(deliveryDate).isValid()
+          ? dayjs(deliveryDate)
+          : dayjs();
+        setFormDetail((state) => ({ ...state, dndate: defaultDate }));
+        form.setFieldValue("dndate", defaultDate);
       }
     } catch (err) {
       message.error(err?.response?.data?.message || err?.message || "โหลดข้อมูลใบขายสินค้าไม่สำเร็จ");

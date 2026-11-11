@@ -1,0 +1,41 @@
+/* Document roots are copied into the print iframe. Bag labels use .pk-label
+   and intentionally stay outside this rule. Include measurement containers
+   so pagination uses the same font as the printed document. */
+:is(.dnpv-pages, .dnf, .bl-pages, .repv-pages, .quopv-pages,
+    .rec-pages, .del-pages, .catalog-print-document, .dry-horizontal-paper,
+    .dry-report-paper, .history-report, #quo, #rec),
+:is(.dnpv-pages, .dnf, .bl-pages, .repv-pages, .quopv-pages,
+    .rec-pages, .del-pages, .catalog-print-document, .dry-horizontal-paper,
+    .dry-report-paper, .history-report, #quo, #rec) * {
+  font-family: Tahoma, sans-serif !important;
+}
+
+/* Data stays regular on every page, including totals and text rendered by
+   Ant Design as <strong>. Remove artificial outlines as well as bold weight. */
+:is(.dnpv-pages, .dnf, .bl-pages, .repv-pages, .quopv-pages,
+    .rec-pages, .del-pages, .catalog-print-document, .dry-horizontal-paper,
+    .dry-report-paper, .history-paper, #quo, #rec),
+:is(.dnpv-pages, .dnf, .bl-pages, .repv-pages, .quopv-pages,
+    .rec-pages, .del-pages, .catalog-print-document, .dry-horizontal-paper,
+    .dry-report-paper, .history-paper, #quo, #rec) * {
+  font-weight: 400 !important;
+  -webkit-text-stroke: 0 !important;
+  -webkit-font-smoothing: auto;
+}
+
+/* Only document titles, company headings, section headings and table column
+   headings are bold. Body <th> cells can contain customer data, so exclude them. */
+:is(.dnpv-pages, .dnf, .bl-pages, .repv-pages, .quopv-pages,
+    .rec-pages, .del-pages, .catalog-print-document, .dry-horizontal-paper,
+    .dry-report-paper, .history-paper, #quo, #rec)
+  :is(h1, h2, h3, h4, h5, h6, .tx-title, .dnf-co-th, .dnf-title,
+      .dry-report-company, .dry-report-title, .cp-group, .cp-brand > strong,
+      .history-headline > strong, thead th),
+:is(.dnpv-pages, .dnf, .bl-pages, .repv-pages, .quopv-pages,
+    .rec-pages, .del-pages, .catalog-print-document, .dry-horizontal-paper,
+    .dry-report-paper, .history-paper, #quo, #rec)
+  :is(h1, h2, h3, h4, h5, h6, .tx-title, .dnf-co-th, .dnf-title,
+      .dry-report-company, .dry-report-title, .cp-group, .cp-brand > strong,
+      .history-headline > strong, thead th) * {
+  font-weight: 700 !important;
+}

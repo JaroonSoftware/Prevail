@@ -116,6 +116,30 @@ function catalog_document_number(PDO $pdo, bool $allocate = false): string {
     return $code;
 }
 
+function catalog_duplicate_number(PDO $pdo, string $source, bool $allocate = false): string {
+    if (!preg_match('/^(CL[0-9]+)(?:-[0-9]+)*$/', $source, $matches)) {
+        throw new InvalidArgumentException('รหัสแคตตาล็อกต้นทางไม่ถูกต้อง');
+    }
+    if ($allocate) {
+        if (!$pdo->inTransaction()) throw new LogicException('Catalog allocation requires a transaction');
+        lock_document_numbers($pdo);
+    }
+    $lock = $allocate ? ' FOR UPDATE' : '';
+    $check = $pdo->prepare('SELECT catalog_code FROM catalog_master WHERE catalog_code = :code' . $lock);
+    $check->execute(['code' => $source]);
+    if ($check->fetchColumn() === false) throw new RuntimeException('ไม่พบแคตตาล็อกต้นทาง กรุณาเลือกรายการใหม่');
+    $base = $matches[1];
+    $siblings = $pdo->prepare('SELECT catalog_code FROM catalog_master WHERE catalog_code LIKE :prefix' . $lock);
+    $siblings->execute(['prefix' => $base . '-%']);
+    $last = 0;
+    foreach ($siblings->fetchAll(PDO::FETCH_COLUMN) as $code) {
+        if (preg_match('/^' . preg_quote($base, '/') . '-([0-9]+)$/', $code, $suffix)) {
+            $last = max($last, (int)$suffix[1]);
+        }
+    }
+    return $base . '-' . ($last + 1);
+}
+
 /** Compatibility for first login of a month; recheck under the same writer lock. */
 function create_options(PDO $pdo, $year, $month): void {
     lock_document_numbers($pdo);

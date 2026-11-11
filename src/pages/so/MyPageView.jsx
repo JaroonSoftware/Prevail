@@ -110,7 +110,11 @@ export default function SOView() {
       {
         label: "หมายเหตุ",
         labelStyle: { verticalAlign: "top" },
-        children: <pre style={{ margin: 0 }}>{h?.remark || ""}</pre>,
+        children: (
+          <div style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere", minWidth: 0 }}>
+            {h?.remark || ""}
+          </div>
+        ),
         span: { xs: 1, sm: 2, md: 3, lg: 3, xl: 3, xxl: 3 },
       },
     ];

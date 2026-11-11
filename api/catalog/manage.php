@@ -78,7 +78,10 @@ try {
         $_POST = json_decode($rest_json, true);
         extract($_POST, EXTR_OVERWRITE, "_");
 
-        $catalog_code = catalog_document_number($conn, true);
+        $source = trim($_POST['duplicate_source'] ?? '');
+        $catalog_code = $source !== ''
+            ? catalog_duplicate_number($conn, $source, true)
+            : catalog_document_number($conn, true);
 
 
         // var_dump($_POST);

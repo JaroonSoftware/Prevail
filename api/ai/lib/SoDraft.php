@@ -60,9 +60,10 @@ final class SoDraft
         }
 
         $norm = AiText::normCompany($docCus['name'] ?? null);
-        if ($norm !== '') {
+        $variants = self::nameVariants($docCus['name'] ?? null);
+        foreach ($variants as $v) {
             $st = $conn->prepare("SELECT cuscode FROM ai_customer_alias WHERE raw_hash = :h LIMIT 1");
-            $st->execute(array('h' => sha1($norm)));
+            $st->execute(array('h' => sha1($v)));
             $code = $st->fetchColumn();
             if ($code && ($c = self::customerByCode($conn, (string)$code))) {
                 return array('customer' => $c, 'score' => 1.0, 'source' => 'alias', 'candidates' => array());
@@ -70,12 +71,21 @@ final class SoDraft
         }
 
         $cands = array();
-        if ($norm !== '') {
+        if ($variants) {
             foreach ($rows as $r) {
-                $score = max(
-                    AiText::similarity($norm, AiText::normCompany($r['cusname'] ?? '')),
-                    AiText::similarity($norm, AiText::normCompany($r['cusname_en'] ?? ''))
-                );
+                $score = 0.0;
+                foreach (array($r['cusname'] ?? '', $r['cusname_en'] ?? '') as $cn) {
+                    $cnorm = AiText::normCompany($cn);
+                    if ($cnorm === '') continue;
+                    foreach ($variants as $v) {
+                        $score = max($score, AiText::similarity($v, $cnorm));
+                        /* ชื่อในระบบอยู่ในชื่อบน PO (หรือกลับกัน) เช่น "Angsana Laguna" กับ
+                           "Bangtao Grande Co.,Ltd. (Angsana Laguna Phuket)" */
+                        $short = mb_strlen($cnorm) <= mb_strlen($v) ? $cnorm : $v;
+                        $long = $short === $cnorm ? $v : $cnorm;
+                        if (mb_strlen($short) >= 6 && mb_strpos($long, $short) !== false) $score = max($score, 0.9);
+                    }
+                }
                 if ($score >= 0.30) $cands[] = array('cuscode' => $r['cuscode'], 'cusname' => trim(($r['prename'] ?? '') . ' ' . $r['cusname']), 'score' => round($score, 3));
             }
             usort($cands, function ($a, $b) { return $b['score'] <=> $a['score']; });
@@ -87,6 +97,21 @@ final class SoDraft
             return array('customer' => self::customerByCode($conn, $cands[0]['cuscode']), 'score' => $top, 'source' => 'name', 'candidates' => $cands);
         }
         return array('customer' => null, 'score' => $top, 'source' => 'none', 'candidates' => $cands);
+    }
+
+    /** ชื่อบน PO มักเป็น "นิติบุคคล (ชื่อโรงแรม)" -> เทียบทั้งชื่อเต็ม ส่วนนอกวงเล็บ และในวงเล็บ */
+    private static function nameVariants(?string $name): array
+    {
+        $out = array();
+        $name = (string)$name;
+        $add = function ($s) use (&$out) {
+            $n = AiText::normCompany($s);
+            if (mb_strlen($n) >= 3 && !in_array($n, $out, true)) $out[] = $n;
+        };
+        $add($name);
+        $add(preg_replace('/[\(\[].*?[\)\]]/u', ' ', $name));
+        if (preg_match_all('/[\(\[](.*?)[\)\]]/u', $name, $m)) foreach ($m[1] as $in) $add($in);
+        return $out;
     }
 
     public static function rememberCustomer(PDO $conn, ?string $rawName, string $cuscode, ?string $user): void
@@ -199,11 +224,12 @@ final class SoDraft
             $nPend = 0;
             foreach ($decided as $li => $d) {
                 if ($d['auto']) {
-                    $insLine->execute(array(
+                    /* ใช้ array_merge แทน ...[] — PHP บนโฮสต์ต่ำกว่า 8.1 กระจาย array ที่มี key เป็นข้อความไม่ได้
+                       ("Cannot unpack array with string keys") */
+                    $insLine->execute(array_merge(array(
                         'socode' => $socode, 'stcode' => $d['stcode'], 'qty' => $d['qty'],
                         'price' => $d['price'], 'unit' => $d['unit'], 'vat' => $d['vat'],
-                        ...($packingReady ? ['packing_weight' => packing_resolve($conn, $cuscode, $d)] : []),
-                    ));
+                    ), $packingReady ? array('packing_weight' => packing_resolve($conn, $cuscode, $d)) : array()));
                     $nAuto++;
                 } else {
                     $l = $o['lines'][$li];

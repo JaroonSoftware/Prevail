@@ -27,7 +27,7 @@ try {
         $sql .= " FROM `sodetail` as a";
         $sql .= " left outer join `items` i on (a.stcode=i.stcode)  ";
         $sql .= " where a.socode IN (". implode(',',$tmp_array) . ") ";
-        $sql .= " ORDER BY a.socode ASC ";
+        $sql .= " ORDER BY a.socode ASC, a.code ASC ";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute()) {
@@ -36,6 +36,10 @@ try {
             throw new PDOException("Geting data error => $error");
         }
         $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $source = $conn->prepare('SELECT socode, deldate FROM somaster WHERE socode = :socode');
+        $source->execute(['socode' => $detail[0]['socode'] ?? '']);
+        $header = $source->fetch(PDO::FETCH_ASSOC) ?: null;
 
         $conn->commit();
         http_response_code(200);

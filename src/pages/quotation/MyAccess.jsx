@@ -190,6 +190,10 @@ const QuotationAccess = () => {
         navigate("manage/edit", { state: { config: {...mngConfig, title:"แก้ไขใบเสนอราคา", action:"edit", code:data?.qtcode} }, replace:true } );
     }; 
 
+    const handleDuplicate = (data) => {
+        navigate("manage/duplicate", { state: { config: { ...mngConfig, title: "ทำสำเนาใบเสนอราคา", action: "duplicate", code: data.qtcode } } });
+    };
+
     const handleDelete = (data) => { 
         const deleteCode = getQuotationCode(data);
 
@@ -213,7 +217,7 @@ const QuotationAccess = () => {
         navigate("view", { state: { config: {...mngConfig, title:"View", code:data?.qtcode} }, replace:true } );
     };
 
-    const column = accessColumn( {handleEdit, handleDelete, handlePrint,handleView });
+    const column = accessColumn( {handleEdit, handleDuplicate, handleDelete, handlePrint,handleView });
     // const column = accessColumn( {handleEdit, handlePrint });
 
     const handleTableChange = (pagination) => {

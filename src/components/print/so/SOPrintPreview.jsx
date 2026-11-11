@@ -1,10 +1,12 @@
+import "../print-font.css";
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useReactToPrint } from "react-to-print";
 import "../delivery/delivery.css";
-/* ใช้เลย์เอาต์ชุดเดียวกับใบส่งสินค้า ขนาด/ฟอนต์/เส้นประเท่ากันทุกอย่าง */
+/* ใช้เลย์เอาต์ใบส่งสินค้าและกำหนดตัวอักษรของใบขายแยกต่างหาก */
 import "../delivery/delivery-form.css";
+import "./sales-order-font.css";
 import { Authenticate } from "../../../service/Authenticate.service";
 import { Button, message } from "antd";
 import thaiBahtText from "thai-baht-text";

@@ -37,6 +37,34 @@ try {
         $socodeSrc = (string)$socodes[0];
         $dncode = 'DN' . (strncmp($socodeSrc, 'IV', 2) === 0 ? substr($socodeSrc, 2) : $socodeSrc);
 
+        // Incoming row codes refer to sodetail while creating a delivery note.
+        // Resolve legacy callers without row codes only when the match is provable.
+        $sourceQuery = $conn->prepare('SELECT code,stcode,qty,price,unit FROM sodetail WHERE socode = :s ORDER BY code FOR UPDATE');
+        $sourceQuery->execute(['s' => $socodeSrc]);
+        $availableSources = [];
+        foreach ($sourceQuery->fetchAll(PDO::FETCH_ASSOC) as $source) {
+            $availableSources[(string)$source['code']] = $source;
+        }
+        $createSourceMap = [];
+        foreach ($detail as $index => $value) {
+            $line = (array)$value;
+            $sourceCode = (string)($line['code'] ?? '');
+            if ($sourceCode === '') {
+                $candidates = array_values(array_filter($availableSources, function ($source) use ($line) {
+                    return (string)$source['stcode'] === (string)$line['stcode'];
+                }));
+                $legacyRow = array_merge($line, ['code' => (string)$index]);
+                $matched = dn_source_line_map([$legacyRow], $candidates);
+                $sourceCode = (string)($matched[(string)$index] ?? '');
+            }
+            if (!isset($availableSources[$sourceCode])
+                || (string)$availableSources[$sourceCode]['stcode'] !== (string)$line['stcode']) {
+                throw new Exception('รายการสินค้าอ้างอิงซ้ำหรือเปลี่ยนแปลง กรุณาโหลดใบขายใหม่');
+            }
+            $createSourceMap[$index] = $sourceCode;
+            unset($availableSources[$sourceCode]);
+        }
+
         // กันออกใบส่งของซ้ำจากใบขายสินค้าเดิม (เช็คทั้งเลข DN ใหม่ และเลข IV แบบเดิมที่ยังไม่ได้แปลง)
         $stmtChk = $conn->prepare("SELECT doc_status FROM dnmaster where dncode IN (:dncode, :socode) AND COALESCE(doc_status, '') <> 'ยกเลิก' FOR UPDATE");
         $stmtChk->execute(['dncode' => $dncode, 'socode' => $socodeSrc]);
@@ -88,12 +116,13 @@ try {
                 throw new PDOException("Insert data error => $error");
             }            
 
-            $sql = "update sodetail set delamount = IFNULL(delamount,0)+:qty where socode = :socode and stcode = :stcode";
+            $sql = "update sodetail set delamount = IFNULL(delamount,0)+:qty where code = :source_code and socode = :socode and stcode = :stcode";
 
             $stmt3 = $conn->prepare($sql);
             if (!$stmt3) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
             $stmt3->bindParam(":qty", $val->qty, PDO::PARAM_STR);
+            $stmt3->bindValue(":source_code", $createSourceMap[$ind], PDO::PARAM_STR);
             $stmt3->bindParam(":socode", $val->socode, PDO::PARAM_STR);
             $stmt3->bindParam(":stcode", $val->stcode, PDO::PARAM_STR);
 

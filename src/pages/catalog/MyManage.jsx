@@ -29,6 +29,7 @@ import {
   columnsParametersEditableCustomer,
 } from "./model";
 import { ModalItems } from "../../components/modal/items/modal-items";
+import CatalogPriceScan from "./CatalogPriceScan";
 import { ModalCusCL } from "../../components/modal/customerbyCL/modal-cusCL";
 import { delay } from "../../utils/util";
 import { ButtonBack } from "../../components/button";
@@ -73,6 +74,22 @@ function CatalogManage() {
   /** รายการรอสร้างสินค้า + สินค้าทั้งหมดไว้ให้เลือกจับคู่ */
   const [listPending, setListPending] = useState([]);
   const [allItems, setAllItems] = useState([]);
+  /** Scan ราคาจากไฟล์ (AI) — เฉพาะหน้า Duplicate */
+  const isDuplicate = config?.action === "duplicate";
+  const [openScan, setOpenScan] = useState(false);
+  const handleScanApply = ({ priceUpdates, additions, removals, pending }) => {
+    const rm = new Set(removals);
+    setListDetail((s) => [
+      ...s.filter((d) => !rm.has(d.stcode)).map((d) => (priceUpdates[d.stcode] != null ? { ...d, price: priceUpdates[d.stcode] } : d)),
+      ...additions.filter((a) => !s.some((d) => d.stcode === a.stcode)),
+    ]);
+    if (pending.length) {
+      setListPending((s) => {
+        const base = s.reduce((m, p) => Math.max(m, p._pid || 0), 0);
+        return [...s, ...pending.map((p, i) => ({ ...p, _pid: base + i + 1 }))];
+      });
+    }
+  };
   const [pendingPick, setPendingPick] = useState({});
   const loadAllItems = () =>
     opservice.optionsItems({ p: "items" }).then((r) => setAllItems(r?.data?.data || [])).catch(() => {});
@@ -118,7 +135,7 @@ function CatalogManage() {
       const nextHeader = { ...header };
 
       if (!isEditMode) {
-        const codeResponse = await clservice.getcode().catch((e) => {
+        const codeResponse = await clservice.getcode({ params: { duplicate_source: config.code } }).catch((e) => {
           message.error("get Catalog code fail.");
         });
         const nextCode = codeResponse?.data?.data;
@@ -219,6 +236,7 @@ function CatalogManage() {
         const customer = listCustomer;
         const pending = listPending.map(({ _pid, pending_id, ...p }) => p);
         const parm = { header, detail, customer, pending };
+        if (config?.action === "duplicate") parm.duplicate_source = config.code;
         // console.log(parm);
         const actions = isEditMode ? clservice.update : clservice.create;
         const save = (payload) => {
@@ -634,6 +652,11 @@ function CatalogManage() {
               Copy
             </Button>
           )}
+          {isDuplicate && (
+            <Button className="bn-center justify-center bn-primary-outline" onClick={() => setOpenScan(true)}>
+              Scan ราคาจากไฟล์ (AI)
+            </Button>
+          )}
           <Button
             className="bn-center justify-center"
             icon={<SaveFilled style={{ fontSize: "1rem" }} />}
@@ -670,6 +693,11 @@ function CatalogManage() {
               onClick={handleDuplicate}
             >
               Copy
+            </Button>
+          )}
+          {isDuplicate && (
+            <Button className="bn-center justify-center bn-primary-outline" onClick={() => setOpenScan(true)}>
+              Scan ราคาจากไฟล์ (AI)
             </Button>
           )}
           <Button
@@ -778,6 +806,9 @@ function CatalogManage() {
           }}
           selected={listCustomer}
         ></ModalCusCL>
+      )}
+      {isDuplicate && (
+        <CatalogPriceScan open={openScan} onClose={() => setOpenScan(false)} listDetail={listDetail} onApply={handleScanApply} />
       )}
       {openProduct && (
         <ModalItems
