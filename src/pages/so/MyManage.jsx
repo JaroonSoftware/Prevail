@@ -169,6 +169,16 @@ function MyManage() {
             .then((r) => {
               const rows = r?.data?.data || [];
               setAiPending(rows);
+              /* ลำดับใน PO: รายการที่ AI ลงให้แล้วเรียงตาม PO อยู่แล้ว แต่ไม่รู้เลขบรรทัด
+                 เลขที่ไม่ใช่ของรายการรอจับคู่ = เลขของรายการที่ลงแล้ว ตามลำดับ -> ใช้แทรกรายการที่จับคู่ทีหลังให้ถูกที่ */
+              const pendSeq = new Set(rows.map((p) => Number(p.seq)));
+              setListDetail((state) => {
+                let n = 0;
+                return state.map((d) => {
+                  do { n++; } while (pendSeq.has(n));
+                  return { ...d, _poSeq: n };
+                });
+              });
               setAiPick(Object.fromEntries(rows.map((p) => [p.pending_id, p.suggest_stcode || undefined])));
             })
             .catch(() => message.error("โหลดรายการรอจับคู่จาก PO ไม่สำเร็จ"));
@@ -333,9 +343,11 @@ function MyManage() {
     const stcode = aiPick[p.pending_id];
     const opt = createdItem || aiItemOptions.find((o) => o.stcode === stcode || o.value === stcode);
     if (!opt) return message.warning("กรุณาเลือกสินค้า (ต้องเป็นสินค้าในแคตตาล็อกของลูกค้ารายนี้)");
-    setListDetail((state) => [
-      ...state.filter((d) => d.stcode), // ตัดแถวว่างที่ยังไม่เลือกสินค้าทิ้ง
-      {
+    setListDetail((state) => {
+      const rows = state.filter((d) => d.stcode); // ตัดแถวว่างที่ยังไม่เลือกสินค้าทิ้ง
+      const seq = Number(p.seq) || Infinity;
+      const row = {
+        _poSeq: seq,
         _rid: Math.max(0, ...state.map((d) => Number(d._rid) || 0)) + 1,
         stcode: opt.stcode,
         stname: opt.stname || opt.label,
@@ -346,8 +358,11 @@ function MyManage() {
         packing_weight: opt.packing_weight,
         vat: Number(opt.vat || 0),
         discount: 0,
-      },
-    ]);
+      };
+      /* แทรกตามลำดับบรรทัดใน PO (ก่อนแถวแรกที่ลำดับ PO มากกว่า) */
+      const at = rows.findIndex((d) => d._poSeq != null && d._poSeq > seq);
+      return at < 0 ? [...rows, row] : [...rows.slice(0, at), row, ...rows.slice(at)];
+    });
     setAiPending((s) => s.filter((x) => x.pending_id !== p.pending_id));
     setAiDone((s) => [...s, { pending_id: p.pending_id, stcode: opt.stcode }]);
   };

@@ -20,6 +20,11 @@ try {
         $action_user = $token->userid;
         if (!is_array($detail) || !$detail) throw new Exception('Select at least one item.');
 
+        /* แยกถุงตาม "บรรทัด" ของใบขาย (sodetail.code) — สินค้าตัวเดียวกันหลายบรรทัดไม่ถูกรวมกัน
+           ต้องรัน sql/2026-11-11_package_barcode_line.sql ก่อน ถ้ายังไม่รันจะทำแบบเดิม (รวมตามรหัสสินค้า) */
+        $hasLineCol = (bool)$conn->query("SHOW COLUMNS FROM package_barcode LIKE 'sodetail_code'")->fetch();
+        $seenItem = array();
+
         foreach ($detail as $ind => $val) {
 
             $count = 0;
@@ -27,8 +32,27 @@ try {
             $lock = $conn->prepare('SELECT socode FROM somaster WHERE socode=:s FOR UPDATE');
             $lock->execute(['s'=>$val['socode']]);
             if (!$lock->fetchColumn()) throw new Exception('Sales order not found.');
-            $lines = $conn->prepare('SELECT d.qty,d.unit,' . ($packingReady ? 'd.packing_weight' : 'i.packing_weight') . ',i.stname FROM sodetail d JOIN items i ON i.stcode=d.stcode WHERE d.socode=:s AND d.stcode=:i ORDER BY d.code');
-            $lines->execute(['s'=>$val['socode'],'i'=>$val['stcode']]);
+            $lineCode = (isset($val['code']) && is_numeric($val['code'])) ? (int)$val['code'] : 0;
+            $lineMode = false;
+            if ($hasLineCol && $lineCode > 0) {
+                /* ใบที่เคยปริ้นแบบเดิม (ถุงไม่ผูกบรรทัด) ของสินค้านี้ -> ใช้แบบเดิมต่อ กันถุงซ้ำ */
+                $leg = $conn->prepare('SELECT COUNT(*) FROM package_barcode WHERE socode=:s AND stcode=:i AND sodetail_code IS NULL');
+                $leg->execute(['s'=>$val['socode'],'i'=>$val['stcode']]);
+                $lineMode = (int)$leg->fetchColumn() === 0;
+            }
+            if (!$lineMode) {
+                /* แบบเดิม: รวมทุกบรรทัดของสินค้านี้ ทำครั้งเดียวต่อใบขาย+สินค้า */
+                $ik = $val['socode'] . '|' . $val['stcode'];
+                if (isset($seenItem[$ik])) continue;
+                $seenItem[$ik] = true;
+            }
+            if ($lineMode) {
+                $lines = $conn->prepare('SELECT d.qty,d.unit,' . ($packingReady ? 'd.packing_weight' : 'i.packing_weight') . ',i.stname FROM sodetail d JOIN items i ON i.stcode=d.stcode WHERE d.socode=:s AND d.code=:c');
+                $lines->execute(['s'=>$val['socode'],'c'=>$lineCode]);
+            } else {
+                $lines = $conn->prepare('SELECT d.qty,d.unit,' . ($packingReady ? 'd.packing_weight' : 'i.packing_weight') . ',i.stname FROM sodetail d JOIN items i ON i.stcode=d.stcode WHERE d.socode=:s AND d.stcode=:i ORDER BY d.code');
+                $lines->execute(['s'=>$val['socode'],'i'=>$val['stcode']]);
+            }
             $saved = $lines->fetchAll(PDO::FETCH_ASSOC);
             if (!$saved) throw new Exception('Sales order item not found.');
             $val['qty'] = 0;
@@ -37,8 +61,13 @@ try {
             }
             $val['unit']=$saved[0]['unit']; $val['stname']=$saved[0]['stname'];
             $val['packing_weight']=$saved[0]['packing_weight'];
-            $existing=$conn->prepare('SELECT COUNT(*) FROM package_barcode WHERE socode=:s AND stcode=:i');
-            $existing->execute(['s'=>$val['socode'],'i'=>$val['stcode']]);
+            if ($lineMode) {
+                $existing=$conn->prepare('SELECT COUNT(*) FROM package_barcode WHERE socode=:s AND sodetail_code=:c');
+                $existing->execute(['s'=>$val['socode'],'c'=>$lineCode]);
+            } else {
+                $existing=$conn->prepare('SELECT COUNT(*) FROM package_barcode WHERE socode=:s AND stcode=:i');
+                $existing->execute(['s'=>$val['socode'],'i'=>$val['stcode']]);
+            }
             $existingCount=(int)$existing->fetchColumn();
 
 
@@ -101,7 +130,9 @@ try {
                         throw new PDOException("Insert data error => $error");
                         die;
                     }
-                    $package_id = str_pad($conn->lastInsertId(), 10, "0", STR_PAD_LEFT);
+                    $newId = $conn->lastInsertId();
+                    if ($lineMode) $conn->prepare('UPDATE package_barcode SET sodetail_code=:c WHERE package_id=:p')->execute(['c'=>$lineCode,'p'=>$newId]);
+                    $package_id = str_pad($newId, 10, "0", STR_PAD_LEFT);
 
                     $listbarcode[$ind][$count]['stcode'] = $val['stcode'];
                     $listbarcode[$ind][$count]['sup_weight'] = number_format($pack_f, 2, '.', '');
@@ -135,7 +166,9 @@ try {
                         die;
                     }
                     /* ต้อง pad ให้เหมือนถุงเต็ม ไม่งั้น Lot No./QR คนละรูปแบบกัน */
-                    $package_id = str_pad($conn->lastInsertId(), 10, "0", STR_PAD_LEFT);
+                    $newId = $conn->lastInsertId();
+                    if ($lineMode) $conn->prepare('UPDATE package_barcode SET sodetail_code=:c WHERE package_id=:p')->execute(['c'=>$lineCode,'p'=>$newId]);
+                    $package_id = str_pad($newId, 10, "0", STR_PAD_LEFT);
 
                     $listbarcode[$ind][$count]['stcode'] = $val['stcode'];
                     $listbarcode[$ind][$count]['sup_weight'] = number_format($remain, 2, '.', '');
@@ -151,13 +184,14 @@ try {
                 $sql = "update sodetail
                 set
                 packing_status = 'ปริ้นหน้าถุงแล้ว'
-                where socode = :socode and stcode = :stcode";
+                where socode = :socode and " . ($lineMode ? "code = :line" : "stcode = :stcode");
 
                 $stmt4 = $conn->prepare($sql);
                 if (!$stmt4) throw new PDOException("Insert data error => {$conn->errorInfo()}");
     
                 $stmt4->bindValue(":socode", $val['socode'], PDO::PARAM_STR);
-                $stmt4->bindValue(":stcode", $val['stcode'], PDO::PARAM_STR);
+                if ($lineMode) $stmt4->bindValue(":line", $lineCode, PDO::PARAM_INT);
+                else $stmt4->bindValue(":stcode", $val['stcode'], PDO::PARAM_STR);
     
                 if (!$stmt4->execute()) {
                     $error = $conn->errorInfo();
@@ -179,8 +213,11 @@ try {
                 inner join somaster as s on (a.socode=s.socode)
                 inner join customer as c on (s.cuscode=c.cuscode)
                 where a.stcode = :stcode and a.socode = :socode ";
+                if ($lineMode) $strSQL .= " and a.sodetail_code = :line ";
                 $stmt = $conn->prepare($strSQL);
-                if (!$stmt->execute(['stcode'=>$val['stcode'], 'socode'=>$val['socode']])) {
+                $params = ['stcode'=>$val['stcode'], 'socode'=>$val['socode']];
+                if ($lineMode) $params['line'] = $lineCode;
+                if (!$stmt->execute($params)) {
                     $error = $conn->errorInfo();
                     http_response_code(404);
                     throw new PDOException("Geting data error => $error");

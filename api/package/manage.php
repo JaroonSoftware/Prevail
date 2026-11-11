@@ -181,7 +181,7 @@ try {
         $sql = "SELECT a.code,a.socode,a.stcode, a.price, a.unit, a.qty,i.stname," . (packing_schema_ready($conn) ? "a.packing_weight" : "i.packing_weight") . ",a.vat,a.packing_status ";
         $sql .= " FROM `sodetail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
         $sql .= " where a.socode = :code";
-        $sql .= " order by i.seq";
+        $sql .= " order by a.code"; /* ตามลำดับบรรทัดในใบขาย */
         
         
         $stmt = $conn->prepare($sql);

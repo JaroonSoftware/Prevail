@@ -47,7 +47,7 @@ try {
             inner join `items` as i on (b.stcode=i.stcode)
             inner join `customer` as c on (d.cuscode=c.cuscode) 
             where d.dncode in ('". implode("' , '", $code) . "')";
-            $sql .= " order by i.seq";
+            $sql .= " order by d.dncode, b.code"; /* ตามลำดับรายการในใบขาย/ใบส่งของ (ไม่เรียงตามรหัสสินค้า) */
 
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute()) {

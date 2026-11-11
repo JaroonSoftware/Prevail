@@ -205,7 +205,8 @@ try {
         $sql = "SELECT a.code,a.socode,a.stcode, a.price, a.unit, a.qty,a.vat,i.stname," . (packing_schema_ready($conn) ? "a.packing_weight" : "i.packing_weight") . " ";
         $sql .= " FROM `sodetail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
         $sql .= " where a.socode = :code";
-        // $sql .= " order by i.seq";
+        /* เรียงตามลำดับที่บันทึก (= ลำดับในหน้าจอ / ลำดับใน PO ลูกค้า) ไม่ปล่อยให้ฐานข้อมูลเรียงเอง */
+        $sql .= " order by a.code";
         
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute(['code' => $code])) {

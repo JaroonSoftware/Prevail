@@ -200,17 +200,10 @@ function MyManage() {
     const latestByKey = new Map(listDetail.map((it) => [it?._rowKey, it]));
     const picked = selectedData.map((it) => latestByKey.get(it?._rowKey) || it);
 
-    const mergedMap = new Map();
-    picked.forEach((it) => {
-      const key = `${it?.socode ?? ""}::${it?.stcode ?? ""}`;
-      const prev = mergedMap.get(key);
-      if (prev) {
-        prev.qty = Number(prev.qty || 0) + Number(it?.qty || 0);
-      } else {
-        mergedMap.set(key, { ...it, qty: Number(it?.qty || 0) });
-      }
-    });
-    const chosen = [...mergedMap.values()];
+    /* ไม่รวมบรรทัดที่รหัสสินค้าซ้ำแล้ว: ส่งทีละบรรทัดพร้อม code (sodetail.code)
+       backend แยกถุงตามบรรทัด (ถ้ารัน sql/2026-11-11_package_barcode_line.sql แล้ว)
+       ถ้ายังไม่รัน backend จะรวมตามรหัสสินค้าให้เองแบบเดิม */
+    const chosen = picked.map((it) => ({ ...it, qty: Number(it?.qty || 0) }));
 
     /* กันส่งค่าที่แบ่งถุงไม่ได้ไปให้ backend (0 หรือติดลบ = ไม่เกิดถุงเลย
        หรือวนสร้างถุงไม่รู้จบ) เช็คตั้งแต่หน้าจอจะบอกได้ตรงกว่า */

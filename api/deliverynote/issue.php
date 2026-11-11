@@ -21,7 +21,7 @@ try {
         $sql .= " FROM `dndetail` as a";
         $sql .= " inner join `items` as i on (a.stcode=i.stcode)  ";
         $sql .= " where a.dncode = :code";
-        $sql .= " order by i.seq";
+        $sql .= " order by a.code"; /* ตามลำดับรายการในใบขาย/ใบส่งของ (ไม่เรียงตามรหัสสินค้า) */
 
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute(['code' => $code])) {

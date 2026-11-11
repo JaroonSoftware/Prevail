@@ -55,7 +55,7 @@ try {
         $sql .= " LEFT JOIN somaster as sm on dd.socode = sm.socode ";
         $sql .= " LEFT JOIN user as u on dm.created_by = u.code ";
         $sql .= " WHERE dm.dncode = :code ";
-        $sql .= " ORDER BY dd.socode, i.seq, dd.stcode, dd.code ";
+        $sql .= " ORDER BY dd.socode, dd.code "; /* ตามลำดับรายการในใบขาย/ใบส่งของ (ไม่เรียงตามรหัสสินค้า) */
 
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute(['code' => $code])) {
