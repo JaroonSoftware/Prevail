@@ -47,18 +47,8 @@ try {
                                 WHERE d.socode = :s AND d.stcode = :c AND i.active_status = 'Y'");
         $valid->execute(array('s' => $p['socode'], 'c' => $stcode));
         if ((int)$valid->fetchColumn() < 1) throw new AiUserException('กรุณาบันทึกรหัสสินค้าที่จับคู่ลงในใบขายก่อน');
-        $norm = AiText::norm($p['raw_name']);
-        if ($norm !== '' && $p['cuscode']) {
-            $ins = $conn->prepare("
-                INSERT INTO ai_item_alias (supcode, raw_text, raw_norm, raw_hash, stcode, created_by)
-                VALUES (:s, :t, :n, :h, :c, :u)
-                ON DUPLICATE KEY UPDATE stcode = VALUES(stcode), raw_text = VALUES(raw_text), hit_count = hit_count + 1");
-            $ins->execute(array(
-                's' => SoDraft::aliasKey((string)$p['cuscode']),
-                't' => mb_substr($p['raw_name'], 0, 160, 'UTF-8'), 'n' => mb_substr($norm, 0, 160, 'UTF-8'),
-                'h' => sha1($norm), 'c' => $stcode, 'u' => ai_user_id(),
-            ));
-        }
+        /* จำชื่อ + รหัสสินค้าของลูกค้าใน PO คู่กับสินค้าที่เลือก */
+        if ($p['cuscode']) SoDraft::rememberItem($conn, (string)$p['cuscode'], $p['raw_name'], $p['raw_code'] ?? null, $stcode, ai_user_id());
         $conn->prepare("DELETE FROM ai_so_pending WHERE pending_id = :id")->execute(array('id' => $id));
         $conn->commit();
         ai_json(array('status' => 1));

@@ -31,6 +31,7 @@ import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import dayjs from "dayjs";
 import { delay, comma } from "../../utils/util";
 import { confirmDuplicateItem } from "../../utils/duplicateItem";
+import { applyCatalogPrices } from "./catalogPricing";
 import { ButtonBack } from "../../components/button";
 import { useLocation, useNavigate } from "react-router-dom";
 import { TbSquareRoundedX, TbExclamationCircle } from "react-icons/tb";
@@ -130,6 +131,11 @@ function MyManage() {
   const [aiItemOptions, setAiItemOptions] = useState([]);
   const [aiItemsLoading, setAiItemsLoading] = useState(false);
   const itemRequest = useRef(0);
+  /* ค่าล่าสุดของรายการสินค้า (ใช้ตอนจับคู่หลายรายการติดกัน ไม่ให้ทับกัน) */
+  const listRef = useRef([]);
+  const catalogBusy = useRef(false);
+  const [catalogError, setCatalogError] = useState(false);
+  const catalogNeedsReprice = useRef(false);
 
   /** รายการจาก PO ที่ AI จับคู่สินค้าไม่มั่นใจ (เฉพาะใบสถานะ "รอยืนยันใบขายสินค้า")
    *  จับคู่/ตัดทิ้งในหน้านี้ก่อน แล้วค่อยแจ้ง server ตอนกดบันทึก (ถ้าออกจากหน้าโดยไม่บันทึก รายการยังอยู่) */
@@ -163,7 +169,7 @@ function MyManage() {
           sodate: dayjs(sodate),
           deldate: dayjs(deldate),
         });
-        getstcodeList(header?.cuscode);
+        getstcodeList(header?.cuscode, deldate);
         if (header?.doc_status === STATUS_DRAFT) {
           aiSoService
             .pending(socode)
@@ -225,7 +231,7 @@ function MyManage() {
         setRememberCreateDeldate(Boolean(rememberedDeldate));
         setFormDetail(ininteial_value);
         form.setFieldsValue(ininteial_value);
-        getstcodeList("");
+        getstcodeList("", defaultDeldate);
       }
       const [unitOprionRes] = await Promise.all([
         opservice.optionsUnit({ p: "unit-option" }),
@@ -235,25 +241,37 @@ function MyManage() {
     };
 
     initial();
-    return () => {};
+    return () => { itemRequest.current++; };
   }, []);
 
   useEffect(() => {
     if (listDetail) handleSummaryPrice();
+    listRef.current = listDetail || [];
   }, [listDetail]);
 
-  const getstcodeList = async (cuscode = "") => {
+  const getstcodeList = async (cuscode = "", deliveryDate = form.getFieldValue("deldate"), reprice = false) => {
     const request = ++itemRequest.current;
+    catalogBusy.current = true;
+    catalogNeedsReprice.current = reprice;
+    setCatalogError(false);
     setAiItemsLoading(true);
+    setStcodeOption([]);
     setAiItemOptions([]);
+    const catalogDate = deliveryDate && dayjs(deliveryDate).isValid()
+      ? dayjs(deliveryDate).format("YYYY-MM-DD") : undefined;
     const [catalogResult, itemsResult] = await Promise.allSettled([
-      opservice.optionsItems({ p: "cl", cuscode }),
+      opservice.optionsItems({ p: "cl", cuscode, ...(catalogDate ? { catalog_date: catalogDate } : {}) }),
       opservice.optionsItems({ p: "items" }),
     ]);
     if (request !== itemRequest.current) return;
     const catalog = catalogResult.status === "fulfilled" ? (catalogResult.value?.data?.data || []) : [];
     setStcodeOption(catalog);
-    if (catalogResult.status === "rejected") message.error("โหลดราคาจากแค็ตตาล็อกลูกค้าไม่สำเร็จ กรุณาตรวจราคาก่อนบันทึก");
+    setCatalogError(catalogResult.status === "rejected");
+    if (catalogResult.status === "rejected") message.error("โหลดราคาจากแคตตาล็อกไม่สำเร็จ กรุณาลองใหม่ก่อนบันทึก");
+    else if (reprice) {
+      setListDetail((rows) => applyCatalogPrices(rows, catalog));
+      catalogNeedsReprice.current = false;
+    }
     if (itemsResult.status === "fulfilled") {
       const prices = new Map(catalog.map((i) => [String(i.stcode), i]));
       setAiItemOptions((itemsResult.value?.data?.data || []).map((i) => {
@@ -263,7 +281,13 @@ function MyManage() {
           price: price ? price.price : null, unit: price?.unit || i.unit, vat: price?.vat ?? i.vat };
       }));
     } else message.error("โหลดสินค้าในระบบไม่สำเร็จ กรุณาเปิดหน้านี้ใหม่");
+    catalogBusy.current = false;
     setAiItemsLoading(false);
+  };
+
+  const handleDeliveryDateChange = (date) => {
+    setFormDetail((state) => ({ ...state, deldate: date }));
+    getstcodeList(form.getFieldValue("cuscode") || "", date, true);
   };
 
   const handleSummaryPrice = () => {
@@ -280,8 +304,8 @@ function MyManage() {
     // const grand_total_price =
     //   total_price - form.getFieldValue("discount");
 
-    setFormDetail(() => ({
-      ...formDetail,
+    setFormDetail((state) => ({
+      ...state,
       total_price,
       // discount,
       // grand_total_price,
@@ -329,8 +353,9 @@ function MyManage() {
     // console.log(val.contact)
     setFormDetail((state) => ({ ...state, ...customer }));
     form.setFieldsValue({ ...fvalue, ...customer });
-    getstcodeList(val?.cuscode);
-    setListDetail([]); // clear item list when change customer
+    /* เปลี่ยนลูกค้า: เก็บรายการสินค้าไว้ แล้วดึงราคาจากแคตตาล็อกของลูกค้าใหม่
+       (สินค้าที่ไม่อยู่ในแคตตาล็อกลูกค้าใหม่ คงราคาเดิมไว้) */
+    getstcodeList(val?.cuscode, form.getFieldValue("deldate"), true);
   };
 
   // const handleItemsChoosed = (value) => {
@@ -341,11 +366,16 @@ function MyManage() {
 
   /* ใช้สินค้าที่เลือกกับรายการจาก PO -> เพิ่มเป็นแถวในตารางใบขาย */
   const handleUsePending = async (p, createdItem = null) => {
+    if (catalogBusy.current || catalogError) return message.warning("กรุณารอโหลดแคตตาล็อกให้สำเร็จก่อนเพิ่มสินค้า");
+    const request = itemRequest.current;
     const stcode = aiPick[p.pending_id];
     const opt = createdItem || aiItemOptions.find((o) => o.stcode === stcode || o.value === stcode);
     if (!opt) return message.warning("กรุณาเลือกสินค้า (ต้องเป็นสินค้าในแคตตาล็อกของลูกค้ารายนี้)");
     if (!(await confirmDuplicateItem(listDetail, { stcode: opt.stcode, stname: opt.stname || opt.label }))) return;
-    setListDetail((state) => {
+    if (request !== itemRequest.current) return message.warning("วันที่นัดส่งมีการเปลี่ยนแปลง กรุณาเลือกสินค้าอีกครั้ง");
+    let savedRows = null;
+    {
+      const state = listRef.current;
       const rows = state.filter((d) => d.stcode); // ตัดแถวว่างที่ยังไม่เลือกสินค้าทิ้ง
       const seq = Number(p.seq) || Infinity;
       const row = {
@@ -360,13 +390,48 @@ function MyManage() {
         packing_weight: opt.packing_weight,
         vat: Number(opt.vat || 0),
         discount: 0,
+        /* ชื่อ/รหัสใน PO ติดบรรทัดไว้ — ถ้าเปลี่ยนสินค้าในตารางภายหลัง ระบบจะจำค่าที่แก้ตอนยืนยัน */
+        ai_raw: p.raw_name || null,
+        ai_raw_code: p.raw_code || null,
+        ai_stcode: opt.stcode,
       };
       /* แทรกตามลำดับบรรทัดใน PO (ก่อนแถวแรกที่ลำดับ PO มากกว่า) */
       const at = rows.findIndex((d) => d._poSeq != null && d._poSeq > seq);
-      return at < 0 ? [...rows, row] : [...rows.slice(0, at), row, ...rows.slice(at)];
-    });
+      savedRows = at < 0 ? [...rows, row] : [...rows.slice(0, at), row, ...rows.slice(at)];
+    }
+    listRef.current = savedRows;
+    setListDetail(savedRows);
     setAiPending((s) => s.filter((x) => x.pending_id !== p.pending_id));
-    setAiDone((s) => [...s, { pending_id: p.pending_id, stcode: opt.stcode }]);
+    /* บันทึกลงฐานข้อมูลทันที (กันรีเฟรชหน้าแล้วรายการที่จับคู่หาย) */
+    if (isDraft && config?.action !== "create" && savedRows) {
+      autoSavePending(savedRows, p.pending_id, opt.stcode);
+    } else {
+      setAiDone((s) => [...s, { pending_id: p.pending_id, stcode: opt.stcode }]);
+    }
+  };
+
+  /* บันทึกใบขาย (รอยืนยัน) + ปิดรายการรอจับคู่ ต่อคิวทีละครั้ง กันกดรัวแล้วบันทึกชนกัน */
+  const autoSaveChain = useRef(Promise.resolve());
+  const autoSavePending = (rows, pendingId, stcode) => {
+    autoSaveChain.current = autoSaveChain.current.then(async () => {
+      try {
+        const header = {
+          ...formDetail,
+          sodate: dayjs(form.getFieldValue("sodate")).format("YYYY-MM-DD"),
+          deldate: dayjs(form.getFieldValue("deldate")).format("YYYY-MM-DD"),
+          customer_po: form.getFieldValue("customer_po"),
+          del_room: form.getFieldValue("del_room"),
+          remark: form.getFieldValue("remark"),
+        };
+        await soservice.update({ header, detail: rows }, { ignoreLoading: true });
+        await aiSoService.resolvePending(pendingId, stcode);
+        message.success({ content: "บันทึกรายการที่จับคู่แล้ว", key: "ai-autosave", duration: 1.5 });
+      } catch (err) {
+        /* บันทึกไม่สำเร็จ: เก็บไว้บันทึกตอนกด Save ตามเดิม */
+        setAiDone((s) => [...s, { pending_id: pendingId, stcode }]);
+        message.warning({ content: (err?.response?.data?.message || "บันทึกอัตโนมัติไม่สำเร็จ") + " — กรุณากด Save", key: "ai-autosave" });
+      }
+    });
   };
 
 
@@ -408,11 +473,20 @@ function MyManage() {
   };
 
   const handleConfirm = (confirmDraft = false) => {
+    if (catalogBusy.current || catalogError) {
+      message.warning("กรุณารอโหลดแคตตาล็อกให้สำเร็จก่อนบันทึก");
+      return;
+    }
     let errormessage = "";
+    const catalogRequest = itemRequest.current;
 
     form
       .validateFields()
       .then((v) => {
+        if (catalogBusy.current || catalogRequest !== itemRequest.current) {
+          message.warning("วันที่นัดส่งมีการเปลี่ยนแปลง กรุณารอโหลดราคาแล้วบันทึกอีกครั้ง");
+          return;
+        }
         if (listDetail.length < 1 && !(isDraft && !confirmDraft && aiPending.length > 0))
           throw (errormessage = "กรุณาเพิ่มรายการสินค้า");
 
@@ -436,12 +510,37 @@ function MyManage() {
         console.log(parm);
         const actions =
           config?.action !== "create" ? soservice.update : soservice.create;
-        actions(parm)
+        /* ใบที่ปริ้นหน้าถุงแล้ว: ถ้าการแก้จะล้าง barcode บางรายการ server ตอบ 409 -> ถามยืนยันแล้วส่งใหม่ */
+        const send = (p) => actions(p).catch((err) => {
+          const d = err?.response?.data;
+          if (err?.response?.status !== 409 || d?.code !== "LABELS_WILL_CLEAR") throw err;
+          return new Promise((resolve, reject) => Modal.confirm({
+            width: 560,
+            title: "รายการนี้ปริ้นหน้าถุงแล้ว",
+            content: (
+              <>
+                <div>รายการที่แก้/ลบ จะถูกล้าง barcode และต้องปริ้นหน้าถุงใหม่:</div>
+                {(d?.data?.clear || []).map((c, i) => (
+                  <div key={i}>• {c.stcode} {c.stname} {c.qty != null ? `(${c.qty} ${c.unit})` : ""} — {c.bags} ถุง</div>
+                ))}
+                <div style={{ color: "#cf1322", marginTop: 8 }}>สติ๊กเกอร์เดิมของรายการเหล่านี้จะสแกนไม่ได้ · รายการที่ไม่ได้แก้ยังใช้ถุงเดิมได้</div>
+              </>
+            ),
+            okText: "ยืนยัน บันทึก", okType: "danger", cancelText: "ยกเลิก",
+            onOk: () => actions({ ...p, confirm_clear_labels: true }).then(resolve, reject),
+            onCancel: () => reject({ cancelled: true }),
+          }));
+        });
+        send(parm)
           .then(async (r) => {
             const savedDocument = r?.data?.data?.document_code || r?.data?.data?.catalog_code;
             if (isDraft) {
               await flushAiDone();
-              if (confirmDraft) await aiSoService.confirm(header.socode);
+              if (confirmDraft) {
+                const cf = await aiSoService.confirm(header.socode);
+                const learned = cf?.data?.data?.learned || 0;
+                if (learned > 0) message.info(`ระบบจำสินค้าที่แก้ไว้ ${learned} รายการ — PO ครั้งหน้าจะจับคู่ให้เอง`, 5);
+              }
             }
             if (config?.action === "create") {
               if (rememberCreateSodate) {
@@ -461,6 +560,7 @@ function MyManage() {
             });
           })
           .catch((err) => {
+            if (err?.cancelled) return;
             message.error(err?.response?.data?.message || "Request SaleOrder fail.");
             console.warn(err);
           });
@@ -541,10 +641,13 @@ function MyManage() {
   };
 
   const handleEditCell = (row) => {
+    if (catalogBusy.current) return;
+    const request = itemRequest.current;
     /* เลือกสินค้าในแถวนี้ใหม่ และสินค้านี้มีอยู่แล้วในบรรทัดอื่น -> เตือนก่อน */
     const prev = listDetail.find((item) => item._rid === row._rid);
     if (row?.stcode && prev && row.stcode !== prev.stcode) {
       confirmDuplicateItem(listDetail, row, (r) => r._rid === row._rid).then((ok) => {
+        if (request !== itemRequest.current) return;
         if (ok) applyEditCell(row);
         else setListDetail((s) => [...s]); // คืนค่าเดิมในช่อง
       });
@@ -564,6 +667,7 @@ function MyManage() {
       newData.splice(ind, 1, {
         ...item,
         ...row,
+        _catalogPriceMissing: row.catalog_code ? false : item._catalogPriceMissing,
       });
 
       handleSummaryPrice();
@@ -652,6 +756,7 @@ function MyManage() {
               label="วันที่นัดส่งสินค้า"
               name="deldate"
               className="!m-0"
+              rules={[{ required: true, message: "กรุณาเลือกวันที่นัดส่งสินค้า" }]}
             >
               <DatePicker
                 size="large"
@@ -659,6 +764,8 @@ function MyManage() {
                 className="input-40"
                 style={{ width: "100%" }}
                 format={dateFormat}
+                allowClear={false}
+                onChange={handleDeliveryDateChange}
               />
             </Form.Item>
             {config?.action === "create" && (
@@ -737,6 +844,7 @@ function MyManage() {
           components={componentsEditableWithDrag}
           rowClassName={() => "editable-row"}
           bordered
+          loading={aiItemsLoading}
           dataSource={listDetail}
           columns={prodcolumns}
           pagination={false}
@@ -1039,6 +1147,17 @@ function MyManage() {
                     Product
                   </Divider>
                   <Card style={{ backgroundColor: "#f0f0f0" }}>
+                    <Typography.Text type="secondary" className="block mb-2">
+                      รายการและราคาแคตตาล็อกอิงวันที่นัดส่งสินค้า — เปลี่ยนวันที่แล้วราคาสินค้าในรายการจะปรับตาม
+                    </Typography.Text>
+                    {catalogError && <Alert type="error" showIcon className="!mb-3"
+                      message="โหลดแคตตาล็อกไม่สำเร็จ กรุณาลองใหม่ก่อนบันทึก"
+                      action={<Button onClick={() => getstcodeList(form.getFieldValue("cuscode") || "", form.getFieldValue("deldate"), catalogNeedsReprice.current)}>ลองใหม่</Button>} />}
+                    {!aiItemsLoading && !catalogError && formDetail.cuscode && stcodeOption.length === 0 &&
+                      <Alert type="warning" showIcon className="!mb-3" message="ไม่พบรายการในแคตตาล็อกที่เปิดใช้งานของลูกค้าในวันที่นัดส่งนี้" />}
+                    {listDetail.some((row) => row._catalogPriceMissing) && <Alert type="warning" showIcon className="!mb-3"
+                      message="บางรายการไม่มีราคาในแคตตาล็อกวันนัดส่ง หรือหน่วยไม่ตรงกัน ระบบคงราคาเดิมไว้ กรุณาตรวจสอบก่อนบันทึก"
+                      description={listDetail.filter((row) => row._catalogPriceMissing).map((row) => `${row.stcode} ${row.stname || ""}`).join(", ")} />}
                     {SectionProduct}
                   </Card>
                 </Col>

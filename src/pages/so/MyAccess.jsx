@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+import { TagSalesOrderStatus } from "../../components/badge-and-tag";
 import React, {useState, useEffect, useRef} from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -84,16 +85,16 @@ const MyAccess = () => {
                         allowClear
                         style={{ width: '100%', height: 40 }}
                         options={[
-                            { value: 'รอยืนยันใบขายสินค้า',               label: 'รอยืนยันใบขายสินค้า (สร้างจาก PO ด้วย AI)' },
-                            { value: 'รอจัดเตรียมสินค้า',      label: 'รอจัดเตรียมสินค้า' },
-                            { value: 'รอออกใบส่งของ',           label: 'รอออกใบส่งของ' },
-                            { value: 'รอออกใบวางบิล',           label: 'รอออกใบวางบิล' },
-                            { value: 'รอออกใบเสร็จรับเงิน',     label: 'รอออกใบเสร็จรับเงิน' },
-                            { value: 'รอชำระเงิน',              label: 'รอชำระเงิน' },
-                            { value: 'ชำระเงินยังไม่ครบ',       label: 'ชำระเงินยังไม่ครบ' },
-                            { value: 'ชำระครบแล้ว',             label: 'ชำระครบแล้ว' },
-                            { value: 'คืนสินค้า',               label: 'คืนสินค้า' },
-                            { value: 'ยกเลิก',                  label: 'ยกเลิก' },
+                            { value: 'รอยืนยันใบขายสินค้า', label: <><TagSalesOrderStatus result='รอยืนยันใบขายสินค้า' /> <span style={{ color: "#888", fontSize: 12 }}>(สร้างจาก PO ด้วย AI)</span></> },
+                            { value: 'รอจัดเตรียมสินค้า', label: <><TagSalesOrderStatus result='รอจัดเตรียมสินค้า' /></> },
+                            { value: 'รอออกใบส่งของ', label: <><TagSalesOrderStatus result='รอออกใบส่งของ' /></> },
+                            { value: 'รอออกใบวางบิล', label: <><TagSalesOrderStatus result='รอออกใบวางบิล' /></> },
+                            { value: 'รอออกใบเสร็จรับเงิน', label: <><TagSalesOrderStatus result='รอออกใบเสร็จรับเงิน' /></> },
+                            { value: 'รอชำระเงิน', label: <><TagSalesOrderStatus result='รอชำระเงิน' /></> },
+                            { value: 'ชำระเงินยังไม่ครบ', label: <><TagSalesOrderStatus result='ชำระเงินยังไม่ครบ' /></> },
+                            { value: 'ชำระครบแล้ว', label: <><TagSalesOrderStatus result='ชำระครบแล้ว' /></> },
+                            { value: 'คืนสินค้า', label: <><TagSalesOrderStatus result='คืนสินค้า' /></> },
+                            { value: 'ยกเลิก', label: <><TagSalesOrderStatus result='ยกเลิก' /></> },
                         ]}
                     />
                 </Form.Item>

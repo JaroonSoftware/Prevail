@@ -44,17 +44,27 @@ const CatalogAccess = () => {
   const CollapseCatalogSearch = (
     <>
       <Row gutter={[8, 8]}>
-        {/* <Col xs={24} sm={8} md={8} lg={8} xl={8}>
+        {/* <Col xs={24} sm={12} md={12} lg={6} xl={6}>
           <Form.Item label="รหัสแคตตาล๊อก" name="catalog_code">
             <Input placeholder="ใส่รหัส แคตตาล๊อก" />
           </Form.Item>
         </Col> */}
-        <Col xs={24} sm={8} md={8} lg={8} xl={8}>
+        <Col xs={24} sm={12} md={12} lg={6} xl={6}>
           <Form.Item label="ชื่อแคตตาล๊อก" name="catalog_name">
             <Input placeholder="ใส่ชื่อ แคตตาล๊อก" />
           </Form.Item>
         </Col>
-        <Col xs={24} sm={8} md={8} lg={8} xl={8}>
+        <Col xs={24} sm={12} md={12} lg={6} xl={6}>
+          <Form.Item label="รหัสลูกค้า" name="cuscode">
+            <Input placeholder="ใส่รหัสลูกค้า" />
+          </Form.Item>
+        </Col>
+        <Col xs={24} sm={12} md={12} lg={6} xl={6}>
+          <Form.Item label="ชื่อลูกค้า" name="cusname">
+            <Input placeholder="ใส่ชื่อลูกค้า" />
+          </Form.Item>
+        </Col>
+        <Col xs={24} sm={12} md={12} lg={6} xl={6}>
           <Form.Item label="สถานะการใช้งาน" name="active_status">
             <Select
                 size="large"

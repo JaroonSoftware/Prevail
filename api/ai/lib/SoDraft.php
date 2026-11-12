@@ -33,6 +33,44 @@ final class SoDraft
         return 'CUS:' . $cuscode;
     }
 
+    /** มีคอลัมน์เก็บข้อความจาก PO ใน sodetail หรือยัง (sql/2026-11-12_sodetail_ai_source.sql) */
+    public static function hasSourceCols(PDO $conn): bool
+    {
+        static $has = null;
+        if ($has === null) $has = (bool)$conn->query("SHOW COLUMNS FROM sodetail LIKE 'ai_raw_code'")->fetch();
+        return $has;
+    }
+
+    /** hash ของรหัสสินค้าลูกค้า (แยกจาก hash ของชื่อด้วย prefix) */
+    public static function codeHash(string $codeNorm): string
+    {
+        return sha1('#code:' . $codeNorm);
+    }
+
+    /**
+     * จำว่า ชื่อ (และรหัสสินค้าของลูกค้า) ใน PO ของลูกค้ารายนี้ = สินค้า $stcode ของเรา
+     * ครั้งหน้า AI จับคู่ให้เองด้วยคะแนน 100%
+     */
+    public static function rememberItem(PDO $conn, string $cuscode, ?string $rawName, ?string $rawCode, string $stcode, $user): void
+    {
+        if ($cuscode === '' || $stcode === '') return;
+        $ins = $conn->prepare("
+            INSERT INTO ai_item_alias (supcode, raw_text, raw_norm, raw_hash, stcode, created_by)
+            VALUES (:s, :t, :n, :h, :c, :u)
+            ON DUPLICATE KEY UPDATE stcode = VALUES(stcode), raw_text = VALUES(raw_text), hit_count = hit_count + 1");
+        $key = self::aliasKey($cuscode);
+        $norm = AiText::norm($rawName);
+        if ($norm !== '') {
+            $ins->execute(array('s' => $key, 't' => mb_substr((string)$rawName, 0, 160, 'UTF-8'), 'n' => mb_substr($norm, 0, 160, 'UTF-8'),
+                'h' => sha1($norm), 'c' => $stcode, 'u' => $user));
+        }
+        $cn = AiText::norm($rawCode);
+        if ($cn !== '') {
+            $ins->execute(array('s' => $key, 't' => mb_substr('รหัสลูกค้า: ' . $rawCode, 0, 160, 'UTF-8'), 'n' => mb_substr('#code:' . $cn, 0, 160, 'UTF-8'),
+                'h' => self::codeHash($cn), 'c' => $stcode, 'u' => $user));
+        }
+    }
+
     /* ------------------------------------------------------------- ลูกค้า */
 
     public static function customerByCode(PDO $conn, string $cuscode): ?array
@@ -185,9 +223,10 @@ final class SoDraft
             INSERT INTO somaster (socode, cuscode, sodate, customer_po, del_room, total_price, deldate, remark,
                                   active_status, doc_status, created_date, created_by)
             VALUES (:socode, :cuscode, :sodate, :po, :room, :total, :deldate, :remark, 'Y', :status, :now, :user)");
+        $srcCols = self::hasSourceCols($conn);
         $insLine = $conn->prepare("
-            INSERT INTO sodetail (socode, stcode, qty, price, unit, vat, total_cost" . ($packingReady ? ", packing_weight" : "") . ")
-            VALUES (:socode, :stcode, :qty, :price, :unit, :vat, 0" . ($packingReady ? ", :packing_weight" : "") . ")");
+            INSERT INTO sodetail (socode, stcode, qty, price, unit, vat, total_cost" . ($packingReady ? ", packing_weight" : "") . ($srcCols ? ", ai_raw, ai_raw_code, ai_stcode" : "") . ")
+            VALUES (:socode, :stcode, :qty, :price, :unit, :vat, 0" . ($packingReady ? ", :packing_weight" : "") . ($srcCols ? ", :ai_raw, :ai_raw_code, :ai_stcode" : "") . ")");
         $insPend = $conn->prepare("
             INSERT INTO ai_so_pending (socode, import_id, seq, raw_name, raw_code, qty, unit, price, suggest_stcode, confidence)
             VALUES (:socode, :imp, :seq, :name, :code, :qty, :unit, :price, :sug, :conf)");
@@ -207,7 +246,8 @@ final class SoDraft
 
             $insHead->execute(array(
                 'socode' => $socode, 'cuscode' => $cuscode,
-                'sodate' => $o['order_date'] ?: date('Y-m-d'),
+                /* วันที่ใบขาย = วันที่นัดส่งจาก PO (ถ้าไม่มี ใช้วันที่สั่ง แล้วค่อยใช้วันนี้) */
+                'sodate' => $o['delivery_date'] ?: ($o['order_date'] ?: date('Y-m-d')),
                 'po' => $o['po_no'], 'room' => $o['location'],
                 'total' => round($total, 2),
                 'deldate' => $o['delivery_date'] ?: ($o['order_date'] ?: date('Y-m-d')),
@@ -229,7 +269,10 @@ final class SoDraft
                     $insLine->execute(array_merge(array(
                         'socode' => $socode, 'stcode' => $d['stcode'], 'qty' => $d['qty'],
                         'price' => $d['price'], 'unit' => $d['unit'], 'vat' => $d['vat'],
-                    ), $packingReady ? array('packing_weight' => packing_resolve($conn, $cuscode, $d)) : array()));
+                    ), $packingReady ? array('packing_weight' => packing_resolve($conn, $cuscode, $d)) : array(),
+                       $srcCols ? array('ai_raw' => mb_substr((string)$o['lines'][$li]['name'], 0, 500, 'UTF-8'),
+                                        'ai_raw_code' => $o['lines'][$li]['code'] !== null ? mb_substr((string)$o['lines'][$li]['code'], 0, 100, 'UTF-8') : null,
+                                        'ai_stcode' => $d['stcode']) : array()));
                     $nAuto++;
                 } else {
                     $l = $o['lines'][$li];

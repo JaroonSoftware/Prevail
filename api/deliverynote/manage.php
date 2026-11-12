@@ -66,6 +66,11 @@ try {
             unset($availableSources[$sourceCode]);
         }
 
+        /* ใบขายที่ยังไม่ยืนยัน ห้ามออกใบส่งของ */
+        $stmtSo = $conn->prepare("SELECT doc_status FROM somaster WHERE socode = :s");
+        $stmtSo->execute(['s' => $socodeSrc]);
+        if ($stmtSo->fetchColumn() === 'รอยืนยันใบขายสินค้า') throw new PDOException("ใบขายสินค้า $socodeSrc ยังไม่ได้ยืนยัน กรุณายืนยันใบขายก่อนออกใบส่งของ");
+
         // กันออกใบส่งของซ้ำจากใบขายสินค้าเดิม (เช็คทั้งเลข DN ใหม่ และเลข IV แบบเดิมที่ยังไม่ได้แปลง)
         $stmtChk = $conn->prepare("SELECT doc_status FROM dnmaster where dncode IN (:dncode, :socode) AND COALESCE(doc_status, '') <> 'ยกเลิก' FOR UPDATE");
         $stmtChk->execute(['dncode' => $dncode, 'socode' => $socodeSrc]);

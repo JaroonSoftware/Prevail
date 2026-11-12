@@ -171,6 +171,19 @@
 }
 
 @media print {
+  /* กรอบหน้าเดิมสูงเท่าพื้นที่พิมพ์พอดี (min-height) + เส้นขอบ/ระยะ ทำให้ล้นไปหน้าใหม่เป็นหน้าว่าง
+     ให้สูงตามเนื้อหาแทน และห้ามตัดกรอบกลางหน้า */
+  .sales-by-product-print-screen .dry-report-paper {
+    min-height: 0 !important;
+    height: auto !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .sales-by-product-print-screen .dry-report-paper-content {
+    min-height: 0 !important;
+  }
+
   .sales-by-product-print-page {
     --sales-grid-template: minmax(0, 1.1fr) minmax(0, 1.25fr) minmax(0, 1.1fr) minmax(0, 0.9fr) minmax(0, 0.7fr) minmax(0, 1fr) minmax(0, 0.55fr) minmax(0, 1.15fr) minmax(0, 1.25fr);
   }

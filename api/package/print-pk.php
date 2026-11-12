@@ -29,9 +29,12 @@ try {
 
             $count = 0;
             $packingReady = packing_schema_ready($conn);
-            $lock = $conn->prepare('SELECT socode FROM somaster WHERE socode=:s FOR UPDATE');
+            $lock = $conn->prepare('SELECT doc_status FROM somaster WHERE socode=:s FOR UPDATE');
             $lock->execute(['s'=>$val['socode']]);
-            if (!$lock->fetchColumn()) throw new Exception('Sales order not found.');
+            $soStatus = $lock->fetchColumn();
+            if ($soStatus === false) throw new Exception('Sales order not found.');
+            /* ใบขายที่ยังไม่ยืนยัน ห้ามปริ้นหน้าถุง */
+            if ($soStatus === 'รอยืนยันใบขายสินค้า') throw new Exception("ใบขายสินค้า {$val['socode']} ยังไม่ได้ยืนยัน กรุณายืนยันใบขายก่อนปริ้นหน้าถุง");
             $lineCode = (isset($val['code']) && is_numeric($val['code'])) ? (int)$val['code'] : 0;
             $lineMode = false;
             if ($hasLineCol && $lineCode > 0) {

@@ -14,7 +14,7 @@ try {
         ,c.zipcode,c.contact,c.tel,c.fax,a.total_price,a.vat,a.grand_total_price,a.remark ";
         $sql .= " FROM `somaster` as a ";
         $sql .= " inner join `customer` as c on (a.cuscode)=(c.cuscode)";
-        $sql .= " where a.socode = :code";
+        $sql .= " where a.socode = :code and a.doc_status <> 'รอยืนยันใบขายสินค้า' ";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute(['code' => $code])) {
@@ -23,6 +23,7 @@ try {
             throw new PDOException("Geting data error => $error");
         }
         $header = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$header) throw new PDOException("ไม่พบใบขายสินค้า หรือใบขายยังไม่ได้ยืนยัน (ต้องยืนยันใบขายก่อนพิมพ์ใบจัดสินค้า)");
 
         $sql = "SELECT a.code,a.socode,a.stcode, a.price, a.unit, a.qty,i.stname,t.typename ";
         $sql .= " FROM `sodetail` as a inner join `items` as i on (a.stcode=i.stcode)  ";

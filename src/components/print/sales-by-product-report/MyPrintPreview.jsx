@@ -15,8 +15,9 @@ import { loadMyAccessSearchCookie } from "../../../utils/myaccessSearchCookie";
 
 const rpservice = ReportService();
 const PAGE_COOKIE_KEY = "sales-by-product-report";
-const PAGE_HEIGHT_ESTIMATE = 530;
-const PAGE_HEADER_ESTIMATE = 75;
+/* A4 แนวนอน พื้นที่ในกรอบจริงประมาณ 630px — หัวรายงาน (บริษัท + กล่องชื่อรายงาน) สูงราว 250px */
+const PAGE_HEIGHT_ESTIMATE = 600;
+const PAGE_HEADER_ESTIMATE = 250;
 const PAGE_COLUMN_HEADER_ESTIMATE = 36;
 const PAGE_TOTAL_ESTIMATE = 44;
 const GROUP_MARGIN_ESTIMATE = 14;

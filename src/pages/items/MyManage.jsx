@@ -13,7 +13,7 @@ import {
   Modal,
 } from "antd";
 import { Row, Col, Space } from "antd";
-import { SaveFilled, PlusOutlined, MinusCircleOutlined } from "@ant-design/icons";
+import { SaveFilled } from "@ant-design/icons";
 import { ButtonBack } from "../../components/button";
 import { Items } from "./model";
 import { useLocation, useNavigate } from "react-router";
@@ -22,7 +22,12 @@ import { delay } from "../../utils/util";
 // import OptionService from '../../service/Options.service';
 import Itemservice from "../../service/Items.Service";
 import OptionService from "../../service/Options.service";
+
 import "./item-form.css";
+
+/* จำนวนช่องชื่อย่อยที่ให้กรอก */
+const ALIAS_SLOTS = 5;
+
 
 const itemservice = Itemservice();
 const opService = OptionService();
@@ -196,31 +201,23 @@ const ItemsManage = ({ embedded = false, initialItem = {}, onSaved, onCancel, on
             เช่น ภาษาอื่น ชื่อย่อ ชื่อยี่ห้อ หรือสะกดต่างไป */}
         <Col xs={24} className="item-form-full-width">
           <Form.Item label="ชื่อย่อย (ชื่อเรียกอื่นของสินค้า)">
-            <Form.List name="aliases">
-              {(fields, { add, remove }) => (
-                <Flex vertical gap={8}>
-                  {fields.map((field, i) => (
-                    <Flex key={field.key} gap={8} align="center">
-                      <Form.Item {...field} noStyle>
-                        <Input placeholder={`ชื่อย่อย ${i + 1}`} />
-                      </Form.Item>
-                      <Button
-                        icon={<MinusCircleOutlined />}
-                        onClick={() => remove(field.name)}
-                      />
-                    </Flex>
-                  ))}
-                  <Button
-                    type="dashed"
-                    icon={<PlusOutlined />}
-                    onClick={() => add("")}
-                    style={{ width: "fit-content" }}
-                  >
-                    เพิ่มชื่อย่อย
-                  </Button>
-                </Flex>
-              )}
-            </Form.List>
+            {/* ช่องกรอกชื่อย่อย 5 ช่อง (เว้นว่างได้) — ถ้าสินค้าเดิมมีเกิน 5 ชื่อ จะแสดงครบทุกชื่อ */}
+            <Form.Item noStyle shouldUpdate={(a, b) => (a.aliases || []).length !== (b.aliases || []).length}>
+              {({ getFieldValue }) => {
+                const n = Math.max(ALIAS_SLOTS, (getFieldValue("aliases") || []).length);
+                return (
+                  <Row gutter={[8, 8]}>
+                    {Array.from({ length: n }, (_, i) => (
+                      <Col key={i} xs={24} sm={12} lg={8} xl={Math.floor(24 / ALIAS_SLOTS) || 4} xxl={Math.floor(24 / ALIAS_SLOTS) || 4}>
+                        <Form.Item name={["aliases", i]} noStyle>
+                          <Input placeholder={`ชื่อย่อย ${i + 1}`} maxLength={255} />
+                        </Form.Item>
+                      </Col>
+                    ))}
+                  </Row>
+                );
+              }}
+            </Form.Item>
           </Form.Item>
         </Col>
         <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={4}>

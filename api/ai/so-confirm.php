@@ -44,6 +44,22 @@ try {
     $st->execute(array('s' => $socode));
     if ((int)$st->fetchColumn() > 0) throw new AiUserException('ไม่สามารถยืนยันใบขายได้ ต้องจับคู่รหัสสินค้าที่ใช้งานครบทุกรายการ');
 
+    /* จำทุกบรรทัดที่มาจาก PO: ชื่อ/รหัสสินค้าลูกค้าใน PO = สินค้าที่ใช้จริงตอนยืนยัน
+       (รวมบรรทัดที่ผู้ใช้เปลี่ยนสินค้าในตาราง — ครั้งหน้า AI จับคู่ถูกเอง) */
+    $learned = 0;
+    if (SoDraft::hasSourceCols($conn)) {
+        $cus = $conn->prepare("SELECT cuscode FROM somaster WHERE socode = :s");
+        $cus->execute(array('s' => $socode));
+        $cuscode = (string)$cus->fetchColumn();
+        $src = $conn->prepare("SELECT stcode, ai_raw, ai_raw_code, ai_stcode FROM sodetail
+                               WHERE socode = :s AND (COALESCE(ai_raw, '') <> '' OR COALESCE(ai_raw_code, '') <> '')");
+        $src->execute(array('s' => $socode));
+        foreach ($src->fetchAll(PDO::FETCH_ASSOC) as $r) {
+            SoDraft::rememberItem($conn, $cuscode, $r['ai_raw'], $r['ai_raw_code'], (string)$r['stcode'], ai_user_id());
+            if ((string)$r['stcode'] !== (string)$r['ai_stcode']) $learned++;
+        }
+    }
+
     $st = $conn->prepare("UPDATE somaster SET doc_status = :ready, updated_date = :d, updated_by = :u
                           WHERE socode = :s AND doc_status = :draft");
     $st->execute(array(
@@ -52,7 +68,7 @@ try {
     ));
     if ($st->rowCount() !== 1) throw new AiUserException('สถานะใบขายเปลี่ยนแล้ว กรุณาโหลดใหม่');
     $conn->commit();
-    ai_json(array('status' => 1, 'data' => array('socode' => $socode, 'doc_status' => SoDraft::STATUS_READY)));
+    ai_json(array('status' => 1, 'data' => array('socode' => $socode, 'doc_status' => SoDraft::STATUS_READY, 'learned' => $learned)));
 } catch (AiUserException $e) {
     if ($conn && $conn->inTransaction()) $conn->rollBack();
     ai_fail($e->getMessage(), 400);

@@ -30,6 +30,7 @@ function TagSalesOrderStatus({result}) {
       elementToRender = <Tag icon={<ClockCircleFilled />} color="#6495ED"> รอชำระเงิน </Tag>;
       break;
     case 'ชำระยังไม่ครบ':
+    case 'ชำระเงินยังไม่ครบ':
       elementToRender = <Tag icon={<ClockCircleFilled />} color="#454545"> ชำระยังไม่ครบ </Tag>;
       break;
     case 'รอออกใบวางบิล':
@@ -43,6 +44,9 @@ function TagSalesOrderStatus({result}) {
       break;
     case 'ปริ้นใบปะยังไม่ครบ':
       elementToRender = <Tag icon={<ClockCircleFilled />} color="#40E0D0"> ปริ้นใบปะยังไม่ครบ </Tag>;
+      break;
+    case 'คืนสินค้า':
+      elementToRender = <Tag icon={<ClockCircleFilled />} color="#c0392b"> คืนสินค้า </Tag>;
       break;
    
     default:

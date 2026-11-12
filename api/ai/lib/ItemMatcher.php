@@ -198,6 +198,8 @@ final class ItemMatcher
             $rawP = AiText::profile($rawNorm);
             $codeNorm = AiText::norm($line['code'] ?? '');
             $aliasSt = $rawNorm !== '' ? ($aliases[sha1($rawNorm)] ?? null) : null;
+            /* รหัสสินค้าของลูกค้า/ผู้ขาย ที่เคยจับคู่ไว้ (แม่นกว่าชื่อ) */
+            if ($codeNorm !== '' && isset($aliases[sha1('#code:' . $codeNorm)])) $aliasSt = $aliases[sha1('#code:' . $codeNorm)];
             $codeIdx = $codeNorm !== '' ? ($byCode[$codeNorm] ?? null) : null;
 
             $scored = array();

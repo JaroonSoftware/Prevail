@@ -11,20 +11,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     extract($_POST, EXTR_OVERWRITE, "_");
 
 
-    $catalog_code = !empty($catalog_code) ? "and a.catalog_code like '%$catalog_code%'" : "";
-    $catalog_name = !empty($catalog_name) ? "and a.catalog_name like '%$catalog_name%'" : "";
-    $active_status = !empty($active_status) && $active_status !== "ALL" ? "and a.active_status like '%$active_status%'" : "";
+    /* ใช้ parameter แทนการต่อสตริง (กัน SQL injection) */
+    $where = array();
+    $params = array();
+    if (!empty($catalog_code)) { $where[] = "a.catalog_code LIKE :cc"; $params['cc'] = '%' . $catalog_code . '%'; }
+    if (!empty($catalog_name)) { $where[] = "a.catalog_name LIKE :cn"; $params['cn'] = '%' . $catalog_name . '%'; }
+    if (!empty($active_status) && $active_status !== "ALL") { $where[] = "a.active_status = :st"; $params['st'] = $active_status; }
+    /* ค้นหาจากลูกค้าที่ผูกกับแคตตาล็อก */
+    if (!empty($cuscode)) {
+        $where[] = "EXISTS (SELECT 1 FROM catalog_link l WHERE l.catalog_code = a.catalog_code AND l.cuscode LIKE :cus)";
+        $params['cus'] = '%' . $cuscode . '%';
+    }
+    if (!empty($cusname)) {
+        $where[] = "EXISTS (SELECT 1 FROM catalog_link l JOIN customer c ON c.cuscode = l.cuscode
+                            WHERE l.catalog_code = a.catalog_code AND CONCAT(COALESCE(c.prename,''), ' ', COALESCE(c.cusname,'')) LIKE :cusn)";
+        $params['cusn'] = '%' . $cusname . '%';
+    }
 
     try {
-        $sql = "SELECT a.catalog_code, a.catalog_name,a.active_status FROM `catalog_master` as a
-        where 1 = 1
-        $catalog_code
-        $catalog_name
-        $active_status
+        $sql = "SELECT a.catalog_code, a.catalog_name, a.active_status,
+                       (SELECT GROUP_CONCAT(l.cuscode ORDER BY l.cuscode SEPARATOR ', ') FROM catalog_link l WHERE l.catalog_code = a.catalog_code) AS customers
+        FROM `catalog_master` as a
+        where 1 = 1 " . ($where ? " AND " . implode(" AND ", $where) : "") . "
         order by a.catalog_code desc";
 
         $stmt = $conn->prepare($sql);
-        $stmt->execute();
+        $stmt->execute($params);
         $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         http_response_code(200);

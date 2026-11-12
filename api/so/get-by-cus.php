@@ -11,7 +11,7 @@ try { if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $code = $_GET["code"];
         $sql = "SELECT a.socode,a.sodate,a.doc_status ";
         $sql .= " FROM `somaster` as a ";
-        $sql .= " where a.cuscode = :code";
+        $sql .= " where a.cuscode = :code and a.doc_status <> 'รอยืนยันใบขายสินค้า' ";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute(['code' => $code])) {

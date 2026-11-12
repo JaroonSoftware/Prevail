@@ -45,6 +45,17 @@ export const accessColumn = ({
     ),
   },
   {
+    title: "ลูกค้า",
+    dataIndex: "customers",
+    key: "customers",
+    ellipsis: { showTitle: false },
+    render: (v) => (
+      <Tooltip placement="topLeft" title={v}>
+        {v || "-"}
+      </Tooltip>
+    ),
+  },
+  {
     title: "สถานะ",
     dataIndex: "active_status",
     key: "active_status",
