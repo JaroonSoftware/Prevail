@@ -46,6 +46,15 @@ function ReportTable({ children }) {
 export default function HistoryDocument({ data, filters, generatedAt, onReady }) {
   const rows=useMemo(()=>buildHistoryRows(data),[data]);
   const measureRef=useRef(null);
+  /* Preview เต็มจอ: ขยายหน้ากระดาษ (zoom) ให้กว้างเท่าพื้นที่ — ขนาดจริง/การแบ่งหน้า/ตอนพิมพ์ไม่เปลี่ยน */
+  const pagesRef=useRef(null);
+  const [zoom,setZoom]=useState(1);
+  useLayoutEffect(()=>{
+    const el=pagesRef.current; if(!el||typeof ResizeObserver==='undefined') return;
+    const PAPER_PX=297*96/25.4; // กว้างกระดาษ A4 แนวนอน (px) ไม่วัดจาก DOM เพราะค่าที่วัดได้รวม zoom แล้ว
+    const fit=()=>setZoom(Math.max(1,Math.round(((el.clientWidth-32)/PAPER_PX)*100)/100));
+    fit(); const ro=new ResizeObserver(fit); ro.observe(el); return ()=>ro.disconnect();
+  });
   const [layout,setLayout]=useState({pages:[],error:null});
   const repeatRows=useMemo(()=>rows.filter(r=>['customer','product'].includes(r.type)).map(r=>({...r,continued:true})),[rows]);
   useLayoutEffect(()=>{
@@ -76,7 +85,7 @@ export default function HistoryDocument({ data, filters, generatedAt, onReady })
       <ReportTable>{repeatRows.map(item=><ReportRow key={item.id} item={item} measure data-history-repeat="true" />)}</ReportTable>
     </div>
     {layout.error ? <Alert type="error" showIcon message={layout.error} /> : !layout.pages.length ? <div className="history-loading"><Spin /> กำลังจัดหน้ารายงาน…</div> :
-      <div className="history-pages">{layout.pages.map((page,index)=><article className="history-paper" key={index} aria-label={'รายงานหน้า '+(index+1)}>
+      <div className="history-pages" ref={pagesRef} style={{'--history-zoom':zoom}}>{layout.pages.map((page,index)=><article className="history-paper" key={index} aria-label={'รายงานหน้า '+(index+1)}>
         <Header filters={filters} generatedAt={generatedAt} number={index+1} total={layout.pages.length} />
         <ReportTable>{page.map((item,i)=><ReportRow key={item.id ?? 'repeat-'+i} item={item} />)}</ReportTable>
         <footer className="history-footer">{REPORT_TITLE} · หน้า {index+1} / {layout.pages.length}</footer>

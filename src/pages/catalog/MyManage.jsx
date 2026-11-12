@@ -382,19 +382,30 @@ function CatalogManage() {
     handleRemove,
   });
   const operationColumnIndex = prodcolumns.findIndex(column => column.key === "operation");
-  prodcolumns.splice(operationColumnIndex < 0 ? prodcolumns.length : operationColumnIndex, 0, { title: "ขนาดบรรจุต่อถุงแยกตามลูกค้า", key: "customer_packing", width: 320,
-    render: (_, row) => <Space direction="vertical">
-      <Typography.Text type="secondary">ค่ากลาง: {row.packing_weight || "-"} {row.unit}/ถุง · เว้นว่างเพื่อใช้ค่ากลาง</Typography.Text>
-      {listCustomer.map(c => <Space key={c.cuscode}>
-        <InputNumber aria-label={`ขนาดถุง ${c.cuscode} ${row.stcode}`} min={0.01} max={9999999.99} precision={2}
-          value={row.customer_packing?.[c.cuscode] ?? null}
-          onChange={v => handleEditCell({...row, customer_packing: {...row.customer_packing, [c.cuscode]: v},
-            customer_packing_units: {...row.customer_packing_units, [c.cuscode]: row.unit}})} />
-        <span>{row.unit}/ถุง</span>
-        {row.customer_packing_units?.[c.cuscode] && row.customer_packing_units[c.cuscode] !== row.unit &&
-          <Typography.Text type="danger">หน่วยเดิม {row.customer_packing_units[c.cuscode]} กรุณาตั้งค่าใหม่</Typography.Text>}
-      </Space>)}
-    </Space>
+  /* น้ำหนักต่อถุง: กรอกช่องเดียว ใช้กับลูกค้าทุกรายในแคตตาล็อกนี้ (เก็บเป็นค่ารายลูกค้าเหมือนเดิม) */
+  prodcolumns.splice(operationColumnIndex < 0 ? prodcolumns.length : operationColumnIndex, 0, { title: "น้ำหนักต่อถุง", key: "customer_packing", width: 220,
+    render: (_, row) => {
+      const vals = listCustomer.map(c => row.customer_packing?.[c.cuscode] ?? null);
+      const filled = vals.filter(v => v != null);
+      const mixed = new Set(filled.map(Number)).size > 1;
+      const oldUnit = listCustomer.some(c => row.customer_packing_units?.[c.cuscode] && row.customer_packing_units[c.cuscode] !== row.unit);
+      const setAll = v => handleEditCell({...row,
+        customer_packing: {...row.customer_packing, ...Object.fromEntries(listCustomer.map(c => [c.cuscode, v]))},
+        customer_packing_units: {...row.customer_packing_units, ...Object.fromEntries(listCustomer.map(c => [c.cuscode, row.unit]))}});
+      return <Space direction="vertical" size={2}>
+        <Space>
+          <InputNumber aria-label={`น้ำหนักต่อถุง ${row.stcode}`} min={0.01} max={9999999.99} precision={2}
+            disabled={!listCustomer.length} placeholder={row.packing_weight ? String(row.packing_weight) : ""}
+            value={filled.length ? filled[0] : null} onChange={setAll} />
+          <span>{row.unit}/ถุง</span>
+        </Space>
+        {!listCustomer.length
+          ? <Typography.Text type="secondary">เลือกลูกค้าก่อน</Typography.Text>
+          : <Typography.Text type="secondary">เว้นว่าง = ใช้ค่าจากข้อมูลสินค้า ({row.packing_weight || "-"} {row.unit})</Typography.Text>}
+        {mixed && <Typography.Text type="warning">ลูกค้าแต่ละรายตั้งไว้ไม่เท่ากัน กรอกใหม่เพื่อให้เท่ากันทุกราย</Typography.Text>}
+        {oldUnit && <Typography.Text type="danger">หน่วยเดิมไม่ตรงกับ {row.unit} กรุณาตั้งค่าใหม่</Typography.Text>}
+      </Space>;
+    }
   });
   const TitleTableCustomer = (
     <Flex className="width-100" align="center">

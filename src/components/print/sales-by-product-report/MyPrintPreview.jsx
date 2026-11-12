@@ -93,6 +93,8 @@ function SalesByProductPrintPreview() {
 
   const handlePrint = useReactToPrint({
     documentTitle: "Sales By Product Report",
+    /* บังคับ A4 แนวนอน (ไม่ขึ้นกับค่าในหน้าต่างพิมพ์) */
+    pageStyle: "@page { size: A4 landscape; margin: 10mm; } @media print { html, body { margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }",
     onBeforePrint: () => {},
     onAfterPrint: () => {},
     removeAfterPrint: true,

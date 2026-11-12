@@ -1,7 +1,10 @@
 <?php
 /* ============================================================================
    ล้าง barcode หน้าถุงที่สร้างไว้แล้ว เพื่อปริ้นใหม่ (สร้างถุงใหม่ตามจำนวน/น้ำหนักล่าสุด)
-   POST { detail: [{ socode, stcode, code }] }   (code = sodetail.code บรรทัดในใบขาย)
+   POST { detail: [{ socode, stcode, code }], repack?: true }   (code = sodetail.code บรรทัดในใบขาย)
+   preview = true (คู่กับ repack) : คืนผลว่าจะเปลี่ยนอะไร/ล้างกี่ถุง โดยไม่บันทึก
+   repack = true : "คำนวณน้ำหนักต่อถุงใหม่" — ล้าง barcode (ถ้ามี) แล้วดึงน้ำหนักต่อถุงล่าสุด
+                   (แคตตาล็อกลูกค้า > ข้อมูลสินค้า) ใส่ใน sodetail.packing_weight แทนค่าเดิม
 
    - ถุงที่สแกนส่งของไปแล้ว (มีเลขใบส่งของ หรือสถานะ "ขายแล้ว") ล้างไม่ได้ ทั้งรายการจะถูกยกเลิก
    - ล้างแล้ว: ลบแถวใน package_barcode, บรรทัดใบขายกลับเป็น "ยังไม่ปริ้นหน้าถุง",
@@ -11,6 +14,7 @@
    ============================================================================ */
 ob_start();
 include_once(dirname(__FILE__, 2) . "/onload.php");
+require_once dirname(__DIR__) . "/common/packing.php";
 
 $db = new DbConnect;
 $conn = $db->connect();
@@ -27,6 +31,11 @@ try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('request method fail.');
     $body = json_decode(file_get_contents('php://input') ?: '[]', true) ?: array();
     $detail = $body['detail'] ?? array();
+    $repack = !empty($body['repack']);
+    $preview = $repack && !empty($body['preview']); // ดูผลก่อน: คำนวณทุกอย่างแล้ว rollback ไม่บันทึก
+    if ($repack && !packing_schema_ready($conn)) throw new Exception('ยังไม่มีคอลัมน์น้ำหนักต่อถุง กรุณารัน sql/2026-11-08_customer_catalog_packing.sql ก่อน');
+    $cusSt = $conn->prepare("SELECT cuscode FROM somaster WHERE socode = :s");
+    $updated = array();
     if (!is_array($detail) || !$detail) throw new Exception('กรุณาเลือกรายการที่จะล้าง barcode');
 
     $cols = array();
@@ -78,6 +87,25 @@ try {
             $conn->prepare("UPDATE sodetail SET packing_status = 'ยังไม่ปริ้นหน้าถุง' WHERE socode = :s AND stcode = :i")
                 ->execute(array('s' => $so, 'i' => $st));
         }
+
+        /* ดึงน้ำหนักต่อถุงล่าสุดใส่บรรทัดใบขาย */
+        if ($repack) {
+            $cusSt->execute(array('s' => $so));
+            $cus = (string)$cusSt->fetchColumn();
+            $ls = $conn->prepare("SELECT code, stcode, unit, packing_weight FROM sodetail WHERE socode = :s AND "
+                . ($line > 0 ? "code = :k" : "stcode = :k"));
+            $ls->execute(array('s' => $so, 'k' => $line > 0 ? $line : $st));
+            $upw = $conn->prepare("UPDATE sodetail SET packing_weight = :p WHERE socode = :s AND code = :c");
+            foreach ($ls->fetchAll(PDO::FETCH_ASSOC) as $r) {
+                try {
+                    $pw = packing_resolve($conn, $cus, array('stcode' => $r['stcode'], 'unit' => $r['unit']));
+                } catch (Throwable $e) {
+                    throw new Exception("คำนวณน้ำหนักต่อถุงของ {$r['stcode']} ไม่ได้: หน่วยในใบขาย ({$r['unit']}) ไม่ตรงกับหน่วยสินค้า/แคตตาล็อก กรุณาแก้หน่วยก่อน — ไม่มีรายการใดถูกแก้");
+                }
+                $upw->execute(array('p' => $pw, 's' => $so, 'c' => $r['code']));
+                $updated[] = array('code' => (int)$r['code'], 'stcode' => $r['stcode'], 'old' => $r['packing_weight'], 'new' => $pw);
+            }
+        }
     }
 
     if ($blocked) {
@@ -93,8 +121,9 @@ try {
         $upd->execute(array('p' => (int)$cnt->fetchColumn() > 0 ? 'ปริ้นใบปะยังไม่ครบ' : 'รอปริ้นใบปะหน้าถุง', 'u' => $token->userid ?? null, 's' => $so));
     }
 
-    $conn->commit();
-    clear_json(array('status' => 1, 'data' => array('removed' => $removed)));
+    if ($preview) $conn->rollBack();
+    else $conn->commit();
+    clear_json(array('status' => 1, 'data' => array('preview' => $preview, 'removed' => $removed, 'updated' => $updated)));
 } catch (Throwable $e) {
     if ($conn && $conn->inTransaction()) $conn->rollBack();
     clear_json(array('status' => 0, 'message' => $e->getMessage()), 400);

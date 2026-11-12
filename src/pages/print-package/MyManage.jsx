@@ -212,6 +212,82 @@ function MyManage() {
     });
   };
 
+  /* คำนวณน้ำหนักต่อถุงใหม่ — ใช้ได้ทั้งแถวที่ปริ้นแล้วและยังไม่ปริ้น
+     ถ้ามี barcode อยู่จะล้างให้ด้วย แล้วดึงน้ำหนักต่อถุงล่าสุด (แคตตาล็อกลูกค้า > ข้อมูลสินค้า) */
+  const handleRepack = async () => {
+    const rows = selectedData;
+    if (!rows.length) return message.warning("เลือกรายการก่อน");
+    const detail = rows.map((r) => ({ socode: r.socode, stcode: r.stcode, code: r.code }));
+
+    /* 1) ขอผลล่วงหน้าจาก server (ยังไม่บันทึกอะไร) */
+    let pv;
+    try {
+      const r = await pkservice.clearpackage({ repack: true, preview: true, detail });
+      pv = r?.data?.data || {};
+    } catch (err) {
+      return message.error(err?.response?.data?.message || "คำนวณน้ำหนักต่อถุงใหม่ไม่สำเร็จ");
+    }
+    const up = pv.updated || [];
+    const nameOf = (u) => rows.find((r) => String(r.code) === String(u.code))?.stname
+      || rows.find((r) => r.stcode === u.stcode)?.stname || "";
+    const same = (u) => Number(u.old ?? 0) === Number(u.new ?? 0);
+    const changed = up.filter((u) => !same(u));
+    const removed = Number(pv.removed || 0);
+
+    if (!changed.length && !removed) return message.info("น้ำหนักต่อถุงเป็นค่าล่าสุดอยู่แล้ว ไม่มีอะไรต้องแก้");
+
+    /* 2) แสดงสิ่งที่จะแก้ แล้วให้ยืนยันอีกครั้ง */
+    const cell = { padding: "4px 8px", borderBottom: "1px solid #f0f0f0" };
+    Modal.confirm({
+      width: 640,
+      title: "ยืนยันคำนวณน้ำหนักต่อถุงใหม่",
+      content: (
+        <>
+          <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 8 }}>
+            <thead><tr style={{ background: "#fafafa" }}>
+              <th style={{ ...cell, textAlign: "left" }}>สินค้า</th>
+              <th style={{ ...cell, textAlign: "right" }}>เดิม</th>
+              <th style={cell}></th>
+              <th style={{ ...cell, textAlign: "right" }}>ใหม่</th>
+            </tr></thead>
+            <tbody>
+              {up.map((u, i) => (
+                <tr key={i} style={same(u) ? { color: "#999" } : { fontWeight: 600 }}>
+                  <td style={cell}>{u.stcode} {nameOf(u)}</td>
+                  <td style={{ ...cell, textAlign: "right" }}>{u.old ?? "-"}</td>
+                  <td style={{ ...cell, textAlign: "center" }}>→</td>
+                  <td style={{ ...cell, textAlign: "right", color: same(u) ? undefined : "#389e0d" }}>
+                    {u.new ?? "-"} {same(u) ? "(เท่าเดิม)" : ""}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div style={{ marginTop: 10 }}>เปลี่ยน {changed.length} รายการ (หน่วยต่อถุงตามหน่วยสินค้า)</div>
+          {removed > 0 && (
+            <div style={{ color: "#cf1322", marginTop: 6 }}>
+              จะล้าง barcode {removed} ถุง — สติ๊กเกอร์เดิมใช้สแกนไม่ได้ ต้องปริ้นและเปลี่ยนสติ๊กเกอร์ใหม่
+            </div>
+          )}
+        </>
+      ),
+      okText: "ยืนยัน แก้ไข", cancelText: "ยกเลิก",
+      onOk: () =>
+        pkservice
+          .clearpackage({ repack: true, detail })
+          .then(async () => {
+            message.success(`อัปเดตน้ำหนักต่อถุงแล้ว ${changed.length} รายการ`);
+            const res = await pkservice.get(config?.code);
+            const d = res?.data?.data?.detail || [];
+            setListDetail(d.map((item, i) => ({ ...item, _rowKey: `${item?.socode ?? ""}::${item?.stcode ?? ""}::${i}` })));
+            setSelectedData([]);
+          })
+          .catch((err) => {
+            message.error(err?.response?.data?.message || "คำนวณน้ำหนักต่อถุงใหม่ไม่สำเร็จ");
+          }),
+    });
+  };
+
   const handlePrint = () => {
     /* รวมบรรทัดที่รหัสสินค้าซ้ำกันให้เหลือรายการเดียวก่อนส่ง
 
@@ -429,6 +505,13 @@ function MyManage() {
             onClick={handleClearBarcode}
           >
             ล้าง barcode
+          </Button>
+          <Button
+            className="bn-center justify-center"
+            disabled={selectedData.length < 1}
+            onClick={handleRepack}
+          >
+            คำนวณน้ำหนักต่อถุงใหม่
           </Button>
           <Button
             icon={<PrinterOutlined style={{ fontSize: "1.2rem" }} />}

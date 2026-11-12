@@ -238,8 +238,11 @@ export const productColumn = ({handleRemove,handleSelectChange}) => [
     title: "รหัสสินค้า",
     dataIndex: "stcode",
     key: "stcode",
-    width: 120, 
+    width: 160, 
     align: "left",
+    /* แก้รหัสสินค้าได้ (เช่น AI จับคู่ผิด) — เลือกแล้วชื่อ/ราคา/หน่วย/ขนาดต่อถุง เปลี่ยนตาม */
+    editable: true,
+    type: 'select-stcode',
   },
   {
     title: "ชื่อสินค้า",
