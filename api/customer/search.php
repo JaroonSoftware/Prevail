@@ -34,7 +34,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $delzipcode = !empty($delzipcode) ? "and a.delzipcode like '%$delzipcode%'" : "";
     try {
         $sql = "SELECT a.cuscode,a.prename, a.cusname,a.tel,a.contact,a.fax,a.taxnumber,a.email,a.idno,a.road,a.subdistrict,a.district,a.province,a.zipcode,a.delidno,
-        a.road,a.delsubdistrict,a.deldistrict,a.delprovince,a.delzipcode, a.active_status FROM `customer` as a    
+        a.road,a.delsubdistrict,a.deldistrict,a.delprovince,a.delzipcode, a.active_status,
+        a.credit_day, a.county_code, ct.county_name
+        FROM `customer` as a
+        LEFT JOIN `county` as ct ON ct.county_code = a.county_code
         where 1 = 1    
         $cuscode
         $cusname

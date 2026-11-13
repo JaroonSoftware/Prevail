@@ -4,7 +4,7 @@ import nav from '../../nav';
 export const PINNED_MAX = 10;
 export const PINNED_EVENT = 'prevail:pinned-changed';
 const storageKey = userId => 'prevail-menu-pinned:' + userId;
-const validPaths = new Set(nav.filter(m => !m.type && m.to && !['/menu', '/dashboard'].includes(m.to)).map(m => m.to));
+const validPaths = new Set(nav.filter(m => !m.type && m.to && !m.hidden && !['/menu', '/dashboard'].includes(m.to)).map(m => m.to));
 
 export function readPinned(userId) {
   if (!userId) return [];

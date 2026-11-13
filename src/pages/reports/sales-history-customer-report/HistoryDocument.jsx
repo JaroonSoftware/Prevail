@@ -1,12 +1,13 @@
 import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Spin } from 'antd';
 import DocumentLink from '../../../components/DocumentLink';
-import { COMPANY_NAME, REPORT_TITLE, money, quantity, thaiDate, buildHistoryRows, paginateHistory } from './reportHelpers';
+import { COMPANY_NAME, REPORT_TITLES, money, quantity, thaiDate, buildHistoryRows, paginateHistory } from './reportHelpers';
 import './history.css';
 
 const columns = [9,15,10,4,8,4,5,9,6,10,9,11];
-const headings = ['สินค้า / วันที่','เลขที่เอกสาร','จำนวน','คืน','ราคาต่อหน่วย','VAT','ส่วนลด','รวมเงิน','ส่วนลดรวม','ยอดขายสุทธิ','อ้างอิง','หมายเหตุ'];
-function Header({ filters, generatedAt, number, total }) {
+const headingsFor = mode => [mode === 'product' ? 'ลูกค้า / วันที่' : 'สินค้า / วันที่','เลขที่เอกสาร','จำนวน','คืน','ราคาต่อหน่วย','VAT','ส่วนลด','รวมเงิน','ส่วนลดรวม','ยอดขายสุทธิ','อ้างอิง','หมายเหตุ'];
+function Header({ filters, generatedAt, number, total, mode }) {
+  const REPORT_TITLE = REPORT_TITLES[mode] || REPORT_TITLES.customer;
   return <header className="history-page-header">
     <div className="history-headline"><strong>{COMPANY_NAME}</strong><span>หน้า : {number} / {total}</span></div>
     <h2>{REPORT_TITLE}</h2>
@@ -38,13 +39,15 @@ function ReportRow({ item, measure = false, ...props }) {
     <td colSpan={4}></td><td className="history-number">{money(t.subtotal)}</td><td></td><td className="history-number">{money(t.net)}</td><td colSpan={2}></td>
   </tr>;
 }
-function ReportTable({ children }) {
+function ReportTable({ children, mode }) {
+  const headings = headingsFor(mode);
   return <table className="history-table"><colgroup>{columns.map((width,i)=><col key={i} style={{width:width+'%'}} />)}</colgroup>
     <thead><tr>{headings.map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{children}</tbody></table>;
 }
 
-export default function HistoryDocument({ data, filters, generatedAt, onReady }) {
-  const rows=useMemo(()=>buildHistoryRows(data),[data]);
+export default function HistoryDocument({ data, filters, generatedAt, onReady, mode = 'customer' }) {
+  const REPORT_TITLE = REPORT_TITLES[mode] || REPORT_TITLES.customer;
+  const rows=useMemo(()=>buildHistoryRows(data, mode),[data, mode]);
   const measureRef=useRef(null);
   /* Preview เต็มจอ: ขยายหน้ากระดาษ (zoom) ให้กว้างเท่าพื้นที่ — ขนาดจริง/การแบ่งหน้า/ตอนพิมพ์ไม่เปลี่ยน */
   const pagesRef=useRef(null);
@@ -78,16 +81,16 @@ export default function HistoryDocument({ data, filters, generatedAt, onReady })
     return ()=>{active=false;};
   },[rows,repeatRows,filters,generatedAt,onReady]);
   return <>
-    <style media="print">{'@page { size: Letter portrait; margin: 0; }'}</style>
+    <style media="print">{'@page { size: A4 landscape; margin: 0; }'}</style>
     <div className="history-measure history-paper" ref={measureRef} aria-hidden="true">
-      <Header filters={filters} generatedAt={generatedAt} number={1} total={999} />
-      <ReportTable>{rows.map(item=><ReportRow key={item.id} item={item} measure data-history-row="true" />)}</ReportTable>
-      <ReportTable>{repeatRows.map(item=><ReportRow key={item.id} item={item} measure data-history-repeat="true" />)}</ReportTable>
+      <Header mode={mode} filters={filters} generatedAt={generatedAt} number={1} total={999} />
+      <ReportTable mode={mode}>{rows.map(item=><ReportRow key={item.id} item={item} measure data-history-row="true" />)}</ReportTable>
+      <ReportTable mode={mode}>{repeatRows.map(item=><ReportRow key={item.id} item={item} measure data-history-repeat="true" />)}</ReportTable>
     </div>
     {layout.error ? <Alert type="error" showIcon message={layout.error} /> : !layout.pages.length ? <div className="history-loading"><Spin /> กำลังจัดหน้ารายงาน…</div> :
       <div className="history-pages" ref={pagesRef} style={{'--history-zoom':zoom}}>{layout.pages.map((page,index)=><article className="history-paper" key={index} aria-label={'รายงานหน้า '+(index+1)}>
-        <Header filters={filters} generatedAt={generatedAt} number={index+1} total={layout.pages.length} />
-        <ReportTable>{page.map((item,i)=><ReportRow key={item.id ?? 'repeat-'+i} item={item} />)}</ReportTable>
+        <Header mode={mode} filters={filters} generatedAt={generatedAt} number={index+1} total={layout.pages.length} />
+        <ReportTable mode={mode}>{page.map((item,i)=><ReportRow key={item.id ?? 'repeat-'+i} item={item} />)}</ReportTable>
         <footer className="history-footer">{REPORT_TITLE} · หน้า {index+1} / {layout.pages.length}</footer>
       </article>)}</div>}
   </>;

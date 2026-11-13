@@ -110,6 +110,8 @@ try {
 
                 // Use only the sales-order snapshot; reprints use existing barcode rows.
                 $pack_f = (float)($val['packing_weight'] ?? 0);
+                /* ไม่มีน้ำหนักต่อถุง (เช่น ขายต่างหน่วยจากหน่วยสินค้า) -> 1 ถุงตามจำนวนทั้งหมด */
+                if ($pack_f <= 0) $pack_f = $qty_f > 0 ? $qty_f : 1;
                 [$full_bag, $remain] = packing_split($qty_f, $pack_f);
 
                 for ($count = 0; $count < $full_bag; $count++) {

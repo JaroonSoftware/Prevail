@@ -42,6 +42,7 @@ let _nav = [
     icon: <FileTextFilled className="nav-ico" />, 
     to: "/quotation",    
     hiddenRoles: ["จัดซื้อ","พนักงานส่งสินค้า"],
+    hidden: true, // ซ่อนเมนูใบเสนอราคา (หน้ายังเปิดผ่านลิงก์เอกสารได้) — ลบบรรทัดนี้เพื่อแสดงกลับ
   },  
   {
     title: "ใบขายสินค้า",

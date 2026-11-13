@@ -9,7 +9,7 @@ export const accessColumn = ({ handleEdit, handleDelete, handleView }) => [
     title: "รหัสลูกค้า",
     key: "cuscode",
     dataIndex: "cuscode",
-    width: "10%",
+    width: "8%",
     align: "left",
     sorter: (a, b) => (a?.cuscode || "").localeCompare(b?.cuscode || ""),
   },
@@ -17,31 +17,48 @@ export const accessColumn = ({ handleEdit, handleDelete, handleView }) => [
     title: "ชื่อลูกค้า",
     dataIndex: "cusname",
     key: "cusname",
-    width: "30%",
+    width: "26%",
     sorter: (a, b) => (a?.cusname || "").localeCompare(b?.cusname || ""),
   },
   {
     title: "จังหวัด",
     dataIndex: "province",
     key: "province",
-    width: "20%",
+    width: "12%",
     sorter: (a, b) => (a?.province || "").localeCompare(b?.province || ""),
   },
   {
     title: "สาขา",
     dataIndex: "branch",
     key: "branch",
-    width: "20%",
+    width: "12%",
     sorter: (a, b) => (a?.branch || "").localeCompare(b?.branch || ""),
+  },
+  {
+    title: "เขตขนส่ง",
+    dataIndex: "county_name",
+    key: "county_name",
+    width: "12%",
+    sorter: (a, b) => (a?.county_name || "").localeCompare(b?.county_name || ""),
+    render: (v) => v || "-",
+  },
+  {
+    title: "เครดิต (วัน)",
+    dataIndex: "credit_day",
+    key: "credit_day",
+    width: "8%",
+    align: "right",
+    sorter: (a, b) => Number(a?.credit_day || 0) - Number(b?.credit_day || 0),
+    render: (v) => (v === null || v === undefined || v === "" ? "-" : Number(v).toLocaleString()),
   },
   {
     title: "สถานะ",
     dataIndex: "active_status",
     key: "active_status",
-    width: "20%",
+    width: "12%",
     sorter: (a, b) => (a?.active_status || "").localeCompare(b?.active_status || ""),
     render: (data) => (
-      <div>
+      <div style={{ whiteSpace: "nowrap" }}>
         {data === "Y" ? (
           <Badge status="success" text="เปิดการใช้งาน" />
         ) : (

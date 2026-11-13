@@ -10,7 +10,6 @@ import { SpecialDryReport } from "../pages/reports/special-dry-report";
 import { BestSellingProductReport } from "../pages/reports/best-selling-product-report";
 import { ProfitByProductCustomerReport } from "../pages/reports/profit-by-product-customer-report";
 import { SalesByCustomerReport } from "../pages/reports/sales-by-customer-report";
-import { SalesByProductReport } from "../pages/reports/sales-by-product-report";
 import { OutstandingByCustomerReport } from "../pages/reports/outstanding-by-customer-report";
 
 import SalesHistoryCustomerReport from "../pages/reports/sales-history-customer-report/MyReport";
@@ -18,7 +17,7 @@ import SalesHistoryCustomerReport from "../pages/reports/sales-history-customer-
 export const ReportRouter = (
   <>
     <Route path="/sales-history-customer-report" element={<SalesHistoryCustomerReport />} />
-    <Route path="/so-by-product-report" element={<SalesByProductReport />} />
+    <Route path="/so-by-product-report" element={<SalesHistoryCustomerReport mode="product" />} />
     <Route path="/profit-by-product-customer-report" element={<ProfitByProductCustomerReport />} />
     <Route path="/best-selling-product-report" element={<BestSellingProductReport />} />
     <Route path="/so-by-customer-report" element={<SalesByCustomerReport />} />

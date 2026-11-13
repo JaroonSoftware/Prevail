@@ -271,7 +271,7 @@ const Sidenav = () => {
       ) : null}
       {/* <Sidebar style={{minWidth:"100%", width:"100%"}} > */}
         <Menu theme="light" mode="inline">
-        {filterNav(nav).filter(allowNavItem).map((item, idx) => (
+        {filterNav(nav).filter((item) => !item?.hidden).filter(allowNavItem).map((item, idx) => (
           ( !item?.type ? (
               <MenuItem
                 icon={item?.icon}

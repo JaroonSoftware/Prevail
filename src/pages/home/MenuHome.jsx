@@ -1,12 +1,13 @@
 import React from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { Empty, Result, Tooltip, message } from 'antd';
-import { FileTextOutlined, ShoppingCartOutlined, AppstoreOutlined, WalletOutlined, CarOutlined, SettingOutlined, PushpinFilled, PushpinOutlined } from '@ant-design/icons';
+import { LuTruck } from 'react-icons/lu';
+import { FileTextOutlined, ShoppingCartOutlined, AppstoreOutlined, WalletOutlined, SettingOutlined, PushpinFilled, PushpinOutlined } from '@ant-design/icons';
 import { Authenticate } from '../../service/Authenticate.service';
 import { MODULES, moduleForPath, visibleMenus, readRecent, recordRecent, moduleMenuSections } from './menu-data';
 import { PINNED_MAX, togglePinned, usePinnedMenus } from './pinned-menu';
 
-const icons = { SO: FileTextOutlined, PU: ShoppingCartOutlined, IC: AppstoreOutlined, AC: WalletOutlined, SH: CarOutlined, AD: SettingOutlined };
+const icons = { SO: FileTextOutlined, PU: ShoppingCartOutlined, IC: AppstoreOutlined, AC: WalletOutlined, SH: LuTruck, AD: SettingOutlined };
 
 export default function MenuHome() {
   const { moduleCode } = useParams();

@@ -6,18 +6,20 @@ import { requestService as api } from '../../../service/Request.service';
 import OptionService from '../../../service/Options.service';
 import { Authenticate } from '../../../service/Authenticate.service';
 import HistoryDocument from './HistoryDocument';
-import { REPORT_TITLE } from './reportHelpers';
+import { REPORT_TITLES } from './reportHelpers';
 import './history.css';
 
 const optionsService=OptionService();
 const defaultFilters=()=>({date_from:dayjs().startOf('month').format('YYYY-MM-DD'),date_to:dayjs().format('YYYY-MM-DD'),customer_from:'',customer_to:'',item_from:'',item_to:''});
-export default function SalesHistoryCustomerReport(){
+/* mode='customer' รายงานประวัติการขาย แยกตามลูกค้า | mode='product' รายงานขาย แยกตามสินค้า (ฟอร์มเดียวกัน) */
+export default function SalesHistoryCustomerReport({ mode = 'customer' }){
+  const REPORT_TITLE = REPORT_TITLES[mode] || REPORT_TITLES.customer;
   const [form]=Form.useForm();
   const [customers,setCustomers]=useState([]),[loading,setLoading]=useState(false),[ready,setReady]=useState(false),[dirty,setDirty]=useState(false),[error,setError]=useState('');
   const [report,setReport]=useState(null);
   const sequence=useRef({value:0});
   const userId=Authenticate().getUserId();
-  const storageKey='prevail-sales-history-filters:'+userId;
+  const storageKey='prevail-sales-history-filters:'+mode+':'+userId;
   const load=async filters=>{
     const request=++sequence.current.value;
     setLoading(true);setReady(false);setError('');setDirty(false);setReport(null);
@@ -76,6 +78,6 @@ export default function SalesHistoryCustomerReport(){
     {dirty&&report&&<Alert className="history-status" type="info" message="ตัวกรองเปลี่ยนแล้ว กรุณากดแสดงรายงานอีกครั้งก่อนพิมพ์" />}
     {error&&<Alert className="history-status" showIcon type="error" message={error} />}
     {!report&&!loading&&!error&&<Empty description="เลือกเงื่อนไขแล้วกดแสดงรายงาน" />}
-    {report&&(report.data.length?<HistoryDocument key={report.generatedAt} data={report.data} filters={report.filters} generatedAt={report.generatedAt} onReady={setReady} />:<Empty description="ไม่พบรายการในช่วงที่เลือก" />)}
+    {report&&(report.data.length?<HistoryDocument mode={mode} key={report.generatedAt} data={report.data} filters={report.filters} generatedAt={report.generatedAt} onReady={setReady} />:<Empty description="ไม่พบรายการในช่วงที่เลือก" />)}
   </div>;
 }

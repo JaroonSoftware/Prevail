@@ -69,11 +69,11 @@ function packing_resolve(PDO $conn, string $customer, array $line, ?string $cata
         $st->execute(['s'=>$line['stcode']]); $row = $st->fetch(PDO::FETCH_ASSOC);
     } else $row = $rows[0];
     if (!$row) throw new Exception('Item not found.');
+    /* ขายต่างหน่วยจากหน่วยสินค้า (เช่น สินค้าเป็น PCS แต่ขายเป็น KG): ยอมให้บันทึก
+       แต่ไม่มีน้ำหนักต่อถุง -> ตอนปริ้นหน้าถุงจะออกเป็นถุงเดียวตามจำนวนทั้งหมด */
+    if (packing_unit_key($row['unit']) !== packing_unit_key($line['unit'])) return null;
     if (!empty($row['packing_unit_mismatch'])) {
         throw new Exception("สินค้า {$line['stcode']}: น้ำหนักต่อถุงในแคตตาล็อก ({$row['catalog_code']}) ตั้งไว้เป็นหน่วย {$row['packing_override_unit']} แต่สินค้าเป็นหน่วย {$row['unit']} — เปิดแคตตาล็อกแล้วกรอกน้ำหนักต่อถุงใหม่");
-    }
-    if (packing_unit_key($row['unit']) !== packing_unit_key($line['unit'])) {
-        throw new Exception("สินค้า {$line['stcode']}: หน่วยในใบขาย ({$line['unit']}) ไม่ตรงกับหน่วยสินค้า ({$row['unit']}) — แก้หน่วยในบรรทัดให้ตรงกับข้อมูลสินค้า");
     }
     return (float)($row['packing_weight'] ?? 0) > 0 ? packing_value($row['packing_weight']) : null;
 }

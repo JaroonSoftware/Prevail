@@ -21,32 +21,48 @@ function totals(rows) {
   return { units: [...units].map(([unit, qty]) => ({ unit, qty })), subtotal: subtotal / 100, net: net / 100 };
 }
 
-export function buildHistoryRows(raw = []) {
-  const customers = new Map();
+export const REPORT_TITLES = { customer: REPORT_TITLE, product: 'รายงานขาย แยกตามสินค้า' };
+
+/* mode = 'customer' : ลูกค้า > สินค้า > รายการ   (รายงานประวัติการขาย แยกตามลูกค้า)
+   mode = 'product'  : สินค้า > ลูกค้า > รายการ   (รายงานขาย แยกตามสินค้า)
+   หัวกลุ่มชั้นนอกใช้ type 'customer' ชั้นในใช้ 'product' (แค่ชื่อ type สำหรับจัดหน้า/สไตล์) */
+export function buildHistoryRows(raw = [], mode = 'customer') {
+  const byProduct = mode === 'product';
+  const custKey = row => String(row.cuscode || '');
+  const prodKey = row => JSON.stringify([row.stcode, row.unit || '-']);
+  const custText = g => g.name + ' / ' + g.code;
+  const prodText = g => (g.name || g.code) + (g.english ? ' (' + g.english + ')' : '') + ' / ' + g.code + (byProduct ? '  · หน่วย ' + g.unit : '');
+  const custGroup = row => ({ code: custKey(row), name: row.cusname || custKey(row), unit: '', rows: [], subs: new Map() });
+  const prodGroup = row => ({ code: row.stcode, name: row.stname, english: row.stnameEN, unit: row.unit || '-', rows: [], subs: new Map() });
+  const outer = { key: byProduct ? prodKey : custKey, make: byProduct ? prodGroup : custGroup, text: byProduct ? prodText : custText };
+  const inner = { key: byProduct ? custKey : prodKey, make: byProduct ? custGroup : prodGroup, text: byProduct ? custText : prodText };
+
+  const groups = new Map();
   raw.forEach((source, index) => {
     const row = { ...source, qty: numeric(source.qty), price: numeric(source.price),
       line_subtotal: numeric(source.line_subtotal ?? numeric(source.qty) * numeric(source.price)),
       line_net_total: numeric(source.line_net_total ?? numeric(source.qty) * numeric(source.price) * (1 + numeric(source.vat) / 100)), index };
-    const customerKey = String(row.cuscode || '');
-    if (!customers.has(customerKey)) customers.set(customerKey, { code: customerKey, name: row.cusname || customerKey, rows: [], products: new Map() });
-    const customer = customers.get(customerKey);
-    customer.rows.push(row);
-    const productKey = JSON.stringify([row.stcode, row.unit || '-']);
-    if (!customer.products.has(productKey)) customer.products.set(productKey, { code: row.stcode, name: row.stname, english: row.stnameEN, unit: row.unit || '-', rows: [] });
-    customer.products.get(productKey).rows.push(row);
+    const ok = outer.key(row);
+    if (!groups.has(ok)) groups.set(ok, outer.make(row));
+    const g = groups.get(ok);
+    g.rows.push(row);
+    const ik = inner.key(row);
+    if (!g.subs.has(ik)) g.subs.set(ik, inner.make(row));
+    g.subs.get(ik).rows.push(row);
   });
+  const byCode = (a, b) => String(a.code).localeCompare(String(b.code), 'th') || String(a.unit).localeCompare(String(b.unit));
   const output = [];
-  [...customers.values()].sort((a,b) => a.code.localeCompare(b.code, 'th', {numeric:false})).forEach(customer => {
-    const customerHeading = { type: 'customer', text: customer.name + ' / ' + customer.code };
+  [...groups.values()].sort(byCode).forEach(g => {
+    const customerHeading = { type: 'customer', text: outer.text(g) };
     output.push(customerHeading);
-    [...customer.products.values()].sort((a,b) => String(a.code).localeCompare(String(b.code), 'th') || a.unit.localeCompare(b.unit)).forEach(product => {
-      const productHeading = { type: 'product', text: (product.name || product.code) + (product.english ? ' (' + product.english + ')' : '') + ' / ' + product.code, customerHeading };
+    [...g.subs.values()].sort(byCode).forEach(sub => {
+      const productHeading = { type: 'product', text: inner.text(sub), customerHeading };
       output.push(productHeading);
-      product.rows.sort((a,b) => String(a.dndate).localeCompare(String(b.dndate)) || String(a.dncode).localeCompare(String(b.dncode)) || numeric(a.detail_code)-numeric(b.detail_code) || a.index-b.index);
-      product.rows.forEach(row => output.push({ type: 'detail', row, customerHeading, productHeading }));
-      output.push({ type: 'productTotal', label: 'รวมตามสินค้า', totals: totals(product.rows), customerHeading, productHeading });
+      sub.rows.sort((a,b) => String(a.dndate).localeCompare(String(b.dndate)) || String(a.dncode).localeCompare(String(b.dncode)) || numeric(a.detail_code)-numeric(b.detail_code) || a.index-b.index);
+      sub.rows.forEach(row => output.push({ type: 'detail', row, customerHeading, productHeading }));
+      output.push({ type: 'productTotal', label: byProduct ? 'รวมตามลูกค้า' : 'รวมตามสินค้า', totals: totals(sub.rows), customerHeading, productHeading });
     });
-    output.push({ type: 'customerTotal', label: 'รวม ' + customer.code, totals: totals(customer.rows), customerHeading });
+    output.push({ type: 'customerTotal', label: 'รวม ' + g.code, totals: totals(g.rows), customerHeading });
   });
   if (raw.length) {
     output.push({ type: 'grandTotal', label: 'รวมทั้งสิ้น', totals: totals(raw.map(r => ({ ...r,
