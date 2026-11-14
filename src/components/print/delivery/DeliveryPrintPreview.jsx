@@ -158,13 +158,16 @@ export default function DeliveryPrintPreview(props) {
       pushPage();
 
       let remainingRows = [...groupRows];
+      /* แบ่งหน้าให้เฉลี่ยเท่าๆ กัน (ไม่มีหน้าที่เหลือแถวเดียว)
+         - หน้าปกติใส่ได้ ROWS_PER_PAGE แถว, หน้าสุดท้ายต้องเว้นที่ยอดรวม/ช่องเซ็น ใส่ได้ ROWS_PER_PAGE-1
+         - หาจำนวนหน้าน้อยที่สุดก่อน แล้วกระจายแถวเท่าๆ กัน (หน้าแรกๆ ได้มากกว่าหรือเท่ากับหน้าหลัง)
+         เช่น 32 แถว: เดิม 16 / 1 / 15  ->  11 / 11 / 10 */
+      const lastCap = ROWS_PER_PAGE - 1;
+      let pagesLeft = groupRows.length <= lastCap ? 1 : 1 + Math.ceil((groupRows.length - lastCap) / ROWS_PER_PAGE);
       while (remainingRows.length > 0) {
-        const isSummaryPage = remainingRows.length <= ROWS_PER_PAGE - 1;
-        const chunkSize = isSummaryPage
-          ? remainingRows.length
-          : remainingRows.length === ROWS_PER_PAGE
-            ? 1
-            : ROWS_PER_PAGE;
+        const isSummaryPage = pagesLeft <= 1;
+        const chunkSize = isSummaryPage ? remainingRows.length : Math.ceil(remainingRows.length / pagesLeft);
+        pagesLeft -= 1;
         const chunk = remainingRows.slice(0, chunkSize);
         remainingRows = remainingRows.slice(chunkSize);
         const withRowNo = [];
