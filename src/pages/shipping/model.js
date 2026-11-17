@@ -1,3 +1,4 @@
+import { docCodeCompare } from "../../utils/docCode";
 import DocumentLink from "../../components/DocumentLink";
 import { Button, Space,Badge } from "antd";
 import "../../assets/styles/banks.css";
@@ -28,7 +29,7 @@ export const accessColumn = ({
     key: "dncode",
     dataIndex: "dncode",
     align: "left",
-    sorter: (a, b) => a.dncode.localeCompare(b.dncode),
+    sorter: (a, b) => docCodeCompare(a.dncode, b.dncode),
     width: 140,
   },
   {

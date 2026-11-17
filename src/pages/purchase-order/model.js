@@ -1,3 +1,4 @@
+import { docCodeCompare } from "../../utils/docCode";
 import DocumentLink from "../../components/DocumentLink";
 import { Button, Space } from "antd"; 
 import "../../assets/styles/banks.css"
@@ -30,7 +31,7 @@ export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}
     key: "pocode",
     dataIndex: "pocode",
     align: "left",
-    sorter: (a, b) => (a.pocode).localeCompare(b.pocode),
+    sorter: (a, b) => docCodeCompare(a.pocode, b.pocode),
     width:140,
   },
   {

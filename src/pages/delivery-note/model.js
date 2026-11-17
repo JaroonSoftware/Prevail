@@ -1,3 +1,4 @@
+import { docCodeCompare } from "../../utils/docCode";
 import DocumentLink from "../../components/DocumentLink";
 import { Button, Space } from "antd";
 import "../../assets/styles/banks.css";
@@ -39,7 +40,7 @@ export const accessColumn = ({
     key: "dncode",
     dataIndex: "dncode",
     align: "left",
-    sorter: (a, b) => a.dncode.localeCompare(b.dncode),
+    sorter: (a, b) => docCodeCompare(a.dncode, b.dncode),
     width: 120,
   },
   {
@@ -194,7 +195,7 @@ export const accessColumn = ({
   },
 ];
 
-export const productColumn = ({ handleRemove, handleSelectChange }) => [
+export const productColumn = ({ handleRemove, handleSelectChange, renderStcode }) => [
   {
     title: "ลำดับ",
     dataIndex: "ind",
@@ -214,8 +215,10 @@ export const productColumn = ({ handleRemove, handleSelectChange }) => [
     title: "รหัสสินค้า",
     dataIndex: "stcode",
     key: "stcode",
-    width: 120,
+    width: 200,
     align: "left",
+    /* หน้าแก้ไข: เลือกรหัสสินค้าใหม่ได้ (ใบขายต้นทางเปลี่ยนตาม) */
+    render: (v, rec) => (renderStcode ? renderStcode(v, rec) : v),
   },
   {
     title: "ชื่อสินค้า",
@@ -358,9 +361,9 @@ export const soViewColumns = [
 export const columnsParametersEditable = (
   handleEditCell,
   optionsItems,
-  { handleRemove }
+  { handleRemove, renderStcode }
 ) => {
-  const col = productColumn({ handleRemove });
+  const col = productColumn({ handleRemove, renderStcode });
   return col.map((col, ind) => {
     if (!col.editable) return col;
 

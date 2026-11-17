@@ -40,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
             $cuscode_filter
             $socode_filter
             $status_filter
-            order by s.dncode desc ";
+            order by CHAR_LENGTH(s.dncode) desc, s.dncode desc ";
             $stmt = $conn->prepare($sql); 
             $stmt->execute();
             $res = $stmt->fetchAll(PDO::FETCH_ASSOC); 

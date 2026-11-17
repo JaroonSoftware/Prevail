@@ -1,3 +1,4 @@
+import { docCodeCompare } from "../../utils/docCode";
 import DocumentLink from "../../components/DocumentLink";
 import { Button,Space,Badge,Tooltip } from "antd"; 
 
@@ -32,7 +33,7 @@ export const accessColumn = ({handleEdit, handleView, handlePrintsData, handleCr
     key: "socode",
     dataIndex: "socode",
     align: "left",
-    sorter: (a, b) => (a.socode).localeCompare(b.socode),
+    sorter: (a, b) => docCodeCompare(a.socode, b.socode),
     width:140,
   },
   {

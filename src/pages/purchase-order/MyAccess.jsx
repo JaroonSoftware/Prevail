@@ -44,7 +44,7 @@ const PurchaseOrderAccess = () => {
         <Row gutter={[8,8]}> 
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
                 <Form.Item label='รหัสใบสั่งซื้อ' name='pocode'>
-                    <Input placeholder='Enter PurchaseOrder Code.' />
+                    <Input placeholder='ใส่เลขที่ใบสั่งซื้อ' />
                 </Form.Item>                            
             </Col>
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
@@ -54,22 +54,22 @@ const PurchaseOrderAccess = () => {
             </Col> 
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
                 <Form.Item label='สร้างโดย' name='created_by'>
-                    <Input placeholder='Enter First Name or Last Name.' />
+                    <Input placeholder='ใส่ชื่อหรือนามสกุล' />
                 </Form.Item>
             </Col>
             {/* <Col xs={24} sm={8} md={8} lg={8} xl={8}>
                 <Form.Item label='ชื่อสินค้า' name='stname'>
-                    <Input placeholder='Enter Product Name.' />
+                    <Input placeholder='ใส่ชื่อสินค้า' />
                 </Form.Item>                            
             </Col> */}
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
                 <Form.Item label='รหัสผู้ขาย' name='supcode'>
-                    <Input placeholder='Enter Supplier Code.' />
+                    <Input placeholder='ใส่รหัสผู้ขาย' />
                 </Form.Item>                            
             </Col>
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
                 <Form.Item label='ชื่อผู้ขาย' name='supname'>
-                    <Input placeholder='Enter Supplier Name.' />
+                    <Input placeholder='ใส่ชื่อผู้ขาย' />
                 </Form.Item>                            
             </Col>
         </Row>
@@ -80,10 +80,10 @@ const PurchaseOrderAccess = () => {
           <Col xs={24} sm={8} md={12} lg={12} xl={12}>
               <Flex justify='flex-end' gap={8}>
                   <Button type="primary" size='small' className='bn-action' icon={<SearchOutlined />} onClick={() => handleSearch()}>
-                      Search
+                      ค้นหา
                   </Button>
                   <Button type="primary" size='small' className='bn-action' danger icon={<ClearOutlined />} onClick={() => handleClear()}>
-                      Clear
+                      ล้าง
                   </Button>
               </Flex>
           </Col>
@@ -99,7 +99,7 @@ const PurchaseOrderAccess = () => {
         items={[
         { 
             key: '1', 
-            label: <><SearchOutlined /><span> Search</span></>,  
+            label: <><SearchOutlined /><span> ค้นหา</span></>,  
             children: <>{CollapseItemSearch}</>,
             showArrow: false, 
         } 

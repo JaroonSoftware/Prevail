@@ -4,8 +4,15 @@ import DocumentLink from '../../../components/DocumentLink';
 import { COMPANY_NAME, REPORT_TITLES, money, quantity, thaiDate, buildHistoryRows, paginateHistory } from './reportHelpers';
 import './history.css';
 
-const columns = [9,15,10,4,8,4,5,9,6,10,9,11];
-const headingsFor = mode => [mode === 'product' ? 'ลูกค้า / วันที่' : 'สินค้า / วันที่','เลขที่เอกสาร','จำนวน','คืน','ราคาต่อหน่วย','VAT','ส่วนลด','รวมเงิน','ส่วนลดรวม','ยอดขายสุทธิ','อ้างอิง','หมายเหตุ'];
+/* 9 คอลัมน์ทั้งสองแบบ (ไม่มีคอลัมน์ส่วนลด/รวมเงิน — ระบบไม่มีส่วนลดรายบรรทัด)
+   แยกตามลูกค้า: แนวนอน | แยกตามสินค้า: แนวตั้ง มีรหัสลูกค้าในแถว ไม่มีคอลัมน์คืน */
+const COLS = 9;
+const columnsFor = mode => mode === 'product'
+  ? [10,14,10,14,12,6,13,12,9]
+  : [11,17,12,5,10,6,13,12,14];
+const headingsFor = mode => mode === 'product'
+  ? ['วันที่','เลขที่เอกสาร','รหัสลูกค้า','จำนวน','ราคาต่อหน่วย','VAT','ยอดขายสุทธิ','อ้างอิง','หมายเหตุ']
+  : ['สินค้า / วันที่','เลขที่เอกสาร','จำนวน','คืน','ราคาต่อหน่วย','VAT','ยอดขายสุทธิ','อ้างอิง','หมายเหตุ'];
 function Header({ filters, generatedAt, number, total, mode }) {
   const REPORT_TITLE = REPORT_TITLES[mode] || REPORT_TITLES.customer;
   return <header className="history-page-header">
@@ -16,17 +23,18 @@ function Header({ filters, generatedAt, number, total, mode }) {
     <div>รหัสสินค้า {filters.item_from || 'ทั้งหมด'} ถึง {filters.item_to || 'ทั้งหมด'}</div>
   </header>;
 }
-function ReportRow({ item, measure = false, ...props }) {
-  if (['customer','product','note','end'].includes(item.type)) return <tr {...props} className={'history-' + item.type}><td colSpan={12}>{item.text}{item.continued ? ' (ต่อ)' : ''}</td></tr>;
+function ReportRow({ item, measure = false, mode, ...props }) {
+  const byProduct = mode === 'product';
+  if (['customer','product','note','end'].includes(item.type)) return <tr {...props} className={'history-' + item.type}><td colSpan={COLS}>{item.text}{item.continued ? ' (ต่อ)' : ''}</td></tr>;
   if (item.type === 'detail') {
     const r=item.row;
     return <tr {...props} className="history-detail">
       <td>{thaiDate(r.dndate)}</td>
       <td>{measure ? r.dncode : <DocumentLink type="dncode" code={r.dncode} />}</td>
+      {byProduct && <td>{r.cuscode || '–'}</td>}
       <td className="history-number">{quantity(r.qty)} <span>{r.unit || '-'}</span></td>
-      <td className="history-number">–</td><td className="history-number">{money(r.price)}</td>
-      <td className="history-number">{Number(r.vat) || 0}</td><td className="history-number">–</td>
-      <td className="history-number">{money(r.line_subtotal)}</td><td className="history-number">–</td>
+      {!byProduct && <td className="history-number">–</td>}<td className="history-number">{money(r.price)}</td>
+      <td className="history-number">{Number(r.vat) || 0}</td>
       <td className="history-number">{money(r.line_net_total)}</td>
       <td>{r.socode ? (measure ? r.socode : <DocumentLink type="socode" code={r.socode} />) : '–'}</td>
       <td className="history-remark">{r.remark || '–'}</td>
@@ -34,14 +42,14 @@ function ReportRow({ item, measure = false, ...props }) {
   }
   const t=item.totals;
   return <tr {...props} className={'history-total history-' + item.type}>
-    <td colSpan={2}>{item.label}</td>
+    <td colSpan={byProduct ? 3 : 2}>{item.label}</td>
     <td className="history-number">{t.units.map(u=><div key={u.unit}>{quantity(u.qty)} {u.unit}</div>)}</td>
-    <td colSpan={4}></td><td className="history-number">{money(t.subtotal)}</td><td></td><td className="history-number">{money(t.net)}</td><td colSpan={2}></td>
+    <td colSpan={byProduct ? 2 : 3}></td><td className="history-number">{money(t.net)}</td><td colSpan={2}></td>
   </tr>;
 }
 function ReportTable({ children, mode }) {
   const headings = headingsFor(mode);
-  return <table className="history-table"><colgroup>{columns.map((width,i)=><col key={i} style={{width:width+'%'}} />)}</colgroup>
+  return <table className="history-table"><colgroup>{columnsFor(mode).map((width,i)=><col key={i} style={{width:width+'%'}} />)}</colgroup>
     <thead><tr>{headings.map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{children}</tbody></table>;
 }
 
@@ -54,7 +62,7 @@ export default function HistoryDocument({ data, filters, generatedAt, onReady, m
   const [zoom,setZoom]=useState(1);
   useLayoutEffect(()=>{
     const el=pagesRef.current; if(!el||typeof ResizeObserver==='undefined') return;
-    const PAPER_PX=297*96/25.4; // กว้างกระดาษ A4 แนวนอน (px) ไม่วัดจาก DOM เพราะค่าที่วัดได้รวม zoom แล้ว
+    const PAPER_PX=(mode==='product'?210:297)*96/25.4; // กว้างกระดาษ A4 แนวนอน (px) ไม่วัดจาก DOM เพราะค่าที่วัดได้รวม zoom แล้ว
     const fit=()=>setZoom(Math.max(1,Math.round(((el.clientWidth-32)/PAPER_PX)*100)/100));
     fit(); const ro=new ResizeObserver(fit); ro.observe(el); return ()=>ro.disconnect();
   });
@@ -81,16 +89,16 @@ export default function HistoryDocument({ data, filters, generatedAt, onReady, m
     return ()=>{active=false;};
   },[rows,repeatRows,filters,generatedAt,onReady]);
   return <>
-    <style media="print">{'@page { size: A4 landscape; margin: 0; }'}</style>
-    <div className="history-measure history-paper" ref={measureRef} aria-hidden="true">
+    <style media="print">{mode === 'product' ? '@page { size: A4 portrait; margin: 0; }' : '@page { size: A4 landscape; margin: 0; }'}</style>
+    <div className={"history-measure history-paper" + (mode === "product" ? " history-portrait" : "")} ref={measureRef} aria-hidden="true">
       <Header mode={mode} filters={filters} generatedAt={generatedAt} number={1} total={999} />
-      <ReportTable mode={mode}>{rows.map(item=><ReportRow key={item.id} item={item} measure data-history-row="true" />)}</ReportTable>
-      <ReportTable mode={mode}>{repeatRows.map(item=><ReportRow key={item.id} item={item} measure data-history-repeat="true" />)}</ReportTable>
+      <ReportTable mode={mode}>{rows.map(item=><ReportRow mode={mode} key={item.id} item={item} measure data-history-row="true" />)}</ReportTable>
+      <ReportTable mode={mode}>{repeatRows.map(item=><ReportRow mode={mode} key={item.id} item={item} measure data-history-repeat="true" />)}</ReportTable>
     </div>
     {layout.error ? <Alert type="error" showIcon message={layout.error} /> : !layout.pages.length ? <div className="history-loading"><Spin /> กำลังจัดหน้ารายงาน…</div> :
-      <div className="history-pages" ref={pagesRef} style={{'--history-zoom':zoom}}>{layout.pages.map((page,index)=><article className="history-paper" key={index} aria-label={'รายงานหน้า '+(index+1)}>
+      <div className="history-pages" ref={pagesRef} style={{'--history-zoom':zoom}}>{layout.pages.map((page,index)=><article className={"history-paper" + (mode === "product" ? " history-portrait" : "")} key={index} aria-label={'รายงานหน้า '+(index+1)}>
         <Header mode={mode} filters={filters} generatedAt={generatedAt} number={index+1} total={layout.pages.length} />
-        <ReportTable mode={mode}>{page.map((item,i)=><ReportRow key={item.id ?? 'repeat-'+i} item={item} />)}</ReportTable>
+        <ReportTable mode={mode}>{page.map((item,i)=><ReportRow mode={mode} key={item.id ?? 'repeat-'+i} item={item} />)}</ReportTable>
         <footer className="history-footer">{REPORT_TITLE} · หน้า {index+1} / {layout.pages.length}</footer>
       </article>)}</div>}
   </>;

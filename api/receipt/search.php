@@ -34,7 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
         $cusname
         $created_by
         $redate
-        order by a.recode desc ;";
+        order by CHAR_LENGTH(a.recode) desc, a.recode desc ;";
 
 
         $stmt = $conn->prepare($sql); 

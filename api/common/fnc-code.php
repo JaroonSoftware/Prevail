@@ -59,7 +59,8 @@ function document_number(PDO $pdo, string $kind, bool $allocate = false): string
     $check = $pdo->prepare("SELECT $kind FROM $table WHERE $kind = :code" . $lock);
     $legacy = $kind === 'socode' ? $pdo->prepare('SELECT dncode FROM dnmaster WHERE dncode = :code' . $lock) : null;
     do {
-        $code = $prefix . sprintf('%03d', $number);
+        /* เลขรัน 4 หลัก (เดิม 3 หลัก) เช่น IV69110001 — รองรับ 9,999 ใบ/เดือน/ประเภท */
+        $code = $prefix . sprintf('%04d', $number);
         $check->execute(array('code' => $code));
         $exists = $check->fetchColumn() !== false;
         if ($legacy) {

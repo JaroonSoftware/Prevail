@@ -1,3 +1,4 @@
+import { docCodeCompare } from "../../utils/docCode";
 import DocumentLink from "../../components/DocumentLink";
 import { Button, Space } from "antd";
 import "../../assets/styles/banks.css";
@@ -30,7 +31,7 @@ export const accessColumn = ({ handleEdit, handleDuplicate, handleDelete, handle
     key: "qtcode",
     dataIndex: "qtcode",
     align: "left",
-    sorter: (a, b) => a.qtcode.localeCompare(b.qtcode),
+    sorter: (a, b) => docCodeCompare(a.qtcode, b.qtcode),
     width: 140,
   },
   {

@@ -11,7 +11,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
         
         $sql = "SELECT i.socode, i.sodate, i.customer_po, c.cuscode, c.cusname, c.prename, c.idno, c.road, c.subdistrict, c.district, c.province, c.zipcode, i.doc_status
          FROM somaster as i inner join `customer` as c on (i.cuscode=c.cuscode) where c.cuscode= '$cuscode' and i.doc_status != 'ยกเลิก' and i.doc_status = 'รอออกใบส่งของ'
-         order by i.socode DESC";
+         order by CHAR_LENGTH(i.socode) DESC, i.socode DESC";
             // $type_code
             $stmt = $conn->prepare($sql); 
             $stmt->execute();

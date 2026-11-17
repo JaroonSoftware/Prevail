@@ -207,11 +207,11 @@ const UsersAccess = () => {
                 <Row gutter={[8, 8]}>
                   <Col xs={24} sm={8} md={8} lg={8} xl={6}>
                     <Form.Item
-                      label="Username"
+                      label="ชื่อผู้ใช้"
                       name="username"
                       onChange={() => triggerSearch()}
                     >
-                      <Input placeholder="ใส่ Username" />
+                      <Input placeholder="ใส่ชื่อผู้ใช้" />
                     </Form.Item>
                   </Col>
                   <Col xs={24} sm={8} md={8} lg={8} xl={6}>

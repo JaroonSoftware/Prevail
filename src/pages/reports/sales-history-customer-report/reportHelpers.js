@@ -35,7 +35,10 @@ export function buildHistoryRows(raw = [], mode = 'customer') {
   const custGroup = row => ({ code: custKey(row), name: row.cusname || custKey(row), unit: '', rows: [], subs: new Map() });
   const prodGroup = row => ({ code: row.stcode, name: row.stname, english: row.stnameEN, unit: row.unit || '-', rows: [], subs: new Map() });
   const outer = { key: byProduct ? prodKey : custKey, make: byProduct ? prodGroup : custGroup, text: byProduct ? prodText : custText };
-  const inner = { key: byProduct ? custKey : prodKey, make: byProduct ? custGroup : prodGroup, text: byProduct ? custText : prodText };
+  /* แยกตามสินค้า: ไม่มีหัวกลุ่มลูกค้า รายการอยู่ใต้สินค้าเลย (รหัสลูกค้าอยู่ในแถว) */
+  const inner = byProduct
+    ? { key: () => 'all', make: () => ({ code: '', unit: '', rows: [], subs: new Map() }), text: () => '' }
+    : { key: prodKey, make: prodGroup, text: prodText };
 
   const groups = new Map();
   raw.forEach((source, index) => {
@@ -56,11 +59,11 @@ export function buildHistoryRows(raw = [], mode = 'customer') {
     const customerHeading = { type: 'customer', text: outer.text(g) };
     output.push(customerHeading);
     [...g.subs.values()].sort(byCode).forEach(sub => {
-      const productHeading = { type: 'product', text: inner.text(sub), customerHeading };
-      output.push(productHeading);
-      sub.rows.sort((a,b) => String(a.dndate).localeCompare(String(b.dndate)) || String(a.dncode).localeCompare(String(b.dncode)) || numeric(a.detail_code)-numeric(b.detail_code) || a.index-b.index);
+      const productHeading = byProduct ? null : { type: 'product', text: inner.text(sub), customerHeading };
+      if (productHeading) output.push(productHeading);
+      sub.rows.sort((a,b) => (byProduct ? String(a.dndate).localeCompare(String(b.dndate)) || String(a.cuscode).localeCompare(String(b.cuscode)) : 0) || String(a.dndate).localeCompare(String(b.dndate)) || String(a.dncode).localeCompare(String(b.dncode)) || numeric(a.detail_code)-numeric(b.detail_code) || a.index-b.index);
       sub.rows.forEach(row => output.push({ type: 'detail', row, customerHeading, productHeading }));
-      output.push({ type: 'productTotal', label: byProduct ? 'รวมตามลูกค้า' : 'รวมตามสินค้า', totals: totals(sub.rows), customerHeading, productHeading });
+      output.push({ type: 'productTotal', label: byProduct ? 'รวมตาม ใบกำกับ' : 'รวมตามสินค้า', totals: totals(sub.rows), customerHeading, productHeading });
     });
     output.push({ type: 'customerTotal', label: 'รวม ' + g.code, totals: totals(g.rows), customerHeading });
   });
@@ -68,7 +71,7 @@ export function buildHistoryRows(raw = [], mode = 'customer') {
     output.push({ type: 'grandTotal', label: 'รวมทั้งสิ้น', totals: totals(raw.map(r => ({ ...r,
       line_subtotal: r.line_subtotal ?? numeric(r.qty)*numeric(r.price),
       line_net_total: r.line_net_total ?? numeric(r.qty)*numeric(r.price)*(1+numeric(r.vat)/100) }))) });
-    output.push({ type: 'note', text: 'หมายเหตุ: – หมายถึงไม่มีข้อมูลคืนสินค้า/ส่วนลด · VAT ใช้อัตราสินค้าปัจจุบันตามรายงานขายเดิม' });
+    output.push({ type: 'note', text: mode === 'product' ? 'หมายเหตุ: VAT ใช้อัตราสินค้าปัจจุบันตามรายงานขายเดิม' : 'หมายเหตุ: – หมายถึงไม่มีข้อมูลคืนสินค้า · VAT ใช้อัตราสินค้าปัจจุบันตามรายงานขายเดิม' });
     output.push({ type: 'end', text: '>>>> จบรายงาน <<<<' });
   }
   return output.map((row, index) => ({ ...row, id: index }));

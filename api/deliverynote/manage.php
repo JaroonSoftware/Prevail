@@ -193,7 +193,7 @@ try {
         $_PUT = json_decode($rest_json, true);
         extract($_PUT, EXTR_OVERWRITE, "_");
         $header = (object)$header;
-        $lockDn = $conn->prepare("SELECT cuscode, doc_status FROM dnmaster WHERE dncode = :d FOR UPDATE");
+        $lockDn = $conn->prepare("SELECT cuscode, doc_status, issue_status FROM dnmaster WHERE dncode = :d FOR UPDATE");
         $lockDn->execute(array('d' => $header->dncode));
         $lockedDn = $lockDn->fetch(PDO::FETCH_ASSOC);
         if (!$lockedDn) throw new Exception('ไม่พบใบส่งสินค้า');
@@ -265,11 +265,20 @@ try {
                 throw new Exception('รายการสินค้าเปลี่ยนแปลงหรืออ้างอิงซ้ำ กรุณาโหลดหน้าใหม่ก่อนบันทึก');
             }
             $old = $oldByCode[$id];
-            if ((string)$line['socode'] !== (string)$old['socode'] || (string)$line['stcode'] !== (string)$old['stcode']) {
+            if ((string)$line['socode'] !== (string)$old['socode']) {
                 throw new Exception('รายการสินค้าไม่ตรงกับใบส่งสินค้าเดิม กรุณาโหลดหน้าใหม่');
             }
+            /* เปลี่ยนรหัสสินค้า: ต้องเป็นสินค้าที่ใช้งาน และยังไม่ตัดสต๊อก (ไม่อย่างนั้นสต๊อกจะเพี้ยน) */
+            if ((string)$line['stcode'] !== (string)$old['stcode']) {
+                if (($lockedDn['issue_status'] ?? '') === 'ตัดสต๊อกแล้ว') {
+                    throw new Exception("เปลี่ยนรหัสสินค้า {$old['stcode']} ไม่ได้: ใบส่งของนี้ตัดสต๊อกแล้ว");
+                }
+                $chkItem = $conn->prepare("SELECT COUNT(*) FROM items WHERE stcode = :c AND active_status = 'Y'");
+                $chkItem->execute(array('c' => $line['stcode']));
+                if ((int)$chkItem->fetchColumn() < 1) throw new Exception("ไม่พบสินค้า {$line['stcode']} หรือปิดการใช้งานอยู่");
+            }
             $submittedCodes[$id] = true;
-            if (dn_line_changed($old, $line)) $changedProducts[$old['socode']][$old['stcode']] = true;
+            if (dn_line_changed($old, $line) || (string)$line['stcode'] !== (string)$old['stcode']) $changedProducts[$old['socode']][$old['stcode']] = true;
         }
         $sourceMap = array();
         ksort($groups);
@@ -291,14 +300,23 @@ try {
             }
         }
 
-        $updateLine = $conn->prepare("UPDATE dndetail SET qty = :q, price = :p, unit = :u WHERE code = :id AND dncode = :d");
+        $updateLine = $conn->prepare("UPDATE dndetail SET stcode = :c, qty = :q, price = :p, unit = :u WHERE code = :id AND dncode = :d");
         foreach ($detail as $value) {
             $line = (array)$value;
-            $updateLine->execute(array('q' => $line['qty'], 'p' => $line['price'], 'u' => $line['unit'],
+            $updateLine->execute(array('c' => $line['stcode'], 'q' => $line['qty'], 'p' => $line['price'], 'u' => $line['unit'],
                 'id' => $line['code'], 'd' => $header->dncode));
         }
+        /* บรรทัดที่ลบออกจากใบส่งของ: คืนจำนวนที่ส่งแล้วให้บรรทัดใบขายต้นทาง (ใบขายกลับมาออกใบส่งของรายการนั้นได้) */
         foreach ($oldByCode as $id => $old) {
             if (!isset($submittedCodes[$id])) {
+                $src = $hasSourceLine && !empty($old['source_so_detail_code']) ? $old['source_so_detail_code'] : null;
+                if ($src !== null) {
+                    $conn->prepare("UPDATE sodetail SET delamount = GREATEST(COALESCE(delamount,0) - :q, 0) WHERE code = :id AND socode = :s")
+                        ->execute(array('q' => $old['qty'], 'id' => $src, 's' => $old['socode']));
+                } else {
+                    $conn->prepare("UPDATE sodetail SET delamount = GREATEST(COALESCE(delamount,0) - :q, 0) WHERE socode = :s AND stcode = :c ORDER BY code LIMIT 1")
+                        ->execute(array('q' => $old['qty'], 's' => $old['socode'], 'c' => $old['stcode']));
+                }
                 $conn->prepare("DELETE FROM dndetail WHERE code = :id AND dncode = :d")
                     ->execute(array('id' => $id, 'd' => $header->dncode));
             }
@@ -309,21 +327,31 @@ try {
         $usedSourceCodes = array();
         foreach ($detail as $value) {
             $line = (array)$value;
-            if (!dn_line_changed($oldByCode[(string)$line['code']], $line)) continue;
+            $original = $oldByCode[(string)$line['code']];
+            $itemChanged = (string)$line['stcode'] !== (string)$original['stcode'];
+            if (!dn_line_changed($original, $line) && !$itemChanged) continue;
             $sourceCode = $sourceMap[(string)($line['code'] ?? '')] ?? null;
             if ($sourceCode === null) {
                 throw new Exception('ไม่พบรายการสินค้าในใบขายต้นทาง กรุณาตรวจสอบก่อนบันทึก');
             }
             if (isset($usedSourceCodes[$sourceCode])) throw new Exception('รายการสินค้าอ้างอิงซ้ำ กรุณาโหลดหน้าใหม่');
             $usedSourceCodes[$sourceCode] = true;
-            $original = $oldByCode[(string)$line['code']];
-            if ($line['socode'] !== $original['socode'] || $line['stcode'] !== $original['stcode']) {
+            if ($line['socode'] !== $original['socode']) {
                 throw new Exception('รายการสินค้าเปลี่ยนแปลง กรุณาโหลดหน้าใหม่');
             }
-            $conn->prepare("UPDATE sodetail SET qty = :qty, price = :price, unit = :unit, delamount = :delqty
+            /* แก้บรรทัดใบขายต้นทางตาม (รวมรหัสสินค้าที่เปลี่ยน) */
+            $conn->prepare("UPDATE sodetail SET stcode = :nc, qty = :qty, price = :price, unit = :unit, delamount = :delqty
                 WHERE code = :id AND socode = :s AND stcode = :c")
-                ->execute(array('qty' => $line['qty'], 'price' => $line['price'], 'unit' => $line['unit'],
-                    'delqty' => $line['qty'], 'id' => $sourceCode, 's' => $line['socode'], 'c' => $line['stcode']));
+                ->execute(array('nc' => $line['stcode'], 'qty' => $line['qty'], 'price' => $line['price'], 'unit' => $line['unit'],
+                    'delqty' => $line['qty'], 'id' => $sourceCode, 's' => $line['socode'], 'c' => $original['stcode']));
+            if ($itemChanged) {
+                /* ถุงหน้าถุงของบรรทัดนี้เปลี่ยนรหัสตาม */
+                $pbLine = (bool)$conn->query("SHOW COLUMNS FROM package_barcode LIKE 'sodetail_code'")->fetch();
+                if ($pbLine) {
+                    $conn->prepare("UPDATE package_barcode SET stcode = :nc WHERE socode = :s AND sodetail_code = :id")
+                        ->execute(array('nc' => $line['stcode'], 's' => $line['socode'], 'id' => $sourceCode));
+                }
+            }
             $changedOrders[$line['socode']] = true;
         }
         foreach (array_keys($changedOrders) as $socode) {

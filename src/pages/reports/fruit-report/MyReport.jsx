@@ -159,14 +159,14 @@ const FruitReport = () => {
               >
                 <Row gutter={[8, 8]}>
                   {/* <Col xs={24} sm={12} md={12} lg={12} xl={12}>
-                    <Form.Item label="เลขที่ SO" name="socode">
-                      <Input placeholder="Enter SO Code" />
+                    <Form.Item label="เลขที่ใบขายสินค้า" name="socode">
+                      <Input placeholder="ใส่เลขที่ใบขายสินค้า" />
                     </Form.Item>
                   </Col> */}
                   <Col xs={24} sm={12} md={12} lg={12} xl={12}>
                     <Form.Item label="วันที่เอกสาร" name="sodate">
                       <RangePicker
-                        placeholder={["From Date", "To Date"]}
+                        placeholder={["เริ่มวันที่", "ถึงวันที่"]}
                         style={{ width: "100%", height: 40 }}
                       />
                     </Form.Item>

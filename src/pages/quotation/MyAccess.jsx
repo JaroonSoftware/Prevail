@@ -66,7 +66,7 @@ const QuotationAccess = () => {
                 </Form.Item>                            
             </Col>
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='ชื่อลุูกค้า' name='cusname'>
+                <Form.Item label='ชื่อลูกค้า' name='cusname'>
                     <Input placeholder='กรอกชื่อลูกค้า' />
                 </Form.Item>                            
             </Col>

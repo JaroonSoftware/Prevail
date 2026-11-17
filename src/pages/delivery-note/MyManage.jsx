@@ -14,7 +14,7 @@ import {
   Modal,
   Tabs,
 } from "antd";
-import { Card, Col, Divider, Flex, Row, Space, Popconfirm } from "antd";
+import { Card, Col, Divider, Flex, Row, Space, Popconfirm, Select } from "antd";
 import OptionService from "../../service/Options.service";
 import CustomerService from "../../service/Customer.Service";
 import DeliveryNoteService from "../../service/DeliveryNote.service";
@@ -77,6 +77,7 @@ function DeliveryNoteManage() {
   const receiptLocked = billingChecking || !!billingInfo?.hasReceipt || ["ชำระเงินไม่ครบ", "ชำระเงินครบแล้ว", "ชำระเงินยังไม่ครบ", "ชำระครบแล้ว", "ยกเลิก"].includes(formDetail?.doc_status);
 
   const [unitOption, setUnitOption] = React.useState([]);
+  const [itemOptions, setItemOptions] = React.useState([]);
 
   const cardStyle = {
     backgroundColor: "#f0f0f0",
@@ -124,9 +125,11 @@ function DeliveryNoteManage() {
         }
       }
 
-      const [unitOprionRes] = await Promise.all([
+      const [unitOprionRes, itemRes] = await Promise.all([
         opservice.optionsUnit({ p: "unit-option" }),
+        config?.action !== "create" ? opservice.optionsItems({ p: "items" }).catch(() => null) : null,
       ]);
+      setItemOptions((itemRes?.data?.data || []).map((i) => ({ value: i.stcode, stname: i.stname, label: `${i.stcode} - ${i.stname}` })));
       // console.log(unitOprionRes.data.data)
       setUnitOption(unitOprionRes.data.data);
     };
@@ -315,8 +318,13 @@ function DeliveryNoteManage() {
       console.warn(err);
     }
   };
-  const handleDelete = (socode) => {
-    setListDetail((prev) => prev.filter((item) => item?.socode !== socode));
+  /* ลบเฉพาะบรรทัดที่กด (เดิมลบทุกบรรทัดของใบขายเดียวกัน = ลบทั้งใบ) */
+  const handleDelete = (record) => {
+    setListDetail((prev) => {
+      const idx = prev.indexOf(record);
+      if (idx >= 0) return prev.filter((_, i) => i !== idx);
+      return prev.filter((item) => !(item?.code === record?.code && item?.socode === record?.socode && item?.stcode === record?.stcode));
+    });
   };
 
   const handleRemove = (record) => {
@@ -329,7 +337,7 @@ function DeliveryNoteManage() {
         icon={
           <RiDeleteBin5Line style={{ fontSize: "1rem", marginTop: "3px" }} />
         }
-        onClick={() => handleDelete(record?.socode)}
+        onClick={() => handleDelete(record)}
         disabled={receiptLocked}
       />
     ) : null;
@@ -386,8 +394,21 @@ function DeliveryNoteManage() {
   };
 
   /** setting column table */
+  /* แก้รหัสสินค้าได้เฉพาะหน้าแก้ไข และยังไม่ตัดสต๊อก/ยังไม่ชำระเงิน */
+  const canChangeItem = config?.action !== "create" && !receiptLocked && formDetail?.issue_status !== "ตัดสต๊อกแล้ว";
+  const renderStcode = (v, rec) => !canChangeItem ? v : (
+    <Select
+      size="small" showSearch style={{ width: "100%" }} value={v} optionFilterProp="label" popupMatchSelectWidth={false}
+      options={itemOptions.length ? itemOptions : [{ value: v, label: `${v} - ${rec?.stname || ""}` }]}
+      onChange={(code) => {
+        const it = itemOptions.find((o) => o.value === code);
+        handleEditCell({ ...rec, stcode: code, stname: it?.stname || rec.stname });
+      }}
+    />
+  );
   const prodcolumns = columnsParametersEditable(handleEditCell, unitOption, {
     handleRemove,
+    renderStcode,
   });
 
   const SectionCustomers = (

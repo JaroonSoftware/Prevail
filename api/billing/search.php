@@ -42,7 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
         $socode
         $stcode
         $stname
-        order by a.blcode desc ;";
+        order by CHAR_LENGTH(a.blcode) desc, a.blcode desc ;";
 
 
         $stmt = $conn->prepare($sql); 

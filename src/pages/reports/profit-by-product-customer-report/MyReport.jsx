@@ -204,7 +204,7 @@ const ProfitByProductCustomerReport = () => {
                 }}
               >
                 <Form.Item name="dndate" className="!mb-2">
-                  <RangePicker placeholder={["From Date", "To Date"]} style={{ minWidth: 260, height: 38 }} />
+                  <RangePicker placeholder={["เริ่มวันที่", "ถึงวันที่"]} style={{ minWidth: 260, height: 38 }} />
                 </Form.Item>
                 <Form.Item className="!mb-2" style={{ marginInlineStart: "auto", marginInlineEnd: 0 }}>
                   <Flex gap={8} wrap="wrap" justify="flex-end">

@@ -53,7 +53,7 @@ const MyAccess = () => {
       <Row gutter={[8, 8]}>
         <Col xs={24} sm={8} md={8} lg={8} xl={8}>
           <Form.Item label="เลขที่ใบเสร็จรับเงิน" name="recode">
-            <Input placeholder="Enter Receipt Code." />
+            <Input placeholder="ใส่เลขที่ใบเสร็จรับเงิน" />
           </Form.Item>
         </Col>
         <Col xs={24} sm={8} md={8} lg={8} xl={8}>
@@ -66,17 +66,17 @@ const MyAccess = () => {
         </Col>
         <Col xs={24} sm={8} md={8} lg={8} xl={8}>
           <Form.Item label="จัดทำโดย" name="created_by">
-            <Input placeholder="Enter First Name or Last Name." />
+            <Input placeholder="ใส่ชื่อหรือนามสกุล" />
           </Form.Item>
         </Col>
         <Col xs={24} sm={8} md={8} lg={8} xl={8}>
           <Form.Item label="รหัสลูกค้า" name="cuscode">
-            <Input placeholder="Enter Customer Code." />
+            <Input placeholder="ใส่รหัสลูกค้า" />
           </Form.Item>
         </Col>
         <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-          <Form.Item label="ชื่อลุูกค้า" name="cusname">
-            <Input placeholder="Enter Customer Name." />
+          <Form.Item label="ชื่อลูกค้า" name="cusname">
+            <Input placeholder="ใส่ชื่อลูกค้า" />
           </Form.Item>
         </Col>
       </Row>
@@ -94,7 +94,7 @@ const MyAccess = () => {
               icon={<ClearOutlined />}
               onClick={() => handleClear()}
             >
-              Clear
+              ล้าง
             </Button>
             <Button
               type="primary"
@@ -124,7 +124,7 @@ const MyAccess = () => {
           label: (
             <>
               <SearchOutlined />
-              <span> Search</span>
+              <span> ค้นหา</span>
             </>
           ),
           children: <>{CollapseItemSearch}</>,

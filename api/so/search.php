@@ -38,7 +38,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
         $created_by
         $doc_status
         $sodate
-        order by a.socode desc ;";
+        order by CHAR_LENGTH(a.socode) desc, a.socode desc ;";
 
 
         $stmt = $conn->prepare($sql); 

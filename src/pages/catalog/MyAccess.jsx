@@ -99,7 +99,7 @@ const CatalogAccess = () => {
               icon={<SearchOutlined />}
               onClick={() => handleSearch()}
             >
-              ค้าหา
+              ค้นหา
             </Button>
             <Button
               type="primary"

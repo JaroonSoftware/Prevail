@@ -16,7 +16,7 @@ try {
              . " FROM bl_detail a"
              . " INNER JOIN bl_master b ON a.blcode = b.blcode"
              . " WHERE a.dncode = :dncode AND b.active_status = 'Y'"
-             . " ORDER BY a.blcode DESC";
+             . " order by CHAR_LENGTH(a.blcode) DESC, a.blcode DESC";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt) {

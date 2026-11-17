@@ -223,10 +223,9 @@ export default function DeliveryPrintPreview(props) {
 
       <div className="dnf-info">
         <div className="dnf-cus">
-          {/* ชื่ออังกฤษอยู่บรรทัดเดียวกับ "ลูกค้า" ตามตัวอย่าง
-              ยังไม่ได้กรอกชื่ออังกฤษก็ใช้รหัสลูกค้าแทน */}
+          {/* บรรทัด "ลูกค้า" แสดงรหัสลูกค้าเสมอ (เดิมใช้ชื่ออังกฤษก่อน บางรายกรอกเป็นไทยเลยไม่เห็นรหัส) */}
           <div>
-            <span className="dn-bold">ลูกค้า</span><span className="dnf-gap">{hData?.cusname_en || hData?.cuscode}</span>
+            <span className="dn-bold">ลูกค้า</span><span className="dnf-gap">{hData?.cuscode}</span>
           </div>
           <div>
             <span className="dn-bold">{hData?.prename}</span> {hData?.cusname}
@@ -254,12 +253,11 @@ export default function DeliveryPrintPreview(props) {
           <div>อ้างอิง</div>
           <div>{hData?.customer_po ? `PO ${hData.customer_po}` : ""}</div>
 
-          {/* ตามตัวอย่าง: "เครดิต 30 วัน" อยู่ช่องป้าย, "ครบกำหนด ..." อยู่ช่องค่า */}
-          <div>{creditDay !== null ? `เครดิต ${creditDay} วัน` : "เครดิต"}</div>
-          <div>
+          {/* "เครดิต 30 วัน ครบกำหนด ..." ยาวเกินช่องป้าย (เดิมทับกัน) -> ใช้บรรทัดเต็มความกว้าง */}
+          <div style={{ gridColumn: "1 / -1", whiteSpace: "nowrap" }}>
             {creditDay !== null
-              ? `ครบกำหนด ${formatBE(dayjs(printDate).add(creditDay, "day"))}`
-              : ""}
+              ? `เครดิต ${creditDay} วัน  ครบกำหนด ${formatBE(dayjs(printDate).add(creditDay, "day"))}`
+              : "เครดิต"}
           </div>
 
           <div>เขตการขาย</div>

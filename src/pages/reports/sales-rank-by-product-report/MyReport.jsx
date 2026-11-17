@@ -346,7 +346,7 @@ const SalesByProductReport = () => {
               >
                 <Form.Item name="sodate" className="!mb-2">
                   <RangePicker
-                    placeholder={["From Date", "To Date"]}
+                    placeholder={["เริ่มวันที่", "ถึงวันที่"]}
                     style={{ minWidth: 260, height: 38 }}
                   />
                 </Form.Item>

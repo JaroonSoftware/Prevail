@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
         $cusname
         $created_by
         $sodate
-        order by a.socode desc ;";
+        order by CHAR_LENGTH(a.socode) desc, a.socode desc ;";
 
 
         $stmt = $conn->prepare($sql); 

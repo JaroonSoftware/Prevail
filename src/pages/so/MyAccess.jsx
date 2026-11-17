@@ -44,38 +44,38 @@ const MyAccess = () => {
         <>  
         <Row gutter={[8,8]}> 
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='Sale Order Code' name='socode'>
-                    <Input placeholder='Enter Sale Order Code.' />
+                <Form.Item label='เลขที่ใบขายสินค้า' name='socode'>
+                    <Input placeholder='ใส่เลขที่ใบขายสินค้า' />
                 </Form.Item>                            
             </Col>
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='Sale Order Date.' name='sodate'>
-                    <RangePicker placeholder={['From Date', 'To date']} style={{width:'100%', height:40}}  />
+                <Form.Item label='วันที่ใบขายสินค้า' name='sodate'>
+                    <RangePicker placeholder={['เริ่มวันที่', 'ถึงวันที่']} style={{width:'100%', height:40}}  />
                 </Form.Item>
             </Col>             
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='Customer PO' name='customer_po'>
-                    <Input placeholder='Enter Customer PO.' />
+                <Form.Item label='PO ลูกค้า' name='customer_po'>
+                    <Input placeholder='ใส่เลข PO ลูกค้า' />
                 </Form.Item>                            
             </Col>
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='Request By.' name='created_by'>
-                    <Input placeholder='Enter First Name or Last Name.' />
+                <Form.Item label='จัดทำโดย' name='created_by'>
+                    <Input placeholder='ใส่ชื่อหรือนามสกุล' />
                 </Form.Item>
             </Col>
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='Product' name='stname'>
-                    <Input placeholder='Enter Product Name.' />
+                <Form.Item label='สินค้า' name='stname'>
+                    <Input placeholder='ใส่ชื่อสินค้า' />
                 </Form.Item>                            
             </Col>
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='Customer Code' name='cuscode'>
-                    <Input placeholder='Enter Customer Code.' />
+                <Form.Item label='รหัสลูกค้า' name='cuscode'>
+                    <Input placeholder='ใส่รหัสลูกค้า' />
                 </Form.Item>                            
             </Col>
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
-                <Form.Item label='Customer Name' name='cusname'>
-                    <Input placeholder='Enter Customer Name.' />
+                <Form.Item label='ชื่อลูกค้า' name='cusname'>
+                    <Input placeholder='ใส่ชื่อลูกค้า' />
                 </Form.Item>
             </Col>
             <Col xs={24} sm={8} md={8} lg={8} xl={8}>
@@ -107,10 +107,10 @@ const MyAccess = () => {
           <Col xs={24} sm={8} md={12} lg={12} xl={12}>
               <Flex justify='flex-end' gap={8}>
                   <Button type="primary" size='small' className='bn-action' icon={<SearchOutlined />} onClick={() => handleSearch()}>
-                      Search
+                      ค้นหา
                   </Button>
                   <Button type="primary" size='small' className='bn-action' danger icon={<ClearOutlined />} onClick={() => handleClear()}>
-                      Clear
+                      ล้าง
                   </Button>
               </Flex>
           </Col>
@@ -126,7 +126,7 @@ const MyAccess = () => {
         items={[
         { 
             key: '1', 
-            label: <><SearchOutlined /><span> Search</span></>,  
+            label: <><SearchOutlined /><span> ค้นหา</span></>,  
             children: <>{CollapseItemSearch}</>,
             showArrow: false, 
         } 
