@@ -37,6 +37,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { TbSquareRoundedX, TbExclamationCircle } from "react-icons/tb";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { LuPackagePlus } from "react-icons/lu";
+import AuditInfo from "../../components/AuditInfo";
 
 const opservice = OptionService();
 const soservice = SOService();
@@ -290,6 +291,11 @@ function MyManage() {
     getstcodeList(form.getFieldValue("cuscode") || "", date, true);
   };
 
+  /* ส่วนลด (บาท) = ยอดก่อน VAT x % (ใบส่งของ/ใบวางบิลคำนวณแบบเดียวกัน) */
+  const discountAmount = Math.round(
+    (listDetail || []).reduce((a, v) => a + Number(v?.qty || 0) * Number(v?.price || 0), 0)
+      * Number(formDetail?.discount_pct || 0)) / 100;
+
   const handleSummaryPrice = () => {
     const newData = [...listDetail];
 
@@ -422,6 +428,7 @@ function MyManage() {
           customer_po: form.getFieldValue("customer_po"),
           del_room: form.getFieldValue("del_room"),
           remark: form.getFieldValue("remark"),
+          discount_pct: Number(formDetail?.discount_pct || 0),
         };
         await soservice.update({ header, detail: rows }, { ignoreLoading: true });
         await aiSoService.resolvePending(pendingId, stcode);
@@ -503,6 +510,7 @@ function MyManage() {
           customer_po: form.getFieldValue("customer_po"),
           del_room: form.getFieldValue("del_room"),
           remark: form.getFieldValue("remark"),
+          discount_pct: Number(formDetail?.discount_pct || 0),
         };
         const detail = listDetail;
 
@@ -880,6 +888,37 @@ function MyManage() {
                       </Table.Summary.Cell>
                       <Table.Summary.Cell>Baht</Table.Summary.Cell>
                     </Table.Summary.Row>
+                    {/* ส่วนลดรวม % — กรอกที่ใบขายเท่านั้น ออกใบส่งของแล้วแก้ไม่ได้
+                        ส่วนลดคิดจากยอดก่อน VAT ใบส่งของ/ใบวางบิลคำนวณตามเอง */}
+                    <Table.Summary.Row>
+                      <Table.Summary.Cell index={0} colSpan={8}></Table.Summary.Cell>
+                      <Table.Summary.Cell index={4} align="end" className="!pe-4">ส่วนลดรวม</Table.Summary.Cell>
+                      <Table.Summary.Cell className="!pe-4 text-end border-right-0">
+                        <Select
+                          size="small"
+                          style={{ width: 110 }}
+                          value={Number(formDetail?.discount_pct || 0)}
+                          disabled={!!formDetail?.has_dn}
+                          title={formDetail?.has_dn ? "ออกใบส่งของแล้ว แก้ส่วนลดไม่ได้" : undefined}
+                          onChange={(v) => setFormDetail((st) => ({ ...st, discount_pct: v }))}
+                          options={[{ value: 0, label: "ไม่มี" }, { value: 3, label: "3%" }, { value: 5, label: "5%" }]}
+                        />
+                        <div style={{ color: "#cf1322" }}>
+                          {Number(formDetail?.discount_pct || 0) > 0 ? "-" + comma(discountAmount) : "0.00"}
+                        </div>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>Baht</Table.Summary.Cell>
+                    </Table.Summary.Row>
+                    <Table.Summary.Row>
+                      <Table.Summary.Cell index={0} colSpan={8}></Table.Summary.Cell>
+                      <Table.Summary.Cell index={4} align="end" className="!pe-4"><b>ยอดสุทธิ</b></Table.Summary.Cell>
+                      <Table.Summary.Cell className="!pe-4 text-end border-right-0">
+                        <Typography.Text type="danger" strong>
+                          {comma(Number(formDetail?.total_price || 0) - discountAmount)}
+                        </Typography.Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>Baht</Table.Summary.Cell>
+                    </Table.Summary.Row>
                   </>
                 )}
               </>
@@ -1084,7 +1123,8 @@ function MyManage() {
             <Card
               title={
                 <>
-                  <Row className="m-0 py-3 sm:py-0" gutter={[12, 12]}>
+                  <AuditInfo data={formDetail} style={{ paddingTop: 8 }} />
+<Row className="m-0 py-3 sm:py-0" gutter={[12, 12]}>
                     <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
                       <Typography.Title level={3} className="m-0">
                         รหัสใบขายสินค้า : {soCode}

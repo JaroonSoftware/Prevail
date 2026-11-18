@@ -13,7 +13,7 @@ try {
         $sql = "SELECT 
             dm.dncode,
             dm.dndate,
-            dm.total_price,
+            dm.total_price," . ((bool)$conn->query("SHOW COLUMNS FROM dnmaster LIKE 'discount'")->fetch() ? " dm.discount, dm.discount_pct," : "") . "
             dm.remark,
             dm.cuscode,
             c.prename,

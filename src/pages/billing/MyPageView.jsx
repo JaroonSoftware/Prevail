@@ -14,6 +14,7 @@ import BillingNoteService from "../../service/BillingNote.Service";
 import { TagInvoiceStatus } from "../../components/badge-and-tag";
 import { formatMoney } from "../../utils/util";
 import { blViewColumns } from "./model";
+import AuditInfo from "../../components/AuditInfo";
 
 import "./MyPage.css";
 
@@ -264,6 +265,7 @@ export default function BillingView() {
         </Col>
       </Row>
 
+      <AuditInfo data={master} style={{ marginBottom: 8 }} />
       <Descriptions
         bordered
         column={{ xs: 1, sm: 2, md: 3, lg: 3, xl: 3, xxl: 3 }}

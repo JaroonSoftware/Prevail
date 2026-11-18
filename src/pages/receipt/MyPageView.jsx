@@ -30,6 +30,7 @@ import { formatMoney } from "../../utils/util";
 import { reViewColumns, rePaymentViewColumns } from "./model";
 
 import PaymentDrawer from "../../components/drawer/payment/PaymentDrawer.jsx";
+import AuditInfo from "../../components/AuditInfo";
 
 import "./MyPage.css";
 
@@ -410,6 +411,7 @@ export default function ReceiptView() {
           </Col>
         </Row>
 
+        <AuditInfo data={master} style={{ marginBottom: 8 }} />
         <Descriptions
           bordered
           column={{ xs: 1, sm: 2, md: 3, lg: 3, xl: 3, xxl: 3 }}

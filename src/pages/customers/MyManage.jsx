@@ -12,7 +12,7 @@ import {
   Divider,
   Card,
 } from "antd";
-import { Row, Col, Space } from "antd";
+import { Row, Col, Space, Checkbox } from "antd";
 import { SaveFilled } from "@ant-design/icons";
 import { ButtonBack } from "../../components/button";
 import { useLocation, useNavigate } from "react-router";
@@ -216,11 +216,21 @@ const ItemsManage = () => {
           {/* เว้นว่าง = ไม่มีเครดิต ใบส่งสินค้าจะคำนวณวันครบกำหนดจากค่านี้ */}
           <Form.Item label="เครดิต (วัน)" name="credit_day">
             <InputNumber
+              size="large"
+              style={{ width: "100%" }}
               className="width-100"
               min={0}
               precision={0}
               placeholder="เช่น 30"
             />
+          </Form.Item>
+        </Col>
+        <Col xs={24} sm={24} md={24} lg={24} xl={8} xxl={8}>
+          {/* ติ๊ก = แสดงใน Dashboard ว่าวันนี้ลูกค้ารายนี้ออกใบขายสินค้าแล้วหรือยัง */}
+          <Form.Item label="รับแจ้งเตือนรายงานทุกวัน" name="daily_alert" valuePropName="checked"
+            getValueProps={(v) => ({ checked: v === "Y" || v === true })}
+            normalize={(v) => (v ? "Y" : "N")}>
+            <Checkbox>แจ้งเตือนเมื่อยังไม่ออกใบขายสินค้า</Checkbox>
           </Form.Item>
         </Col>     
         <Col xs={24} sm={24} md={24} lg={24} xl={8}>
@@ -469,7 +479,7 @@ const ItemsManage = () => {
     <div className="customer-manage xs:px-0 sm:px-0 md:px-8 lg:px-8">
       <Space direction="vertical" className="flex gap-2">
         {SectionHeader}
-        <Form form={form} layout="vertical" autoComplete="off">
+        <Form form={form} layout="vertical" autoComplete="off" size="large">
           <Card title={config?.title}>
             <Divider
               orientation="left"

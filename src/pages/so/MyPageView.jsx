@@ -19,6 +19,7 @@ import { soViewColumns } from "./model";
 import "./MyPage.css";
 
 import AiSoImportService from "../../service/AiSoImport.service";
+import AuditInfo from "../../components/AuditInfo";
 const aiSoService = AiSoImportService();
 const soservice = SOService();
 const dateFormat = "DD/MM/YYYY";
@@ -55,7 +56,7 @@ export default function SOView() {
         });
 
         buildMasterItems(header || {});
-        buildDetailItems(detail || []);
+        buildDetailItems(detail || [], header || {});
         setPending([]);
         if (header?.doc_status === 'รอยืนยันใบขายสินค้า') {
           const result = await aiSoService.pending(header.socode);
@@ -131,7 +132,7 @@ export default function SOView() {
     setLastItems(items);
   };
 
-  const buildDetailItems = (detail = []) => {
+  const buildDetailItems = (detail = [], h = {}) => {
     const data = Array.isArray(detail) ? detail : [];
 
     const tableNode = (
@@ -149,19 +150,27 @@ export default function SOView() {
             const net = base * (1 + Number(r?.vat || 0) / 100);
             return sum + net;
           }, 0);
-          // 9 คอลัมน์ด้านบน => เว้น 7 ช่องซ้าย ให้ "Grand Total" อยู่คอลัมน์ 8 และยอดคอลัมน์ 9
-          return (
+          /* ส่วนลดรวม % ของใบขาย (คิดจากยอดก่อน VAT) */
+          const pct = Number(h?.discount_pct || 0);
+          const subtotal = (pageData || []).reduce((sum, r) => sum + Number(r?.qty || 0) * Number(r?.price || 0), 0);
+          const discount = Math.round(subtotal * pct) / 100;
+          const row = (label, value, strong) => (
             <Table.Summary.Row>
               <Table.Summary.Cell index={0} colSpan={7}></Table.Summary.Cell>
-              <Table.Summary.Cell index={1} align="end" className="!pe-2">
-                Grand Total
-              </Table.Summary.Cell>
+              <Table.Summary.Cell index={1} align="end" className="!pe-2">{strong ? <b>{label}</b> : label}</Table.Summary.Cell>
               <Table.Summary.Cell index={2} align="right" className="!pe-2">
-                <Typography.Text type="danger">
-                  {formatMoney(totalNet, 2)}
-                </Typography.Text>
+                <Typography.Text type="danger" strong={strong}>{value}</Typography.Text>
               </Table.Summary.Cell>
             </Table.Summary.Row>
+          );
+          // 9 คอลัมน์ด้านบน => เว้น 7 ช่องซ้าย ให้ป้ายอยู่คอลัมน์ 8 และยอดคอลัมน์ 9
+          return (
+            <>
+              {row("Grand Total", formatMoney(totalNet, 2))}
+              {/* แสดงตลอด (ไม่มีส่วนลด = 0) จะได้ไม่งงว่าหายไปไหน */}
+              {row(pct > 0 ? `ส่วนลดรวม ${pct}%` : "ส่วนลดรวม", pct > 0 ? "-" + formatMoney(discount, 2) : formatMoney(0, 2))}
+              {row("ยอดสุทธิ", formatMoney(totalNet - discount, 2), true)}
+            </>
           );
         }}
       />
@@ -264,6 +273,7 @@ export default function SOView() {
           { title: 'จำนวน', dataIndex: 'qty' }, { title: 'หน่วย', dataIndex: 'unit' }
         ]} />
       </>}
+      <AuditInfo data={master} style={{ marginBottom: 8 }} />
       <Descriptions
         bordered
         column={{ xs: 1, sm: 2, md: 3, lg: 3, xl: 3, xxl: 3 }}

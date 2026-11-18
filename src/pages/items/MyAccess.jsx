@@ -149,8 +149,7 @@ const ItemsAccess = () => {
   };
 
   const handleView = (data) => {
-    const newWindow = window.open("", "_blank");
-    newWindow.location.href = `/dln-print/${data.dncode}`;
+    navigate(`view/${encodeURIComponent(data?.stcode)}`);
   };
 
   const handleDelete = (data) => {

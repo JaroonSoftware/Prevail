@@ -13,12 +13,12 @@ export function thaiDate(value) {
 
 // Totals accumulate integer satang; quantities remain separate for each unit.
 function totals(rows) {
-  const units = new Map(); let subtotal = 0, net = 0;
+  const units = new Map(); let subtotal = 0, net = 0, discount = 0;
   rows.forEach(row => {
     units.set(row.unit || '-', (units.get(row.unit || '-') || 0) + numeric(row.qty));
-    subtotal += cents(row.line_subtotal); net += cents(row.line_net_total);
+    subtotal += cents(row.line_subtotal); net += cents(row.line_net_total); discount += cents(row.line_discount);
   });
-  return { units: [...units].map(([unit, qty]) => ({ unit, qty })), subtotal: subtotal / 100, net: net / 100 };
+  return { units: [...units].map(([unit, qty]) => ({ unit, qty })), subtotal: subtotal / 100, net: net / 100, discount: discount / 100 };
 }
 
 export const REPORT_TITLES = { customer: REPORT_TITLE, product: 'รายงานขาย แยกตามสินค้า' };
@@ -44,7 +44,8 @@ export function buildHistoryRows(raw = [], mode = 'customer') {
   raw.forEach((source, index) => {
     const row = { ...source, qty: numeric(source.qty), price: numeric(source.price),
       line_subtotal: numeric(source.line_subtotal ?? numeric(source.qty) * numeric(source.price)),
-      line_net_total: numeric(source.line_net_total ?? numeric(source.qty) * numeric(source.price) * (1 + numeric(source.vat) / 100)), index };
+      line_net_total: numeric(source.line_net_total ?? numeric(source.qty) * numeric(source.price) * (1 + numeric(source.vat) / 100)),
+      line_discount: numeric(source.line_discount), index };
     const ok = outer.key(row);
     if (!groups.has(ok)) groups.set(ok, outer.make(row));
     const g = groups.get(ok);
@@ -71,7 +72,7 @@ export function buildHistoryRows(raw = [], mode = 'customer') {
     output.push({ type: 'grandTotal', label: 'รวมทั้งสิ้น', totals: totals(raw.map(r => ({ ...r,
       line_subtotal: r.line_subtotal ?? numeric(r.qty)*numeric(r.price),
       line_net_total: r.line_net_total ?? numeric(r.qty)*numeric(r.price)*(1+numeric(r.vat)/100) }))) });
-    output.push({ type: 'note', text: mode === 'product' ? 'หมายเหตุ: VAT ใช้อัตราสินค้าปัจจุบันตามรายงานขายเดิม' : 'หมายเหตุ: – หมายถึงไม่มีข้อมูลคืนสินค้า · VAT ใช้อัตราสินค้าปัจจุบันตามรายงานขายเดิม' });
+    output.push({ type: 'note', text: mode === 'product' ? 'หมายเหตุ: ส่วนลด = ส่วนลด % จากใบขาย (คิดก่อน VAT) · ยอดขายสุทธิหักส่วนลดแล้ว · VAT ใช้อัตราสินค้าปัจจุบัน' : 'หมายเหตุ: – หมายถึงไม่มีข้อมูลคืนสินค้า/ส่วนลด · ส่วนลด = ส่วนลด % จากใบขาย (คิดก่อน VAT) · ยอดขายสุทธิหักส่วนลดแล้ว' });
     output.push({ type: 'end', text: '>>>> จบรายงาน <<<<' });
   }
   return output.map((row, index) => ({ ...row, id: index }));

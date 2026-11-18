@@ -45,6 +45,14 @@ export const accessColumn = ({handleEdit, handleView, handlePrintsData, handleCr
     render: (v) => dayjs(v).format("DD/MM/YYYY"),
   },
   {
+    title: "วันที่นัดส่ง",
+    dataIndex: "deldate",
+    key: "deldate",
+    width: 130,
+    sorter: (a, b) => String(a.deldate || "").localeCompare(String(b.deldate || "")),
+    render: (v) => (v && !String(v).startsWith("0000") && dayjs(v).isValid() ? dayjs(v).format("DD/MM/YYYY") : "-"),
+  },
+  {
     title: "รหัสลูกค้า",
     dataIndex: "cuscode",
     key: "cuscode",

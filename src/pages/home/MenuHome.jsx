@@ -1,8 +1,8 @@
 import React from 'react';
-import { Link, Navigate, useParams } from 'react-router-dom';
-import { Empty, Result, Tooltip, message } from 'antd';
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Badge, Button, Empty, Result, Tooltip, message } from 'antd';
 import { LuTruck } from 'react-icons/lu';
-import { FileTextOutlined, ShoppingCartOutlined, AppstoreOutlined, WalletOutlined, SettingOutlined, PushpinFilled, PushpinOutlined } from '@ant-design/icons';
+import { FileTextOutlined, ShoppingCartOutlined, AppstoreOutlined, WalletOutlined, SettingOutlined, PushpinFilled, PushpinOutlined, DashboardOutlined, CalendarOutlined, BellOutlined } from '@ant-design/icons';
 import { Authenticate } from '../../service/Authenticate.service';
 import { MODULES, moduleForPath, visibleMenus, readRecent, recordRecent, moduleMenuSections } from './menu-data';
 import { PINNED_MAX, togglePinned, usePinnedMenus } from './pinned-menu';
@@ -19,6 +19,18 @@ export default function MenuHome() {
   const sections = moduleMenuSections(selected, menus);
   const pinnedMenus = pinned.map(p => menus.find(m => m.to === p)).filter(Boolean);
   const recent = readRecent(userId).filter(p => !pinned.includes(p)).map(p => menus.find(m => m.to === p)).filter(Boolean);
+
+  /* ปุ่มลัดมุมขวาบน: Dashboard (แทนเมนู Dashboard เดิม) / ปฏิทิน / แจ้งเตือน (ยังไม่เปิดใช้) */
+  const navigate = useNavigate();
+  const canDashboard = menus.some(m => m.to === '/dashboard');
+  const quickBtn = { width: 38, height: 38, borderRadius: 10 };
+  const QuickActions = <div className="pv-quick-actions">
+    <Tooltip title={canDashboard ? 'Dashboard' : 'ไม่มีสิทธิ์เข้า Dashboard'}>
+      <Button style={quickBtn} icon={<DashboardOutlined />} disabled={!canDashboard} onClick={() => navigate('/dashboard')} aria-label="Dashboard" />
+    </Tooltip>
+    <Tooltip title="ปฏิทิน (เร็ว ๆ นี้)"><Button style={quickBtn} icon={<CalendarOutlined />} disabled aria-label="ปฏิทิน" /></Tooltip>
+    <Tooltip title="การแจ้งเตือน (เร็ว ๆ นี้)"><Badge dot={false}><Button style={quickBtn} icon={<BellOutlined />} disabled aria-label="การแจ้งเตือน" /></Badge></Tooltip>
+  </div>;
 
   const handlePin = menu => {
     const result = togglePinned(userId, menu.to);
@@ -54,6 +66,7 @@ export default function MenuHome() {
   if (moduleCode === "RP") return <Navigate to="/menu" replace />;
   if (moduleCode && !selected) return <Result status="403" title="ไม่มีสิทธิ์เข้าถึงหมวดเมนูนี้" extra={<Link to="/menu">กลับเมนูระบบ</Link>} />;
   return <div className="pv-home">
+    {QuickActions}
     {!moduleCode && pinnedMenus.length > 0 && <section className="pv-section" aria-label="เมนูปักหมุด">
       <h2><PushpinFilled /> เมนูปักหมุด <small className="pv-pin-count">{pinned.length}/{PINNED_MAX}</small></h2>
       <div className="pv-grid">{pinnedMenus.map(tile)}</div>

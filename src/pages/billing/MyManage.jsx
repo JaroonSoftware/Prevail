@@ -44,6 +44,7 @@ import {TbSquareRoundedX} from "react-icons/tb";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { LuPackageSearch } from "react-icons/lu";
 import { LuPrinter } from "react-icons/lu";
+import AuditInfo from "../../components/AuditInfo";
 const blservice = BillingNoteService();
 const dnservice = DeliveryNoteService();
 const opservice = OptionService();
@@ -197,8 +198,15 @@ function BillingnoteManage() {
       (a, v) => (a += Number(v?.qty || 0) * Number(v?.price || 0)),
       0,
     );
-    const discount = form.getFieldValue("discount");
-    const grand_total_price = total_price - form.getFieldValue("discount");
+    /* ส่วนลด = ผลรวมส่วนลดของใบส่งของ (มาจาก % ที่ใบขาย) แก้ที่ใบวางบิลไม่ได้
+       แถวที่เพิ่งเลือกจากใบส่งของมี dn_discount, ตอนเปิดบิลเดิมใช้ค่าที่ server คำนวณไว้ */
+    const perDn = new Map();
+    newData.forEach((v) => { if (v?.dn_discount != null) perDn.set(v.dncode, Number(v.dn_discount || 0)); });
+    const discount = perDn.size
+      ? Math.round([...perDn.values()].reduce((a, x) => a + x, 0) * 100) / 100
+      : Number(form.getFieldValue("discount") || 0);
+    form.setFieldValue("discount", discount);
+    const grand_total_price = total_price - discount;
 
     setFormDetail(() => ({
       ...formDetail,
@@ -663,6 +671,8 @@ function BillingnoteManage() {
                             className="width-100 input-30"
                             controls={false}
                             style={{ textAlignLast: "right" }}
+                            disabled
+                            title="ส่วนลดมาจากใบขายสินค้า (แก้ที่ใบวางบิลไม่ได้)"
                             min={0}
                             onFocus={(e) => {
                               e.target.select();
@@ -826,7 +836,8 @@ function BillingnoteManage() {
             <Card
               title={
                 <>
-                  <Row className="m-0 py-3 sm:py-0" gutter={[12, 12]}>
+                  <AuditInfo data={formDetail} style={{ paddingTop: 8 }} />
+<Row className="m-0 py-3 sm:py-0" gutter={[12, 12]}>
                     <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
                       <Typography.Title level={3} className="m-0">
                         เลขที่ใบวางบิล : {blCode}

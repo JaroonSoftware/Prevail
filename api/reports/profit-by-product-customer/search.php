@@ -5,6 +5,9 @@ http_response_code(400);
 
 $db = new DbConnect;
 $conn = $db->connect();
+/* ส่วนลด % ของใบส่งของ (มาจากใบขาย) แบ่งลงรายบรรทัด: ส่วนลด = จำนวน x ราคา x % (ก่อน VAT) */
+$dPct = (bool)$conn->query("SHOW COLUMNS FROM dnmaster LIKE 'discount_pct'")->fetch() ? "COALESCE(a.discount_pct,0)" : "0";
+
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $rest_json = file_get_contents("php://input");
@@ -40,7 +43,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             IFNULL(i.buyprice, 0) AS buyprice,
             IFNULL(sd.total_cost, 0) AS total_cost,
             (IFNULL(b.qty, 0) * IFNULL(b.price, 0)) AS line_subtotal,
-            ((IFNULL(b.qty, 0) * IFNULL(b.price, 0)) * (1 + (IFNULL(sd.vat, IFNULL(i.vat, 0)) / 100))) AS line_net_total,
+            ROUND(IFNULL(b.qty, 0) * IFNULL(b.price, 0) * " . $dPct . " / 100, 2) AS line_discount,
+            (((IFNULL(b.qty, 0) * IFNULL(b.price, 0)) - ROUND(IFNULL(b.qty, 0) * IFNULL(b.price, 0) * " . $dPct . " / 100, 2)) * (1 + (IFNULL(sd.vat, IFNULL(i.vat, 0)) / 100))) AS line_net_total,
             IFNULL(
                 NULLIF(
                     CASE
@@ -52,7 +56,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 (IFNULL(b.qty, 0) * IFNULL(i.buyprice, 0))
             ) AS line_cost_total,
             (
-                ((IFNULL(b.qty, 0) * IFNULL(b.price, 0)) * (1 + (IFNULL(sd.vat, IFNULL(i.vat, 0)) / 100))) -
+                (((IFNULL(b.qty, 0) * IFNULL(b.price, 0)) - ROUND(IFNULL(b.qty, 0) * IFNULL(b.price, 0) * " . $dPct . " / 100, 2)) * (1 + (IFNULL(sd.vat, IFNULL(i.vat, 0)) / 100))) -
                 IFNULL(
                     NULLIF(
                         CASE

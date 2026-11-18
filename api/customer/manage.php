@@ -3,6 +3,13 @@ ob_start();
 include_once(dirname(__FILE__, 2) . "/onload.php");
 include_once(dirname(__FILE__, 2) . "/common/fnc-code.php");
 
+/* รับแจ้งเตือนรายงานทุกวัน (Dashboard ลูกค้าที่ยังไม่ออกใบขาย) — ต้องรัน sql/2026-11-18_customer_daily_alert.sql */
+function save_daily_alert(PDO $conn, $cuscode, $value): void {
+    if ($value === null || !$conn->query("SHOW COLUMNS FROM customer LIKE 'daily_alert'")->fetch()) return;
+    $conn->prepare("UPDATE customer SET daily_alert = :d WHERE cuscode = :c")
+         ->execute(array('d' => ($value === true || $value === 'Y' || $value === 1 || $value === '1') ? 'Y' : 'N', 'c' => (string)$cuscode));
+}
+
 $db = new DbConnect;
 $conn = $db->connect();
 $conn->beginTransaction();
@@ -82,6 +89,7 @@ try {
             }
         }
 
+        save_daily_alert($conn, $cuscode ?? null, $daily_alert ?? null);
         $conn->commit();
         $strSQL = "UPDATE cuscode SET ";
         $strSQL .= " number= number+1 ";
@@ -201,6 +209,7 @@ try {
             }
         }
 
+        save_daily_alert($conn, $cuscode ?? null, $daily_alert ?? null);
         $conn->commit();
         http_response_code(200);
         echo json_encode(array("data" => array("id" => $_PUT)));

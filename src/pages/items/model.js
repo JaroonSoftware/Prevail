@@ -1,7 +1,8 @@
 import { Badge, Space } from "antd";
 import { Button } from "antd";
 // import { PrinterOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons";
-import { EditOutlined } from "@ant-design/icons";
+import { EditOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+
 // import dayjs from 'dayjs';
 
 export const accessColumn = ({ handleEdit, handleDelete, handleView }) => [
@@ -83,10 +84,19 @@ export const accessColumn = ({ handleEdit, handleDelete, handleView }) => [
   {
     title: "Action",
     key: "operation",
-    width: "60px",
+    width: "90px",
     fixed: "right",
     render: (text, record) => (
       <Space>
+        {/* ดูรายละเอียดสินค้า — ปุ่มเขียวแบบหน้าใบขายสินค้า วางหน้าปุ่มแก้ไข */}
+        <Button
+          icon={<ExclamationCircleOutlined />}
+          className="bn-success-outline"
+          style={{ cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+          onClick={(e) => handleView(record)}
+          size="small"
+          title="ดูรายละเอียด"
+        />
         <Button
           icon={<EditOutlined />}
           className="bn-primary-outline"

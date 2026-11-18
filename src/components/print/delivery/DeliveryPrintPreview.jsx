@@ -117,6 +117,7 @@ export default function DeliveryPrintPreview(props) {
      แถวท้ายๆ จะถูกตัดหายเงียบๆ ไม่ได้ขึ้นหน้าใหม่ ตั้งน้อยไว้ปลอดภัยกว่า */
   const ROWS_PER_PAGE = 16;
 
+  const dnDiscount = Number(hData?.discount || 0);
   const pages = useMemo(() => {
     const list = Array.isArray(details) ? details : [];
     const out = [];
@@ -162,7 +163,8 @@ export default function DeliveryPrintPreview(props) {
          - หน้าปกติใส่ได้ ROWS_PER_PAGE แถว, หน้าสุดท้ายต้องเว้นที่ยอดรวม/ช่องเซ็น ใส่ได้ ROWS_PER_PAGE-1
          - หาจำนวนหน้าน้อยที่สุดก่อน แล้วกระจายแถวเท่าๆ กัน (หน้าแรกๆ ได้มากกว่าหรือเท่ากับหน้าหลัง)
          เช่น 32 แถว: เดิม 16 / 1 / 15  ->  11 / 11 / 10 */
-      const lastCap = ROWS_PER_PAGE - 1;
+      /* มีส่วนลด = ท้ายหน้ามีเพิ่ม 2 บรรทัด (รวมเงิน/ส่วนลด) จึงเว้นแถวเพิ่ม */
+      const lastCap = ROWS_PER_PAGE - (dnDiscount > 0 ? 3 : 1);
       let pagesLeft = groupRows.length <= lastCap ? 1 : 1 + Math.ceil((groupRows.length - lastCap) / ROWS_PER_PAGE);
       while (remainingRows.length > 0) {
         const isSummaryPage = pagesLeft <= 1;
@@ -194,7 +196,7 @@ export default function DeliveryPrintPreview(props) {
     }
 
     return out;
-  }, [details]);
+  }, [details, dnDiscount]);
 
   const totalPages = pages.length || 1;
 
@@ -311,11 +313,30 @@ export default function DeliveryPrintPreview(props) {
   const SheetFoot = ({ total }) => (
     <>
       <div className="dnf-rule" />
-      <div className="dnf-total">
-        <span>({thaiBahtText(total || 0, 2, 2)}).</span>
-        <span>รวมเป็นเงิน</span>
-        <span className="dnf-total-amt">{formatMoney(total || 0, 2, 2)}</span>
-      </div>
+      {dnDiscount > 0 ? (
+        /* ส่วนลด % จากใบขาย (คำนวณจากยอดใบส่งของนี้) */
+        <>
+          <div className="dnf-total">
+            <span></span><span>รวมเงิน</span>
+            <span className="dnf-total-amt">{formatMoney(total || 0, 2, 2)}</span>
+          </div>
+          <div className="dnf-total">
+            <span></span><span>ส่วนลด {Number(hData?.discount_pct || 0)}%</span>
+            <span className="dnf-total-amt">{formatMoney(dnDiscount, 2, 2)}</span>
+          </div>
+          <div className="dnf-total">
+            <span>({thaiBahtText((total || 0) - dnDiscount, 2, 2)}).</span>
+            <span>รวมเป็นเงิน</span>
+            <span className="dnf-total-amt">{formatMoney((total || 0) - dnDiscount, 2, 2)}</span>
+          </div>
+        </>
+      ) : (
+        <div className="dnf-total">
+          <span>({thaiBahtText(total || 0, 2, 2)}).</span>
+          <span>รวมเป็นเงิน</span>
+          <span className="dnf-total-amt">{formatMoney(total || 0, 2, 2)}</span>
+        </div>
+      )}
       <div className="dnf-rule" />
       <div className="dnf-recv">
         <div>ได้รับสินค้าตามรายการข้างบนนี้ไว้ถูกต้อง</div>

@@ -4,15 +4,15 @@ import DocumentLink from '../../../components/DocumentLink';
 import { COMPANY_NAME, REPORT_TITLES, money, quantity, thaiDate, buildHistoryRows, paginateHistory } from './reportHelpers';
 import './history.css';
 
-/* 9 คอลัมน์ทั้งสองแบบ (ไม่มีคอลัมน์ส่วนลด/รวมเงิน — ระบบไม่มีส่วนลดรายบรรทัด)
+/* 10 คอลัมน์ทั้งสองแบบ — ส่วนลด = ส่วนลด % ของใบส่งของ (มาจากใบขาย) แบ่งลงรายบรรทัด, ยอดขายสุทธิหักส่วนลดแล้ว
    แยกตามลูกค้า: แนวนอน | แยกตามสินค้า: แนวตั้ง มีรหัสลูกค้าในแถว ไม่มีคอลัมน์คืน */
-const COLS = 9;
+const COLS = 10;
 const columnsFor = mode => mode === 'product'
-  ? [10,14,10,14,12,6,13,12,9]
-  : [11,17,12,5,10,6,13,12,14];
+  ? [9,13,9,13,11,5,10,12,11,7]
+  : [10,16,11,5,9,5,10,11,11,12];
 const headingsFor = mode => mode === 'product'
-  ? ['วันที่','เลขที่เอกสาร','รหัสลูกค้า','จำนวน','ราคาต่อหน่วย','VAT','ยอดขายสุทธิ','อ้างอิง','หมายเหตุ']
-  : ['สินค้า / วันที่','เลขที่เอกสาร','จำนวน','คืน','ราคาต่อหน่วย','VAT','ยอดขายสุทธิ','อ้างอิง','หมายเหตุ'];
+  ? ['วันที่','เลขที่เอกสาร','รหัสลูกค้า','จำนวน','ราคาต่อหน่วย','VAT','ส่วนลด','ยอดขายสุทธิ','อ้างอิง','หมายเหตุ']
+  : ['สินค้า / วันที่','เลขที่เอกสาร','จำนวน','คืน','ราคาต่อหน่วย','VAT','ส่วนลด','ยอดขายสุทธิ','อ้างอิง','หมายเหตุ'];
 function Header({ filters, generatedAt, number, total, mode }) {
   const REPORT_TITLE = REPORT_TITLES[mode] || REPORT_TITLES.customer;
   return <header className="history-page-header">
@@ -35,6 +35,7 @@ function ReportRow({ item, measure = false, mode, ...props }) {
       <td className="history-number">{quantity(r.qty)} <span>{r.unit || '-'}</span></td>
       {!byProduct && <td className="history-number">–</td>}<td className="history-number">{money(r.price)}</td>
       <td className="history-number">{Number(r.vat) || 0}</td>
+      <td className="history-number">{r.line_discount > 0 ? money(r.line_discount) : '–'}</td>
       <td className="history-number">{money(r.line_net_total)}</td>
       <td>{r.socode ? (measure ? r.socode : <DocumentLink type="socode" code={r.socode} />) : '–'}</td>
       <td className="history-remark">{r.remark || '–'}</td>
@@ -44,7 +45,7 @@ function ReportRow({ item, measure = false, mode, ...props }) {
   return <tr {...props} className={'history-total history-' + item.type}>
     <td colSpan={byProduct ? 3 : 2}>{item.label}</td>
     <td className="history-number">{t.units.map(u=><div key={u.unit}>{quantity(u.qty)} {u.unit}</div>)}</td>
-    <td colSpan={byProduct ? 2 : 3}></td><td className="history-number">{money(t.net)}</td><td colSpan={2}></td>
+    <td colSpan={byProduct ? 2 : 3}></td><td className="history-number">{t.discount > 0 ? money(t.discount) : ''}</td><td className="history-number">{money(t.net)}</td><td colSpan={2}></td>
   </tr>;
 }
 function ReportTable({ children, mode }) {

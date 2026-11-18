@@ -38,6 +38,7 @@ import { LuPackageSearch } from "react-icons/lu";
 import { TbExclamationCircle } from "react-icons/tb";
 import { CloseCircleFilledIcon } from "../../components/icon";
 import { Authenticate } from "../../service/Authenticate.service";
+import AuditInfo from "../../components/AuditInfo";
 const opservice = OptionService();
 const customerService = CustomerService();
 const dnservice = DeliveryNoteService();
@@ -646,7 +647,8 @@ function DeliveryNoteManage() {
             <Card
                       title={
                         <>
-                          <Row className="m-0 py-3 sm:py-0" gutter={[12, 12]}>
+                          <AuditInfo data={formDetail} style={{ paddingTop: 8 }} />
+<Row className="m-0 py-3 sm:py-0" gutter={[12, 12]}>
                             <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
                               <Typography.Title level={3} className="m-0">
                                 เลขที่ใบส่งสินค้า : {dnCode}

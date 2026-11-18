@@ -189,9 +189,12 @@ try {
         echo json_encode(array("data" => array("id" => $_PUT)));
     } else  if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $code = $_GET["code"];
-        $sql = " SELECT a.* ";
+        $sql = " SELECT a.*, t.typename, TRIM(CONCAT(IFNULL(uc.firstname,''),' ',IFNULL(uc.lastname,''))) AS created_name,
+                 TRIM(CONCAT(IFNULL(uu.firstname,''),' ',IFNULL(uu.lastname,''))) AS updated_name ";
         $sql .= " FROM `items` as a ";
-        $sql .= " where stcode = :code";
+        $sql .= " left join `user` as uc on (a.created_by = uc.code) left join `user` as uu on (a.updated_by = uu.code) ";
+        $sql .= " left join `itemtype` as t on (a.typecode = t.typecode) ";
+        $sql .= " where a.stcode = :code";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute(['code' => $code])) {

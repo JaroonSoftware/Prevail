@@ -80,8 +80,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $active_status = !empty($active_status) ? "and a.active_status = '$active_status'" : "";
     try {
         $sql = "SELECT a.stcode, a.stname,a.stnameEN, b.typename, a.price,a.min, a.buyprice, a.weight_stable, a.weight, a.vat ,a.active_status,a.unit,a.packing_weight,        
-        s.qty as stock 
+        s.qty as stock,
+        /* ผู้สร้าง / ผู้แก้ไขล่าสุด */
+        a.created_date, a.updated_date,
+        TRIM(CONCAT(IFNULL(uc.firstname,''),' ',IFNULL(uc.lastname,''))) AS created_name,
+        TRIM(CONCAT(IFNULL(uu.firstname,''),' ',IFNULL(uu.lastname,''))) AS updated_name
         FROM `items` as a
+        left join `user` as uc on (a.created_by = uc.code)
+        left join `user` as uu on (a.updated_by = uu.code)
         left outer join `itemtype` as b on (a.typecode=b.typecode)   
         left outer join `items_stock` as s on (a.stcode=s.stcode)     
         where 1=1

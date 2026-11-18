@@ -1,6 +1,7 @@
 <?php
 
 require_once dirname(__DIR__) . "/common/packing.php";
+require_once dirname(__DIR__) . "/common/discount.php";
 /* ============================================================================
    แก้ใบขายที่ปริ้นหน้าถุงแล้ว
    - บรรทัดที่ รหัส/หน่วย/จำนวน/น้ำหนักต่อถุง เหมือนเดิม -> เก็บ barcode + สถานะปริ้นไว้ (ย้ายไปผูกบรรทัดใหม่)
@@ -184,6 +185,8 @@ try {
                 throw new PDOException("Insert data error => $error");
             }
         }
+        /* ส่วนลดรวม % (0/3/5) */
+        so_save_discount($conn, (string)$socode, ((array)$header)['discount_pct'] ?? 0, true);
 
         $conn->commit();
         http_response_code(200);
@@ -283,6 +286,8 @@ try {
         }
 
         if ($labelPlan) so_label_apply($conn, (string)$header->socode, $labelPlan);
+        /* ส่วนลดรวม % — ออกใบส่งของแล้วแก้ไม่ได้ (so_save_discount จะแจ้ง error) */
+        so_save_discount($conn, (string)$header->socode, ((array)$header)['discount_pct'] ?? 0, false);
 
         $conn->commit();
         http_response_code(200);
@@ -302,7 +307,7 @@ try {
         if ((int)$linked->fetchColumn() > 0) throw new PDOException('มีใบส่งสินค้าที่ใช้งานอยู่ กรุณาตรวจเอกสารที่เกี่ยวข้องก่อนยกเลิก');
 
 
-        $sql = "update somaster set active_status = 'N',doc_status = 'ยกเลิก' where socode = :socode";
+        $sql = "update somaster set active_status = 'N',doc_status = 'ยกเลิก', updated_date = CURRENT_TIMESTAMP(), updated_by = " . (int)($token->userid ?? 0) . " where socode = :socode";
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute(['socode' => $socode])) {
             $error = $conn->errorInfo();
@@ -333,6 +338,12 @@ try {
             throw new PDOException("Geting data error => $error");
         }
         $header = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($header && so_discount_ready($conn)) {
+            $d = $conn->prepare("SELECT discount_pct FROM somaster WHERE socode = :s");
+            $d->execute(array('s' => $header['socode']));
+            $header['discount_pct'] = (float)$d->fetchColumn();
+            $header['has_dn'] = so_has_delivery_note($conn, (string)$header['socode']);
+        }
 
         $sql = "SELECT a.code,a.socode,a.stcode, a.price, a.unit, a.qty,a.vat,i.stname," . ($aiSrc ? "a.ai_raw,a.ai_raw_code,a.ai_stcode," : "") . (packing_schema_ready($conn) ? "a.packing_weight" : "i.packing_weight") . " ";
         $sql .= " FROM `sodetail` as a inner join `items` as i on (a.stcode=i.stcode)  ";

@@ -23,6 +23,7 @@ import { delay } from "../../utils/util";
 import Itemservice from "../../service/Items.Service";
 import OptionService from "../../service/Options.service";
 
+import dayjs from "dayjs";
 import "./item-form.css";
 
 /* จำนวนช่องชื่อย่อยที่ให้กรอก */
@@ -389,7 +390,13 @@ const ItemsManage = ({ embedded = false, initialItem = {}, onSaved, onCancel, on
             modifier: "public",
           }}
         >
-          <Card title={config?.title}>{Detail}</Card>
+          <Card title={config?.title} extra={config?.action !== "create" && (formDetail?.created_name || formDetail?.updated_name) ? (
+            /* ผู้สร้าง / ผู้แก้ไขล่าสุด */
+            <span style={{ fontSize: 12, color: "#666" }}>
+              สร้างโดย {formDetail?.created_name || "-"}{formDetail?.created_date ? " " + dayjs(formDetail.created_date).format("DD/MM/YYYY HH:mm") : ""}
+              {" · "}แก้ไขล่าสุดโดย {formDetail?.updated_name || "-"}{formDetail?.updated_date ? " " + dayjs(formDetail.updated_date).format("DD/MM/YYYY HH:mm") : ""}
+            </span>
+          ) : null}>{Detail}</Card>
         </Form>
         {SectionBottom}
       </Space>

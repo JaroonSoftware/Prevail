@@ -6,7 +6,7 @@ export const MODULES = [
  {code:'PU',title:'จัดซื้อ',english:'Purchasing',paths:['/purchase-order','/supplier']},
  {code:'AC',title:'บัญชี',english:'Accounting',paths:['/billing','/receipt','/delivery-note','/outstanding-by-customer-report','/profit-by-product-customer-report','/customers']},
  {code:'SH',title:'จัดส่ง',english:'Shipping',paths:['/shipping','/delivery-trip','/county']},
- {code:'AD',title:'ผู้ดูแลระบบ',english:'Administration',paths:['/dashboard','/users','/permissions']},
+ {code:'AD',title:'ผู้ดูแลระบบ',english:'Administration',paths:['/users','/permissions']},
 ];
 export function visibleMenus(role, username) {
  return nav.filter(item=>{
@@ -17,9 +17,10 @@ export function visibleMenus(role, username) {
 }
 export const moduleForPath = path => MODULES.find(m=>m.paths.some(p=>path===p || path.startsWith(p+'/')));
 export function readRecent(userId) {
- try {const rows=JSON.parse(localStorage.getItem('prevail-menu-recent:'+userId)||'[]');return Array.isArray(rows)?rows.filter(p=>typeof p==='string').slice(0,5):[];}catch{return [];}
+ try {const rows=JSON.parse(localStorage.getItem('prevail-menu-recent:'+userId)||'[]');return Array.isArray(rows)?rows.filter(p=>typeof p==='string'&&p!=='/dashboard').slice(0,5):[];}catch{return [];}
 }
-export function recordRecent(userId,path) {const next=[path,...readRecent(userId).filter(p=>p!==path)].slice(0,5);try{localStorage.setItem('prevail-menu-recent:'+userId,JSON.stringify(next));}catch{}return next;}
+/* Dashboard เปิดจากปุ่มมุมขวาบน ไม่เก็บ/ไม่แสดงในเมนู "เข้าใช้ล่าสุด" */
+export function recordRecent(userId,path) {if(path==='/dashboard')return readRecent(userId);const next=[path,...readRecent(userId).filter(p=>p!==path)].slice(0,5);try{localStorage.setItem('prevail-menu-recent:'+userId,JSON.stringify(next));}catch{}return next;}
 
 // Sections within a module; use only menus already visible to this user.
 const MASTER_PATHS = new Set(['/customers', '/catalog', '/supplier', '/items', '/itemtype', '/unit', '/county', '/users']);

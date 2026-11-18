@@ -1,4 +1,5 @@
 <?php
+require_once dirname(__DIR__) . "/common/discount.php";
 ob_start();
 include_once(dirname(__FILE__, 2) . "/onload.php");
 include_once(dirname(__FILE__, 2) . "/common/fnc-code.php");
@@ -90,6 +91,8 @@ try {
                 }
         }
 
+        /* ส่วนลด = ผลรวมส่วนลดของใบส่งของในบิล (มาจาก % ที่ใบขาย แก้ที่บิลไม่ได้) */
+        bill_apply_discount($conn, (string)$header->blcode);
         $conn->commit();
         http_response_code(200);
         echo json_encode(array("data" => array("code" => $code, "document_code" => $header->blcode)));
@@ -159,6 +162,8 @@ try {
             }
         }
 
+        /* ส่วนลด = ผลรวมส่วนลดของใบส่งของในบิล (มาจาก % ที่ใบขาย แก้ที่บิลไม่ได้) */
+        bill_apply_discount($conn, (string)$header->blcode);
         $conn->commit();
         http_response_code(200);
         echo json_encode(array("data" => array("code" => $code)));
@@ -166,7 +171,7 @@ try {
         // $code = $_DELETE["code"];
         $blcode = $_GET["code"];
 
-        $sql = "update bl_master set active_status = 'N',doc_status = 'ยกเลิก' where blcode = :blcode";
+        $sql = "update bl_master set active_status = 'N',doc_status = 'ยกเลิก', updated_date = CURRENT_TIMESTAMP(), updated_by = " . (int)($action_user ?? 0) . " where blcode = :blcode";
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute(['blcode' => $blcode])) {
             $error = $conn->errorInfo();

@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "../pages/Login";
 import PageNotFound from "../pages/404";
 import PrivateRoute from "../components/auth/PrivateRoutes";
-import { DashBoard } from "../pages/dashboard";
+import DailyOrderDashboard from "../pages/dashboard/DailyOrderDashboard";
 import { ROLES } from "../constant/constant";
 import ShippingRoutes from "../components/auth/ShippingRoutes";
 import { HeaderShipping } from "./shipping.router";
@@ -30,7 +30,8 @@ const Router = () => {
         <Route
           element={<PrivateRoute allowdRole={[ROLES.ADMIN, ROLES.USER]} />}
         >
-          <Route path="/dashboard" element={<DashBoard />} />
+          {/* Dashboard = ลูกค้ารับแจ้งเตือนที่ยังไม่ออกใบขาย (หน้าเดิมยังอยู่ที่ pages/dashboard/DashBoard.jsx) */}
+          <Route path="/dashboard" element={<DailyOrderDashboard />} />
         </Route>
 
         <Route element={<PrivateRoute allowdRole={[ROLES.ADMIN]} />}>

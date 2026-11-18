@@ -3,6 +3,7 @@ ob_start();
 include_once(dirname(__FILE__, 2) . "/onload.php");
 include_once(dirname(__FILE__, 2) . "/common/fnc-code.php");
 require_once __DIR__ . "/source-line-map.php";
+require_once dirname(__DIR__) . "/common/discount.php";
 
 $db = new DbConnect;
 $conn = $db->connect();
@@ -184,6 +185,8 @@ try {
                 die;
             }
         }
+        /* ส่วนลด % จากใบขาย x ยอดก่อน VAT ของใบส่งของนี้ */
+        dn_apply_discount($conn, (string)$dncode);
 
         $conn->commit();
         http_response_code(200);
@@ -361,6 +364,9 @@ try {
                 ->execute(array('s' => $socode, 'u' => $action_user, 'code' => $socode));
         }
 
+        /* จำนวน/ราคาเปลี่ยน -> ส่วนลดของใบส่งของคำนวณใหม่ (% เดิมจากใบขาย) */
+        dn_apply_discount($conn, (string)$header->dncode);
+
         foreach ($linkedBills as $bill) {
             $conn->prepare("DELETE FROM bl_detail WHERE blcode = :b AND dncode = :d")
                 ->execute(array('b' => $bill['blcode'], 'd' => $header->dncode));
@@ -370,17 +376,21 @@ try {
             $conn->prepare("UPDATE bl_master SET total_price = (SELECT COALESCE(SUM(qty * price),0) FROM bl_detail WHERE blcode = :b),
                 updated_date = CURRENT_TIMESTAMP(), updated_by = :u WHERE blcode = :code")
                 ->execute(array('b' => $bill['blcode'], 'u' => $action_user, 'code' => $bill['blcode']));
+            bill_apply_discount($conn, (string)$bill['blcode']);
         }
         // Keep unpaid receipts consistent with the updated billing totals.
         foreach (array_keys($linkedReceipts) as $recode) {
             $conn->prepare("UPDATE receipt_detail rd JOIN bl_master b ON b.blcode = rd.blcode
-                SET rd.total_price = b.total_price, rd.grand_total_price = b.total_price - COALESCE(rd.discount,0)
+                SET rd.total_price = b.total_price, rd.discount = COALESCE(b.discount,0),
+                    rd.grand_total_price = b.total_price - COALESCE(b.discount,0)
                 WHERE rd.recode = :r")
                 ->execute(array('r' => $recode));
             $conn->prepare("UPDATE receipt SET total_price = (SELECT COALESCE(SUM(total_price),0) FROM receipt_detail WHERE recode = :r),
-                grand_total_price = (SELECT COALESCE(SUM(total_price),0) FROM receipt_detail WHERE recode = :r2) - COALESCE(total_discount,0),
+                total_discount = (SELECT COALESCE(SUM(discount),0) FROM receipt_detail WHERE recode = :r3),
+                grand_total_price = (SELECT COALESCE(SUM(total_price),0) FROM receipt_detail WHERE recode = :r2)
+                    - (SELECT COALESCE(SUM(discount),0) FROM receipt_detail WHERE recode = :r4),
                 updated_date = CURRENT_TIMESTAMP(), updated_by = :u WHERE recode = :code")
-                ->execute(array('r' => $recode, 'r2' => $recode, 'u' => $action_user, 'code' => $recode));
+                ->execute(array('r' => $recode, 'r2' => $recode, 'r3' => $recode, 'r4' => $recode, 'u' => $action_user, 'code' => $recode));
         }
         $conn->commit();
         http_response_code(200);
@@ -423,7 +433,7 @@ try {
             }
        
         
-        $sql = "update dnmaster set doc_status = 'ยกเลิก' where dncode = :code";
+        $sql = "update dnmaster set doc_status = 'ยกเลิก', updated_date = CURRENT_TIMESTAMP(), updated_by = " . (int)($action_user ?? 0) . " where dncode = :code";
         $stmt = $conn->prepare($sql); 
         if (!$stmt->execute([ 'code' => $code ])){
             $error = $conn->errorInfo();

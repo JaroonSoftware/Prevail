@@ -17,6 +17,7 @@ import { TagDeliveryNoteStatus } from "../../components/badge-and-tag";
 import { formatMoney } from "../../utils/util";
 import { soViewColumns } from "./model";
 import useConfirm from "../../store/hook/use-confirm.hook";
+import AuditInfo from "../../components/AuditInfo";
 
 import "./MyPage.css";
 
@@ -310,6 +311,7 @@ export default function DeliveryNoteView() {
             label: "ข้อมูลใบส่งสินค้า",
             children: (
               <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+                <AuditInfo data={master} style={{ marginBottom: 8 }} />
                 <Descriptions
                   bordered
                   column={{ xs: 1, sm: 2, md: 3, lg: 3, xl: 3, xxl: 3 }}

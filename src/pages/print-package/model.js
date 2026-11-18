@@ -1,3 +1,4 @@
+import { Tag } from "antd";
 import { docCodeCompare } from "../../utils/docCode";
 import { Button, Space } from "antd";
 import "../../assets/styles/banks.css";
@@ -319,6 +320,17 @@ export const productColumnInCollape = () => [
     width: "10%",
     // editable: true,
     // type: "select",
+  },
+  {
+    /* สถานะปริ้นหน้าถุงของแต่ละบรรทัด */
+    title: "สถานะปริ้น",
+    dataIndex: "packing_status",
+    key: "packing_status",
+    align: "center",
+    width: "12%",
+    render: (_, rec) => isPackedPrinted(rec)
+      ? <Tag color="green">ปริ้นแล้ว</Tag>
+      : <Tag color="orange">ยังไม่ปริ้น</Tag>,
   },
 ];
 

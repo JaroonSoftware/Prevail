@@ -38,6 +38,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { LuPrinter } from "react-icons/lu";
 import { LuPackageSearch } from "react-icons/lu";
+import AuditInfo from "../../components/AuditInfo";
 const opservice = OptionService();
 const reservice = ReceiptService();
 const blservice = BillingNoteService();
@@ -533,12 +534,15 @@ function ReceiptManage() {
                             controls={false}
                             style={{ width: 100 }}
                             value={discountValue}
+                            disabled
+                            title="ส่วนลดกรอกที่ใบขายสินค้าเท่านั้น"
                             onChange={(v) => setDiscountValue(Number(v || 0))}
                           />
                           <Select
                             size="small"
                             style={{ width: 78 }}
                             value={discountMode}
+                            disabled
                             onChange={(v) => setDiscountMode(v)}
                             options={[
                               { value: "percent", label: "%" },
@@ -684,7 +688,8 @@ function ReceiptManage() {
             <Card
               title={
                 <>
-                  <Row className="m-0 py-3 sm:py-0" gutter={[12, 12]}>
+                  <AuditInfo data={formDetail} style={{ paddingTop: 8 }} />
+<Row className="m-0 py-3 sm:py-0" gutter={[12, 12]}>
                     <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12}>
                       <Typography.Title level={3} className="m-0">
                         เลขที่ใบเสร็จรับเงิน : {reCode}

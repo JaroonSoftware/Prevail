@@ -32,12 +32,15 @@ try {
         }
     }
     $conn = (new DbConnect)->connect();
+    /* ส่วนลด % ของใบส่งของ (มาจากใบขาย) แบ่งลงรายบรรทัด: ส่วนลด = จำนวน x ราคา x % (ก่อน VAT) */
+    $dPct = (bool)$conn->query("SHOW COLUMNS FROM dnmaster LIKE 'discount_pct'")->fetch() ? "COALESCE(a.discount_pct,0)" : "0";
     $sql = "SELECT b.code AS detail_code, a.dncode, a.dndate, a.cuscode,
         COALESCE(c.cusname, a.cuscode) AS cusname, b.socode, b.stcode,
         COALESCE(i.stname, b.stcode) AS stname, i.stnameEN, b.qty, b.price, b.unit,
         COALESCE(i.vat, 0) AS vat, a.remark,
         ROUND(COALESCE(b.qty,0) * COALESCE(b.price,0), 2) AS line_subtotal,
-        ROUND(COALESCE(b.qty,0) * COALESCE(b.price,0) * (1 + COALESCE(i.vat,0)/100), 2) AS line_net_total
+        ROUND(COALESCE(b.qty,0) * COALESCE(b.price,0) * " . $dPct . " / 100, 2) AS line_discount,
+        ROUND((COALESCE(b.qty,0) * COALESCE(b.price,0) - ROUND(COALESCE(b.qty,0) * COALESCE(b.price,0) * " . $dPct . " / 100, 2)) * (1 + COALESCE(i.vat,0)/100), 2) AS line_net_total
         FROM dnmaster a JOIN dndetail b ON b.dncode = a.dncode
         LEFT JOIN customer c ON c.cuscode = a.cuscode
         LEFT JOIN items i ON i.stcode = b.stcode

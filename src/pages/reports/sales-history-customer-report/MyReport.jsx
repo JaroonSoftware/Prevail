@@ -40,11 +40,12 @@ export default function SalesHistoryCustomerReport({ mode = 'customer' }){
     let filters=defaultFilters(),restore=false;
     try{const saved=JSON.parse(sessionStorage.getItem(storageKey)||'null');if(saved&&dayjs(saved.date_from).isValid()&&dayjs(saved.date_to).isValid()){filters={...filters,...saved};restore=true;}}catch{}
     form.setFieldsValue({...filters,dates:[dayjs(filters.date_from),dayjs(filters.date_to)]});
-    if(restore)load(filters);
+    /* รายงานขาย แยกตามสินค้า: ไม่ประมวลผลเองตอนเปิดหน้า ต้องกด "แสดงรายงาน" ก่อน (ตัวกรองเดิมยังกรอกไว้ให้) */
+    if(restore && mode!=='product')load(filters);
     return()=>{active=false;requestState.value++;};
     // Filters are restored once for this signed-in user; searches are explicit.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[form,storageKey]);
+  },[form,storageKey,mode]);
   const search=async()=>{
     try{
       const v=await form.validateFields();

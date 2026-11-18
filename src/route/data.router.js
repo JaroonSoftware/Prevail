@@ -1,3 +1,4 @@
+import ItemView from "../pages/items/ItemView";
 import PermissionPage from "../pages/permission";
 import { DocumentPage } from "../components/DocumentLink";
 import React from "react";
@@ -22,6 +23,7 @@ export const DataRouter = (
     <Route path="/items/" exact element={<Items />}>
       <Route index element={<ItemsAccess />} />
       <Route path="manage/:action" element={<ItemsManage />} />
+      <Route path="view/:code" element={<ItemView />} />
       <Route path="order" element={<ItemsOrder />} />
     </Route>
 
