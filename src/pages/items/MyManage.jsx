@@ -222,7 +222,7 @@ const ItemsManage = ({ embedded = false, initialItem = {}, onSaved, onCancel, on
           </Form.Item>
         </Col>
         <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={4}>
-          <Form.Item label="หน่วยสินค้า" name="unit">
+          <Form.Item label="หน่วยสินค้า" name="unit" rules={[{ required: true, message: "กรุณาเลือกหน่วยสินค้า" }]}>
             <Select
               size="large"
               showSearch

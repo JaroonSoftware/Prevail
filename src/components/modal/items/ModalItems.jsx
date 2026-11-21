@@ -56,6 +56,13 @@ export default function ModalCusCL({show, close, values, selected, groups = [], 
 
     const handleCheckDuplicate = (itemCode) => !!selected.find( (item) =>  item?.stcode === itemCode ) ; 
 
+    // Select every matching item across pages, retaining selections from other filters.
+    const selectableItems = itemsDataWrap.filter((item) => !handleCheckDuplicate(item.stcode));
+    const hasUnselectedItems = selectableItems.some((item) => !itemsRowKeySelect.includes(item.stcode));
+    const handleSelectAll = () => {
+        setItemsRowKeySelect((keys) => [...new Set([...keys, ...selectableItems.map((item) => item.stcode)])]);
+    };
+
     const handleConfirm = () => { 
         const choosed = selected.map( m => m.stcode );
         const itemsChoose = (itemsData.filter( f => itemsRowKeySelect.includes(f.stcode) && !choosed.includes(f.stcode) )).map( (m, i) => (
@@ -87,10 +94,8 @@ export default function ModalCusCL({show, close, values, selected, groups = [], 
         selectedRowKeys : itemsRowKeySelect,
         type: "checkbox",
         fixed: true,
+        preserveSelectedRowKeys: true,
         onChange: (selectedRowKeys, selectedRows) => {
-            setItemsRowKeySelect([
-              ...new Set([...selectedRowKeys, ...itemsRowKeySelect]),
-            ]);
             setItemsList(selectedRows);
             setItemsRowKeySelect(selectedRowKeys);
           },
@@ -98,18 +103,6 @@ export default function ModalCusCL({show, close, values, selected, groups = [], 
             return {
                 disabled: handleCheckDuplicate(record.stcode), 
                 name: record.stcode,
-            }
-        },
-        onSelect: (record, selected, selectedRows, nativeEvent) => {
-            //console.log(record, selected, selectedRows, nativeEvent);
-            if( selected ){
-                setItemsRowKeySelect([...new Set([...itemsRowKeySelect, record.stcode])]);
-            } else {
-                const ind = itemsRowKeySelect.findIndex( d => d === record.stcode);
-                const tval = [...itemsRowKeySelect];
-                tval.splice(ind, 1);
-                setItemsRowKeySelect([...tval]);
-                //console.log(ind, itemsRowKeySelect);
             }
         }
     };
@@ -199,6 +192,15 @@ export default function ModalCusCL({show, close, values, selected, groups = [], 
                         </Form>
                     </Card>
                     <Card>
+                        <Space wrap style={{ marginBottom: 12 }}>
+                            <Button onClick={handleSelectAll} disabled={loading || !hasUnselectedItems}>
+                                เลือกทั้งหมด ({selectableItems.length})
+                            </Button>
+                            <span>เลือกสินค้าตามหมวดและคำค้นทุกหน้า</span>
+                            <Tag color="blue">
+                                เลือกเพิ่ม {itemsRowKeySelect.filter((key) => !handleCheckDuplicate(key)).length} รายการ
+                            </Tag>
+                        </Space>
                         <Table  
                             bordered
                             dataSource={itemsDataWrap}

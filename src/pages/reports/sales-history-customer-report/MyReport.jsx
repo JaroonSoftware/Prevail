@@ -24,7 +24,7 @@ export default function SalesHistoryCustomerReport({ mode = 'customer' }){
     const request=++sequence.current.value;
     setLoading(true);setReady(false);setError('');setDirty(false);setReport(null);
     try {
-      const res=await api.post('/reports/sales-history-customer/search.php',filters,{ignoreLoading:true});
+      const res=await api.post('/reports/sales-history-customer/search.php',{...filters,mode},{ignoreLoading:true});
       if(request!==sequence.current.value)return;
       const rows=res?.data?.data;
       if(!Array.isArray(rows))throw new Error('ข้อมูลรายงานไม่ถูกต้อง');
@@ -61,7 +61,13 @@ export default function SalesHistoryCustomerReport({ mode = 'customer' }){
       <h1>{REPORT_TITLE}</h1>
       <Form form={form} layout="vertical" size="large" onFinish={search} onValuesChange={()=>setDirty(true)}>
         <div className="history-filters">
-          <Form.Item name="dates" label="ช่วงวันที่ใบส่งสินค้า" rules={[{required:true,message:'กรุณาเลือกช่วงวันที่'}]}><DatePicker.RangePicker allowClear={false} format="DD/MM/YYYY" /></Form.Item>
+          <Form.Item label="ช่วงวันที่ใบส่งสินค้า" required>
+            <div style={{display:'flex',gap:8}}>
+              <Form.Item name="dates" noStyle rules={[{required:true,message:'กรุณาเลือกช่วงวันที่'}]}><DatePicker.RangePicker allowClear={false} format="DD/MM/YYYY" style={{flex:1,minWidth:0}} /></Form.Item>
+              {/* ปุ่มลัด: เลือกช่วงวันที่เป็นวันนี้ */}
+              <Button onClick={()=>{const t=dayjs();form.setFieldsValue({dates:[t,t]});setDirty(true);}}>วันนี้</Button>
+            </div>
+          </Form.Item>
           {customerField('customer_from')}{customerField('customer_to')}
           <Form.Item name="item_from" label="รหัสสินค้าจาก"><Input placeholder="ทั้งหมด" maxLength={40} /></Form.Item>
           <Form.Item name="item_to" label="ถึงรหัสสินค้า"><Input placeholder="ทั้งหมด" maxLength={40} /></Form.Item>

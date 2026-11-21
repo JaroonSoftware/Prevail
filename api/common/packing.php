@@ -42,10 +42,9 @@ function packing_catalog_rows(PDO $conn, array $rows, string $cuscode): array {
         $st->execute(['c'=>$row['catalog_code'], 'u'=>$cuscode, 's'=>$row['stcode']]);
         $override = $st->fetch(PDO::FETCH_ASSOC);
         if ($override) {
-            // Do not silently reinterpret an old size if the product unit changed.
-            $same = packing_unit_key($override['unit']) === packing_unit_key($row['unit']);
-            $row['packing_weight'] = $same ? $override['packing_weight'] : null;
-            $row['packing_unit_mismatch'] = !$same;
+            /* หน่วยไม่ตรงกันก็ใช้ตัวเลขตามที่ตั้งไว้ 1:1 (ตามที่ลูกค้าต้องการ) */
+            $row['packing_weight'] = $override['packing_weight'];
+            $row['packing_unit_mismatch'] = false;
             $row['packing_override_unit'] = $override['unit'];
         }
     }
@@ -69,9 +68,8 @@ function packing_resolve(PDO $conn, string $customer, array $line, ?string $cata
         $st->execute(['s'=>$line['stcode']]); $row = $st->fetch(PDO::FETCH_ASSOC);
     } else $row = $rows[0];
     if (!$row) throw new Exception('Item not found.');
-    /* ขายต่างหน่วยจากหน่วยสินค้า (เช่น สินค้าเป็น PCS แต่ขายเป็น KG): ยอมให้บันทึก
-       แต่ไม่มีน้ำหนักต่อถุง -> ตอนปริ้นหน้าถุงจะออกเป็นถุงเดียวตามจำนวนทั้งหมด */
-    if (packing_unit_key($row['unit']) !== packing_unit_key($line['unit'])) return null;
+    /* ขายต่างหน่วยจากหน่วยสินค้า (เช่น สินค้า each แต่ขาย KG): ใช้ตัวเลขขนาดต่อถุงเดิม 1:1
+       เช่น ตั้ง 50 each/ถุง ขาย KG ก็แบ่งถุงละ 50 KG */
     if (!empty($row['packing_unit_mismatch'])) {
         throw new Exception("สินค้า {$line['stcode']}: น้ำหนักต่อถุงในแคตตาล็อก ({$row['catalog_code']}) ตั้งไว้เป็นหน่วย {$row['packing_override_unit']} แต่สินค้าเป็นหน่วย {$row['unit']} — เปิดแคตตาล็อกแล้วกรอกน้ำหนักต่อถุงใหม่");
     }

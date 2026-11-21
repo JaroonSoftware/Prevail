@@ -31,6 +31,8 @@ try {
             if ($value !== '') { $params[$key] = $value; $where[] = "$column $operator :$key"; }
         }
     }
+    /* จำนวนบรรทัดสูงสุด: รายงานขาย แยกตามสินค้า 50,000 / ประวัติการขาย แยกตามลูกค้า 10,000 */
+    $rowLimit = (($input['mode'] ?? '') === 'product') ? 50000 : 10000;
     $conn = (new DbConnect)->connect();
     /* ส่วนลด % ของใบส่งของ (มาจากใบขาย) แบ่งลงรายบรรทัด: ส่วนลด = จำนวน x ราคา x % (ก่อน VAT) */
     $dPct = (bool)$conn->query("SHOW COLUMNS FROM dnmaster LIKE 'discount_pct'")->fetch() ? "COALESCE(a.discount_pct,0)" : "0";
@@ -45,13 +47,13 @@ try {
         LEFT JOIN customer c ON c.cuscode = a.cuscode
         LEFT JOIN items i ON i.stcode = b.stcode
         WHERE " . implode(' AND ', $where) . "
-        ORDER BY a.cuscode, b.stcode, b.unit, a.dndate, a.dncode, b.code LIMIT 10001";
+        ORDER BY a.cuscode, b.stcode, b.unit, a.dndate, a.dncode, b.code LIMIT " . ($rowLimit + 1);
     $stmt = $conn->prepare($sql);
     $stmt->execute($params);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    if (count($rows) > 10000) {
+    if (count($rows) > $rowLimit) {
         http_response_code(422);
-        echo json_encode(['message' => 'รายการเกิน 10,000 บรรทัด กรุณาลดช่วงวันที่หรือลูกค้า โดยระบบยังไม่แสดงรายงานที่ไม่ครบ'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['message' => 'รายการเกิน ' . number_format($rowLimit) . ' บรรทัด กรุณาลดช่วงวันที่หรือลูกค้า โดยระบบยังไม่แสดงรายงานที่ไม่ครบ'], JSON_UNESCAPED_UNICODE);
         exit;
     }
     echo json_encode(['data' => $rows, 'generated_at' => date('c')], JSON_UNESCAPED_UNICODE);

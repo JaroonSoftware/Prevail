@@ -39,10 +39,21 @@ try {
     if ((int)$st->fetchColumn() < 1) throw new AiUserException('ใบขายสินค้านี้ยังไม่มีรายการสินค้า');
 
     // A nonempty code must refer to an active product, even for direct API calls.
-    $st = $conn->prepare("SELECT COUNT(*) FROM sodetail d LEFT JOIN items i ON i.stcode = d.stcode
-                         WHERE d.socode = :s AND (NULLIF(TRIM(d.stcode), '') IS NULL OR i.stcode IS NULL OR COALESCE(i.active_status, '') <> 'Y')");
+    /* บอกให้ชัดว่าบรรทัดไหนติด: ไม่มีรหัส / ไม่พบสินค้า / สินค้าปิดการใช้งาน */
+    $st = $conn->prepare("SELECT d.stcode, i.stname,
+                                 CASE WHEN NULLIF(TRIM(d.stcode), '') IS NULL THEN 'ยังไม่เลือกสินค้า'
+                                      WHEN i.stcode IS NULL THEN 'ไม่พบรหัสสินค้านี้ในระบบ'
+                                      ELSE 'สินค้าปิดการใช้งานอยู่' END AS reason
+                          FROM sodetail d LEFT JOIN items i ON i.stcode = d.stcode
+                         WHERE d.socode = :s AND (NULLIF(TRIM(d.stcode), '') IS NULL OR i.stcode IS NULL OR COALESCE(i.active_status, '') <> 'Y')
+                         ORDER BY d.code");
     $st->execute(array('s' => $socode));
-    if ((int)$st->fetchColumn() > 0) throw new AiUserException('ไม่สามารถยืนยันใบขายได้ ต้องจับคู่รหัสสินค้าที่ใช้งานครบทุกรายการ');
+    $bad = $st->fetchAll(PDO::FETCH_ASSOC);
+    if ($bad) {
+        $list = array_map(function ($r) { return trim(($r['stcode'] ?: '-') . ' ' . ($r['stname'] ?? '')) . ' (' . $r['reason'] . ')'; }, $bad);
+        throw new AiUserException('ไม่สามารถยืนยันใบขายได้ ต้องแก้รายการต่อไปนี้ก่อน: ' . implode(', ', $list)
+            . ' — เปลี่ยนเป็นสินค้าที่ใช้งาน หรือเปิดการใช้งานสินค้านั้นในหน้าข้อมูลสินค้า');
+    }
 
     /* จำทุกบรรทัดที่มาจาก PO: ชื่อ/รหัสสินค้าลูกค้าใน PO = สินค้าที่ใช้จริงตอนยืนยัน
        (รวมบรรทัดที่ผู้ใช้เปลี่ยนสินค้าในตาราง — ครั้งหน้า AI จับคู่ถูกเอง) */

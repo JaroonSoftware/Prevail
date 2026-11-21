@@ -388,7 +388,6 @@ function CatalogManage() {
       const vals = listCustomer.map(c => row.customer_packing?.[c.cuscode] ?? null);
       const filled = vals.filter(v => v != null);
       const mixed = new Set(filled.map(Number)).size > 1;
-      const oldUnit = listCustomer.some(c => row.customer_packing_units?.[c.cuscode] && row.customer_packing_units[c.cuscode] !== row.unit);
       const setAll = v => handleEditCell({...row,
         customer_packing: {...row.customer_packing, ...Object.fromEntries(listCustomer.map(c => [c.cuscode, v]))},
         customer_packing_units: {...row.customer_packing_units, ...Object.fromEntries(listCustomer.map(c => [c.cuscode, row.unit]))}});
@@ -403,7 +402,6 @@ function CatalogManage() {
           ? <Typography.Text type="secondary">เลือกลูกค้าก่อน</Typography.Text>
           : <Typography.Text type="secondary">เว้นว่าง = ใช้ค่าจากข้อมูลสินค้า ({row.packing_weight || "-"} {row.unit})</Typography.Text>}
         {mixed && <Typography.Text type="warning">ลูกค้าแต่ละรายตั้งไว้ไม่เท่ากัน กรอกใหม่เพื่อให้เท่ากันทุกราย</Typography.Text>}
-        {oldUnit && <Typography.Text type="danger">หน่วยเดิมไม่ตรงกับ {row.unit} กรุณาตั้งค่าใหม่</Typography.Text>}
       </Space>;
     }
   });

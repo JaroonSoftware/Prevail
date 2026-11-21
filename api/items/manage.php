@@ -57,6 +57,8 @@ try {
         $rest_json = file_get_contents("php://input");
         $_POST = json_decode($rest_json, true);
         extract($_POST, EXTR_OVERWRITE, "_");
+        /* หน่วยสินค้าบังคับกรอก (ใช้กับขนาดต่อถุง/ราคาแคตตาล็อก) */
+        if (trim((string)($unit ?? '')) === '') throw new Exception('กรุณาเลือกหน่วยสินค้า');
         $stcode = trim((string)($stcode ?? ''));
         if ($stcode === '') throw new Exception('กรุณาระบุรหัสสินค้า');
         $checkCode = $conn->prepare("SELECT 1 FROM items WHERE stcode = :code LIMIT 1");
@@ -135,6 +137,8 @@ try {
         $rest_json = file_get_contents("php://input");
         $_PUT = json_decode($rest_json, true);
         extract($_PUT, EXTR_OVERWRITE, "_");
+        /* หน่วยสินค้าบังคับกรอก (ใช้กับขนาดต่อถุง/ราคาแคตตาล็อก) */
+        if (trim((string)($unit ?? '')) === '') throw new Exception('กรุณาเลือกหน่วยสินค้า');
         // var_dump($_POST);
 
         $sql = "
