@@ -1,4 +1,5 @@
 <?php
+include_once(dirname(__FILE__, 2) . "/upload-root.php");
     error_reporting(E_ALL);
     ini_set('display_errors', 1);
     // header("Access-Control-Allow-Origin: *");
@@ -7,7 +8,7 @@
     
     include '../conn.php';
 
-    $targetDir = "../../uploads/";
+    $targetDir = UPLOAD_ROOT . "/";
 
     if (!file_exists($targetDir)) {
         mkdir($targetDir, 0777, true);

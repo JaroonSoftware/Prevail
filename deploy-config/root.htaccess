@@ -1,0 +1,20 @@
+# ============================================================
+#  public_html/.htaccess  (วางที่ web root — ไม่อยู่ในโฟลเดอร์ deploy)
+#  - /uploads/*  เสิร์ฟจาก public_html/uploads ตรง ๆ (ไฟล์ผู้ใช้ อยู่นอก deploy)
+#  - ที่เหลือทั้งหมด ส่งเข้า public_html/deploy/  (URL เดิมไม่เปลี่ยน)
+# ============================================================
+RewriteEngine On
+RewriteBase /
+
+# ส่ง header Authorization ต่อให้ PHP (token login)
+RewriteCond %{HTTP:Authorization} ^(.+)$
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+# ไฟล์อัปโหลด : ไม่ต้อง rewrite
+RewriteRule ^uploads/ - [L]
+
+# เข้า deploy/ แล้ว : ไม่ต้อง rewrite ซ้ำ
+RewriteRule ^deploy/ - [L]
+
+# ที่เหลือ → deploy/
+RewriteRule ^(.*)$ deploy/$1 [L]

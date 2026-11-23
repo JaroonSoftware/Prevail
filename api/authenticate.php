@@ -3,7 +3,9 @@
 include_once( dirname(__FILE__, 1).'/src/JWT.php');  
 use Firebase\JWT\JWT; 
 try{ 
-    $isAuth = preg_match('/Bearer\s(\S+)/', $_SERVER['HTTP_AUTHORIZATION'], $matches) == 1;
+    /* หลัง rewrite เข้าโฟลเดอร์ deploy/ บาง Apache ส่ง header มาเป็น REDIRECT_HTTP_AUTHORIZATION */
+    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? ($_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '');
+    $isAuth = preg_match('/Bearer\s(\S+)/', $authHeader, $matches) == 1;
     $jwt = $matches[1]; 
     $secretKey =  "B3ZjYZSyYmNiLTQwMjM=Jaroon";// ?? 'bGS6lzFqvvSQ8ALbOxatm7/Vk7mLQyzqaS34Q4oR1ew='; 
     if (!$isAuth) {

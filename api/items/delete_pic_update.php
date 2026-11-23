@@ -1,4 +1,5 @@
 <?php
+include_once(dirname(__FILE__, 2) . "/upload-root.php");
     error_reporting(E_ALL);
     ini_set('display_errors', 1);
     // header("Access-Control-Allow-Origin: *");
@@ -8,7 +9,7 @@
     include '../conn.php';
 
     $uid = $_POST['uid'];
-    $targetDir = "../../uploads/";
+    $targetDir = UPLOAD_ROOT . "/";
 
     $targetFile = $targetDir . $uid . '_*';
 

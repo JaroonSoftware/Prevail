@@ -25,9 +25,10 @@ if ($_SERVER["REQUEST_METHOD"] == "DELETE"){
         }
 
         
-        if (file_exists($file->file_path)) {
+        $realPath = upload_resolve($file->file_path);
+        if (file_exists($realPath)) {
             // Attempt to delete the file
-            if (unlink($file->file_path));
+            if (unlink($realPath));
         }
         // else {
         //     throw new Exception( "File does not exist." );

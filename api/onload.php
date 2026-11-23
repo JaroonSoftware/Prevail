@@ -10,3 +10,4 @@ date_default_timezone_set('Asia/Bangkok');
 
 include_once( dirname(__FILE__, 1)."/conn.php");
 include_once( dirname(__FILE__, 1)."/authenticate.php");
+include_once( dirname(__FILE__, 1)."/upload-root.php");

@@ -1,0 +1,11 @@
+{
+  "dirs": [
+    "api",
+    "vendor"
+  ],
+  "serverFiles": [
+    "api/conn.php",
+    "api/ai/.env.ai",
+    "api/ai/env.ai"
+  ]
+}

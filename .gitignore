@@ -47,3 +47,8 @@ README.md
 /api/ai/.env.ai.*
 
 /api/ai/env.ai.*
+
+# แพ็ก deploy (สร้างจาก npm run deploy:pack)
+/dist-deploy
+# ไฟล์ตั้งค่าของเซิร์ฟเวอร์จริง (รหัสผ่าน DB ฯลฯ) — ห้ามเข้า git
+/deploy-config/server

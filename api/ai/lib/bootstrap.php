@@ -135,9 +135,11 @@ function ai_match_lines(PDO $conn, ItemMatcher $matcher, UsageLog $log, ?string 
 /* ------------------------------------------------------------------ ไฟล์ */
 
 /** โฟลเดอร์โปรเจ็กต์ (api/ai/lib -> Prevail) */
+/* โฟลเดอร์ที่มี uploads อยู่ข้างใน — บนเซิร์ฟเวอร์ uploads อยู่นอก deploy/ (ดู api/upload-root.php) */
 function ai_project_root(): string
 {
-    return dirname(__DIR__, 3);
+    include_once dirname(__DIR__, 2) . '/upload-root.php';
+    return UPLOAD_PARENT;
 }
 
 /** ดูชนิดไฟล์จากเนื้อไฟล์จริง ไม่เชื่อนามสกุล/ค่าที่เบราว์เซอร์ส่งมา */

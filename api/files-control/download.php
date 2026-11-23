@@ -7,7 +7,8 @@ $path = dirname(__FILE__, 3);
 if (isset($_GET['id'])) {
     $uuid = $_GET['id'];
     $f = (object)gettingFile($uuid, $conn);
-    $file_path = $f->file_path;
+    /* path ใน DB เป็น path เต็มตอนอัปโหลด — ย้ายโฟลเดอร์แล้วก็ยังหาเจอ */
+    $file_path = upload_resolve($f->file_path);
     clearstatcache();
     if (file_exists($file_path)) { 
         $mime = mime_content_type($file_path);

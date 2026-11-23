@@ -52,6 +52,8 @@
     "start:dev": "env-cmd -f .env.development react-scripts start",
     "dev": "set BROWSER=none&& env-cmd -f .env.development react-scripts start",
     "build": "react-scripts build",
+    "deploy:pack": "node scripts/deploy-pack.js",
+    "deploy:all": "react-scripts build && node scripts/deploy-pack.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

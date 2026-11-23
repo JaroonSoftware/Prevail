@@ -5,8 +5,9 @@ http_response_code(400);
 $db = new DbConnect;
 $conn = $db->connect(); 
 
-$path = dirname(__FILE__, 3);
-$pathUpload = "uploads"; 
+/* uploads อยู่นอกโฟลเดอร์ deploy บนเซิร์ฟเวอร์ (ดู api/upload-root.php) */
+$path = UPLOAD_PARENT;
+$pathUpload = basename(UPLOAD_ROOT); 
 $action_date = date("Y-m-d H:i:s");
 $action_by = $token->userid;
 
