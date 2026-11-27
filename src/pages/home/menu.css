@@ -29,3 +29,6 @@
 /* ปุ่มลัดมุมขวาบนหน้าเมนู: Dashboard / ปฏิทิน / แจ้งเตือน */
 .pv-quick-actions{position:absolute;top:0;right:0;display:flex;gap:8px;z-index:1}
 @media(max-width:860px){.pv-quick-actions{position:static;justify-content:flex-end;margin-bottom:8px}}
+
+.pv-chip-text{display:inline-flex;flex-direction:column;align-items:center;line-height:1.15}.pv-chip-text small{font-size:10px;opacity:.7;font-weight:400}.pv-mod-en{display:block;font-size:10px;color:#7a8a80;font-weight:400}
+.pv-mod-group{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;margin:0 2px 0 6px}.pv-mod-group .pv-mod-divider{background:#006838;width:3px;height:34px}.pv-mod-group-label{display:inline-flex;flex-direction:column;line-height:1.1;font-size:12px;font-weight:700;color:#006838;white-space:nowrap;padding:4px 10px;background:#e8f3ec;border-radius:8px}.pv-mod-group-label small{font-size:10px;font-weight:400;color:#4a6555}.pv-mod-chip[href*='report']:not(.active){background:#f4f9f6}

@@ -1,6 +1,7 @@
 import DocumentNumberPreview from "../../components/DocumentNumberPreview";
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState, useRef } from "react";
+import { describeError } from "../../utils/errorThai";
 import {
   Button,
   Checkbox,
@@ -569,7 +570,7 @@ function MyManage() {
           })
           .catch((err) => {
             if (err?.cancelled) return;
-            message.error(err?.response?.data?.message || "Request SaleOrder fail.");
+            message.error({ content: "บันทึกใบขายสินค้าไม่สำเร็จ: " + describeError(err), duration: 8 });
             console.warn(err);
           });
       })
@@ -639,7 +640,7 @@ function MyManage() {
             });
           })
           .catch((err) => {
-            message.error("Request SaleOrder fail.");
+            message.error("ยกเลิกใบขายสินค้าไม่สำเร็จ: " + (err?.response?.data?.message || err?.message || ""));
             console.warn(err);
           });
         // setListSouce((state) => state.filter( soc => soc.stcode !== key));

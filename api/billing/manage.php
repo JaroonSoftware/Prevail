@@ -200,9 +200,13 @@ try {
         }
         $header = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT a.code,a.blcode,a.socode,a.dncode,d.dndate,a.qty,a.stcode, a.price,a.unit,i.stname ";
-        $sql .= " FROM `bl_detail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
-        $sql .= " inner join `dnmaster` as d on (a.dncode=d.dncode)";
+        /* LEFT JOIN: บรรทัด "ใบขายข้อมูลเก่า" ไม่มีสินค้า/ใบส่งของ (stcode ว่าง) */
+        $sql = "SELECT a.code,a.blcode,a.socode,a.dncode,COALESCE(d.dndate,l.doc_date) AS dndate,a.qty,a.stcode, a.price,a.unit,";
+        $sql .= " COALESCE(i.stname, CONCAT('ยอดขายตามใบ ', a.dncode)) AS stname, IF(l.id IS NULL, 0, 1) AS legacy ";
+        $sql .= " FROM `bl_detail` as a left join `items` as i on (a.stcode=i.stcode)  ";
+        $sql .= " left join `dnmaster` as d on (a.dncode=d.dncode)";
+        $sql .= " left join `bl_master` as m on (m.blcode=a.blcode)";
+        $sql .= " left join `legacy_sales` as l on (l.doc_no=a.dncode and l.cuscode=m.cuscode and IFNULL(a.stcode,'')='' and l.active_status='Y')";
         $sql .= " where a.blcode = :code";
         $sql .= " order by a.socode ASC";
 

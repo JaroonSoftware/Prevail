@@ -38,8 +38,8 @@ try {
         }
         $header = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT a.blcode,a.dncode,a.stcode, a.price, a.unit, a.qty ,i.stname ";
-        $sql .= " FROM `bl_detail` as a inner join `items` as i on (a.stcode=i.stcode)  ";
+        $sql = "SELECT a.blcode,a.dncode,a.stcode, a.price, a.unit, a.qty ,COALESCE(i.stname, CONCAT('ยอดขายตามใบ ', a.dncode)) AS stname ";
+        $sql .= " FROM `bl_detail` as a left join `items` as i on (a.stcode=i.stcode)  ";
         $sql .= " where a.blcode in ('". implode("' , '", $code) . "')";
         $sql .= " order by i.seq";
 

@@ -13,6 +13,7 @@ require_once __DIR__ . '/SemanticMatcher.php';
 require_once __DIR__ . '/UsageLog.php';
 require_once __DIR__ . '/MockDoc.php';
 require_once __DIR__ . '/PoReader.php';
+require_once __DIR__ . '/LegacyReportReader.php';
 require_once __DIR__ . '/SoDraft.php';
 
 /** ข้อความใน exception นี้แสดงให้ผู้ใช้เห็นได้ตรง ๆ */

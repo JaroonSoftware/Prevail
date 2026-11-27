@@ -44,11 +44,22 @@ export default function ModalDeliverynoteBilling({show, close, cuscode, values, 
         if (!chosen || chosen.length < 1) return;
         setLoadingDn(true);
         try {
-            const payload = chosen.map((item) => ({ dncode: item.dncode }));
-            const res = await dnService.getlist(payload, { ignoreLoading: true });
-            const detail = (res?.data?.data?.detail || [])
-                .map((item) => ({ ...item, _rowKey: getShippingRowKey(item) }))
-                .sort((a, b) => (a.socode || "").localeCompare(b.socode || "", undefined, { numeric: true }));
+            // ใบขายข้อมูลเก่า = 1 บรรทัดต่อใบ (ยอดรวมทั้งใบ) ไม่ต้องดึงรายการสินค้า
+            const legacy = chosen.filter((item) => Number(item.legacy) === 1).map((item) => ({
+                dncode: item.dncode, socode: item.dncode, dndate: item.dndate, stcode: "",
+                stname: `ยอดขายตามใบ ${item.dncode}`, qty: 1, price: Number(item.total_price || 0), unit: "",
+                legacy: 1, _rowKey: `legacy::${item.dncode}`,
+            }));
+            const realDn = chosen.filter((item) => Number(item.legacy) !== 1);
+            let dnDetail = [];
+            if (realDn.length > 0) {
+                const payload = realDn.map((item) => ({ dncode: item.dncode }));
+                const res = await dnService.getlist(payload, { ignoreLoading: true });
+                dnDetail = (res?.data?.data?.detail || [])
+                    .map((item) => ({ ...item, _rowKey: getShippingRowKey(item) }))
+                    .sort((a, b) => (a.socode || "").localeCompare(b.socode || "", undefined, { numeric: true }));
+            }
+            const detail = [...dnDetail, ...legacy];
 
             const merged = [...selected, ...detail].filter(
                 (item, index, array) =>

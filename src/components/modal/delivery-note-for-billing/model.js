@@ -53,41 +53,36 @@ export const columns = ()=>{
 };
 
 export const dnSummaryColumns = () => {
+  // ใบส่งของ + ใบขายข้อมูลเก่า (legacy=1) แสดงรวมกัน
   return [
-    {render: (value) => <DocumentLink type="dncode" code={value} />,
-      title: "เลขที่ใบส่งของ",
+    {
+      title: "เลขที่เอกสาร",
       key: "dncode",
-      width: "20%",
       dataIndex: "dncode",
+      width: "30%",
+      render: (value, r) => (Number(r.legacy) ? value : <DocumentLink type="dncode" code={value} />),
     },
     {
-      title: "วันที่ใบส่งของ",
+      title: "วันที่",
       key: "dndate",
       width: "20%",
       dataIndex: "dndate",
       render: (v) => (v ? dayjs(v).format("DD/MM/YYYY") : "-"),
     },
     {
-      title: "ชื่อลูกค้า",
-      dataIndex: "cusname",
-      width: "30%",
-      key: "cusname",
-    },
-    {
-      title: "สถานะ",
-      dataIndex: "doc_status",
-      key: "doc_status",
-      width: "15%",
-      align: "center",
-      render: (data) => <TagDeliveryNoteStatus result={data} />,
-    },
-    {
-      title: "ยอดรวม",
-      dataIndex: "total_price",
-      key: "total_price",
-      width: "15%",
+      title: "ส่วนลด",
+      dataIndex: "discount",
+      key: "discount",
+      width: "20%",
       align: "right",
-      render: (v) => formatMoney(Number(v || 0), 2),
+      render: (v) => (Number(v) > 0 ? formatMoney(Number(v), 2) : "-"),
+    },
+    {
+      title: "ยอดสุทธิ",
+      key: "net",
+      width: "30%",
+      align: "right",
+      render: (_, r) => formatMoney(Number(r.total_price || 0) - Number(r.discount || 0), 2),
     },
   ];
 };

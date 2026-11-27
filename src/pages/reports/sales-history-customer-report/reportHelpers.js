@@ -88,9 +88,16 @@ export function paginateHistory(rows, heights, capacity, repeatHeight) {
     if (['detail','productTotal'].includes(row.type) && row.productHeading) result.push({ ...row.productHeading, continued: true });
     return result;
   };
+  /* ไม่หยุดทั้งรายงานเพราะบรรทัดเดียว: บรรทัดที่วัดความสูงไม่ได้ ใช้ค่าประมาณ
+     บรรทัดที่ยาวเกินหน้า (เช่น หมายเหตุยาวมาก) ให้ขึ้นหน้าใหม่ แล้วตัดส่วนที่เกินหน้า */
+  const maxRow = Math.max(24, capacity * 0.85);
+  heights = rows.map((_, i) => {
+    const h = heights[i];
+    if (!Number.isFinite(h) || h <= 0) return 18;
+    return Math.min(h, maxRow);
+  });
   for (let i=0;i<rows.length;i++) {
     const row = rows[i], height = heights[i];
-    if (!Number.isFinite(height) || height <= 0 || height > capacity) throw new Error('มีข้อความในรายงานยาวเกินหนึ่งหน้า กรุณาลดความยาวหมายเหตุ');
     let required = height;
     // Keep customer/product headings with their first detail; keep a final detail with its subtotal.
     if (row.type === 'customer' || row.type === 'product') {
@@ -100,10 +107,8 @@ export function paginateHistory(rows, heights, capacity, repeatHeight) {
     if (!page.length) {
       const repeats=repeatsFor(row);
       const extra=repeats.reduce((n,r)=>n+repeatHeight(r),0);
-      if(extra+height>capacity) throw new Error('ข้อมูลหนึ่งรายการยาวเกินหน้ากระดาษ');
       page.push(...repeats); used=extra;
     }
-    if(used+height>capacity) throw new Error('ไม่สามารถจัดหน้ารายงานได้ กรุณาลดความยาวข้อความ');
     page.push(row);used+=height;
   }
   if(page.length)pages.push(page);

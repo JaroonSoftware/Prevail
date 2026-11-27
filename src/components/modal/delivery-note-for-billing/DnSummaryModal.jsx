@@ -148,14 +148,14 @@ export default function DnSummaryModal({ show, close, values, selected, dnData, 
     const ButtonDnSummaryModal = (
         <Space direction="horizontal" size="middle" >
             <Button onClick={() => close(false) }>ปิด</Button>
-            <Button type='primary' onClick={() => handleConfirm() }>ยืนยันเลือกใบส่งของ</Button>
+            <Button type='primary' onClick={() => handleConfirm() }>ยืนยันเลือกเอกสาร</Button>
         </Space>
     );
 
     return (
         <Modal
             open={show}
-            title="เลือกใบส่งของ"
+            title="เลือกเอกสารที่จะวางบิล (ใบส่งของ / ใบขายข้อมูลเก่า)"
             onCancel={() => close(false) }
             afterOpenChange={(open) => {
                 if (open) {

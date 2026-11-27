@@ -51,9 +51,10 @@
     "start": "react-scripts start",
     "start:dev": "env-cmd -f .env.development react-scripts start",
     "dev": "set BROWSER=none&& env-cmd -f .env.development react-scripts start",
-    "build": "react-scripts build",
+    "build": "node scripts/build.js",
+    "build:cra": "react-scripts build",
     "deploy:pack": "node scripts/deploy-pack.js",
-    "deploy:all": "react-scripts build && node scripts/deploy-pack.js",
+    "deploy:all": "node scripts/deploy-build.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -65,9 +66,10 @@
   },
   "browserslist": {
     "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
+      "chrome >= 100",
+      "edge >= 100",
+      "firefox >= 100",
+      "safari >= 15"
     ],
     "development": [
       "last 1 chrome version",

@@ -261,8 +261,11 @@ try {
         }
         $submittedCodes = array();
         $changedProducts = array();
+        /* รายการเพิ่มเติม (_new) ที่ผู้ใช้เพิ่มในใบส่งของ -> เพิ่มเข้าใบขายที่เลือกด้วย */
+        $newLines = array();
         foreach ($detail as $value) {
             $line = (array)$value;
+            if (!empty($line['_new'])) { $newLines[] = $line; continue; }
             $id = (string)($line['code'] ?? '');
             if (!isset($oldByCode[$id]) || isset($submittedCodes[$id])) {
                 throw new Exception('รายการสินค้าเปลี่ยนแปลงหรืออ้างอิงซ้ำ กรุณาโหลดหน้าใหม่ก่อนบันทึก');
@@ -306,6 +309,7 @@ try {
         $updateLine = $conn->prepare("UPDATE dndetail SET stcode = :c, qty = :q, price = :p, unit = :u WHERE code = :id AND dncode = :d");
         foreach ($detail as $value) {
             $line = (array)$value;
+            if (!empty($line['_new'])) continue;
             $updateLine->execute(array('c' => $line['stcode'], 'q' => $line['qty'], 'p' => $line['price'], 'u' => $line['unit'],
                 'id' => $line['code'], 'd' => $header->dncode));
         }
@@ -328,8 +332,46 @@ try {
         // Each submitted line targets one source line, never a product-wide UPDATE.
         $changedOrders = array();
         $usedSourceCodes = array();
+
+        /* ---- เพิ่มรายการเพิ่มเติม: เพิ่มบรรทัดในใบขายที่เลือก (ส่งครบแล้ว) แล้วผูกกับใบส่งของ ---- */
+        if ($newLines) {
+            if (($lockedDn['issue_status'] ?? '') === 'ตัดสต๊อกแล้ว') throw new Exception('เพิ่มรายการไม่ได้: ใบส่งของนี้ตัดสต๊อกแล้ว');
+            $soChk = $conn->prepare("SELECT cuscode, doc_status FROM somaster WHERE socode = :s FOR UPDATE");
+            $itemChk = $conn->prepare("SELECT stcode, vat FROM items WHERE stcode = :c AND active_status = 'Y'");
+            $insSo = $conn->prepare("INSERT INTO sodetail (socode,stcode,qty,price,unit,vat,total_cost,delamount) VALUES (:s,:c,:q,:p,:u,:v,0,:d)");
+            $insDn = $conn->prepare("INSERT INTO dndetail (dncode,socode,stcode,qty,price,unit" . ($hasSourceLine ? ',source_so_detail_code' : '') . ")
+                VALUES (:dn,:s,:c,:q,:p,:u" . ($hasSourceLine ? ',:src' : '') . ")");
+            foreach ($newLines as $n) {
+                $so = (string)($n['socode'] ?? '');
+                $st = (string)($n['stcode'] ?? '');
+                $qty = (float)($n['qty'] ?? 0);
+                $price = (float)($n['price'] ?? 0);
+                if ($so === '') throw new Exception("รายการ $st: ยังไม่ได้เลือกใบขายสินค้าที่จะเพิ่มเข้าไป");
+                if ($qty <= 0) throw new Exception("รายการ $st: จำนวนต้องมากกว่า 0");
+                if ($price < 0) throw new Exception("รายการ $st: ราคาต้องไม่ติดลบ");
+                $soChk->execute(array('s' => $so));
+                $soRow = $soChk->fetch(PDO::FETCH_ASSOC);
+                if (!$soRow) throw new Exception("ไม่พบใบขายสินค้า $so");
+                if ($soRow['cuscode'] !== $header->cuscode) throw new Exception("ใบขายสินค้า $so ไม่ใช่ของลูกค้านี้");
+                if (in_array($soRow['doc_status'], array('ยกเลิก', 'รอยืนยันใบขายสินค้า'), true)) throw new Exception("ใบขายสินค้า $so สถานะ {$soRow['doc_status']} เพิ่มรายการไม่ได้");
+                $dupChk = $conn->prepare("SELECT COUNT(*) FROM sodetail WHERE socode = :s AND stcode = :c");
+                $dupChk->execute(array('s' => $so, 'c' => $st));
+                if ((int)$dupChk->fetchColumn() > 0) throw new Exception("ใบขายสินค้า $so มีสินค้า $st อยู่แล้ว — แก้จำนวนในบรรทัดเดิมแทน หรือเลือกใบขายอื่น");
+                $itemChk->execute(array('c' => $st));
+                $item = $itemChk->fetch(PDO::FETCH_ASSOC);
+                if (!$item) throw new Exception("ไม่พบสินค้า $st หรือปิดการใช้งานอยู่");
+                $insSo->execute(array('s' => $so, 'c' => $st, 'q' => $qty, 'p' => $price, 'u' => (string)($n['unit'] ?? ''), 'v' => (float)($item['vat'] ?? 0), 'd' => $qty));
+                $srcCode = $conn->lastInsertId();
+                $dnParams = array('dn' => $header->dncode, 's' => $so, 'c' => $st, 'q' => $qty, 'p' => $price, 'u' => (string)($n['unit'] ?? ''));
+                if ($hasSourceLine) $dnParams['src'] = $srcCode;
+                $insDn->execute($dnParams);
+                $changedOrders[$so] = true;
+            }
+        }
+
         foreach ($detail as $value) {
             $line = (array)$value;
+            if (!empty($line['_new'])) continue;
             $original = $oldByCode[(string)$line['code']];
             $itemChanged = (string)$line['stcode'] !== (string)$original['stcode'];
             if (!dn_line_changed($original, $line) && !$itemChanged) continue;

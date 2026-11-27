@@ -38,7 +38,7 @@ function ReportRow({ item, measure = false, mode, ...props }) {
       <td className="history-number">{r.line_discount > 0 ? money(r.line_discount) : '–'}</td>
       <td className="history-number">{money(r.line_net_total)}</td>
       <td>{r.socode ? (measure ? r.socode : <DocumentLink type="socode" code={r.socode} />) : '–'}</td>
-      <td className="history-remark">{r.remark || '–'}</td>
+      <td className="history-remark">{r.remark ? (String(r.remark).length > 150 ? String(r.remark).slice(0, 150) + '…' : r.remark) : '–'}</td>
     </tr>;
   }
   const t=item.totals;

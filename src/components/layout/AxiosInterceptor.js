@@ -5,6 +5,7 @@ import { BACKEND_URL } from "../../utils/util";
 import { STORE_KEY } from "../../constant/constant";
 // import { message } from 'antd';
 import { useLoadingContext } from "../../store/context/loading-context";
+import { rememberError } from "../../utils/errorThai";
 // import { useNavigate } from 'react-router-dom';
 // import { useLocation } from "react-router-dom";
 const instance = axios.create({ baseURL: BACKEND_URL });
@@ -53,6 +54,7 @@ const AxiosInterceptor = ({ children }) => {
             (error) => {
                 stopLoading(); 
                 // console.log("errInterceptor");
+                rememberError(error); // แปลสาเหตุเป็นภาษาไทย (ดู utils/errorThai.js)
                 const originalRequest = error.config;
                 
                 // If the error status is 401 and there is no originalRequest._retry flag,
@@ -60,7 +62,9 @@ const AxiosInterceptor = ({ children }) => {
                 if (error.response?.status === 401 && !originalRequest?._retry) {
                     originalRequest._retry = true;
                     delete axios.defaults.headers.common["Authorization"];
-                    throw new Error(error);
+                    const e = new Error(error?.thaiMessage || "หมดเวลาเข้าสู่ระบบ กรุณาล็อกอินใหม่");
+                    e.response = error.response; e.thaiMessage = error?.thaiMessage;
+                    throw e;
                     // message.error(error.response?.message || "Token epired");
                 }
 

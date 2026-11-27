@@ -102,6 +102,22 @@ export const PERMISSION_MENUS = [
     "admin_only": false
   },
   {
+    "key": "legacy-import",
+    "path": "/legacy-import",
+    "title": "นำเข้าใบขายข้อมูลเก่า",
+    "group": "SELL",
+    "actions": [
+      "view",
+      "add"
+    ],
+    "hiddenRoles": [
+      "จัดซื้อ",
+      "พนักงานส่งสินค้า"
+    ],
+    "restricted": false,
+    "admin_only": false
+  },
+  {
     "key": "billing",
     "path": "/billing",
     "title": "ใบวางบิล",

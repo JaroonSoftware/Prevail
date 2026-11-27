@@ -19,7 +19,9 @@ import OptionService from "../../service/Options.service";
 import CustomerService from "../../service/Customer.Service";
 import DeliveryNoteService from "../../service/DeliveryNote.service";
 import BillingNoteService from "../../service/BillingNote.Service";
-import { SearchOutlined, SaveFilled,QuestionCircleOutlined } from "@ant-design/icons";
+import { SearchOutlined, SaveFilled,QuestionCircleOutlined, PlusOutlined } from "@ant-design/icons";
+import { InputNumber, Radio, Tag } from "antd";
+import SOService from "../../service/SO.service";
 import ModalCustomers from "../../components/modal/customers/ModalCustomers";
 import { ModalSO } from "../../components/modal/so-for-dn";
 
@@ -44,6 +46,7 @@ const customerService = CustomerService();
 const dnservice = DeliveryNoteService();
 const blservice = BillingNoteService();
 const authService = Authenticate();
+const soservice = SOService();
 // const qtservice = QuotationService();
 
 const dateFormat = "DD/MM/YYYY";
@@ -79,6 +82,51 @@ function DeliveryNoteManage() {
 
   const [unitOption, setUnitOption] = React.useState([]);
   const [itemOptions, setItemOptions] = React.useState([]);
+
+  /* ---- เพิ่มรายการเพิ่มเติม: เลือกสินค้า แล้วเลือกว่าจะเพิ่มเข้าใบขายสินค้าใบไหน ---- */
+  const [extraOpen, setExtraOpen] = useState(false);
+  const [extra, setExtra] = useState({ stcode: null, qty: 1, unit: null, price: 0, socode: null });
+  const [extraSoList, setExtraSoList] = useState([]);
+  const [extraSoLoading, setExtraSoLoading] = useState(false);
+  const extraMonth = dayjs(form.getFieldValue("dndate") || formDetail?.dndate || new Date());
+
+  const openExtra = async () => {
+    const currentSo = listDetail.find((r) => !r._new)?.socode || null;
+    setExtra({ stcode: null, qty: 1, unit: null, price: 0, socode: currentSo });
+    setExtraOpen(true);
+    setExtraSoLoading(true);
+    try {
+      const r = await soservice.getbycus(`${encodeURIComponent(formDetail.cuscode)}&month=${extraMonth.format("YYYY-MM")}`, { ignoreLoading: true });
+      setExtraSoList(r?.data?.data || []);
+    } catch (e) {
+      message.error("โหลดรายการใบขายสินค้าไม่สำเร็จ");
+    } finally {
+      setExtraSoLoading(false);
+    }
+  };
+
+  /* ใบขายที่มีสินค้านี้อยู่แล้ว (ในใบขายเดิม หรือเพิ่มใหม่ค้างไว้ในใบส่งของนี้) เลือกไม่ได้ */
+  const soHasItem = (so, stcode) => !!stcode && (
+    String(so?.stcodes || "").split(",").includes(String(stcode)) ||
+    listDetail.some((x) => x.socode === so?.socode && String(x.stcode) === String(stcode))
+  );
+
+  const addExtra = () => {
+    if (!extra.stcode) return message.warning("กรุณาเลือกสินค้า");
+    if (!(Number(extra.qty) > 0)) return message.warning("จำนวนต้องมากกว่า 0");
+    if (!extra.unit) return message.warning("กรุณาเลือกหน่วย");
+    if (!extra.socode) return message.warning("กรุณาเลือกใบขายสินค้าที่จะเพิ่มรายการนี้เข้าไป");
+    if (soHasItem(extraSoList.find((x) => x.socode === extra.socode) || { socode: extra.socode }, extra.stcode)) {
+      return message.warning(`ใบขายสินค้า ${extra.socode} มีสินค้านี้อยู่แล้ว — เลือกใบขายอื่น`);
+    }
+    const it = itemOptions.find((o) => o.value === extra.stcode);
+    setListDetail((prev) => [...prev, {
+      _new: true, code: `new-${Date.now()}`, socode: extra.socode, stcode: extra.stcode, stname: it?.stname || "",
+      qty: Number(extra.qty), price: Number(extra.price || 0), unit: extra.unit,
+    }]);
+    setExtraOpen(false);
+    message.success(`เพิ่ม ${it?.stname || extra.stcode} → ใบขายสินค้า ${extra.socode} แล้ว (กดบันทึกเพื่อยืนยัน)`);
+  };
 
   const cardStyle = {
     backgroundColor: "#f0f0f0",
@@ -130,7 +178,7 @@ function DeliveryNoteManage() {
         opservice.optionsUnit({ p: "unit-option" }),
         config?.action !== "create" ? opservice.optionsItems({ p: "items" }).catch(() => null) : null,
       ]);
-      setItemOptions((itemRes?.data?.data || []).map((i) => ({ value: i.stcode, stname: i.stname, label: `${i.stcode} - ${i.stname}` })));
+      setItemOptions((itemRes?.data?.data || []).map((i) => ({ value: i.stcode, stname: i.stname, unit: i.unit, price: i.price, label: `${i.stcode} - ${i.stname}` })));
       // console.log(unitOprionRes.data.data)
       setUnitOption(unitOprionRes.data.data);
     };
@@ -397,7 +445,9 @@ function DeliveryNoteManage() {
   /** setting column table */
   /* แก้รหัสสินค้าได้เฉพาะหน้าแก้ไข และยังไม่ตัดสต๊อก/ยังไม่ชำระเงิน */
   const canChangeItem = config?.action !== "create" && !receiptLocked && formDetail?.issue_status !== "ตัดสต๊อกแล้ว";
-  const renderStcode = (v, rec) => !canChangeItem ? v : (
+  const renderStcode = (v, rec) => rec?._new ? (
+    <Flex vertical gap={2}><span>{v}</span><Tag color="gold" style={{ marginRight: 0 }}>เพิ่มใหม่ → {rec.socode}</Tag></Flex>
+  ) : !canChangeItem ? v : (
     <Select
       size="small" showSearch style={{ width: "100%" }} value={v} optionFilterProp="label" popupMatchSelectWidth={false}
       options={itemOptions.length ? itemOptions : [{ value: v, label: `${v} - ${rec?.stname || ""}` }]}
@@ -477,7 +527,12 @@ function DeliveryNoteManage() {
         </Flex>
       </Col>
       <Col span={12} style={{ paddingInline: 0 }}>
-        <Flex justify="end">
+        <Flex justify="end" gap={8}>
+          {canChangeItem && (
+            <Button icon={<PlusOutlined />} onClick={openExtra} disabled={loadingSalesOrder || !formDetail?.cuscode}>
+              เพิ่มรายการเพิ่มเติม
+            </Button>
+          )}
           <Button
             icon={<LuPackageSearch style={{ fontSize: "1.2rem" }} />}
             className="bn-center justify-center bn-primary-outline"
@@ -742,6 +797,62 @@ function DeliveryNoteManage() {
           selected={listDetail}
         ></ModalSO>
       )}
+      <Modal open={extraOpen} title="เพิ่มรายการเพิ่มเติม" onCancel={() => setExtraOpen(false)} onOk={addExtra}
+        okText="เพิ่มรายการ" cancelText="ยกเลิก" width={1100} style={{ top: 40 }} destroyOnClose>
+        <Row gutter={[12, 12]}>
+          <Col xs={24}>
+            <Typography.Text type="secondary">สินค้า</Typography.Text>
+            <Select showSearch style={{ width: "100%" }} placeholder="ค้นหารหัส / ชื่อสินค้า" optionFilterProp="label"
+              value={extra.stcode} options={itemOptions}
+              onChange={(code) => {
+                const it = itemOptions.find((o) => o.value === code);
+                setExtra((e) => {
+                  const cur = extraSoList.find((x) => x.socode === e.socode);
+                  return { ...e, stcode: code, unit: it?.unit || e.unit, price: Number(it?.price || 0),
+                    socode: cur && soHasItem(cur, code) ? null : e.socode };
+                });
+              }} />
+          </Col>
+          <Col xs={8}>
+            <Typography.Text type="secondary">จำนวน</Typography.Text>
+            <InputNumber style={{ width: "100%" }} min={0} value={extra.qty} onChange={(v) => setExtra((e) => ({ ...e, qty: v }))} />
+          </Col>
+          <Col xs={8}>
+            <Typography.Text type="secondary">หน่วย</Typography.Text>
+            <Select style={{ width: "100%" }} value={extra.unit} showSearch optionFilterProp="label"
+              options={(unitOption || []).map((u) => ({ value: u.value ?? u.unit ?? u.label, label: u.label ?? u.unit ?? u.value }))}
+              onChange={(v) => setExtra((e) => ({ ...e, unit: v }))} />
+          </Col>
+          <Col xs={8}>
+            <Typography.Text type="secondary">ราคาต่อหน่วย</Typography.Text>
+            <InputNumber style={{ width: "100%" }} min={0} precision={2} value={extra.price} onChange={(v) => setExtra((e) => ({ ...e, price: v }))} />
+          </Col>
+          <Col xs={24}>
+            <Divider orientation="left" className="!my-2">
+              รายการนี้จะไปอยู่ใบขายสินค้าใบไหน? (ลูกค้า {formDetail?.cuscode} · เดือน {extraMonth.format("MM/YYYY")})
+            </Divider>
+            <Table size="small" rowKey="socode" loading={extraSoLoading} dataSource={extraSoList} pagination={false} scroll={{ y: 380 }}
+              locale={{ emptyText: "ไม่มีใบขายสินค้าของลูกค้านี้ในเดือนนี้" }}
+              rowClassName={(r) => (soHasItem(r, extra.stcode) ? "opacity-50" : "")}
+              onRow={(r) => ({
+                onClick: () => { if (!soHasItem(r, extra.stcode)) setExtra((e) => ({ ...e, socode: r.socode })); },
+                style: { cursor: soHasItem(r, extra.stcode) ? "not-allowed" : "pointer" },
+              })}
+              columns={[
+                { title: "", key: "pick", width: 40, render: (_, r) => <Radio checked={extra.socode === r.socode} disabled={soHasItem(r, extra.stcode)} /> },
+                { title: "เลขที่ใบขายสินค้า", dataIndex: "socode", width: 340, render: (v, r) => (
+                  <Space size={4} wrap>{v}
+                    {listDetail.some((x) => !x._new && x.socode === v) && <Tag color="blue">ใบขายของใบส่งของนี้</Tag>}
+                    {soHasItem(r, extra.stcode) && <Tag color="red">มีสินค้านี้แล้ว</Tag>}
+                  </Space>) },
+                { title: "วันที่", dataIndex: "sodate", width: 110, render: (v) => (v ? dayjs(v).format("DD/MM/YYYY") : "-") },
+                { title: "วันนัดส่ง", dataIndex: "deldate", width: 110, render: (v) => (v && !String(v).startsWith("0000") ? dayjs(v).format("DD/MM/YYYY") : "-") },
+                { title: "สถานะ", dataIndex: "doc_status", width: 150 },
+                { title: "ยอดรวม", dataIndex: "total_price", width: 110, align: "right", render: (v) => comma(Number(v || 0)) },
+              ]} />
+          </Col>
+        </Row>
+      </Modal>
     </div>
   );
 }

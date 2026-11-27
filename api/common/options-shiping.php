@@ -32,7 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
             }
         }
         
-        $sql = "SELECT distinct s.dncode,s.dndate,s.total_price,c.cuscode, c.cusname,c.prename, s.doc_status
+        $sql = "SELECT distinct s.dncode,s.dndate,s.total_price,IFNULL(s.discount,0) AS discount,0 AS legacy,c.cuscode, c.cusname,c.prename, s.doc_status
             FROM dnmaster as s
             $join_detail
             inner join `customer` as c on (s.cuscode=c.cuscode) 
@@ -44,6 +44,21 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
             $stmt = $conn->prepare($sql); 
             $stmt->execute();
             $res = $stmt->fetchAll(PDO::FETCH_ASSOC); 
+
+        /* ใบขายข้อมูลเก่า (นำเข้าจากระบบเก่า) ที่ยังไม่วางบิล — วางบิลรวมกับใบส่งของได้ */
+        if (!empty($cuscode) && empty($socode)) {
+            try {
+                $lg = $conn->prepare("SELECT l.doc_no AS dncode, l.doc_date AS dndate, l.total AS total_price, 0 AS discount,
+                        c.cuscode, c.cusname, c.prename, 'ข้อมูลเก่า' AS doc_status, 1 AS legacy
+                    FROM legacy_sales l INNER JOIN customer c ON c.cuscode = l.cuscode
+                    WHERE l.cuscode = :c AND l.active_status = 'Y'
+                      AND l.doc_no NOT IN (SELECT bd.dncode FROM bl_detail bd INNER JOIN bl_master bm ON bd.blcode = bm.blcode
+                                           WHERE bm.doc_status != 'ยกเลิก' AND bm.active_status = 'Y' AND bd.dncode IS NOT NULL)
+                    ORDER BY l.doc_date, l.doc_no");
+                $lg->execute(array('c' => $cuscode));
+                $res = array_merge($res, $lg->fetchAll(PDO::FETCH_ASSOC));
+            } catch (Exception $e) { /* ยังไม่ได้รัน SQL legacy_sales */ }
+        }
 
         http_response_code(200);
         echo json_encode(array("data"=>$res));

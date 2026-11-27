@@ -45,7 +45,7 @@ export default function MenuHome() {
       <Link className="pv-tile pv-menu-tile" to={menu.to} onClick={() => recordRecent(userId, menu.to)}>
         <span className="pv-tile-icon">{menu.icon || <AppstoreOutlined />}</span>
         <span className="pv-tile-title">{menu.title}</span>
-        <span className="pv-tile-sub">{mod?.code} · {mod?.title}</span>
+        <span className="pv-tile-sub">{menu.english || `${mod?.code} · ${mod?.title}`}</span>
       </Link>
       {menu.to !== '/dashboard' && <Tooltip title={isPinned ? 'ถอนหมุดเมนู' : 'ปักหมุดเมนู'}>
         <button type="button" className={'pv-pin ' + (isPinned ? 'is-pinned' : '')}

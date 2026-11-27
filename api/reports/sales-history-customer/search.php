@@ -31,8 +31,8 @@ try {
             if ($value !== '') { $params[$key] = $value; $where[] = "$column $operator :$key"; }
         }
     }
-    /* จำนวนบรรทัดสูงสุด: รายงานขาย แยกตามสินค้า 50,000 / ประวัติการขาย แยกตามลูกค้า 10,000 */
-    $rowLimit = (($input['mode'] ?? '') === 'product') ? 50000 : 10000;
+    /* จำนวนบรรทัดสูงสุด 50,000 ทั้งรายงานขายแยกตามสินค้า และประวัติการขายแยกตามลูกค้า */
+    $rowLimit = 50000; // ทั้งแยกตามลูกค้าและแยกตามสินค้า
     $conn = (new DbConnect)->connect();
     /* ส่วนลด % ของใบส่งของ (มาจากใบขาย) แบ่งลงรายบรรทัด: ส่วนลด = จำนวน x ราคา x % (ก่อน VAT) */
     $dPct = (bool)$conn->query("SHOW COLUMNS FROM dnmaster LIKE 'discount_pct'")->fetch() ? "COALESCE(a.discount_pct,0)" : "0";

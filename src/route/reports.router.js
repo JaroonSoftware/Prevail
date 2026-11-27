@@ -12,10 +12,12 @@ import { ProfitByProductCustomerReport } from "../pages/reports/profit-by-produc
 import { SalesByCustomerReport } from "../pages/reports/sales-by-customer-report";
 import { OutstandingByCustomerReport } from "../pages/reports/outstanding-by-customer-report";
 
+import LegacyImport from "../pages/legacy-import/LegacyImport";
 import SalesHistoryCustomerReport from "../pages/reports/sales-history-customer-report/MyReport";
 
 export const ReportRouter = (
   <>
+    <Route path="/legacy-import" element={<LegacyImport />} />
     <Route path="/sales-history-customer-report" element={<SalesHistoryCustomerReport />} />
     <Route path="/so-by-product-report" element={<SalesHistoryCustomerReport mode="product" />} />
     <Route path="/profit-by-product-customer-report" element={<ProfitByProductCustomerReport />} />

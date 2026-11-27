@@ -36,6 +36,10 @@ export default function PortalLayout({ children }) {
   const module = MODULES.find(m => m.code === code);
   /* อยู่ในหมวดงาน (ไม่ได้มาจากเมนูปักหมุด) -> หัวแบบ NSF: ย้อนกลับ + ป้ายรหัสหมวด + ชื่อหมวด + เมนูของหมวด */
   const moduleMenus = module ? module.paths.map(p => menus.find(m => m.to === p)).filter(Boolean) : [];
+  /* แยกเมนูรายงานไว้ท้าย มีเส้นคั่น + ป้าย "รายงาน" ให้เห็นชัด */
+  const isReportMenu = m => /report/i.test(m.to);
+  const moduleMain = moduleMenus.filter(m => !isReportMenu(m));
+  const moduleReports = moduleMenus.filter(isReportMenu);
   const showModuleBar = !!module && !onPinnedMenu && moduleMenus.length > 0;
   const actions = [
     { key: 'reset', label: 'เปลี่ยนรหัสผ่าน', icon: <SettingOutlined />, onClick: () => setReset(true) },
@@ -61,11 +65,15 @@ export default function PortalLayout({ children }) {
           <Link to={'/menu/' + module.code} className="pv-mod-head" title="หน้ารวมเมนูของหมวดนี้"
             aria-current={isMenu ? 'page' : undefined}>
             <span className={'pv-mod-code' + (isMenu ? ' active' : '')}>{module.code}</span>
-            <span className="pv-mod-text"><small>หมวดงาน</small><b>{module.title}</b></span>
+            <span className="pv-mod-text"><small>หมวดงาน</small><b>{module.title}</b>{module.english && <small className="pv-mod-en">{module.english}</small>}</span>
           </Link>
           <span className="pv-mod-divider" />
-          {moduleMenus.map(m => <Link key={m.to} className={'pv-chip pv-mod-chip ' + (currentPath === m.to ? 'active' : '')}
-            to={m.to} aria-current={currentPath === m.to ? 'page' : undefined}>{m.title}</Link>)}
+          {[moduleMain, moduleReports].map((list, gi) => list.length > 0 && <React.Fragment key={gi}>
+            {gi === 1 && moduleMain.length > 0 && <span className="pv-mod-group"><span className="pv-mod-divider" /></span>}
+            {list.map(m => <Link key={m.to} className={'pv-chip pv-mod-chip ' + (currentPath === m.to ? 'active' : '')}
+            to={m.to} aria-current={currentPath === m.to ? 'page' : undefined}>
+            <span className="pv-chip-text"><span>{m.title}</span>{m.english && <small>{m.english}</small>}</span></Link>)}
+          </React.Fragment>)}
         </nav>
         ) : (
         <nav className="pv-topnav" aria-label="เมนูหลัก">
@@ -73,9 +81,10 @@ export default function PortalLayout({ children }) {
             aria-current={isMenu && !code ? 'page' : undefined}><HomeOutlined /> เมนูระบบ</Link>
           {onPinnedMenu && <span className="pv-pinned-label"><PushpinFilled /> เมนูปักหมุด</span>}
           {onPinnedMenu ? pinnedMenus.map(m => <Link key={m.to} className={'pv-chip ' + (currentPath === m.to ? 'active' : '')}
-            to={m.to} aria-current={currentPath === m.to ? 'page' : undefined}>{m.title}</Link>) : chips.map(m => <Link key={m.code} className={'pv-chip ' + (code === m.code ? 'active' : '')}
+            to={m.to} aria-current={currentPath === m.to ? 'page' : undefined}>
+            <span className="pv-chip-text"><span>{m.title}</span>{m.english && <small>{m.english}</small>}</span></Link>) : chips.map(m => <Link key={m.code} className={'pv-chip ' + (code === m.code ? 'active' : '')}
             to={'/menu/' + m.code} aria-current={code === m.code ? 'page' : undefined}>
-            {m.code} · {m.title}
+            {m.code} · {m.title}{m.english && <small style={{ opacity: .7, marginLeft: 4 }}>{m.english}</small>}
           </Link>)}
         </nav>
         )}
